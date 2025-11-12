@@ -8,8 +8,9 @@ export interface Artwork {
   id: string;
   title: string;
   image: string;
+  width: number;
+  height: number;
   ratio: number;
-  sizes: string[];
   frameOptions: FrameOption[];
   price: number;
   checkout: {

@@ -4,7 +4,6 @@ import { RoomPreset, Artwork, FrameOption } from '../types';
 interface RoomViewerProps {
   room: RoomPreset;
   artwork: Artwork | null;
-  size: string;
   frame: FrameOption;
   wallColor: string;
   designerWidth?: number;
@@ -13,20 +12,15 @@ interface RoomViewerProps {
 const RoomViewer: React.FC<RoomViewerProps> = ({
   room,
   artwork,
-  size,
   frame,
   wallColor,
   designerWidth
 }) => {
-  // Calculate artwork dimensions based on size
+  // Calculate artwork dimensions
   const getArtworkDimensions = () => {
-    if (!artwork || !size) return { width: 0, height: 0 };
+    if (!artwork) return { width: 0, height: 0 };
     
-    const [widthStr, heightStr] = size.split('x');
-    const width = parseInt(widthStr);
-    const height = parseInt(heightStr);
-    
-    // If designer mode with custom width, recalculate
+    // If designer mode with custom width, recalculate height based on ratio
     if (designerWidth) {
       return {
         width: designerWidth,
@@ -34,7 +28,8 @@ const RoomViewer: React.FC<RoomViewerProps> = ({
       };
     }
     
-    return { width, height };
+    // Use artwork's real dimensions
+    return { width: artwork.width, height: artwork.height };
   };
 
   const dimensions = getArtworkDimensions();

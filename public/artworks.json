@@ -3,12 +3,9 @@
     "id": "the-heads-acrylic-on-canvas-190-x-100-cm",
     "title": "The Heads",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/theheads4.jpg?v=1746526441",
+    "width": 100,
+    "height": 100,
     "ratio": 1.0,
-    "sizes": [
-      "80x80",
-      "100x100",
-      "120x120"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -28,12 +25,9 @@
     "id": "light-my-fire-acrylic-on-canvas-140-x-70-cm",
     "title": "Light My Fire",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/lightmyfire4.jpg?v=1746688649",
+    "width": 100,
+    "height": 100,
     "ratio": 1.0,
-    "sizes": [
-      "80x80",
-      "100x100",
-      "120x120"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -53,12 +47,9 @@
     "id": "dragon-bird",
     "title": "Dragon Bird",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/dragonbird3.jpg?v=1746614844",
+    "width": 150,
+    "height": 100,
     "ratio": 1.5,
-    "sizes": [
-      "120x80",
-      "150x100",
-      "180x120"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -78,12 +69,9 @@
     "id": "city-acrylic-on-canvas-150-x-100-cm",
     "title": "City",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/city3.jpg?v=1746526371",
+    "width": 100,
+    "height": 100,
     "ratio": 1.0,
-    "sizes": [
-      "80x80",
-      "100x100",
-      "120x120"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -103,12 +91,9 @@
     "id": "rose-gold",
     "title": "Rose Gold",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/rose_gold3.jpg?v=1746603152",
+    "width": 150,
+    "height": 100,
     "ratio": 1.5,
-    "sizes": [
-      "120x80",
-      "150x100",
-      "180x120"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -128,12 +113,9 @@
     "id": "whispers-of-the-ring",
     "title": "Whispers of the Ring",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/whispersofthering3.jpg?v=1749636551",
+    "width": 120,
+    "height": 100,
     "ratio": 1.2,
-    "sizes": [
-      "96x80",
-      "120x100",
-      "144x120"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -153,12 +135,9 @@
     "id": "red-sunset",
     "title": "Red Sunset",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/redsunset3.jpg?v=1746530252",
+    "width": 150,
+    "height": 100,
     "ratio": 1.5,
-    "sizes": [
-      "120x80",
-      "150x100",
-      "180x120"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -178,12 +157,9 @@
     "id": "joy-acrylic-on-canvas-100-x-80-cm",
     "title": "Joy",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/joy3.jpg?v=1746691045",
+    "width": 80,
+    "height": 4,
     "ratio": 20.0,
-    "sizes": [
-      "64x3",
-      "80x4",
-      "96x4"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -203,12 +179,9 @@
     "id": "rose-city",
     "title": "Rose City",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/rosecity2.jpg?v=1746530261",
+    "width": 150,
+    "height": 100,
     "ratio": 1.5,
-    "sizes": [
-      "120x80",
-      "150x100",
-      "180x120"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -228,12 +201,9 @@
     "id": "red-city",
     "title": "Red City",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/redcity3.jpg?v=1746614757",
+    "width": 100,
+    "height": 4,
     "ratio": 25.0,
-    "sizes": [
-      "80x3",
-      "100x4",
-      "120x4"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -253,12 +223,9 @@
     "id": "shiny-green-acrylic-on-canvas-with-epoxy-resin-finish-100-x-80-x-4-cm-1",
     "title": "Shiny Green",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/shinygreen2_301cd9e5-d0b3-46f9-9d81-cc24562885ce.jpg?v=1746615564",
+    "width": 100,
+    "height": 100,
     "ratio": 1.0,
-    "sizes": [
-      "80x80",
-      "100x100",
-      "120x120"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -278,12 +245,9 @@
     "id": "movement-acrylic-on-canvas-90-x-90-cm",
     "title": "Movement",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/movement3.jpg?v=1746688590",
+    "width": 100,
+    "height": 100,
     "ratio": 1.0,
-    "sizes": [
-      "80x80",
-      "100x100",
-      "120x120"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -303,12 +267,9 @@
     "id": "harmony",
     "title": "Harmony",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/harmony2.jpg?v=1746530306",
+    "width": 150,
+    "height": 100,
     "ratio": 1.5,
-    "sizes": [
-      "120x80",
-      "150x100",
-      "180x120"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -328,12 +289,9 @@
     "id": "optimism-acrylic-on-canvas-90-x-90-cm",
     "title": "Optimism",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/optimism2.jpg?v=1746688531",
+    "width": 100,
+    "height": 100,
     "ratio": 1.0,
-    "sizes": [
-      "80x80",
-      "100x100",
-      "120x120"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -353,12 +311,9 @@
     "id": "energy-acrylic-on-canvas-100-x-80-cm",
     "title": "Energy",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/energy3.jpg?v=1746691009",
+    "width": 100,
+    "height": 100,
     "ratio": 1.0,
-    "sizes": [
-      "80x80",
-      "100x100",
-      "120x120"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -378,12 +333,9 @@
     "id": "serenity",
     "title": "Serenity",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/serenity3.jpg?v=1746615690",
+    "width": 100,
+    "height": 100,
     "ratio": 1.0,
-    "sizes": [
-      "80x80",
-      "100x100",
-      "120x120"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -403,12 +355,9 @@
     "id": "sandy-acrylic-on-canvas-90-x-90-cm",
     "title": "Sandy",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/sandy.2jpg.jpg?v=1744122560",
+    "width": 100,
+    "height": 100,
     "ratio": 1.0,
-    "sizes": [
-      "80x80",
-      "100x100",
-      "120x120"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -428,12 +377,9 @@
     "id": "mordor-veil",
     "title": "Mordor Veil",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/mordorveil2.jpg?v=1748952832",
+    "width": 100,
+    "height": 100,
     "ratio": 1.0,
-    "sizes": [
-      "80x80",
-      "100x100",
-      "120x120"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -453,12 +399,9 @@
     "id": "coastline-acrylic-on-canvas-100-x-60-x-4-cm",
     "title": "Coastline",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/coastline2.jpg?v=1746615491",
+    "width": 100,
+    "height": 100,
     "ratio": 1.0,
-    "sizes": [
-      "80x80",
-      "100x100",
-      "120x120"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -478,12 +421,9 @@
     "id": "deep-blue",
     "title": "Deep Blue",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/deepblue2.jpg?v=1746691099",
+    "width": 90,
+    "height": 90,
     "ratio": 1.0,
-    "sizes": [
-      "72x72",
-      "90x90",
-      "108x108"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -503,12 +443,9 @@
     "id": "golden-green-acrylic-on-canvas-80-x-80-cm",
     "title": "Golden Green",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/goldengreen3.jpg?v=1746615366",
+    "width": 100,
+    "height": 100,
     "ratio": 1.0,
-    "sizes": [
-      "80x80",
-      "100x100",
-      "120x120"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -528,12 +465,9 @@
     "id": "the-boat",
     "title": "The Boat",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/theboat4.jpg?v=1747040569",
+    "width": 150,
+    "height": 100,
     "ratio": 1.5,
-    "sizes": [
-      "120x80",
-      "150x100",
-      "180x120"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -553,12 +487,9 @@
     "id": "voltage-acrylic-on-canvas-80-x-60-x-4-cm",
     "title": "Voltage",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/voltage3.jpg?v=1746615173",
+    "width": 100,
+    "height": 100,
     "ratio": 1.0,
-    "sizes": [
-      "80x80",
-      "100x100",
-      "120x120"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -578,12 +509,9 @@
     "id": "turquoise-mist-acrylic-on-canvas-100-x-70-cm",
     "title": "Turquoise Mist",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/TurquoiseMist2_d3e96df1-cae3-440d-8172-e19b1e50a56d.jpg?v=1746615212",
+    "width": 100,
+    "height": 100,
     "ratio": 1.0,
-    "sizes": [
-      "80x80",
-      "100x100",
-      "120x120"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -603,12 +531,9 @@
     "id": "whisper",
     "title": "Whisper",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/whisper3.jpg?v=1746693561",
+    "width": 90,
+    "height": 90,
     "ratio": 1.0,
-    "sizes": [
-      "72x72",
-      "90x90",
-      "108x108"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -628,12 +553,9 @@
     "id": "pulse",
     "title": "Pulse",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/pulse3.jpg?v=1746692255",
+    "width": 90,
+    "height": 90,
     "ratio": 1.0,
-    "sizes": [
-      "72x72",
-      "90x90",
-      "108x108"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -653,12 +575,9 @@
     "id": "rustica",
     "title": "Rustica",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/rustica3.jpg?v=1746614722",
+    "width": 100,
+    "height": 80,
     "ratio": 1.25,
-    "sizes": [
-      "80x64",
-      "100x80",
-      "120x96"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -678,12 +597,9 @@
     "id": "mr-brown-acrylic-on-canvas-80-x-60-cm",
     "title": "Mr. Brown",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Mr.Brown2.jpg?v=1746530382",
+    "width": 100,
+    "height": 100,
     "ratio": 1.0,
-    "sizes": [
-      "80x80",
-      "100x100",
-      "120x120"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -703,12 +619,9 @@
     "id": "electric-acrylic-on-canvas-70-x-50-cm",
     "title": "Electric",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/electric2.jpg?v=1746528501",
+    "width": 100,
+    "height": 100,
     "ratio": 1.0,
-    "sizes": [
-      "80x80",
-      "100x100",
-      "120x120"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -728,12 +641,9 @@
     "id": "dynamic-acrylic-on-canvas-70-x-50-cm",
     "title": "Dynamic",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/dynamic2.jpg?v=1746528621",
+    "width": 100,
+    "height": 100,
     "ratio": 1.0,
-    "sizes": [
-      "80x80",
-      "100x100",
-      "120x120"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -753,12 +663,9 @@
     "id": "harmony-art-print",
     "title": "Harmony\" Art Print",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Harmony_print.jpg?v=1760685004",
+    "width": 100,
+    "height": 100,
     "ratio": 1.0,
-    "sizes": [
-      "A5",
-      "A4",
-      "A3"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -778,12 +685,9 @@
     "id": "optimism-art-print",
     "title": "Optimism\" Art Print",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Optimism_print_2.jpg?v=1760684851",
+    "width": 100,
+    "height": 100,
     "ratio": 1.0,
-    "sizes": [
-      "A5",
-      "A4",
-      "A3"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -803,12 +707,9 @@
     "id": "energy-art-print",
     "title": "Energy\" Art Print",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Energy2_653def7a-44aa-4083-8c78-ddc258f9a477.jpg?v=1747733720",
+    "width": 100,
+    "height": 100,
     "ratio": 1.0,
-    "sizes": [
-      "A5",
-      "A4",
-      "A3"
-    ],
     "frameOptions": [
       "none",
       "black",
@@ -828,12 +729,9 @@
     "id": "serenity-a3-print",
     "title": "Serenity\" Art Print",
     "image": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Serenity_print.jpg?v=1760685293",
+    "width": 100,
+    "height": 100,
     "ratio": 1.0,
-    "sizes": [
-      "A5",
-      "A4",
-      "A3"
-    ],
     "frameOptions": [
       "none",
       "black",

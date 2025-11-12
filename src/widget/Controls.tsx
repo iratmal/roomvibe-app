@@ -3,12 +3,10 @@ import { Artwork, FrameOption } from '../types';
 
 interface ControlsProps {
   artwork: Artwork | null;
-  selectedSize: string;
   selectedFrame: FrameOption;
   wallColor: string;
   designerMode: boolean;
   designerWidth?: number;
-  onSizeChange: (size: string) => void;
   onFrameChange: (frame: FrameOption) => void;
   onWallColorChange: (color: string) => void;
   onDesignerWidthChange: (width: number | undefined) => void;
@@ -27,12 +25,10 @@ const WALL_COLOR_SWATCHES = [
 
 const Controls: React.FC<ControlsProps> = ({
   artwork,
-  selectedSize,
   selectedFrame,
   wallColor,
   designerMode,
   designerWidth,
-  onSizeChange,
   onFrameChange,
   onWallColorChange,
   onDesignerWidthChange,
@@ -45,6 +41,7 @@ const Controls: React.FC<ControlsProps> = ({
         {artwork ? (
           <div className="space-y-2 text-sm">
             <p><strong>Title:</strong> {artwork.title}</p>
+            <p><strong>Size:</strong> {artwork.width} x {artwork.height} cm</p>
             <p><strong>Price:</strong> €{artwork.price}</p>
             <div className="flex flex-wrap gap-1 mt-2">
               {artwork.tags.map(tag => (
@@ -57,26 +54,6 @@ const Controls: React.FC<ControlsProps> = ({
         ) : (
           <p className="text-sm text-gray-500">Select an artwork</p>
         )}
-      </div>
-
-      {/* Size Selection */}
-      <div>
-        <label className="block text-sm font-semibold mb-2">Size (cm)</label>
-        <div className="grid grid-cols-2 gap-2">
-          {artwork?.sizes.map(size => (
-            <button
-              key={size}
-              onClick={() => onSizeChange(size)}
-              className={`py-2 px-3 rounded text-sm ${
-                selectedSize === size
-                  ? 'bg-primary text-white'
-                  : 'bg-surface border border-gray-300'
-              }`}
-            >
-              {size}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Frame Selection */}

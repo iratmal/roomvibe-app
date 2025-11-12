@@ -23,7 +23,6 @@ const RoomVibe: React.FC<RoomVibeProps> = ({
   const [room, setRoom] = useState<RoomPreset>('living');
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [selectedArt, setSelectedArt] = useState<Artwork | null>(null);
-  const [selectedSize, setSelectedSize] = useState<string>('');
   const [selectedFrame, setSelectedFrame] = useState<FrameOption>('none');
   const [wallColor, setWallColor] = useState<string>('#FFFFFF');
   const [designerWidth, setDesignerWidth] = useState<number | undefined>();
@@ -42,7 +41,6 @@ const RoomVibe: React.FC<RoomVibeProps> = ({
         setArtworks(filtered);
         if (filtered.length > 0) {
           setSelectedArt(filtered[0]);
-          setSelectedSize(filtered[0].sizes[0]);
         }
       })
       .catch(err => console.error('Failed to load artworks:', err));
@@ -60,7 +58,6 @@ const RoomVibe: React.FC<RoomVibeProps> = ({
         const art = artworks.find(a => a.id === sharedState.artId);
         if (art) {
           setSelectedArt(art);
-          if (sharedState.size) setSelectedSize(sharedState.size);
           if (sharedState.frame) setSelectedFrame(sharedState.frame);
         }
       }
@@ -93,13 +90,7 @@ const RoomVibe: React.FC<RoomVibeProps> = ({
 
   const handleArtSelect = (art: Artwork) => {
     setSelectedArt(art);
-    setSelectedSize(art.sizes[0]);
     emitEvent({ type: 'rv_art_select' as const, artId: art.id, theme: currentTheme, mode: currentMode });
-  };
-
-  const handleSizeChange = (size: string) => {
-    setSelectedSize(size);
-    emitEvent({ type: 'rv_size_change' as const, artId: selectedArt?.id, size, theme: currentTheme, mode: currentMode });
   };
 
   const handleFrameChange = (frame: FrameOption) => {
@@ -126,8 +117,8 @@ const RoomVibe: React.FC<RoomVibeProps> = ({
       return;
     }
     
-    const link = generateCheckoutLink(selectedArt, selectedSize, selectedFrame, checkoutType, checkoutLinkTemplate);
-    emitEvent({ type: 'rv_buy_click' as const, artId: selectedArt.id, size: selectedSize, theme: currentTheme, mode: currentMode });
+    const link = generateCheckoutLink(selectedArt, selectedFrame, checkoutType, checkoutLinkTemplate);
+    emitEvent({ type: 'rv_buy_click' as const, artId: selectedArt.id, theme: currentTheme, mode: currentMode });
     
     window.open(link, '_blank');
   };
@@ -147,7 +138,6 @@ const RoomVibe: React.FC<RoomVibeProps> = ({
     const link = generateShareLink({
       room,
       artId: selectedArt.id,
-      size: selectedSize,
       frame: selectedFrame,
       wallColor,
       width: designerWidth
@@ -191,7 +181,6 @@ const RoomVibe: React.FC<RoomVibeProps> = ({
             <RoomViewer
               room={room}
               artwork={selectedArt}
-              size={selectedSize}
               frame={selectedFrame}
               wallColor={wallColor}
               designerWidth={designerWidth}
@@ -224,12 +213,10 @@ const RoomVibe: React.FC<RoomVibeProps> = ({
           <div className="space-y-6">
             <Controls
               artwork={selectedArt}
-              selectedSize={selectedSize}
               selectedFrame={selectedFrame}
               wallColor={wallColor}
               designerMode={currentMode === 'designer'}
               designerWidth={designerWidth}
-              onSizeChange={handleSizeChange}
               onFrameChange={handleFrameChange}
               onWallColorChange={handleWallColorChange}
               onDesignerWidthChange={setDesignerWidth}
