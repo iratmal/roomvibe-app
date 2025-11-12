@@ -146,7 +146,6 @@ def _pick_best_image_for_product(handle: str, variant_image: str, images: list[d
     candidates.sort(key=lambda x: x[0], reverse=True)
     return candidates[0][1]
 
-
 # ------------ Health ------------
 @app.get("/api/health")
 async def health():
@@ -394,17 +393,31 @@ async def get_artworks(limit: int = 30):
     items = []
 
     if path and os.path.exists(path):
-        by_handle = {}
+        # 1) Učitaj sve redove
         with open(path, newline="", encoding="utf-8-sig") as f:
             r = csv.DictReader(f)
-            for row in r:
-                handle = (_get(row, "Handle") or "").strip()
-                if not handle:
-                    continue
-                by_handle.setdefault(handle, []).append(row)
+            rows_all = list(r)
 
+        # 2) Grupiraj varijante po Handle i skupi SVE slike po Handle
+        by_handle = {}
+        images_by_handle = {}
+        for row in rows_all:
+            handle = (_get(row, "Handle") or "").strip()
+            if not handle:
+                continue
+            by_handle.setdefault(handle, []).append(row)
+
+            img_src = _get(row, "Image Src", "Image URL")
+            if img_src:
+                images_by_handle.setdefault(handle, []).append({
+                    "src": img_src,
+                    "alt": _get(row, "Image Alt Text", "Alt Text"),
+                    "position": _get(row, "Image Position", "Position", "#"),
+                })
+
+        # 3) Iz svake grupe: najbolja varijanta + najbolja "artwork-only" fotka
         for handle, rows in by_handle.items():
-            # Izaberi “najbolju” varijantu: s dimenzijom u nazivu, pa prva s cijenom, pa prva
+            # Varijanta: ima dimenziju u nazivu > prva s cijenom > prva
             choice = None
             for row in rows:
                 vt = _get(row, "Variant Title", "variant_title")
@@ -427,13 +440,19 @@ async def get_artworks(limit: int = 30):
             )
 
             price = _to_float(_get(choice, "Variant Price", "Price"))
-            image_url = _pick_image(choice)
+            variant_id = (_get(choice, "Variant ID") or "").strip()
+            product_url = _product_url(handle, variant_id if variant_id else None)
+
+            # --- PAMETNI ODABIR SLIKE (izbjegni mockupove) ---
+            variant_img = _get(choice, "Variant Image") or ""
+            image_url = _pick_best_image_for_product(
+                handle=handle,
+                variant_image=variant_img,
+                images=images_by_handle.get(handle, []),
+            )
             if image_url and "cdn.shopify.com" in image_url:
                 sep = "&" if "?" in image_url else "?"
                 image_url = f"{image_url}{sep}width=900"
-
-            variant_id = (_get(choice, "Variant ID") or "").strip()
-            product_url = _product_url(handle, variant_id if variant_id else None)
 
             display_title = title
             if variant_title and variant_title.lower() != "default title":
