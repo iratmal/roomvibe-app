@@ -2,6 +2,8 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from starlette.requests import Request
 import os, csv, re, io, time, requests
 from urllib.parse import urlparse, urlencode, urlunparse, parse_qsl
 from dotenv import load_dotenv
@@ -27,11 +29,14 @@ STORE_DOMAIN = (os.getenv("SHOPIFY_STORE_DOMAIN") or "irenart.studio").strip().s
 MAILERLITE_API_KEY  = (os.getenv("MAILERLITE_API_KEY") or "").strip()
 MAILERLITE_GROUP_ID = (os.getenv("MAILERLITE_GROUP_ID") or "").strip()
 
-# Static
+# Static & Templates
 STATIC_ROOT = os.path.join(os.getcwd(), "static")
+TEMPLATES_DIR = os.path.join(STATIC_ROOT, "templates")
 MOCK_DIR = os.path.join(STATIC_ROOT, "mockups")
 os.makedirs(MOCK_DIR, exist_ok=True)
+os.makedirs(TEMPLATES_DIR, exist_ok=True)
 app.mount("/static", StaticFiles(directory=STATIC_ROOT), name="static")
+templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 # Regex for sizes
 DIMENSION_RE = re.compile(r'(\d+(?:[.,]\d+)?)\s*[x×]\s*(\d+(?:[.,]\d+)?)(?:\s*cm)?', re.I)
@@ -564,8 +569,8 @@ HTML_PAGE = r'''
 '''
 
 @app.get("/", response_class=HTMLResponse)
-def root():
-    return HTMLResponse(content=HTML_PAGE)
+async def root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 # ---------- Design/Legal ----------
 @app.get("/privacy", response_class=HTMLResponse)

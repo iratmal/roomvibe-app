@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoomVibe - Artwork Discovery & Palette Extraction</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎨 RoomVibe</h1>
+            <p class="subtitle">Find perfect artwork for your space</p>
+        </header>
+
+        <main>
+            <section class="card large-card">
+                <h2>1) Upload Wall Photo</h2>
+                <div class="upload-zone" id="uploadZone">
+                    <div class="upload-content">
+                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                        </svg>
+                        <p class="upload-text">Drag & drop image here or <span class="browse-link">Browse</span></p>
+                        <input type="file" id="fileInput" accept="image/*" hidden>
+                    </div>
+                    <img id="previewImage" class="preview-image" style="display: none;">
+                </div>
+                
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="wallWidth">Wall width (cm)</label>
+                        <input type="number" id="wallWidth" placeholder="e.g. 300" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="maxPrice">Max price (€)</label>
+                        <input type="number" id="maxPrice" placeholder="No limit" min="0">
+                    </div>
+                </div>
+            </section>
+
+            <section class="card large-card">
+                <h2>2) Mode</h2>
+                <div class="mode-buttons">
+                    <button class="mode-btn" id="useCatalogBtn">Use catalog</button>
+                    <button class="mode-btn mode-btn-primary" id="uploadArtworkBtn">Upload artwork (preview)</button>
+                </div>
+                <button class="btn-primary btn-large" id="getSuggestionsBtn">
+                    3) Get suggestions (catalog)
+                </button>
+            </section>
+
+            <div id="paletteSection" class="card large-card" style="display: none;">
+                <h2>🎨 Color Palette</h2>
+                <div id="paletteContainer" class="palette-container"></div>
+                <p class="mood-text">Mood: <span id="moodText"></span></p>
+            </div>
+
+            <div id="artworksSection" class="card large-card" style="display: none;">
+                <h2>🖼️ Artwork Suggestions</h2>
+                <div id="artworksContainer" class="artworks-grid"></div>
+            </div>
+
+            <div id="checkoutSection" class="card large-card" style="display: none;">
+                <h2>🛒 Checkout</h2>
+                <p class="checkout-info">Selected: <span id="selectedArtwork"></span></p>
+                <button class="btn-primary btn-large" id="generateCheckoutBtn">
+                    Generate Checkout Link
+                </button>
+                <div id="checkoutLinkContainer" class="checkout-link-container" style="display: none;">
+                    <p class="checkout-label">Your checkout link:</p>
+                    <div class="link-box">
+                        <a id="checkoutLink" href="#" target="_blank"></a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
