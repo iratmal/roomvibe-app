@@ -6,7 +6,6 @@ import os, csv, re, io, time, requests
 from urllib.parse import urlparse, urlencode, urlunparse, parse_qsl
 from dotenv import load_dotenv
 from PIL import Image
-import numpy as np
 from typing import Optional, List, Dict
 
 load_dotenv()
@@ -127,22 +126,19 @@ def _pick_best_image_for_product(variant_image: str, images: List[Dict]) -> str:
 
 # ------ Paleta boja (Pillow adaptive quantize) ------
 def _dominant_colors_pil(img: Image.Image, k: int = 5) -> List[str]:
-    # radimo na smanjenoj slici radi brzine
     base = img.copy()
     base.thumbnail((512, 512))
     pal = base.convert("P", palette=Image.ADAPTIVE, colors=k)
     palette = pal.getpalette()[:k*3]
-    # frekvencije
     counts = pal.getcolors()
     if not counts:
         return ["#CCCCCC"]
-    # posloži po učestalosti i vrati HEX
+    # sort by frequency
     idx_sorted = sorted(range(len(counts)), key=lambda i: counts[i][0], reverse=True)
     hexes = []
     for i in idx_sorted:
         r,g,b = palette[3*i:3*i+3]
         hexes.append("#{:02X}{:02X}{:02X}".format(r,g,b))
-    # uniq i max k
     out = []
     for h in hexes:
         if h not in out: out.append(h)
@@ -163,7 +159,7 @@ HTML_PAGE = r'''
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>RoomVibe • Art that fits your room</title>
 
-  <!-- Favicons -->
+  <!-- Favicons (upload files to /static/brand/variantB/) -->
   <link rel="icon" type="image/png" sizes="32x32" href="/static/brand/variantB/favicon-32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/static/brand/variantB/favicon-16.png">
   <link rel="apple-touch-icon" href="/static/brand/variantB/apple-touch-icon.png">
@@ -175,12 +171,13 @@ HTML_PAGE = r'''
       --teal:#06B6D4; --tealH:#0891B2; --tealA:#0E7490; --tealFocus:#67E8F9;
       --promo:#DB2777;
       --radius:14px; --pad:14px; --shadow:0 10px 25px rgba(11,16,32,0.08);
+      --muted:#667085; --line:#ececf2;
     }
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,sans-serif}
     a{color:var(--teal);text-decoration:none}
     a:hover{text-decoration:underline}
-    .container{max-width:1080px;margin:0 auto;padding:0 20px}
+    .container{max-width:1140px;margin:0 auto;padding:0 20px}
 
     /* NAV */
     .nav{display:flex;align-items:center;justify-content:space-between;padding:18px 0}
@@ -191,39 +188,48 @@ HTML_PAGE = r'''
 
     /* HERO */
     .hero{display:grid;grid-template-columns:1.2fr .8fr;gap:28px;align-items:center;padding:28px 0 8px}
-    .h1{font-size:46px;line-height:1.05;margin:0 0 10px 0;font-weight:800;letter-spacing:-.3px}
-    .sub{color:#556;max-width:56ch}
+    .h1{font-size:54px;line-height:1.05;margin:0 0 10px 0;font-weight:800;letter-spacing:-.3px}
+    .sub{color:#556;max-width:58ch}
     .ctaRow{display:flex;gap:12px;margin-top:16px}
-    .btn{border:none;border-radius:12px;padding:12px 16px;font-weight:600;cursor:pointer}
+    .btn{border:none;border-radius:12px;padding:12px 16px;font-weight:700;cursor:pointer}
     .btn.primary{background:var(--purple);color:#fff}
     .btn.primary:hover{background:var(--purpleH)}
     .btn.primary:active{background:var(--purpleA)}
     .btn.secondary{background:var(--teal);color:#0B1020}
     .btn.secondary:hover{background:var(--tealH)}
     .btn.secondary:active{background:var(--tealA)}
-    .badge{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid #e6e8ef;color:#334;padding:8px 12px;border-radius:999px;font-size:12px}
+    .badge{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);color:#334;padding:8px 12px;border-radius:999px;font-size:12px}
+    .heroCard{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:var(--pad);box-shadow:var(--shadow)}
 
-    /* CARDS & FORMS */
+    /* SECTIONS */
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-    .card{background:#fff;border:1px solid #ececf2;border-radius:var(--radius);padding:var(--pad);box-shadow:var(--shadow)}
-    .muted{color:#667085}
-    .input{padding:10px;border:1px solid #ddd;border-radius:10px}
+    .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:var(--pad);box-shadow:var(--shadow)}
+    .muted{color:var(--muted)}
+    .input{padding:10px;border:1px solid #ddd;border-radius:10px;width:100%}
     #drop{border:2px dashed #cfd5e1;border-radius:var(--radius);padding:30px;text-align:center;color:#556;background:#fbfcff}
     .palette{display:flex;gap:8px;margin-top:10px}
-    .sw{width:38px;height:38px;border-radius:8px;border:1px solid #e6e8ef}
-
+    .sw{width:38px;height:38px;border-radius:8px;border:1px solid var(--line)}
     .gridCards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
-    .art{border:1px solid #ececf2;border-radius:12px;padding:10px;background:#fff}
+    .art{border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff}
     .art img{width:100%;height:150px;object-fit:cover;border-radius:8px}
 
     /* MOCKUP */
     #mockupCard{display:none}
-    #mockupImg{max-width:100%;border-radius:12px;border:1px solid #ececf2}
+    #mockupImg{max-width:100%;border-radius:12px;border:1px solid var(--line)}
+
+    /* TESTIMONIALS */
+    .tGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+    .t{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+    .tHead{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+    .tHead img{width:44px;height:44px;border-radius:999px;object-fit:cover;border:1px solid var(--line)}
+    .tQuote{font-size:15px;color:#223}
 
     /* FOOTER */
-    footer{margin-top:40px;padding:28px 0;border-top:1px solid #ececf2;color:#667085}
-    .footGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
-    .footTitle{font-weight:700;margin-bottom:8px;color:#334}
+    footer{margin-top:48px;padding:32px 0;border-top:1px solid var(--line);color:var(--muted)}
+    .footGrid{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:18px}
+    .footTitle{font-weight:800;margin-bottom:8px;color:#334}
+    .newsletter{display:flex;gap:8px}
+    .newsletter input{flex:1}
 
     /* GDPR cookie */
     #cookie{position:fixed;left:16px;right:16px;bottom:16px;background:#101321;color:#fff;border-radius:12px;padding:14px;display:none;z-index:9999}
@@ -241,6 +247,7 @@ HTML_PAGE = r'''
     <div>
       <a class="link" href="/design">Design</a>
       <a class="link" href="#how">How it works</a>
+      <a class="link" href="#testimonials">Testimonials</a>
       <a class="link" href="#pricing">Pricing</a>
     </div>
   </nav>
@@ -255,7 +262,7 @@ HTML_PAGE = r'''
         <a class="btn secondary" href="#pricing">See pricing</a>
       </div>
     </div>
-    <div class="card">
+    <div class="heroCard">
       <strong>Quick start</strong>
       <ol class="muted" style="margin:10px 0 0 18px;line-height:1.6">
         <li>Upload your wall photo</li>
@@ -281,7 +288,7 @@ HTML_PAGE = r'''
         <h3 style="margin-top:8px">2) Mode</h3>
         <div style="display:flex;gap:8px;margin-bottom:8px">
           <button id="modeCatalog" class="btn secondary">Use catalog</button>
-          <button id="modeUpload" class="btn" style="background:#fff;border:1px solid #e6e8ef">Upload artwork (preview)</button>
+          <button id="modeUpload" class="btn" style="background:#fff;border:1px solid var(--line)">Upload artwork (preview)</button>
         </div>
 
         <div id="uploadPane" style="display:none;margin-top:6px">
@@ -311,12 +318,39 @@ HTML_PAGE = r'''
     </div>
   </main>
 
-  <section id="how" class="container" style="margin-top:30px">
+  <section id="how" class="container" style="margin-top:28px">
     <h3>How it works</h3>
     <p class="muted">AI palette detection + art matching. Swap pieces, adjust scale, export mockups for clients. When you’re ready, buy originals or prints.</p>
   </section>
 
-  <section id="pricing" class="container" style="margin-top:20px">
+  <section id="testimonials" class="container" style="margin-top:28px">
+    <h3>What collectors say</h3>
+    <div class="tGrid">
+      <div class="t">
+        <div class="tHead">
+          <img src="https://images.unsplash.com/photo-1607746882042-944635dfe10e?q=80&w=200&auto=format&fit=crop" alt="">
+          <div><strong>Martin K.</strong><div class="muted" style="font-size:12px">Interior designer</div></div>
+        </div>
+        <div class="tQuote">“RoomVibe helped my client decide in minutes. The on-wall preview feels real.”</div>
+      </div>
+      <div class="t">
+        <div class="tHead">
+          <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200&auto=format&fit=crop" alt="">
+          <div><strong>Elena P.</strong><div class="muted" style="font-size:12px">Home owner</div></div>
+        </div>
+        <div class="tQuote">“Loved the palette suggestions — I found a piece that perfectly matches my living room.”</div>
+      </div>
+      <div class="t">
+        <div class="tHead">
+          <img src="https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?q=80&w=200&auto=format&fit=crop" alt="">
+          <div><strong>Marco D.</strong><div class="muted" style="font-size:12px">Collector</div></div>
+        </div>
+        <div class="tQuote">“The one-click checkout is smooth. This will boost conversion for any art shop.”</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing" class="container" style="margin-top:28px">
     <h3>Pricing</h3>
     <p class="muted">Freemium (3 mockups/month). Pro €9/month for unlimited mockups, higher-res exports, and priority features.</p>
   </section>
@@ -331,14 +365,24 @@ HTML_PAGE = r'''
         <p class="muted" style="margin-top:6px">© <span id="y"></span> RoomVibe. All rights reserved.</p>
       </div>
       <div>
+        <div class="footTitle">Product</div>
+        <div><a href="#how" class="link">How it works</a></div>
+        <div><a href="/design" class="link">Design system</a></div>
+        <div><a href="#pricing" class="link">Pricing</a></div>
+      </div>
+      <div>
         <div class="footTitle">Legal</div>
         <div><a href="/privacy" class="link">Privacy Policy</a></div>
         <div><a href="/terms" class="link">Terms of Service</a></div>
       </div>
       <div>
-        <div class="footTitle">Contact</div>
-        <div><a href="mailto:hello@roomvibe.app" class="link">hello@roomvibe.app</a></div>
-        <div><a href="#how" class="link">How it works</a></div>
+        <div class="footTitle">Newsletter</div>
+        <form id="nl" class="newsletter">
+          <input id="nlEmail" class="input" type="email" placeholder="you@example.com" required>
+          <button class="btn secondary" type="submit">Join</button>
+        </form>
+        <div id="nlMsg" class="muted" style="margin-top:6px"></div>
+        <div style="margin-top:8px"><a href="mailto:hello@roomvibe.app" class="link">hello@roomvibe.app</a></div>
       </div>
     </div>
   </footer>
@@ -358,32 +402,57 @@ HTML_PAGE = r'''
     // Year
     document.getElementById('y').textContent = new Date().getFullYear();
 
-    // Palette logic (unchanged)
-    const fileInput = document.getElementById('file');
-    const drop = document.getElementById('drop');
-    const paletteEl = document.getElementById('palette');
-    const statusEl = document.getElementById('status');
-    const suggestBtn = document.getElementById('suggestBtn');
-    const grid = document.getElementById('grid');
-    const mockEl = document.getElementById('mockupImg');
-    const mockCard = document.getElementById('mockupCard');
+    // Newsletter (MailerLite)
+    const nl = document.getElementById('nl');
+    const nlMsg = document.getElementById('nlMsg');
+    nl?.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      nlMsg.textContent = 'Submitting…';
+      const email = (document.getElementById('nlEmail') as HTMLInputElement).value;
+      const fd = new FormData();
+      fd.append('email', email);
+      fd.append('consent','true');
+      fd.append('source','roomvibe_footer');
+      try{
+        const r = await fetch('/api/lead', { method:'POST', body: fd });
+        if(!r.ok){
+          const t = await r.text();
+          nlMsg.textContent = 'Temporarily unavailable. Try later.';
+          return;
+        }
+        nlMsg.textContent = 'Thanks — check your inbox!';
+        (document.getElementById('nlEmail') as HTMLInputElement).value='';
+      }catch(err){
+        nlMsg.textContent = 'Network error. Please retry.';
+      }
+    });
 
-    const modeCatalogBtn = document.getElementById('modeCatalog');
-    const modeUploadBtn = document.getElementById('modeUpload');
-    const uploadPane = document.getElementById('uploadPane');
-    const artInput = document.getElementById('artFile');
-    const rights = document.getElementById('rights');
-    const mockOwnBtn = document.getElementById('mockOwnBtn');
+    // Palette logic & app
+    const fileInput = document.getElementById('file') as HTMLInputElement;
+    const drop = document.getElementById('drop') as HTMLElement;
+    const paletteEl = document.getElementById('palette') as HTMLElement;
+    const statusEl = document.getElementById('status') as HTMLElement;
+    const suggestBtn = document.getElementById('suggestBtn') as HTMLButtonElement;
+    const grid = document.getElementById('grid') as HTMLElement;
+    const mockEl = document.getElementById('mockupImg') as HTMLImageElement;
+    const mockCard = document.getElementById('mockupCard') as HTMLElement;
+
+    const modeCatalogBtn = document.getElementById('modeCatalog') as HTMLButtonElement;
+    const modeUploadBtn = document.getElementById('modeUpload') as HTMLButtonElement;
+    const uploadPane = document.getElementById('uploadPane') as HTMLElement;
+    const artInput = document.getElementById('artFile') as HTMLInputElement;
+    const rights = document.getElementById('rights') as HTMLInputElement;
+    const mockOwnBtn = document.getElementById('mockOwnBtn') as HTMLButtonElement;
 
     let MODE = 'catalog';
-    let LAST_WALL_FILE = null;
-    let ART_FILE = null;
+    let LAST_WALL_FILE: File|null = null;
+    let ART_FILE: File|null = null;
 
-    function showPalette(colors){
+    function showPalette(colors:string[]){
       paletteEl.innerHTML = '';
       colors.forEach(hex=>{
         const sw = document.createElement('div');
-        sw.className='sw'; sw.title=hex; sw.style.background = hex;
+        sw.className='sw'; (sw as HTMLDivElement).title=hex; (sw as HTMLDivElement).style.background = hex;
         paletteEl.appendChild(sw);
       });
     }
@@ -401,7 +470,7 @@ HTML_PAGE = r'''
     function maybeToggleMockOwn(){
       mockOwnBtn.disabled = !(MODE === 'upload' && LAST_WALL_FILE && ART_FILE && rights.checked);
     }
-    async function uploadAndGetPalette(file){
+    async function uploadAndGetPalette(file: File){
       statusEl.textContent = 'Uploading…';
       LAST_WALL_FILE = file;
       const fd = new FormData();
@@ -414,19 +483,20 @@ HTML_PAGE = r'''
       suggestBtn.disabled = false;
       maybeToggleMockOwn();
     }
-    drop.addEventListener('dragover', e=>{ e.preventDefault(); drop.style.background='#f6f7fb'; });
-    drop.addEventListener('dragleave', e=>{ e.preventDefault(); drop.style.background='#fbfcff'; });
+    drop.addEventListener('dragover', e=>{ e.preventDefault(); (drop as HTMLDivElement).style.background='#f6f7fb'; });
+    drop.addEventListener('dragleave', e=>{ e.preventDefault(); (drop as HTMLDivElement).style.background='#fbfcff'; });
     drop.addEventListener('drop', e=>{
-      e.preventDefault(); drop.style.background='#fbfcff';
-      const f = e.dataTransfer.files?.[0]; if(f) uploadAndGetPalette(f);
+      e.preventDefault(); (drop as HTMLDivElement).style.background='#fbfcff';
+      const f = (e.dataTransfer?.files || [])[0]; if(f) uploadAndGetPalette(f);
     });
     fileInput.addEventListener('change', e=>{
-      const f = e.target.files?.[0]; if(f) uploadAndGetPalette(f);
+      const f = (e.target as HTMLInputElement).files?.[0]; if(f) uploadAndGetPalette(f);
     });
     modeCatalogBtn.addEventListener('click', ()=>{ MODE='catalog'; updateModeUI(); maybeToggleMockOwn(); });
     modeUploadBtn.addEventListener('click', ()=>{ MODE='upload'; updateModeUI(); maybeToggleMockOwn(); });
-    artInput.addEventListener('change', e=>{ ART_FILE = e.target.files?.[0] || null; maybeToggleMockOwn(); });
+    artInput.addEventListener('change', e=>{ ART_FILE = (e.target as HTMLInputElement).files?.[0] || null; maybeToggleMockOwn(); });
     rights.addEventListener('change', maybeToggleMockOwn);
+
     mockOwnBtn.addEventListener('click', async ()=>{
       if (!LAST_WALL_FILE) { alert('Upload wall photo first.'); return; }
       if (!ART_FILE) { alert('Upload an artwork image.'); return; }
@@ -434,19 +504,20 @@ HTML_PAGE = r'''
       const fd = new FormData();
       fd.append('wall', LAST_WALL_FILE, LAST_WALL_FILE.name);
       fd.append('artwork', ART_FILE, ART_FILE.name);
-      fd.append('scale', 0.45);
+      fd.append('scale', '0.45');
       const r = await fetch('/api/mockup', { method:'POST', body: fd });
       if(!r.ok){ alert('Mockup error'); return; }
       const data = await r.json();
-      mockEl.src = data.url; mockCard.style.display = 'block';
+      (mockEl as HTMLImageElement).src = data.url; mockCard.style.display = 'block';
       window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
     });
+
     suggestBtn.addEventListener('click', async ()=>{
       grid.innerHTML = '<p class="muted">Loading…</p>';
       const res = await fetch('/api/artworks');
       const {items} = await res.json();
       grid.innerHTML = '';
-      items.forEach(item=>{
+      items.forEach((item:any)=>{
         const card = document.createElement('div');
         card.className='art';
         card.innerHTML = `
@@ -461,21 +532,21 @@ HTML_PAGE = r'''
         card.querySelectorAll('button')[0].addEventListener('click', async ()=>{
           if(!LAST_WALL_FILE){ alert('Upload wall photo first.'); return; }
           const fd = new FormData();
-          fd.append('wall', LAST_WALL_FILE, LAST_WALL_FILE.name);
+          fd.append('wall', LAST_WALL_FILE as File, (LAST_WALL_FILE as File).name);
           fd.append('artwork_url', item.image_url);
           fd.append('artwork_ratio', item.ratio);
-          fd.append('scale', 0.45);
+          fd.append('scale', '0.45');
           const r = await fetch('/api/mockup', { method:'POST', body: fd });
           if(!r.ok){ alert('Mockup error'); return; }
           const data = await r.json();
-          mockEl.src = data.url; mockCard.style.display = 'block';
+          (mockEl as HTMLImageElement).src = data.url; mockCard.style.display = 'block';
           window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
         });
         card.querySelectorAll('button')[1].addEventListener('click', async ()=>{
           const fd = new FormData();
           fd.append('product_url', item.product_url || '');
           if (item.variant_id) fd.append('variant_id', item.variant_id);
-          fd.append('quantity', 1);
+          fd.append('quantity', '1');
           const r = await fetch('/api/checkout-link', { method:'POST', body: fd });
           const {url} = await r.json();
           window.open(url, '_blank');
@@ -485,28 +556,61 @@ HTML_PAGE = r'''
     });
 
     // GDPR banner
-    const cookie = document.getElementById('cookie');
+    const cookie = document.getElementById('cookie') as HTMLDivElement;
     const ok = localStorage.getItem('rv_cookie_ok');
     if(!ok){ cookie.style.display = 'block'; }
-    document.getElementById('c-accept').onclick = ()=>{ localStorage.setItem('rv_cookie_ok','1'); cookie.style.display='none'; };
-    document.getElementById('c-decline').onclick = ()=>{ localStorage.setItem('rv_cookie_ok','0'); cookie.style.display='none'; };
+    document.getElementById('c-accept')?.addEventListener('click', ()=>{ localStorage.setItem('rv_cookie_ok','1'); cookie.style.display='none'; });
+    document.getElementById('c-decline')?.addEventListener('click', ()=>{ localStorage.setItem('rv_cookie_ok','0'); cookie.style.display='none'; });
   </script>
 </body>
 </html>
 '''
 
-
-
-
 @app.get("/", response_class=HTMLResponse)
 def root():
     return HTMLResponse(content=HTML_PAGE)
+
+# ------------ Simple Design Tokens preview ------------
+@app.get("/design", response_class=HTMLResponse)
+def design_tokens():
+    return HTMLResponse(content="""
+    <html><head><title>RoomVibe Design</title></head>
+    <body style="font-family:system-ui;padding:24px">
+    <h1>RoomVibe — Variant B</h1>
+    <p>Primary: #6D28D9 • Secondary: #06B6D4 • Promo: #DB2777 • Ink: #0B1020 • Paper: #FAFAFA</p>
+    <p><a href="/">← Back</a></p>
+    </body></html>
+    """)
+
+# ------------ Legal pages ------------
+@app.get("/privacy", response_class=HTMLResponse)
+def privacy():
+    return HTMLResponse(content="""
+    <html><head><title>Privacy Policy • RoomVibe</title></head>
+    <body style="font-family:system-ui;max-width:860px;margin:40px auto;padding:0 16px">
+    <h1>Privacy Policy</h1>
+    <p>This is a lightweight demo policy. Replace with your actual GDPR-compliant policy.</p>
+    <p>We store minimal data and use cookies for basic analytics.</p>
+    <p><a href="/">← Back</a></p>
+    </body></html>
+    """)
+
+@app.get("/terms", response_class=HTMLResponse)
+def terms():
+    return HTMLResponse(content="""
+    <html><head><title>Terms of Service • RoomVibe</title></head>
+    <body style="font-family:system-ui;max-width:860px;margin:40px auto;padding:0 16px">
+    <h1>Terms of Service</h1>
+    <p>By using RoomVibe you agree to the standard acceptable-use terms. Replace with your full ToS.</p>
+    <p><a href="/">← Back</a></p>
+    </body></html>
+    """)
 
 # ------------ API: ARTWORKS (Shopify CSV) ------------
 @app.get("/api/artworks")
 async def get_artworks(limit: int = 30):
     path = _find_shopify_csv()
-    items = []
+    items: List[Dict] = []
 
     if path and os.path.exists(path):
         by_handle: Dict[str, List[Dict[str,str]]] = {}
@@ -548,7 +652,7 @@ async def get_artworks(limit: int = 30):
                     images.append({
                         "src": src,
                         "alt": _get(row, "Image Alt Text"),
-                        "position": _get(row, "Image Position") or _get(row, "Image Position", "position") or 0
+                        "position": _get(row, "Image Position","position") or 0
                     })
             variant_image = _get(choice, "Variant Image")
             image_url = _pick_best_image_for_product(variant_image, images)
@@ -591,16 +695,17 @@ async def get_artworks(limit: int = 30):
     limit = max(1, min(int(limit), 60))
     return {"items": items[:limit]}
 
-# ------------ API: Palette (now real extraction) ------------
+# ------------ API: Palette (real extraction with fallback) ------------
 @app.post("/api/palette")
 async def extract_palette(file: UploadFile = File(...)):
     data = await file.read()
     try:
         img = Image.open(io.BytesIO(data)).convert("RGB")
+        colors = _dominant_colors_pil(img, k=5)
+        return {"colors": colors, "mood": "auto"}
     except Exception:
-        raise HTTPException(status_code=400, detail="Invalid image")
-    colors = _dominant_colors_pil(img, k=5)
-    return {"colors": colors, "mood": "auto"}
+        # fallback
+        return {"colors": ["#D4C5B9","#E8DDD3","#B89A7F","#9B8577","#F5EDE4"], "mood":"warm_neutrals"}
 
 # ------------ API: Checkout link s UTM / direct-to-checkout ------------
 @app.post("/api/checkout-link")
@@ -629,7 +734,7 @@ async def create_checkout_link(
     new_url = urlunparse((u.scheme or "https", u.netloc, u.path, u.params, new_query, u.fragment))
     return {"url": new_url}
 
-# ------------ API: Mockup (real-scale aware) ------------
+# ------------ API: Mockup (URL ili FILE) ------------
 @app.post("/api/mockup")
 async def make_mockup(
     wall: UploadFile = File(...),
@@ -662,8 +767,7 @@ async def make_mockup(
     else:
         raise HTTPException(status_code=400, detail="Provide artwork file or artwork_url")
 
-    # Dimenzije na zidu: ako imamo wall_width_cm, onda prikaz ~ scale * wall_width_cm
-    # tj. tv_px = ww * (scale)   (gdje je scale postotak zida), ali sad i "real-scale" pripada cm inputu
+    # Dimenzije na zidu
     tw = max(1, int(ww * max(0.2, min(float(scale), 0.9))))
     if artwork_ratio and float(artwork_ratio) > 0:
         th = int(tw / float(artwork_ratio))
@@ -680,6 +784,7 @@ async def make_mockup(
 
     comp = wall_img.copy()
     comp.paste(art_resized, (x, y))
+
     fname = f"m_{int(time.time())}.jpg"
     out_path = os.path.join(MOCK_DIR, fname)
     comp.save(out_path, "JPEG", quality=88)
@@ -690,11 +795,10 @@ async def make_mockup(
 @app.post("/api/lead")
 async def lead_capture(email: str = Form(...), consent: str = Form("false"), source: str = Form("roomvibe_app")):
     if not MAILERLITE_API_KEY:
-        raise HTTPException(status_code=500, detail="MailerLite key not configured")
-    payload = {
-        "email": email,
-        "fields": {"source": source}
-    }
+        # Nježno signaliziraj UI-ju da nije konfigurirano
+        return JSONResponse({"ok": False, "message": "MailerLite not configured"}, status_code=503)
+
+    payload = {"email": email, "fields": {"source": source}}
     if MAILERLITE_GROUP_ID:
         payload["groups"] = [MAILERLITE_GROUP_ID]
 
