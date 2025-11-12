@@ -96,6 +96,57 @@ def _get(row, *names):
             return v
     return ""
 
+# --- Image picking heuristics (prefer "artwork-only", avoid mockups) ---
+POS_HINTS = (
+    "[raw]", "raw", "artwork-only", "artwork only", "product", "packshot",
+    "flat", "scan", "unframed", "no frame", "no-frame", "no mockup",
+    "print only", "canvas only"
+)
+NEG_HINTS = (
+    "mock", "mockup", "interior", "room", "wall", "living", "bedroom",
+    "kitchen", "sofa", "couch", "styled", "scene", "frame", "framed",
+    "gallery wall", "home", "office"
+)
+
+def _norm(s: str) -> str:
+    return (s or "").lower()
+
+def _score_image_choice(src: str, alt: str, position: int) -> float:
+    from urllib.parse import urlparse
+    import os as _os
+    text = f"{_norm(alt)} {_norm(_os.path.basename(urlparse(src).path))}"
+    score = 0.0
+    if any(p in text for p in POS_HINTS): score += 10
+    if any(n in text for n in NEG_HINTS): score -= 8
+    # prefer earlier positions (1 najbolji)
+    try:
+        p = int(position) if position not in (None, "") else 0
+    except:
+        p = 0
+    if p > 0:
+        score += max(0, 5 - min(p, 5))
+    return score
+
+def _pick_best_image_for_product(handle: str, variant_image: str, images: list[dict]) -> str:
+    candidates = []
+    seen = set()
+    for img in images or []:
+        src = img.get("src") or ""
+        if not src or src in seen:
+            continue
+        seen.add(src)
+        alt = img.get("alt") or ""
+        position = img.get("position") or 0
+        candidates.append((_score_image_choice(src, alt, position), src))
+    if variant_image:
+        # blagi bonus varijantnoj slici (često je artwork-only)
+        candidates.append((_score_image_choice(variant_image, "variant", 0) + 1.5, variant_image))
+    if not candidates:
+        return variant_image or ""
+    candidates.sort(key=lambda x: x[0], reverse=True)
+    return candidates[0][1]
+
+
 # ------------ Health ------------
 @app.get("/api/health")
 async def health():
