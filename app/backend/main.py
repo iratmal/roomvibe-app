@@ -155,7 +155,7 @@ async def health():
     return {"status": "ok"}
 
 # ------ UI (HTML) ------
-HHTML_PAGE = r'''
+HTML_PAGE = r'''
 <!doctype html>
 <html lang="en">
 <head>
@@ -655,6 +655,7 @@ HHTML_PAGE = r'''
 </body>
 </html>
 '''
+
 
 
 
