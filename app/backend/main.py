@@ -34,7 +34,7 @@ MOCK_DIR = os.path.join(STATIC_ROOT, "mockups")
 os.makedirs(MOCK_DIR, exist_ok=True)
 app.mount("/static", StaticFiles(directory=STATIC_ROOT), name="static")
 
-# Regex za dimenzije (npr. "150x100 cm" ili "150 x 100")
+# Regex za dimenzije
 DIMENSION_RE = re.compile(r'(\d+(?:[.,]\d+)?)\s*[x×]\s*(\d+(?:[.,]\d+)?)(?:\s*cm)?', re.I)
 
 # ------------ Helpers ------------
@@ -60,7 +60,6 @@ def _clean_title(s: str) -> str:
     return (s or "").strip().strip('"').strip("'")
 
 def _get(row: Dict[str,str], *names) -> str:
-    """Tolerantno čitanje headera (case-insensitive)"""
     for name in names:
         if name in row and row[name] not in (None, ""):
             return row[name]
@@ -80,7 +79,7 @@ def _find_shopify_csv():
     cands.sort(key=lambda p: ("shopify" not in p.lower(), "product" not in p.lower(), len(p)))
     return cands[0] if cands else None
 
-# --- Image picking heuristics (prefer "artwork-only", avoid mockups) ---
+# --- Image picking heuristics (prefer “artwork-only”) ---
 POS_HINTS = (
     "[raw]","raw","artwork-only","artwork only","product","packshot","flat","scan",
     "unframed","no frame","no-frame","no mockup","print only","canvas only"
@@ -104,7 +103,7 @@ def _score_image_choice(src: str, alt: str, position: int) -> float:
         p = int(position) if position not in (None, "") else 0
     except:
         p = 0
-    if p > 0: score += max(0, 5 - min(p, 5))   # ranije pozicije blago bolje
+    if p > 0: score += max(0, 5 - min(p, 5))
     return score
 
 def _pick_best_image_for_product(variant_image: str, images: List[Dict]) -> str:
@@ -133,7 +132,6 @@ def _dominant_colors_pil(img: Image.Image, k: int = 5) -> List[str]:
     counts = pal.getcolors()
     if not counts:
         return ["#CCCCCC"]
-    # sort by frequency
     idx_sorted = sorted(range(len(counts)), key=lambda i: counts[i][0], reverse=True)
     hexes = []
     for i in idx_sorted:
@@ -159,7 +157,7 @@ HTML_PAGE = r'''
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>RoomVibe • Art that fits your room</title>
 
-  <!-- Favicons (upload files to /static/brand/variantB/) -->
+  <!-- Favicons (optional) -->
   <link rel="icon" type="image/png" sizes="32x32" href="/static/brand/variantB/favicon-32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/static/brand/variantB/favicon-16.png">
   <link rel="apple-touch-icon" href="/static/brand/variantB/apple-touch-icon.png">
@@ -236,6 +234,11 @@ HTML_PAGE = r'''
     #cookie .row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
     #cookie button{background:var(--teal);color:#0B1020;border:none;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
     #cookie a{color:#bfefff}
+
+    @media (max-width: 900px){
+      .hero{grid-template-columns:1fr}
+      .grid2{grid-template-columns:1fr}
+    }
   </style>
 </head>
 <body>
@@ -402,60 +405,36 @@ HTML_PAGE = r'''
     // Year
     document.getElementById('y').textContent = new Date().getFullYear();
 
-    // Newsletter (MailerLite)
-    const nl = document.getElementById('nl');
-    const nlMsg = document.getElementById('nlMsg');
-    nl?.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      nlMsg.textContent = 'Submitting…';
-      const email = (document.getElementById('nlEmail') as HTMLInputElement).value;
-      const fd = new FormData();
-      fd.append('email', email);
-      fd.append('consent','true');
-      fd.append('source','roomvibe_footer');
-      try{
-        const r = await fetch('/api/lead', { method:'POST', body: fd });
-        if(!r.ok){
-          const t = await r.text();
-          nlMsg.textContent = 'Temporarily unavailable. Try later.';
-          return;
-        }
-        nlMsg.textContent = 'Thanks — check your inbox!';
-        (document.getElementById('nlEmail') as HTMLInputElement).value='';
-      }catch(err){
-        nlMsg.textContent = 'Network error. Please retry.';
-      }
-    });
+    // Elements
+    const fileInput = document.getElementById('file');
+    const drop = document.getElementById('drop');
+    const paletteEl = document.getElementById('palette');
+    const statusEl = document.getElementById('status');
+    const suggestBtn = document.getElementById('suggestBtn');
+    const grid = document.getElementById('grid');
+    const mockEl = document.getElementById('mockupImg');
+    const mockCard = document.getElementById('mockupCard');
 
-    // Palette logic & app
-    const fileInput = document.getElementById('file') as HTMLInputElement;
-    const drop = document.getElementById('drop') as HTMLElement;
-    const paletteEl = document.getElementById('palette') as HTMLElement;
-    const statusEl = document.getElementById('status') as HTMLElement;
-    const suggestBtn = document.getElementById('suggestBtn') as HTMLButtonElement;
-    const grid = document.getElementById('grid') as HTMLElement;
-    const mockEl = document.getElementById('mockupImg') as HTMLImageElement;
-    const mockCard = document.getElementById('mockupCard') as HTMLElement;
-
-    const modeCatalogBtn = document.getElementById('modeCatalog') as HTMLButtonElement;
-    const modeUploadBtn = document.getElementById('modeUpload') as HTMLButtonElement;
-    const uploadPane = document.getElementById('uploadPane') as HTMLElement;
-    const artInput = document.getElementById('artFile') as HTMLInputElement;
-    const rights = document.getElementById('rights') as HTMLInputElement;
-    const mockOwnBtn = document.getElementById('mockOwnBtn') as HTMLButtonElement;
+    const modeCatalogBtn = document.getElementById('modeCatalog');
+    const modeUploadBtn = document.getElementById('modeUpload');
+    const uploadPane = document.getElementById('uploadPane');
+    const artInput = document.getElementById('artFile');
+    const rights = document.getElementById('rights');
+    const mockOwnBtn = document.getElementById('mockOwnBtn');
 
     let MODE = 'catalog';
-    let LAST_WALL_FILE: File|null = null;
-    let ART_FILE: File|null = null;
+    let LAST_WALL_FILE = null;
+    let ART_FILE = null;
 
-    function showPalette(colors:string[]){
+    function showPalette(colors){
       paletteEl.innerHTML = '';
       colors.forEach(hex=>{
         const sw = document.createElement('div');
-        sw.className='sw'; (sw as HTMLDivElement).title=hex; (sw as HTMLDivElement).style.background = hex;
+        sw.className='sw'; sw.title=hex; sw.style.background = hex;
         paletteEl.appendChild(sw);
       });
     }
+
     function updateModeUI(){
       if (MODE === 'catalog') {
         uploadPane.style.display = 'none';
@@ -467,10 +446,12 @@ HTML_PAGE = r'''
         modeUploadBtn.classList.add('secondary');
       }
     }
+
     function maybeToggleMockOwn(){
       mockOwnBtn.disabled = !(MODE === 'upload' && LAST_WALL_FILE && ART_FILE && rights.checked);
     }
-    async function uploadAndGetPalette(file: File){
+
+    async function uploadAndGetPalette(file){
       statusEl.textContent = 'Uploading…';
       LAST_WALL_FILE = file;
       const fd = new FormData();
@@ -483,18 +464,29 @@ HTML_PAGE = r'''
       suggestBtn.disabled = false;
       maybeToggleMockOwn();
     }
-    drop.addEventListener('dragover', e=>{ e.preventDefault(); (drop as HTMLDivElement).style.background='#f6f7fb'; });
-    drop.addEventListener('dragleave', e=>{ e.preventDefault(); (drop as HTMLDivElement).style.background='#fbfcff'; });
+
+    // D&D
+    drop.addEventListener('dragover', e=>{ e.preventDefault(); drop.style.background='#f6f7fb'; });
+    drop.addEventListener('dragleave', e=>{ e.preventDefault(); drop.style.background='#fbfcff'; });
     drop.addEventListener('drop', e=>{
-      e.preventDefault(); (drop as HTMLDivElement).style.background='#fbfcff';
-      const f = (e.dataTransfer?.files || [])[0]; if(f) uploadAndGetPalette(f);
+      e.preventDefault(); drop.style.background='#fbfcff';
+      const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if(f) uploadAndGetPalette(f);
     });
     fileInput.addEventListener('change', e=>{
-      const f = (e.target as HTMLInputElement).files?.[0]; if(f) uploadAndGetPalette(f);
+      const f = e.target.files && e.target.files[0];
+      if(f) uploadAndGetPalette(f);
     });
+
+    // Mode
     modeCatalogBtn.addEventListener('click', ()=>{ MODE='catalog'; updateModeUI(); maybeToggleMockOwn(); });
     modeUploadBtn.addEventListener('click', ()=>{ MODE='upload'; updateModeUI(); maybeToggleMockOwn(); });
-    artInput.addEventListener('change', e=>{ ART_FILE = (e.target as HTMLInputElement).files?.[0] || null; maybeToggleMockOwn(); });
+
+    // Upload artwork (preview)
+    artInput.addEventListener('change', e=>{
+      ART_FILE = e.target.files && e.target.files[0] || null; 
+      maybeToggleMockOwn();
+    });
     rights.addEventListener('change', maybeToggleMockOwn);
 
     mockOwnBtn.addEventListener('click', async ()=>{
@@ -508,16 +500,17 @@ HTML_PAGE = r'''
       const r = await fetch('/api/mockup', { method:'POST', body: fd });
       if(!r.ok){ alert('Mockup error'); return; }
       const data = await r.json();
-      (mockEl as HTMLImageElement).src = data.url; mockCard.style.display = 'block';
+      mockEl.src = data.url; mockCard.style.display = 'block';
       window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
     });
 
-    suggestBtn.addEventListener('click', async ()=>{
+    async function loadSuggestions(){
       grid.innerHTML = '<p class="muted">Loading…</p>';
       const res = await fetch('/api/artworks');
-      const {items} = await res.json();
+      const json = await res.json();
+      const items = json.items || [];
       grid.innerHTML = '';
-      items.forEach((item:any)=>{
+      items.forEach(item=>{
         const card = document.createElement('div');
         card.className='art';
         card.innerHTML = `
@@ -529,38 +522,45 @@ HTML_PAGE = r'''
             <button class="btn secondary">Buy now</button>
           </div>
         `;
+        // Show on wall
         card.querySelectorAll('button')[0].addEventListener('click', async ()=>{
           if(!LAST_WALL_FILE){ alert('Upload wall photo first.'); return; }
           const fd = new FormData();
-          fd.append('wall', LAST_WALL_FILE as File, (LAST_WALL_FILE as File).name);
+          fd.append('wall', LAST_WALL_FILE, LAST_WALL_FILE.name);
           fd.append('artwork_url', item.image_url);
           fd.append('artwork_ratio', item.ratio);
           fd.append('scale', '0.45');
           const r = await fetch('/api/mockup', { method:'POST', body: fd });
           if(!r.ok){ alert('Mockup error'); return; }
           const data = await r.json();
-          (mockEl as HTMLImageElement).src = data.url; mockCard.style.display = 'block';
+          mockEl.src = data.url; mockCard.style.display = 'block';
           window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
         });
+        // Buy now
         card.querySelectorAll('button')[1].addEventListener('click', async ()=>{
           const fd = new FormData();
           fd.append('product_url', item.product_url || '');
           if (item.variant_id) fd.append('variant_id', item.variant_id);
           fd.append('quantity', '1');
           const r = await fetch('/api/checkout-link', { method:'POST', body: fd });
-          const {url} = await r.json();
-          window.open(url, '_blank');
+          const out = await r.json();
+          window.open(out.url, '_blank');
         });
         grid.appendChild(card);
       });
-    });
+    }
+
+    suggestBtn.addEventListener('click', loadSuggestions);
+
+    // Auto: učitaj prijedloge odmah (prazna stranica izgleda “pokvareno”)
+    document.addEventListener('DOMContentLoaded', loadSuggestions);
 
     // GDPR banner
-    const cookie = document.getElementById('cookie') as HTMLDivElement;
+    const cookie = document.getElementById('cookie');
     const ok = localStorage.getItem('rv_cookie_ok');
     if(!ok){ cookie.style.display = 'block'; }
-    document.getElementById('c-accept')?.addEventListener('click', ()=>{ localStorage.setItem('rv_cookie_ok','1'); cookie.style.display='none'; });
-    document.getElementById('c-decline')?.addEventListener('click', ()=>{ localStorage.setItem('rv_cookie_ok','0'); cookie.style.display='none'; });
+    document.getElementById('c-accept').addEventListener('click', ()=>{ localStorage.setItem('rv_cookie_ok','1'); cookie.style.display='none'; });
+    document.getElementById('c-decline').addEventListener('click', ()=>{ localStorage.setItem('rv_cookie_ok','0'); cookie.style.display='none'; });
   </script>
 </body>
 </html>
@@ -622,7 +622,6 @@ async def get_artworks(limit: int = 30):
                 by_handle.setdefault(handle, []).append(row)
 
         for handle, rows in by_handle.items():
-            # 1) izaberi varijantu (prior: ima dimenzije u nazivu → ima cijenu → prva)
             choice = None
             for row in rows:
                 vt = _get(row, "Variant Title", "variant_title")
@@ -644,7 +643,6 @@ async def get_artworks(limit: int = 30):
             )
             price = _to_float(_get(choice, "Variant Price", "Price"))
 
-            # 2) skupi sve product-level slike (iz svih redova istog handle-a)
             images = []
             for row in rows:
                 src = _get(row, "Image Src","Image URL")
@@ -679,7 +677,6 @@ async def get_artworks(limit: int = 30):
                 "variant_id": variant_id
             })
     else:
-        # Fallback
         items = [
             {"id":"a1","title":"Good Vibes #12","ratio":1.43,"price_eur":950.0,
              "product_url":"https://irenart.studio/products/gv-12",
@@ -695,7 +692,7 @@ async def get_artworks(limit: int = 30):
     limit = max(1, min(int(limit), 60))
     return {"items": items[:limit]}
 
-# ------------ API: Palette (real extraction with fallback) ------------
+# ------------ API: Palette ------------
 @app.post("/api/palette")
 async def extract_palette(file: UploadFile = File(...)):
     data = await file.read()
@@ -704,10 +701,9 @@ async def extract_palette(file: UploadFile = File(...)):
         colors = _dominant_colors_pil(img, k=5)
         return {"colors": colors, "mood": "auto"}
     except Exception:
-        # fallback
         return {"colors": ["#D4C5B9","#E8DDD3","#B89A7F","#9B8577","#F5EDE4"], "mood":"warm_neutrals"}
 
-# ------------ API: Checkout link s UTM / direct-to-checkout ------------
+# ------------ API: Checkout link ------------
 @app.post("/api/checkout-link")
 async def create_checkout_link(
     product_url: str = Form(""),
@@ -734,17 +730,16 @@ async def create_checkout_link(
     new_url = urlunparse((u.scheme or "https", u.netloc, u.path, u.params, new_query, u.fragment))
     return {"url": new_url}
 
-# ------------ API: Mockup (URL ili FILE) ------------
+# ------------ API: Mockup ------------
 @app.post("/api/mockup")
 async def make_mockup(
     wall: UploadFile = File(...),
     artwork_url: str = Form(""),
     artwork: UploadFile = File(None),
     artwork_ratio: float | None = Form(None),
-    scale: float = Form(0.45),             # 0.2–0.9 širine zida
-    wall_width_cm: float | None = Form(None),  # opcionalno
+    scale: float = Form(0.45),
+    wall_width_cm: float | None = Form(None),
 ):
-    # Zid
     wall_bytes = await wall.read()
     try:
         wall_img = Image.open(io.BytesIO(wall_bytes)).convert("RGB")
@@ -752,7 +747,6 @@ async def make_mockup(
         raise HTTPException(status_code=400, detail="Invalid wall image")
     ww, wh = wall_img.size
 
-    # Artwork (file > url)
     if artwork is not None:
         art_bytes = await artwork.read()
         try: art_img = Image.open(io.BytesIO(art_bytes)).convert("RGB")
@@ -767,7 +761,6 @@ async def make_mockup(
     else:
         raise HTTPException(status_code=400, detail="Provide artwork file or artwork_url")
 
-    # Dimenzije na zidu
     tw = max(1, int(ww * max(0.2, min(float(scale), 0.9))))
     if artwork_ratio and float(artwork_ratio) > 0:
         th = int(tw / float(artwork_ratio))
@@ -777,7 +770,6 @@ async def make_mockup(
         th = int(tw / aspect)
 
     art_resized = art_img.resize((tw, th))
-    # Pozicija (gornja sredina)
     x = (ww - tw) // 2
     y = int(wh * 0.35)
     y = max(0, min(y, wh - th))
@@ -795,7 +787,6 @@ async def make_mockup(
 @app.post("/api/lead")
 async def lead_capture(email: str = Form(...), consent: str = Form("false"), source: str = Form("roomvibe_app")):
     if not MAILERLITE_API_KEY:
-        # Nježno signaliziraj UI-ju da nije konfigurirano
         return JSONResponse({"ok": False, "message": "MailerLite not configured"}, status_code=503)
 
     payload = {"email": email, "fields": {"source": source}}
