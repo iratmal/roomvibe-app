@@ -21,6 +21,13 @@ RoomVibe is an embeddable React widget that lets users try artworks in room pres
   - Built 3 conversion-tested themes (Azure, Royal, Sunset)
   - Added modern Pricing component (3 tiers)
   - Implemented analytics events system
+  - Fixed critical issues:
+    - Collection filtering (filters artworks by tag)
+    - oneClickBuy prop (hides/shows Buy button)
+    - Checkout validation (prevents opening undefined URLs)
+    - Event architecture (emitEvent helper prevents double timestamps)
+    - Asset hosting (UMD build copies public/ folder to dist-widget/)
+    - rv_view event (fires only once on mount)
 
 ## Project Architecture
 
