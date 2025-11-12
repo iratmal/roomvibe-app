@@ -158,78 +158,193 @@ HTML_PAGE = r'''
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>RoomVibe</title>
+  <title>RoomVibe — Match art to your space</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+
   <style>
-    :root { --pad: 14px; --radius: 14px; }
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;max-width:980px;margin:40px auto;padding:0 16px}
-    .row{display:flex;gap:16px;flex-wrap:wrap}
-    .card{border:1px solid #eee;border-radius:var(--radius);padding:var(--pad)}
-    .btn{background:black;color:#fff;padding:10px 16px;border-radius:12px;border:none;cursor:pointer}
-    .btn.secondary{background:#f2f2f2;color:#111;border:1px solid #ddd}
-    .btn:disabled{opacity:.5;cursor:not-allowed}
-    #drop{border:2px dashed #bbb;border-radius:var(--radius);padding:30px;text-align:center}
-    .palette{display:flex;gap:8px;margin-top:10px}
-    .sw{width:38px;height:38px;border-radius:8px;border:1px solid #ddd}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
-    .art{border:1px solid #eee;border-radius:12px;padding:10px}
-    .art img{width:100%;height:150px;object-fit:cover;border-radius:8px}
-    .muted{color:#666}
-    .input{padding:10px;border:1px solid #ddd;border-radius:10px}
+    :root{
+      --bg:#0b0c10;
+      --panel:#121319cc; /* glass */
+      --muted:#98a2b3;
+      --ring:#c8a34a;   /* zlatna */
+      --accent:#e9d9a1;
+      --text:#eef2f6;
+      --pad:16px;
+      --radius:16px;
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --shadow-sm:0 4px 18px rgba(0,0,0,.25);
+      --border:1px solid rgba(255,255,255,.08);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #1d2030 0%, transparent 60%),
+        radial-gradient(1200px 600px at 120% 10%, #2b2130 0%, transparent 60%),
+        linear-gradient(180deg,#0b0c10, #0d0f14 60%, #0b0c10);
+      min-height:100%;
+    }
+    a{color:var(--accent);text-decoration:none}
+    .wrap{max-width:1100px;margin:0 auto;padding:28px 18px 40px}
+    header{
+      display:flex;align-items:center;justify-content:space-between;gap:14px;
+      padding:14px 0 6px;
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{
+      width:40px;height:40px;border-radius:12px;
+      background: radial-gradient(120% 120% at 20% 10%, #f7e9bd, #c8a34a 60%, #6e551f 100%);
+      box-shadow:var(--shadow-sm);
+      border:var(--border);
+    }
+    .brand h1{
+      font-family:"Playfair Display", serif;
+      font-size:26px;letter-spacing:.4px;margin:0;line-height:1;
+    }
+    .tag{color:var(--muted);font-size:13px;margin-top:2px}
+    .cta{
+      display:flex;gap:10px;align-items:center;flex-wrap:wrap;
+    }
+    .btn{
+      background:linear-gradient(180deg,#f7e9bd,#c8a34a 70%, #a1852f);
+      color:#1a1a1a;border:none;border-radius:12px;padding:10px 16px;font-weight:700;cursor:pointer;
+      box-shadow:var(--shadow-sm);
+    }
+    .btn.secondary{
+      background:transparent;border:var(--border);color:var(--text)
+    }
+    .hero{
+      margin-top:18px;
+      padding:22px;
+      border-radius:22px;
+      border:var(--border);
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      box-shadow:var(--shadow);
+    }
+    .hero h2{margin:0 0 6px;font-size:28px}
+    .hero p{margin:0;color:var(--muted)}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+    @media (max-width:900px){ .grid2{grid-template-columns:1fr} }
+
+    .card{
+      border:var(--border);border-radius:18px;padding:var(--pad);
+      background:var(--panel);backdrop-filter: blur(10px);
+      box-shadow:var(--shadow-sm);
+    }
+    .card h3{margin:0 0 10px}
+    .muted{color:var(--muted)}
+    .input{
+      width:100%;padding:12px;border-radius:12px;border:var(--border);background:#0f1116;color:var(--text)
+    }
+    .drop{
+      border:2px dashed rgba(255,255,255,.12);
+      border-radius:14px;padding:26px;text-align:center
+    }
+    .palette{display:flex;gap:8px;margin-top:12px}
+    .sw{width:42px;height:42px;border-radius:9px;border:1px solid rgba(255,255,255,.15)}
+    .modes{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+    .art{
+      border:var(--border);border-radius:14px;padding:10px;background:#0e1117;box-shadow:var(--shadow-sm);
+      transition:transform .18s ease, box-shadow .18s ease;
+    }
+    .art:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,.35)}
+    .art img{width:100%;height:170px;object-fit:cover;border-radius:10px}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .price{color:#e7e3d7;font-weight:700}
+    .footer{
+      margin-top:28px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap
+    }
     #mockupCard{display:none}
-    #mockupImg{max-width:100%;border-radius:12px;border:1px solid #eee}
-    .modes{display:flex;gap:8px;margin-top:10px}
-    .row-slim{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    label.cb{display:flex;gap:8px;align-items:center}
+    #mockupImg{max-width:100%;border-radius:14px;border:var(--border);box-shadow:var(--shadow)}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      background:rgba(255,255,255,.06);
+      border:var(--border);
+      color:var(--accent);
+      padding:6px 10px;border-radius:999px;font-size:12px
+    }
   </style>
 </head>
 <body>
-  <h1>RoomVibe</h1>
-  <p class="muted">Upload your wall → AI palette → <b>Use catalog</b> or <b>Upload artwork (preview)</b> → mockup → Buy (catalog only).</p>
-
-  <div class="row">
-    <div class="card" style="flex:1 1 420px">
-      <h3>1) Upload wall photo</h3>
-      <div id="drop">Drag & drop image here or <input type="file" id="file" accept="image/*"></div>
-      <div style="margin-top:10px">
-        <label>Wall width (cm): </label>
-        <input id="wallWidth" class="input" type="number" min="50" max="1000" placeholder="e.g. 300">
-      </div>
-      <div id="palette" class="palette"></div>
-      <p id="status" class="muted"></p>
-
-      <h3 style="margin-top:8px">2) Mode</h3>
-      <div class="modes">
-        <button id="modeCatalog" class="btn">Use catalog</button>
-        <button id="modeUpload" class="btn secondary">Upload artwork (preview)</button>
-      </div>
-
-      <div id="uploadPane" style="display:none;margin-top:10px">
-        <div class="row-slim">
-          <input type="file" id="artFile" accept="image/*">
-          <button id="mockOwnBtn" class="btn" disabled>Show on wall</button>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>RoomVibe</h1>
+          <div class="tag">Match art to your space — instantly.</div>
         </div>
-        <label class="cb" style="margin-top:8px">
-          <input type="checkbox" id="rights">
-          <span class="muted">I confirm I can use this image for visualization purposes.</span>
-        </label>
-        <p class="muted" style="margin-top:6px">Note: No buying for uploaded artwork. “Buy now” applies only to catalog items.</p>
+      </div>
+      <div class="cta">
+        <a class="pill" href="/api/health" target="_blank">Health · ok</a>
+        <button id="suggestBtn" class="btn" disabled>Get suggestions</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <h2>Upload your wall, see the vibe.</h2>
+      <p>AI palette → curated suggestions → 1-click buy for catalog items. Or preview your own artwork (no purchase).</p>
+    </section>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>1) Upload wall photo</h3>
+        <div id="drop" class="drop">Drag & drop image here or <input type="file" id="file" accept="image/*"></div>
+
+        <div style="margin-top:12px">
+          <label>Wall width (cm):</label>
+          <input id="wallWidth" class="input" type="number" min="50" max="1000" placeholder="e.g. 300">
+        </div>
+
+        <div id="palette" class="palette"></div>
+        <p id="status" class="muted"></p>
+
+        <h3 style="margin-top:8px">2) Mode</h3>
+        <div class="modes">
+          <button id="modeCatalog" class="btn">Use catalog</button>
+          <button id="modeUpload" class="btn secondary">Upload artwork (preview)</button>
+        </div>
+
+        <div id="uploadPane" style="display:none;margin-top:10px">
+          <div class="row">
+            <input type="file" id="artFile" accept="image/*" class="input" style="max-width:320px">
+            <button id="mockOwnBtn" class="btn" disabled>Show on wall</button>
+          </div>
+          <label style="display:flex;gap:8px;align-items:center;margin-top:8px">
+            <input type="checkbox" id="rights">
+            <span class="muted">I confirm I can use this image for visualization purposes.</span>
+          </label>
+          <p class="muted" style="margin-top:6px">Note: “Buy now” is available for catalog items only.</p>
+        </div>
       </div>
 
-      <button id="suggestBtn" class="btn" style="margin-top:10px" disabled>3) Get suggestions (catalog)</button>
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <h3>Suggestions</h3>
+          <span class="muted" style="font-size:13px">Powered by IrenArt Studio</span>
+        </div>
+        <div id="grid" class="grid"></div>
+      </div>
     </div>
 
-    <div class="card" style="flex:1 1 420px">
-      <h3>Suggestions</h3>
-      <div id="grid" class="grid"></div>
+    <div class="card" id="mockupCard" style="margin-top:16px">
+      <h3>Mockup preview</h3>
+      <img id="mockupImg" alt="Mockup preview"/>
+    </div>
+
+    <div class="footer">
+      <div>© RoomVibe · A project by IrenArt Studio</div>
+      <div><span class="muted">Tip:</span> mark “artwork-only” images in Shopify with <code>[RAW]</code> ALT text for best results.</div>
     </div>
   </div>
-
-  <div class="card" id="mockupCard" style="margin-top:16px">
-    <h3>Mockup preview</h3>
-    <img id="mockupImg" alt="Mockup preview"/>
-  </div>
-
-  <p style="margin-top:24px"><a class="btn" href="/api/health" target="_blank">Health check</a></p>
 
   <script>
     let MODE = 'catalog';
@@ -262,7 +377,6 @@ HTML_PAGE = r'''
         paletteEl.appendChild(sw);
       });
     }
-
     function updateModeUI(){
       if (MODE === 'catalog') {
         uploadPane.style.display = 'none';
@@ -274,7 +388,6 @@ HTML_PAGE = r'''
         modeUploadBtn.classList.remove('secondary');
       }
     }
-
     async function uploadAndGetPalette(file){
       statusEl.textContent = 'Uploading…';
       LAST_WALL_FILE = file;
@@ -288,12 +401,10 @@ HTML_PAGE = r'''
       suggestBtn.disabled = false;
       maybeToggleMockOwn();
     }
-
     function maybeToggleMockOwn(){
       mockOwnBtn.disabled = !(MODE === 'upload' && LAST_WALL_FILE && ART_FILE && rights.checked);
     }
-
-    drop.addEventListener('dragover', e=>{ e.preventDefault(); drop.style.background='#fafafa'; });
+    drop.addEventListener('dragover', e=>{ e.preventDefault(); drop.style.background='rgba(255,255,255,.04)'; });
     drop.addEventListener('dragleave', e=>{ e.preventDefault(); drop.style.background=''; });
     drop.addEventListener('drop', e=>{
       e.preventDefault(); drop.style.background='';
@@ -302,15 +413,12 @@ HTML_PAGE = r'''
     fileInput.addEventListener('change', e=>{
       const f = e.target.files?.[0]; if(f) uploadAndGetPalette(f);
     });
-
     modeCatalogBtn.addEventListener('click', ()=>{ MODE='catalog'; updateModeUI(); maybeToggleMockOwn(); });
     modeUploadBtn.addEventListener('click', ()=>{ MODE='upload'; updateModeUI(); maybeToggleMockOwn(); });
-
     artInput.addEventListener('change', e=>{
       ART_FILE = e.target.files?.[0] || null;
       maybeToggleMockOwn();
     });
-
     rights.addEventListener('change', maybeToggleMockOwn);
 
     mockOwnBtn.addEventListener('click', async ()=>{
@@ -339,14 +447,15 @@ HTML_PAGE = r'''
         card.className='art';
         card.innerHTML = `
           <img src="${item.image_url}" alt="">
-          <h4>${item.title}</h4>
-          <p class="muted">€${item.price_eur}</p>
-          <div style="display:flex; gap:8px; margin-top:8px;">
-            <button class="btn btn-mock">Show on wall</button>
-            <button class="btn btn-buy">Buy now</button>
+          <h4 style="margin:8px 0 6px">${item.title}</h4>
+          <div class="row" style="justify-content:space-between">
+            <span class="price">€${item.price_eur}</span>
+            <div class="row" style="gap:8px">
+              <button class="btn btn-mock" style="padding:8px 12px">Show on wall</button>
+              <button class="btn btn-buy" style="padding:8px 12px">Buy now</button>
+            </div>
           </div>
         `;
-        // BUY NOW (direct-to-checkout ako imamo variant_id)
         card.querySelector('.btn-buy').addEventListener('click', async ()=>{
           const fd = new FormData();
           fd.append('product_url', item.product_url || '');
@@ -356,7 +465,6 @@ HTML_PAGE = r'''
           const {url} = await r.json();
           window.open(url, '_blank');
         });
-        // MOCKUP iz kataloga (URL + ratio)
         card.querySelector('.btn-mock').addEventListener('click', async ()=>{
           if(!LAST_WALL_FILE){ alert('Upload wall photo first.'); return; }
           const fd = new FormData();
