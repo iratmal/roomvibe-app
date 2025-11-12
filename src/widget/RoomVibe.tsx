@@ -1,0 +1,336 @@
+import React, { useState, useEffect } from 'react';
+import { RoomVibeProps, RoomPreset, Artwork, FrameOption, Theme } from '../types';
+import { trackEvent } from '../lib/analytics';
+import { generateCheckoutLink } from '../lib/checkout';
+import { generateShareLink, parseShareLink } from '../lib/shareLink';
+import { submitEmailLead } from '../lib/mailerlite';
+import RoomViewer from './RoomViewer';
+import ArtworkSelector from './ArtworkSelector';
+import Controls from './Controls';
+import Pricing from './Pricing';
+
+const RoomVibe: React.FC<RoomVibeProps> = ({
+  mode = 'showcase',
+  collection = 'all',
+  theme = 'azure',
+  oneClickBuy = false,
+  checkoutType,
+  checkoutLinkTemplate,
+  onEvent
+}) => {
+  const [currentTheme, setCurrentTheme] = useState<Theme>(theme);
+  const [currentMode, setCurrentMode] = useState(mode);
+  const [room, setRoom] = useState<RoomPreset>('living');
+  const [artworks, setArtworks] = useState<Artwork[]>([]);
+  const [selectedArt, setSelectedArt] = useState<Artwork | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string>('');
+  const [selectedFrame, setSelectedFrame] = useState<FrameOption>('none');
+  const [wallColor, setWallColor] = useState<string>('#FFFFFF');
+  const [designerWidth, setDesignerWidth] = useState<number | undefined>();
+  const [showEmailModal, setShowEmailModal] = useState(false);
+
+  // Load artworks
+  useEffect(() => {
+    fetch('/artworks.json')
+      .then(res => res.json())
+      .then(data => {
+        setArtworks(data);
+        if (data.length > 0) {
+          setSelectedArt(data[0]);
+          setSelectedSize(data[0].sizes[0]);
+        }
+      })
+      .catch(err => console.error('Failed to load artworks:', err));
+  }, []);
+
+  // Parse share link on mount
+  useEffect(() => {
+    const sharedState = parseShareLink();
+    if (sharedState) {
+      if (sharedState.room) setRoom(sharedState.room);
+      if (sharedState.wallColor) setWallColor(sharedState.wallColor);
+      if (sharedState.width) setDesignerWidth(sharedState.width);
+      
+      if (sharedState.artId) {
+        const art = artworks.find(a => a.id === sharedState.artId);
+        if (art) {
+          setSelectedArt(art);
+          if (sharedState.size) setSelectedSize(sharedState.size);
+          if (sharedState.frame) setSelectedFrame(sharedState.frame);
+        }
+      }
+    }
+  }, [artworks]);
+
+  // Track view event
+  useEffect(() => {
+    const event = { type: 'rv_view' as const, theme: currentTheme, mode: currentMode };
+    trackEvent(event);
+    onEvent?.(event);
+  }, []);
+
+  // Apply theme
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', currentTheme);
+  }, [currentTheme]);
+
+  const handleArtSelect = (art: Artwork) => {
+    setSelectedArt(art);
+    setSelectedSize(art.sizes[0]);
+    const event = { type: 'rv_art_select' as const, artId: art.id, theme: currentTheme, mode: currentMode };
+    trackEvent(event);
+    onEvent?.(event);
+  };
+
+  const handleSizeChange = (size: string) => {
+    setSelectedSize(size);
+    const event = { type: 'rv_size_change' as const, artId: selectedArt?.id, size, theme: currentTheme, mode: currentMode };
+    trackEvent(event);
+    onEvent?.(event);
+  };
+
+  const handleFrameChange = (frame: FrameOption) => {
+    setSelectedFrame(frame);
+    const event = { type: 'rv_frame_change' as const, artId: selectedArt?.id, frame, theme: currentTheme, mode: currentMode };
+    trackEvent(event);
+    onEvent?.(event);
+  };
+
+  const handleWallColorChange = (color: string) => {
+    setWallColor(color);
+    const event = { type: 'rv_wall_color_change' as const, wallColor: color, theme: currentTheme, mode: currentMode };
+    trackEvent(event);
+    onEvent?.(event);
+  };
+
+  const handleRoomChange = (newRoom: RoomPreset) => {
+    setRoom(newRoom);
+    const event = { type: 'rv_room_change' as const, room: newRoom, theme: currentTheme, mode: currentMode };
+    trackEvent(event);
+    onEvent?.(event);
+  };
+
+  const handleBuyNow = () => {
+    if (!selectedArt) return;
+    
+    const link = generateCheckoutLink(selectedArt, selectedSize, selectedFrame, checkoutType, checkoutLinkTemplate);
+    const event = { type: 'rv_buy_click' as const, artId: selectedArt.id, size: selectedSize, theme: currentTheme, mode: currentMode };
+    
+    trackEvent(event);
+    onEvent?.(event);
+    
+    window.open(link, '_blank');
+  };
+
+  const handleEmailSubmit = async (email: string) => {
+    if (!selectedArt) return;
+    
+    await submitEmailLead(email, selectedArt, currentTheme);
+    const event = { type: 'rv_email_submit' as const, artId: selectedArt.id, theme: currentTheme, mode: currentMode };
+    
+    trackEvent(event);
+    onEvent?.(event);
+    
+    setShowEmailModal(false);
+  };
+
+  const handleCopyLink = () => {
+    if (!selectedArt) return;
+    
+    const link = generateShareLink({
+      room,
+      artId: selectedArt.id,
+      size: selectedSize,
+      frame: selectedFrame,
+      wallColor,
+      width: designerWidth
+    });
+    
+    navigator.clipboard.writeText(link);
+    const event = { type: 'rv_share_copy' as const, artId: selectedArt.id, theme: currentTheme, mode: currentMode };
+    
+    trackEvent(event);
+    onEvent?.(event);
+    
+    alert('Link copied to clipboard!');
+  };
+
+  const handleDesignerModeToggle = () => {
+    const newMode = currentMode === 'showcase' ? 'designer' : 'showcase';
+    setCurrentMode(newMode);
+    const event = { type: 'rv_designer_mode_toggle' as const, mode: newMode, theme: currentTheme };
+    
+    trackEvent(event);
+    onEvent?.(event);
+  };
+
+  return (
+    <div className="min-h-screen bg-bg text-text">
+      {/* Header */}
+      <header className="bg-surface border-b border-gray-200 py-4">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold" style={{ color: 'var(--primary)' }}>
+              🎨 RoomVibe
+            </h1>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setCurrentTheme('azure')}
+                className={`px-3 py-1 rounded ${currentTheme === 'azure' ? 'bg-primary text-white' : 'bg-gray-200'}`}
+              >
+                Azure
+              </button>
+              <button
+                onClick={() => setCurrentTheme('royal')}
+                className={`px-3 py-1 rounded ${currentTheme === 'royal' ? 'bg-primary text-white' : 'bg-gray-200'}`}
+              >
+                Royal
+              </button>
+              <button
+                onClick={() => setCurrentTheme('sunset')}
+                className={`px-3 py-1 rounded ${currentTheme === 'sunset' ? 'bg-primary text-white' : 'bg-gray-200'}`}
+              >
+                Sunset
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Room Viewer - Left/Top */}
+          <div className="lg:col-span-2">
+            <RoomViewer
+              room={room}
+              artwork={selectedArt}
+              size={selectedSize}
+              frame={selectedFrame}
+              wallColor={wallColor}
+              designerWidth={designerWidth}
+            />
+            
+            {/* Room Selector */}
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={() => handleRoomChange('living')}
+                className={`flex-1 py-2 px-4 rounded ${room === 'living' ? 'bg-primary text-white' : 'bg-surface'}`}
+              >
+                Living Room
+              </button>
+              <button
+                onClick={() => handleRoomChange('hallway')}
+                className={`flex-1 py-2 px-4 rounded ${room === 'hallway' ? 'bg-primary text-white' : 'bg-surface'}`}
+              >
+                Hallway
+              </button>
+              <button
+                onClick={() => handleRoomChange('bedroom')}
+                className={`flex-1 py-2 px-4 rounded ${room === 'bedroom' ? 'bg-primary text-white' : 'bg-surface'}`}
+              >
+                Bedroom
+              </button>
+            </div>
+          </div>
+
+          {/* Controls - Right/Bottom */}
+          <div className="space-y-6">
+            <Controls
+              artwork={selectedArt}
+              selectedSize={selectedSize}
+              selectedFrame={selectedFrame}
+              wallColor={wallColor}
+              designerMode={currentMode === 'designer'}
+              designerWidth={designerWidth}
+              onSizeChange={handleSizeChange}
+              onFrameChange={handleFrameChange}
+              onWallColorChange={handleWallColorChange}
+              onDesignerWidthChange={setDesignerWidth}
+              onDesignerModeToggle={handleDesignerModeToggle}
+            />
+            
+            {/* Actions */}
+            <div className="space-y-3">
+              <button
+                onClick={handleBuyNow}
+                disabled={!selectedArt}
+                className="w-full bg-primary text-white py-3 px-6 rounded-lg font-semibold hover:opacity-90 disabled:opacity-50"
+              >
+                Buy Now - €{selectedArt?.price || 0}
+              </button>
+              
+              <button
+                onClick={() => setShowEmailModal(true)}
+                disabled={!selectedArt}
+                className="w-full bg-surface text-text py-2 px-6 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50"
+              >
+                Email me this
+              </button>
+              
+              <button
+                onClick={handleCopyLink}
+                disabled={!selectedArt}
+                className="w-full bg-surface text-text py-2 px-6 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50"
+              >
+                Copy share link
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Artwork Selector */}
+        <div className="mt-12">
+          <ArtworkSelector
+            artworks={artworks}
+            selectedArt={selectedArt}
+            onSelect={handleArtSelect}
+          />
+        </div>
+
+        {/* Pricing Section */}
+        <div className="mt-16">
+          <Pricing />
+        </div>
+      </main>
+
+      {/* Email Modal */}
+      {showEmailModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-xl font-bold mb-4">Get this look via email</h3>
+            <input
+              type="email"
+              placeholder="your@email.com"
+              className="w-full px-4 py-2 border border-gray-300 rounded mb-4"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleEmailSubmit((e.target as HTMLInputElement).value);
+                }
+              }}
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={(e) => {
+                  const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                  handleEmailSubmit(input.value);
+                }}
+                className="flex-1 bg-primary text-white py-2 px-4 rounded hover:opacity-90"
+              >
+                Send
+              </button>
+              <button
+                onClick={() => setShowEmailModal(false)}
+                className="flex-1 bg-gray-200 py-2 px-4 rounded hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default RoomVibe;
