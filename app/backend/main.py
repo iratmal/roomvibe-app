@@ -655,6 +655,179 @@ HTML_PAGE = r'''
 </body>
 </html>
 '''
+DESIGN_PAGE = r'''
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>RoomVibe — Design Playground (Variant B)</title>
+  <!-- Tailwind JIT CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            rv: {
+              purple: "#6D28D9", purpleHover:"#5B21B6", purpleActive:"#4C1D95", purpleFocus:"#A78BFA",
+              teal: "#06B6D4", tealHover:"#0891B2", tealActive:"#0E7490", tealFocus:"#67E8F9",
+              promo: "#DB2777", promoHover:"#BE185D", promoActive:"#9D174D", promoFocus:"#FBCFE8",
+              ink:"#0B1020", paper:"#FAFAFA"
+            }
+          },
+          borderRadius: { xl: "0.75rem" }
+        }
+      }
+    }
+  </script>
+  <!-- React 18 + Babel (no build step) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-rv-paper text-rv-ink">
+  <div class="max-w-6xl mx-auto px-6 py-10">
+    <header class="mb-6 flex items-center justify-between">
+      <h1 class="text-3xl md:text-4xl font-semibold tracking-tight">RoomVibe — Design Playground</h1>
+      <a href="/" class="text-sm underline">← Back to app</a>
+    </header>
+    <div id="root"></div>
+  </div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    const TOKENS = {
+      primary: {
+        bg: { default: "#6D28D9", hover: "#5B21B6", active: "#4C1D95", disabled: "#C4B5FD" },
+        fg: { default: "#FFFFFF", disabled: "#FFFFFF" },
+        focus: "#A78BFA",
+      },
+      secondary: {
+        bg: { default: "#06B6D4", hover: "#0891B2", active: "#0E7490", disabled: "#BAE6FD" },
+        fg: { default: "#0B1020", disabled: "#0B1020" },
+        focus: "#67E8F9",
+      },
+      promo: {
+        bg: { default: "#DB2777", hover: "#BE185D", active: "#9D174D", disabled: "#FBCFE8" },
+        fg: { default: "#FFFFFF", disabled: "#FFFFFF" },
+        focus: "#FBCFE8",
+      },
+      neutral: { dark: "#0B1020", light: "#FAFAFA" },
+    };
+
+    function Swatch({ role, hex, text, border }) {
+      return (
+        <div className="flex items-center gap-4 p-3 rounded-xl border border-zinc-200 bg-white">
+          <div
+            className="h-12 w-12 rounded-lg shadow"
+            style={{ backgroundColor: hex, border: border ? \`2px solid \${border}\` : undefined }}
+            aria-label={\`\${role} \${hex}\`}
+          />
+          <div className="flex flex-col">
+            <span className="text-sm text-zinc-700 font-medium">{role}</span>
+            <span className="text-xs tabular-nums text-zinc-500">{hex}</span>
+          </div>
+          <div className="ml-auto">
+            <span
+              className="text-xs px-2 py-1 rounded-md border"
+              style={{ backgroundColor: hex, color: text, borderColor: "rgba(0,0,0,0.08)" }}
+            >
+              Sample text
+            </span>
+          </div>
+        </div>
+      );
+    }
+
+    function StatefulBtn({ kind, label }) {
+      const [state, setState] = useState("default");
+      const colors = TOKENS[kind];
+      const bg = colors.bg[state];
+      const fg = colors.fg.default;
+      return (
+        <button
+          className="text-sm px-4 py-2 rounded-xl shadow-sm outline-none"
+          onMouseEnter={() => setState("hover")}
+          onMouseLeave={() => setState("default")}
+          onMouseDown={() => setState("active")}
+          onMouseUp={() => setState("hover")}
+          style={{ backgroundColor: bg, color: fg, boxShadow: \`0 0 0 0px \${colors.focus}\` }}
+          onFocus={(e) => (e.currentTarget.style.boxShadow = \`0 0 0 3px \${colors.focus}\`)}
+          onBlur={(e) => (e.currentTarget.style.boxShadow = \`0 0 0 0px \${colors.focus}\`)}
+        >
+          {label} <span className="opacity-60">• {state}</span>
+        </button>
+      );
+    }
+
+    function App() {
+      return (
+        <div className="min-h-screen w-full" style={{ backgroundColor: TOKENS.neutral.light, color: TOKENS.neutral.dark }}>
+          <div className="max-w-6xl mx-auto">
+            <header className="mb-8">
+              <h2 className="text-2xl md:text-3xl font-semibold tracking-tight">
+                Variant B: Royal Purple + Teal Pop
+              </h2>
+              <p className="mt-2 text-zinc-600 max-w-2xl">
+                Primary CTA (purple) with strong contrast, secondary (teal) with dark text, promo (pink) with white text.
+              </p>
+            </header>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="rounded-2xl bg-white p-5 shadow-sm border border-zinc-200">
+                <h3 className="text-lg font-semibold mb-3">Core Swatches</h3>
+                <div className="space-y-3">
+                  <Swatch role="Primary CTA" hex={TOKENS.primary.bg.default} text={TOKENS.primary.fg.default} />
+                  <Swatch role="Secondary" hex={TOKENS.secondary.bg.default} text={TOKENS.secondary.fg.default} />
+                  <Swatch role="Promo" hex={TOKENS.promo.bg.default} text={TOKENS.promo.fg.default} />
+                  <Swatch role="Neutral Dark" hex={TOKENS.neutral.dark} text={TOKENS.neutral.light} />
+                  <Swatch role="Neutral Light" hex={TOKENS.neutral.light} text={TOKENS.neutral.dark} />
+                </div>
+              </div>
+
+              <div className="rounded-2xl bg-white p-5 shadow-sm border border-zinc-200">
+                <h3 className="text-lg font-semibold mb-3">Buttons — Interactive States</h3>
+                <div className="flex flex-col gap-3">
+                  <StatefulBtn kind="primary" label="Buy now" />
+                  <StatefulBtn kind="secondary" label="Add to cart" />
+                  <StatefulBtn kind="promo" label="Limited offer" />
+                  <div className="text-xs text-zinc-500 mt-2">
+                    Focus ring colors — primary {TOKENS.primary.focus}, secondary {TOKENS.secondary.focus}, promo {TOKENS.promo.focus}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 rounded-2xl bg-white p-5 shadow-sm border border-zinc-200">
+              <h3 className="text-lg font-semibold mb-3">Design Tokens (HEX)</h3>
+              <pre className="text-xs overflow-auto p-3 rounded-lg bg-zinc-50 border" style={{ whiteSpace: "pre-wrap" }}>
+                {JSON.stringify({
+                  color: {
+                    brand: { primary: "#6D28D9", secondary: "#06B6D4", promo: "#DB2777" },
+                    neutral: { 900: "#0B1020", 50: "#FAFAFA" },
+                    on: { primary: "#FFFFFF", secondary: "#0B1020", promo: "#FFFFFF" },
+                  },
+                  button: {
+                    primary: { bg: { default: "#6D28D9", hover: "#5B21B6", active: "#4C1D95", disabled: "#C4B5FD" }, fg: "#FFFFFF", focus: "#A78BFA" },
+                    secondary: { bg: { default: "#06B6D4", hover: "#0891B2", active: "#0E7490", disabled: "#BAE6FD" }, fg: "#0B1020", focus: "#67E8F9" },
+                    promo: { bg: { default: "#DB2777", hover: "#BE185D", active: "#9D174D", disabled: "#FBCFE8" }, fg: "#FFFFFF", focus: "#FBCFE8" },
+                  },
+                }, null, 2)}
+              </pre>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
+'''
 
 
 
