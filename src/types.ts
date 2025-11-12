@@ -2,7 +2,7 @@ export type Theme = 'azure' | 'royal' | 'sunset';
 export type Mode = 'showcase' | 'designer';
 export type CheckoutType = 'shopify' | 'thrivecart';
 export type RoomPreset = 'living' | 'hallway' | 'bedroom';
-export type FrameOption = 'none' | 'black' | 'white' | 'oak';
+export type FrameOption = 'none' | 'black' | 'white' | 'oak' | 'walnut' | 'silver' | 'gold' | 'bronze' | 'gray' | 'cream';
 
 export interface Artwork {
   id: string;

@@ -44,7 +44,13 @@ const RoomViewer: React.FC<RoomViewerProps> = ({
     none: 'transparent',
     black: '#000000',
     white: '#FFFFFF',
-    oak: '#D4A574'
+    oak: '#D4A574',
+    walnut: '#5C4033',
+    silver: '#C0C0C0',
+    gold: '#FFD700',
+    bronze: '#CD7F32',
+    gray: '#808080',
+    cream: '#FFFDD0'
   };
 
   return (

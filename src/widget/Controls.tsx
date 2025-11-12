@@ -59,7 +59,7 @@ const Controls: React.FC<ControlsProps> = ({
       {/* Frame Selection */}
       <div>
         <label className="block text-sm font-semibold mb-2">Frame</label>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           {artwork?.frameOptions.map(frame => (
             <button
               key={frame}
