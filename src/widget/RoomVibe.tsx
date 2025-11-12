@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { RoomVibeProps, RoomPreset, Artwork, FrameOption, Theme, Mode, AnalyticsEvent } from '../types';
+import { RoomVibeProps, RoomPreset, Artwork, FrameOption, Mode, AnalyticsEvent } from '../types';
 import { trackEvent } from '../lib/analytics';
 import { generateCheckoutLink } from '../lib/checkout';
 import { generateShareLink, parseShareLink } from '../lib/shareLink';
@@ -18,7 +18,7 @@ const RoomVibe: React.FC<RoomVibeProps> = ({
   checkoutLinkTemplate,
   onEvent
 }) => {
-  const [currentTheme, setCurrentTheme] = useState<Theme>(theme);
+  const currentTheme = theme;
   const [currentMode, setCurrentMode] = useState(mode);
   const [room, setRoom] = useState<RoomPreset>('living');
   const [artworks, setArtworks] = useState<Artwork[]>([]);
@@ -170,37 +170,15 @@ const RoomVibe: React.FC<RoomVibeProps> = ({
       {/* Header */}
       <header className="bg-surface border-b border-gray-200 py-4">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="40" height="40" rx="8" fill="var(--primary)" fillOpacity="0.1"/>
-                <path d="M12 15L20 10L28 15V27C28 28.1 27.1 29 26 29H14C12.9 29 12 28.1 12 27V15Z" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M15 29V20H25V29" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              <h1 className="text-2xl font-bold" style={{ color: 'var(--primary)' }}>
-                Visualize Your Space in Seconds
-              </h1>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setCurrentTheme('azure')}
-                className={`px-3 py-1 rounded ${currentTheme === 'azure' ? 'bg-primary text-white' : 'bg-gray-200'}`}
-              >
-                Azure
-              </button>
-              <button
-                onClick={() => setCurrentTheme('royal')}
-                className={`px-3 py-1 rounded ${currentTheme === 'royal' ? 'bg-primary text-white' : 'bg-gray-200'}`}
-              >
-                Royal
-              </button>
-              <button
-                onClick={() => setCurrentTheme('sunset')}
-                className={`px-3 py-1 rounded ${currentTheme === 'sunset' ? 'bg-primary text-white' : 'bg-gray-200'}`}
-              >
-                Sunset
-              </button>
-            </div>
+          <div className="flex items-center gap-3">
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="40" height="40" rx="8" fill="var(--primary)" fillOpacity="0.1"/>
+              <path d="M12 15L20 10L28 15V27C28 28.1 27.1 29 26 29H14C12.9 29 12 28.1 12 27V15Z" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M15 29V20H25V29" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <h1 className="text-2xl font-bold text-black">
+              Visualize Your Space in Seconds
+            </h1>
           </div>
         </div>
       </header>
