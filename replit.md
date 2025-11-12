@@ -3,49 +3,70 @@
 ## Overview
 RoomVibe is a FastAPI application for artwork discovery and palette extraction. The app helps users find artworks and generate color palettes from images, with integrated affiliate tracking for checkout links.
 
-**Current State**: Fully functional MVP with all core endpoints implemented
+**Current State**: Fully functional with modern, responsive UI
 **Last Updated**: November 12, 2025
 
 ## Recent Changes
-- November 12, 2025: Initial project setup
-  - Created FastAPI backend with all required endpoints
-  - Configured Python 3.11 environment
-  - Set up workflow to run on port 5000
+- November 12, 2025: Major UI overhaul
+  - Created modern, responsive frontend with large card layout
+  - Implemented drag & drop image upload
+  - Added real-time color palette extraction from images
+  - Integrated catalog browsing with artwork selection
+  - Added checkout link generation with UTM tracking
+  - Migrated to Jinja2 templates for better separation of concerns
 
 ## Project Architecture
 
-### Backend Structure
+### Structure
 ```
 app/
   backend/
     main.py          # FastAPI application with all endpoints
+static/
+  templates/
+    index.html       # Main UI template
+  styles.css         # Modern, responsive CSS
+  app.js             # Frontend JavaScript logic
+  mockups/           # Generated mockup images
 requirements.txt     # Python dependencies
 ```
 
-### Endpoints
-- `GET /` - Serves HTML homepage with link to health check
-- `GET /api/health` - Returns {"status": "ok"}
-- `GET /api/artworks` - Returns 3 hardcoded artworks with id, title, ratio, price_eur, product_url, image_url
-- `POST /api/palette` - Accepts multipart image upload, returns 5 placeholder HEX colors and mood
-- `POST /api/checkout-link` - Accepts product_url, appends UTM parameters from environment variables
-- `POST /webhooks/stripe` - Stripe webhook endpoint returning {"received": true}
+### Key Features
+- **Drag & Drop Upload**: Large, intuitive upload zone for wall photos
+- **Color Palette Extraction**: Real-time extraction of dominant colors from images
+- **Artwork Catalog**: Browse and select from available artworks
+- **Checkout Integration**: One-click checkout link generation with UTM tracking
+- **Responsive Design**: Works on desktop and mobile devices
+
+### API Endpoints
+- `GET /` - Modern UI homepage
+- `GET /api/health` - Health check endpoint
+- `GET /api/artworks` - Returns artwork catalog from Shopify CSV
+- `POST /api/palette` - Extracts color palette from uploaded image
+- `POST /api/checkout-link` - Generates tracked checkout URL
+- `POST /api/mockup` - Generates artwork preview on wall (backend feature)
+- `POST /webhooks/stripe` - Stripe webhook handler
 
 ### Dependencies
 - FastAPI: Web framework
 - Uvicorn: ASGI server
+- Jinja2: Template engine
 - python-multipart: File upload support
-- Pillow & NumPy: Image processing (ready for future palette extraction)
+- Pillow: Image processing for palette extraction
 - python-dotenv: Environment variable management
-- Stripe: Webhook handling
+- Stripe: Payment webhook handling
 - Requests: HTTP utilities
 
 ### Environment Variables
-The checkout link endpoint uses these environment variables (with fallback defaults):
 - `utm_source` (default: "roomvibe")
 - `utm_medium` (default: "app")
 - `utm_campaign` (default: "default")
+- `SHOPIFY_STORE_DOMAIN` (default: "irenart.studio")
+- `MAILERLITE_API_KEY` (optional)
+- `MAILERLITE_GROUP_ID` (optional)
 
 ## Development Notes
 - Server runs on port 5000 (Replit requirement for webview)
-- No Docker or virtual environments (Nix-based Replit environment)
-- Palette extraction currently returns placeholder colors - ready for K-means implementation
+- Uses Nix-based environment (no Docker/venv)
+- Color palette extraction uses PIL's adaptive palette algorithm
+- Static files mounted at `/static` for both assets and generated mockups
