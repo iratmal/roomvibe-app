@@ -416,7 +416,7 @@ HTML_PAGE = r'''
     const mockCard = document.getElementById('mockupCard');
 
     const modeCatalogBtn = document.getElementById('modeCatalog');
-    const modeUploadBtn = document.getElementById('modeUpload');
+    theModeUploadBtn = document.getElementById('modeUpload');
     const uploadPane = document.getElementById('uploadPane');
     const artInput = document.getElementById('artFile');
     const rights = document.getElementById('rights');
@@ -439,11 +439,11 @@ HTML_PAGE = r'''
       if (MODE === 'catalog') {
         uploadPane.style.display = 'none';
         modeCatalogBtn.classList.add('secondary');
-        modeUploadBtn.classList.remove('secondary');
+        theModeUploadBtn.classList.remove('secondary');
       } else {
         uploadPane.style.display = 'block';
         modeCatalogBtn.classList.remove('secondary');
-        modeUploadBtn.classList.add('secondary');
+        theModeUploadBtn.classList.add('secondary');
       }
     }
 
@@ -480,11 +480,11 @@ HTML_PAGE = r'''
 
     // Mode
     modeCatalogBtn.addEventListener('click', ()=>{ MODE='catalog'; updateModeUI(); maybeToggleMockOwn(); });
-    modeUploadBtn.addEventListener('click', ()=>{ MODE='upload'; updateModeUI(); maybeToggleMockOwn(); });
+    theModeUploadBtn.addEventListener('click', ()=>{ MODE='upload'; updateModeUI(); maybeToggleMockOwn(); });
 
     // Upload artwork (preview)
     artInput.addEventListener('change', e=>{
-      ART_FILE = e.target.files && e.target.files[0] || null; 
+      ART_FILE = (e.target.files && e.target.files[0]) || null; 
       maybeToggleMockOwn();
     });
     rights.addEventListener('change', maybeToggleMockOwn);
@@ -551,8 +551,6 @@ HTML_PAGE = r'''
     }
 
     suggestBtn.addEventListener('click', loadSuggestions);
-
-    // Auto: učitaj prijedloge odmah (prazna stranica izgleda “pokvareno”)
     document.addEventListener('DOMContentLoaded', loadSuggestions);
 
     // GDPR banner
@@ -561,6 +559,26 @@ HTML_PAGE = r'''
     if(!ok){ cookie.style.display = 'block'; }
     document.getElementById('c-accept').addEventListener('click', ()=>{ localStorage.setItem('rv_cookie_ok','1'); cookie.style.display='none'; });
     document.getElementById('c-decline').addEventListener('click', ()=>{ localStorage.setItem('rv_cookie_ok','0'); cookie.style.display='none'; });
+
+    // Newsletter (optional MailerLite)
+    const nl = document.getElementById('nl');
+    if (nl) {
+      nl.addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        const email = document.getElementById('nlEmail').value || '';
+        const fd = new FormData();
+        fd.append('email', email);
+        fd.append('consent', 'true');
+        try{
+          const r = await fetch('/api/lead', { method:'POST', body: fd });
+          const ok = r.ok;
+          document.getElementById('nlMsg').textContent = ok ? 'Thanks! Check your inbox.' : 'Please try again later.';
+          if (ok) nl.reset();
+        }catch(err){
+          document.getElementById('nlMsg').textContent = 'Please try again later.';
+        }
+      });
+    }
   </script>
 </body>
 </html>
@@ -736,9 +754,9 @@ async def make_mockup(
     wall: UploadFile = File(...),
     artwork_url: str = Form(""),
     artwork: UploadFile = File(None),
-    artwork_ratio: float | None = Form(None),
+    artwork_ratio: Optional[float] = Form(None),
     scale: float = Form(0.45),
-    wall_width_cm: float | None = Form(None),
+    wall_width_cm: Optional[float] = Form(None),
 ):
     wall_bytes = await wall.read()
     try:
