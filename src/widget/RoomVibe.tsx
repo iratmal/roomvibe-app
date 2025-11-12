@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { RoomVibeProps, RoomPreset, Artwork, FrameOption, Theme } from '../types';
+import { RoomVibeProps, RoomPreset, Artwork, FrameOption, Theme, Mode, AnalyticsEvent } from '../types';
 import { trackEvent } from '../lib/analytics';
 import { generateCheckoutLink } from '../lib/checkout';
 import { generateShareLink, parseShareLink } from '../lib/shareLink';
@@ -13,7 +13,7 @@ const RoomVibe: React.FC<RoomVibeProps> = ({
   mode = 'showcase',
   collection = 'all',
   theme = 'azure',
-  oneClickBuy = false,
+  oneClickBuy = true,
   checkoutType,
   checkoutLinkTemplate,
   onEvent
@@ -34,14 +34,19 @@ const RoomVibe: React.FC<RoomVibeProps> = ({
     fetch('/artworks.json')
       .then(res => res.json())
       .then(data => {
-        setArtworks(data);
-        if (data.length > 0) {
-          setSelectedArt(data[0]);
-          setSelectedSize(data[0].sizes[0]);
+        // Filter by collection if specified
+        const filtered = collection === 'all' 
+          ? data 
+          : data.filter((art: Artwork) => art.tags.includes(collection));
+        
+        setArtworks(filtered);
+        if (filtered.length > 0) {
+          setSelectedArt(filtered[0]);
+          setSelectedSize(filtered[0].sizes[0]);
         }
       })
       .catch(err => console.error('Failed to load artworks:', err));
-  }, []);
+  }, [collection]);
 
   // Parse share link on mount
   useEffect(() => {
@@ -62,11 +67,23 @@ const RoomVibe: React.FC<RoomVibeProps> = ({
     }
   }, [artworks]);
 
-  // Track view event
+  // Helper to emit events to both trackEvent and onEvent prop
+  const emitEvent = (eventData: Omit<AnalyticsEvent, 'ts'>) => {
+    const eventWithTs = { ...eventData, ts: Date.now() };
+    
+    // Track internally
+    trackEvent(eventData);
+    
+    // Call prop callback if provided
+    if (onEvent) {
+      onEvent(eventWithTs);
+    }
+  };
+
+  // Track view event (once on mount)
   useEffect(() => {
-    const event = { type: 'rv_view' as const, theme: currentTheme, mode: currentMode };
-    trackEvent(event);
-    onEvent?.(event);
+    emitEvent({ type: 'rv_view' as const, theme: currentTheme, mode: currentMode });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Apply theme
@@ -77,47 +94,40 @@ const RoomVibe: React.FC<RoomVibeProps> = ({
   const handleArtSelect = (art: Artwork) => {
     setSelectedArt(art);
     setSelectedSize(art.sizes[0]);
-    const event = { type: 'rv_art_select' as const, artId: art.id, theme: currentTheme, mode: currentMode };
-    trackEvent(event);
-    onEvent?.(event);
+    emitEvent({ type: 'rv_art_select' as const, artId: art.id, theme: currentTheme, mode: currentMode });
   };
 
   const handleSizeChange = (size: string) => {
     setSelectedSize(size);
-    const event = { type: 'rv_size_change' as const, artId: selectedArt?.id, size, theme: currentTheme, mode: currentMode };
-    trackEvent(event);
-    onEvent?.(event);
+    emitEvent({ type: 'rv_size_change' as const, artId: selectedArt?.id, size, theme: currentTheme, mode: currentMode });
   };
 
   const handleFrameChange = (frame: FrameOption) => {
     setSelectedFrame(frame);
-    const event = { type: 'rv_frame_change' as const, artId: selectedArt?.id, frame, theme: currentTheme, mode: currentMode };
-    trackEvent(event);
-    onEvent?.(event);
+    emitEvent({ type: 'rv_frame_change' as const, artId: selectedArt?.id, frame, theme: currentTheme, mode: currentMode });
   };
 
   const handleWallColorChange = (color: string) => {
     setWallColor(color);
-    const event = { type: 'rv_wall_color_change' as const, wallColor: color, theme: currentTheme, mode: currentMode };
-    trackEvent(event);
-    onEvent?.(event);
+    emitEvent({ type: 'rv_wall_color_change' as const, wallColor: color, theme: currentTheme, mode: currentMode });
   };
 
   const handleRoomChange = (newRoom: RoomPreset) => {
     setRoom(newRoom);
-    const event = { type: 'rv_room_change' as const, room: newRoom, theme: currentTheme, mode: currentMode };
-    trackEvent(event);
-    onEvent?.(event);
+    emitEvent({ type: 'rv_room_change' as const, room: newRoom, theme: currentTheme, mode: currentMode });
   };
 
   const handleBuyNow = () => {
-    if (!selectedArt) return;
+    if (!selectedArt || !oneClickBuy) return;
+    
+    // Ensure checkout configuration exists
+    if (!selectedArt.checkout.template && !checkoutLinkTemplate) {
+      alert('Checkout configuration is missing. Please contact support.');
+      return;
+    }
     
     const link = generateCheckoutLink(selectedArt, selectedSize, selectedFrame, checkoutType, checkoutLinkTemplate);
-    const event = { type: 'rv_buy_click' as const, artId: selectedArt.id, size: selectedSize, theme: currentTheme, mode: currentMode };
-    
-    trackEvent(event);
-    onEvent?.(event);
+    emitEvent({ type: 'rv_buy_click' as const, artId: selectedArt.id, size: selectedSize, theme: currentTheme, mode: currentMode });
     
     window.open(link, '_blank');
   };
@@ -126,10 +136,7 @@ const RoomVibe: React.FC<RoomVibeProps> = ({
     if (!selectedArt) return;
     
     await submitEmailLead(email, selectedArt, currentTheme);
-    const event = { type: 'rv_email_submit' as const, artId: selectedArt.id, theme: currentTheme, mode: currentMode };
-    
-    trackEvent(event);
-    onEvent?.(event);
+    emitEvent({ type: 'rv_email_submit' as const, artId: selectedArt.id, theme: currentTheme, mode: currentMode });
     
     setShowEmailModal(false);
   };
@@ -147,21 +154,15 @@ const RoomVibe: React.FC<RoomVibeProps> = ({
     });
     
     navigator.clipboard.writeText(link);
-    const event = { type: 'rv_share_copy' as const, artId: selectedArt.id, theme: currentTheme, mode: currentMode };
-    
-    trackEvent(event);
-    onEvent?.(event);
+    emitEvent({ type: 'rv_share_copy' as const, artId: selectedArt.id, theme: currentTheme, mode: currentMode });
     
     alert('Link copied to clipboard!');
   };
 
   const handleDesignerModeToggle = () => {
-    const newMode = currentMode === 'showcase' ? 'designer' : 'showcase';
+    const newMode: Mode = currentMode === 'showcase' ? 'designer' : 'showcase';
     setCurrentMode(newMode);
-    const event = { type: 'rv_designer_mode_toggle' as const, mode: newMode, theme: currentTheme };
-    
-    trackEvent(event);
-    onEvent?.(event);
+    emitEvent({ type: 'rv_designer_mode_toggle' as const, mode: newMode, theme: currentTheme });
   };
 
   return (
@@ -252,13 +253,15 @@ const RoomVibe: React.FC<RoomVibeProps> = ({
             
             {/* Actions */}
             <div className="space-y-3">
-              <button
-                onClick={handleBuyNow}
-                disabled={!selectedArt}
-                className="w-full bg-primary text-white py-3 px-6 rounded-lg font-semibold hover:opacity-90 disabled:opacity-50"
-              >
-                Buy Now - €{selectedArt?.price || 0}
-              </button>
+              {oneClickBuy && (
+                <button
+                  onClick={handleBuyNow}
+                  disabled={!selectedArt}
+                  className="w-full bg-primary text-white py-3 px-6 rounded-lg font-semibold hover:opacity-90 disabled:opacity-50"
+                >
+                  Buy Now - €{selectedArt?.price || 0}
+                </button>
+              )}
               
               <button
                 onClick={() => setShowEmailModal(true)}
