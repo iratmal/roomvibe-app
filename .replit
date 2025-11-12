@@ -41,7 +41,5 @@ externalPort = 3000
 
 [deployment]
 deploymentTarget = "autoscale"
-# ✅ dodan build korak
-build = ["pip", "install", "-r", "requirements.txt"]
-# ✅ run koristi $PORT koji Replit zadaje na autoscale
-run = ["sh", "-c", "python -m uvicorn app.backend.main:app --host 0.0.0.0 --port $PORT"]
+build = ["npm", "run", "build"]
+run = ["npm", "start"]
