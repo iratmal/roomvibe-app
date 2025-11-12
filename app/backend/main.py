@@ -155,98 +155,110 @@ async def health():
     return {"status": "ok"}
 
 # ------ UI (HTML) ------
-HTML_PAGE = r'''
+HHTML_PAGE = r'''
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>RoomVibe — try art on your wall</title>
+  <title>RoomVibe — Art that fits your room</title>
+  <meta name="description" content="Upload your wall, get AI color-matched art suggestions, see instant mockups, and buy in one click." />
   <link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="%23111111"/><text x="32" y="42" font-size="30" font-family="Verdana" text-anchor="middle" fill="%23C9A15B">RV</text></svg>' />
-
   <style>
     :root{
-      /* Siva + zlato */
-      --bg:#F3F3F5;          /* svijetlo siva pozadina */
-      --panel:#FFFFFF;       /* kartice */
-      --ink:#111111;         /* tekst */
-      --muted:#6F6F73;       /* sekundarni tekst */
-      --line:#E4E4E8;        /* linije */
-      --gold:#C9A15B;        /* primarni akcent */
-      --gold-2:#E4C891;      /* svjetliji zlatni */
-      --btn:#111111;         /* tamni gumb */
-      --btn-ink:#ffffff;
-      --rad:16px; --pad:14px;
+      /* paleta: siva + zlatni akcent + blagi color pops */
+      --bg:#F4F5F7;
+      --ink:#0F0F0F;
+      --muted:#737581;
+      --panel:#FFFFFF;
+      --line:#E7E7EC;
+      --gold:#C9A15B;     /* primarni akcent */
+      --gold-2:#E4C891;   /* svjetliji zlatni */
+      --pop-1:#6EC3C3;    /* teal pop */
+      --pop-2:#E6A4B4;    /* blush pop */
+      --btn:#111; --btn-ink:#fff;
+      --rad:18px; --pad:16px;
     }
-    *{box-sizing:border-box} html,body{margin:0;padding:0}
+    *{box-sizing:border-box} html,body{margin:0;padding:0;scroll-behavior:smooth}
     body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu}
-
     a{color:inherit}
-    .wrap{max-width:1140px;margin:0 auto;padding:0 18px}
+    .wrap{max-width:1200px;margin:0 auto;padding:0 20px}
 
-    /* NAV (replit-like: sticky, čisto, s CTA) */
-    .nav{position:sticky;top:0;z-index:50;background:rgba(243,243,245,.85);backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid var(--line)}
+    /* NAV */
+    .nav{position:sticky;top:0;z-index:50;background:rgba(244,245,247,.85);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line)}
     .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
-    .brand{display:flex;align-items:center;gap:10px;font-weight:800}
-    .badge{width:28px;height:28px;border-radius:8px;background:#111;color:var(--gold);display:grid;place-items:center;font-size:12px}
-    .nav-links{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-    .link{opacity:.85;text-decoration:none}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.2px}
+    .badge{width:32px;height:32px;border-radius:10px;background:#111;color:var(--gold);display:grid;place-items:center;font-size:12px;box-shadow:0 1px 0 rgba(0,0,0,.08)}
+    .nav-links{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+    .link{opacity:.86;text-decoration:none}
     .link:hover{opacity:1}
     .btn{background:var(--btn);color:var(--btn-ink);padding:10px 16px;border-radius:12px;border:1px solid #0000;cursor:pointer;text-decoration:none;display:inline-block}
     .btn.ghost{background:#fff;border:1px solid var(--line);color:#111}
 
-    /* HERO (veliki naslov, replit vibe, zlatni detalji) */
-    .hero{position:relative;margin:28px 0 20px}
+    /* HERO */
+    .hero{position:relative;margin:28px 0 18px}
     .hero-bg{
-      position:absolute;inset:-40px 0 0 0;z-index:-1;
-      background:radial-gradient(800px 300px at 50% -50px, rgba(201,161,91,.28), rgba(255,255,255,0) 60%),
-                 linear-gradient(180deg,#fff 0%, #F3F3F5 70%);
+      position:absolute;inset:-50px 0 0 0;z-index:-1;
+      background:
+        radial-gradient(900px 340px at 20% -80px, rgba(201,161,91,.25), transparent 60%),
+        radial-gradient(600px 260px at 90% 10%, rgba(110,195,195,.16), transparent 60%),
+        linear-gradient(180deg,#fff 0%, #F4F5F7 70%);
       border-bottom:1px solid var(--line);
     }
-    .hero-card{background:linear-gradient(180deg,#fff,#F8F7F4);border:1px solid var(--line);border-radius:20px;padding:24px}
-    h1{font-size:clamp(30px,3.6vw,46px);line-height:1.05;margin:0 0 8px}
-    .sub{color:var(--muted);margin:0 0 14px}
-    .cta-row{display:flex;gap:10px;flex-wrap:wrap}
+    .hero-inner{display:grid;grid-template-columns:1.25fr .9fr;gap:24px}
+    @media (max-width:1000px){ .hero-inner{grid-template-columns:1fr} }
+    .hero-card{background:linear-gradient(180deg,#fff,#FAFAFB);border:1px solid var(--line);border-radius:24px;padding:28px;box-shadow:0 10px 30px rgba(17,17,17,.04)}
+    h1{font-size:clamp(34px,4.4vw,56px);line-height:1.03;margin:0 0 10px;letter-spacing:-.5px}
+    .sub{color:var(--muted);margin:0 0 16px;font-size:clamp(16px,1.5vw,18px)}
+    .cta-row{display:flex;gap:12px;flex-wrap:wrap}
     .cta-accent{background:linear-gradient(90deg,var(--gold),var(--gold-2));color:#111;border:none}
-    .cta-accent:hover{filter:saturate(105%);}
+    .cta-accent:hover{filter:saturate(105%)}
 
-    /* SEKCIJSKI layout (kao replit: velike sekcije) */
-    .section{margin:34px 0}
-    .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:var(--pad)}
+    /* hero vizual (kolaza sa tvojim fotkama) */
+    .hero-viz{position:relative}
+    .polaroid{background:#fff;border:1px solid var(--line);border-radius:16px;padding:10px;box-shadow:0 14px 40px rgba(17,17,17,.08)}
+    .polaroid img{display:block;width:100%;height:auto;border-radius:12px}
+    .stack{display:grid;gap:14px}
+    .stack .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    @media (max-width:1000px){ .stack .row{grid-template-columns:1fr} }
+
+    /* SECTIONS */
+    .section{margin:36px 0}
     .muted{color:var(--muted)}
 
-    /* Features grid */
+    /* FEATURES */
     .features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
     @media (max-width:900px){ .features{grid-template-columns:1fr} }
-    .fcard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}
-    .fic{width:36px;height:36px;border-radius:10px;background:#111;color:var(--gold);display:grid;place-items:center;font-weight:800;margin-bottom:8px}
+    .fcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 6px 18px rgba(17,17,17,.03)}
+    .fic{width:40px;height:40px;border-radius:12px;background:#111;color:var(--gold);display:grid;place-items:center;font-weight:800;margin-bottom:10px}
 
-    /* App area (naš UI) */
+    /* APP (naš UI) */
     .cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
     @media (max-width:900px){ .cols{grid-template-columns:1fr} }
-    #drop{border:2px dashed #D4D4DA;border-radius:var(--rad);padding:28px;text-align:center;background:#fff}
-    .input{padding:10px;border:1px solid #DDDDE3;border-radius:10px;background:#fff}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:var(--pad);box-shadow:0 6px 18px rgba(17,17,17,.03)}
+    #drop{border:2px dashed #D4D7DD;border-radius:var(--rad);padding:28px;text-align:center;background:#fff}
+    .input{padding:10px;border:1px solid #DADCE3;border-radius:12px;background:#fff}
     .palette{display:flex;gap:8px;margin-top:10px}
-    .sw{width:38px;height:38px;border-radius:8px;border:1px solid #E9E1D8}
+    .sw{width:40px;height:40px;border-radius:10px;border:1px solid #ECE3D7}
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
-    .art{border:1px solid #EFE7DD;border-radius:12px;padding:10px;background:#fff}
-    .art img{width:100%;height:150px;object-fit:cover;border-radius:8px}
+    .art{border:1px solid var(--line);border-radius:14px;padding:10px;background:#fff}
+    .art img{width:100%;height:160px;object-fit:cover;border-radius:10px}
     #mockupCard{display:none}
-    #mockupImg{max-width:100%;border-radius:12px;border:1px solid #ECE3D7}
+    #mockupImg{max-width:100%;border-radius:14px;border:1px solid var(--line)}
 
-    /* How it works */
+    /* HOW */
     .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
     @media (max-width:900px){ .steps{grid-template-columns:1fr 1fr} }
     .step{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px}
-    .n{display:inline-block;background:var(--gold);color:#fff;border-radius:8px;padding:4px 8px;font-weight:700;margin-bottom:6px}
+    .n{display:inline-block;background:var(--gold);color:#111;border-radius:10px;padding:4px 10px;font-weight:800;margin-bottom:6px}
 
-    /* Pricing (tri plana, “most popular”) */
+    /* PRICING */
     .pricing-head{display:flex;align-items:end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
-    .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
     @media (max-width:900px){ .plans{grid-template-columns:1fr} }
-    .plan{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column}
-    .plan h3{margin:0 0 4px}
-    .price{font-weight:800;font-size:28px;margin:6px 0}
+    .plan{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;box-shadow:0 8px 22px rgba(17,17,17,.04)}
+    .plan h3{margin:0 0 6px}
+    .price{font-weight:900;font-size:30px;margin:8px 0}
     .per{color:var(--muted);font-size:14px}
     .badge{display:inline-block;background:#FBF6EB;border:1px solid #E8DBC5;color:#7A5B2B;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700}
     .features-list{margin:10px 0 14px;padding:0;list-style:none}
@@ -254,17 +266,21 @@ HTML_PAGE = r'''
     .plan .btn{margin-top:auto}
     .dim{font-size:12px;color:var(--muted);margin-top:8px}
 
-    /* Testimonials */
-    .tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    /* TESTIMONIALS */
+    .tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
     @media (max-width:900px){ .tgrid{grid-template-columns:1fr} }
-    .tcard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px}
+    .tcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px}
     .stars{color:#E0B74F;margin-bottom:6px}
     .tmeta{display:flex;align-items:center;gap:10px;margin-top:10px}
-    .avatar{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:#111;color:#fff;font-weight:700}
+    .avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#111;color:#fff;font-weight:800}
 
-    /* Footer */
-    footer{margin:32px 0 40px;color:#8A8A91}
-    .foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:14px}
+    /* FOOTER */
+    footer{margin:40px 0 60px}
+    .foot{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:18px;border-top:1px solid var(--line);padding-top:18px;color:#6F727B}
+    @media (max-width:900px){ .foot{grid-template-columns:1fr 1fr} }
+    .foot h4{margin:0 0 8px;color:#111}
+    .foot a{display:block;text-decoration:none;margin:6px 0;opacity:.9}
+    .foot a:hover{opacity:1}
   </style>
 </head>
 <body>
@@ -283,42 +299,58 @@ HTML_PAGE = r'''
     </div>
   </div>
 
+  <!-- HERO -->
   <div class="hero">
     <div class="hero-bg"></div>
-    <div class="wrap">
+    <div class="wrap hero-inner">
       <div class="hero-card">
-        <h1>Vidi umjetnost na svom zidu prije kupnje</h1>
-        <p class="sub">Učitaj fotku zida. RoomVibe uskladi boje i mjeru, prikaže mockup IrenArt radova i omogući kupnju u jednom kliku.</p>
+        <h1>Art that fits your room</h1>
+        <p class="sub">Upload your wall. RoomVibe extracts your palette & scale, shows instant mockups of IrenArt pieces, and lets you buy in one click.</p>
         <div class="cta-row">
           <a class="btn cta-accent" href="#app">Start free</a>
           <a class="btn ghost" href="#pricing">See pricing</a>
         </div>
       </div>
+      <div class="hero-viz">
+        <div class="stack">
+          <div class="polaroid">
+            <img src="https://cdn.shopify.com/s/files/1/0787/0477/1421/files/whispersofthering3.jpg?v=1749636551" alt="Whispers of the Ring on wall">
+          </div>
+          <div class="row">
+            <div class="polaroid">
+              <img src="https://cdn.shopify.com/s/files/1/0787/0477/1421/files/TurquoiseMist2_d3e96df1-cae3-440d-8172-e19b1e50a56d.jpg?v=1746615212" alt="Turquoise Mist detail">
+            </div>
+            <div class="polaroid">
+              <img src="https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Optimism_print_2.jpg?v=1760684851" alt="Optimism print">
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- FEATURE STRIP (replit-like) -->
+  <!-- FEATURES -->
   <div id="features" class="wrap section">
     <div class="features">
       <div class="fcard">
         <div class="fic">🎨</div>
         <h3>AI palette</h3>
-        <p class="muted">Automatski izvučene boje iz sobe — dobij prijedloge koji stvarno pašu.</p>
+        <p class="muted">We auto-extract your room colors for truly matching suggestions.</p>
       </div>
       <div class="fcard">
         <div class="fic">🖼️</div>
         <h3>Instant mockups</h3>
-        <p class="muted">Uploadaj zid i u sekundi vidi kako slika stoji na tvojoj visini i širini.</p>
+        <p class="muted">See the artwork on your wall in seconds — scale-aware, crisp, convincing.</p>
       </div>
       <div class="fcard">
         <div class="fic">🛒</div>
         <h3>One-click buy</h3>
-        <p class="muted">Katalog kupuješ direktno — UTM parametri i popusti rade out-of-the-box.</p>
+        <p class="muted">Catalog items open direct checkout with UTM & discounts embedded.</p>
       </div>
     </div>
   </div>
 
-  <!-- APP (naš UI) -->
+  <!-- APP -->
   <div id="app" class="wrap section">
     <div class="cols">
       <div class="card">
@@ -332,7 +364,7 @@ HTML_PAGE = r'''
         <p id="status" class="muted"></p>
 
         <h3 style="margin-top:8px">2) Mode</h3>
-        <div style="display:flex;gap:8px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button id="modeCatalog" class="btn">Use catalog</button>
           <button id="modeUpload" class="btn ghost">Upload artwork (preview)</button>
         </div>
@@ -447,13 +479,46 @@ HTML_PAGE = r'''
   <!-- FOOTER -->
   <footer>
     <div class="wrap foot">
-      <div>© RoomVibe — Luminastart j.d.o.o.</div>
-      <div><a href="#app">App</a> · <a href="#features">Features</a> · <a href="#pricing">Pricing</a> · <a href="#testimonials">Testimonials</a></div>
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <div class="badge">RV</div><strong>RoomVibe</strong>
+        </div>
+        <div>© RoomVibe — Luminastart j.d.o.o.</div>
+        <div class="muted">Made for art lovers. Zagreb, EU.</div>
+      </div>
+      <div>
+        <h4>Product</h4>
+        <a href="#app">App</a>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#testimonials">Testimonials</a>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <a href="mailto:hello@roomvibe.app">Contact</a>
+        <a href="https://irenart.studio" target="_blank" rel="noopener">IrenArt Studio</a>
+        <a href="#how">How it works</a>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <a href="#privacy">Privacy</a>
+        <a href="#terms">Terms</a>
+      </div>
     </div>
   </footer>
 
+  <!-- Placeholder legal sekcije da linkovi rade -->
+  <div id="privacy" class="wrap section">
+    <h2>Privacy</h2>
+    <p class="muted">We only process images for visualization and do not share them with third parties. Full policy coming soon.</p>
+  </div>
+  <div id="terms" class="wrap section">
+    <h2>Terms</h2>
+    <p class="muted">By using RoomVibe, you agree to visualization-only previews and direct-to-checkout on partner stores.</p>
+  </div>
+
   <script>
-    /* ---- APP LOGIKA (isto kao prije) ---- */
+    /* ---- APP LOGIKA (kao prije) ---- */
     let MODE = 'catalog';
     let LAST_WALL_FILE = null;
     let ART_FILE = null;
@@ -521,7 +586,6 @@ HTML_PAGE = r'''
       ART_FILE = e.target.files?.[0] || null;
       maybeToggleMockOwn();
     });
-
     rights.addEventListener('change', maybeToggleMockOwn);
 
     mockOwnBtn.addEventListener('click', async ()=>{
@@ -591,6 +655,7 @@ HTML_PAGE = r'''
 </body>
 </html>
 '''
+
 
 
 @app.get("/", response_class=HTMLResponse)
