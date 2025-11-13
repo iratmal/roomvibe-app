@@ -1,13 +1,25 @@
 # RoomVibe Studio - Full Application
 
 ## Overview
-RoomVibe Studio is a comprehensive React/TypeScript web application featuring a Canvy-style three-panel editor for visualizing artwork in room environments, plus a marketing landing page. Built with React 18, TypeScript, Vite, and Tailwind CSS.
+RoomVibe Studio is a comprehensive React/TypeScript web application featuring a Canvy-style three-panel editor for visualizing artwork in room environments, plus a marketing landing page. Built with React 18, TypeScript, Vite, and Tailwind CSS. Features a **Lilac (#C8A2C8)** color scheme with elegant **Playfair Display** serif headings.
 
-**Current State**: Full Studio app + Landing page with Shopify integration  
+**Current State**: Full Studio app + Landing page + Showcase carousel + Lilac theme + Typography upgrade  
 **Last Updated**: November 13, 2025
 
 ## Recent Changes
-- **November 13, 2025: Studio Mode Deployed! 🎨**
+- **November 13, 2025: Lilac Theme + Showcase Carousel! 💜✨**
+  - **NEW: LILAC COLOR SCHEME** (#C8A2C8) - Replaced turquoise with elegant lilac
+    - All buttons, footer, and accents now use lilac
+    - Black text on lilac for optimal contrast
+  - **NEW: TYPOGRAPHY UPGRADE** - Professional font stack
+    - **Playfair Display** serif for headings (elegant, Canvy-inspired)
+    - **Inter** sans-serif for body text (clean, modern)
+    - Increased base font size to 17px for better readability
+  - **NEW: SHOWCASE CAROUSEL** - Auto-rotating preview
+    - Cycles through 10 room presets every 3 seconds
+    - Syncs artwork rotation with room changes
+    - Uses Shopify API or local catalog
+    - Labeled "Showcase" with "Rooms & Art cycling" subtitle
   - **NEW: Three-Panel Canvy Layout** (#/studio route)
     - Left panel: 10 room preset thumbnails
     - Center: Canvas with room + wall recolor + artwork overlay
@@ -16,10 +28,9 @@ RoomVibe Studio is a comprehensive React/TypeScript web application featuring a 
   - **NEW: Wall Recolor System** - Color overlay via PNG masks (only affects wall area)
   - **NEW: Photo Upload** - Users can upload their own wall photos
   - **NEW: Shopify Integration** - Auto-fetch artworks from collection
-  - **NEW: Navigation** - "Studio" link + "Try Studio" button in header
-  - **Updated Hero** - "Open Studio ▶" button replaces "Try Live Demo"
+  - **Updated Hero** - "Visualize art on your walls" (title case, Playfair Display)
   - Fixed missing icons (UploadIcon, InfoIcon, HomeIcon, CopyIcon)
-  - Build successful: 185 KB JS (56 KB gzipped)
+  - Build successful: 187 KB JS (57 KB gzipped) + 20 KB CSS (4.7 KB gzipped)
   - Deployed with autoscale configuration
 
 ## Project Architecture
@@ -56,12 +67,21 @@ roomvibe/
 - Sticky header with backdrop blur
 - Mobile hamburger menu
 - Navigation links: Demo, How it works, Pricing, Docs, **Studio** (new)
-- **"Try Studio"** CTA button (turquoise, replaced "Get started")
+- **"Try Studio"** CTA button (lilac #C8A2C8, black text)
 
 #### 2. Hero Section (Updated)
-- **Uppercase title**: "VISUALIZE ART ON YOUR WALLS"
-- Subheadline with value proposition
-- Two CTA buttons: **"Open Studio ▶"** (new) and "Add to Website →"
+- **Elegant serif title**: "Visualize art on your walls" (Playfair Display)
+- Title case instead of uppercase for sophisticated look
+- Subheadline with value proposition (Inter font)
+- Two CTA buttons: **"Open Studio ▶"** (lilac) and "Add to Website →"
+
+#### 2b. Showcase Carousel (NEW!)
+- Auto-rotating preview of rooms + artworks
+- Cycles every 3 seconds through all presets
+- Syncs room and artwork changes
+- White card with rounded corners
+- Header: "Showcase" + "Rooms & Art cycling"
+- Uses local artworks.json or Shopify API
 
 #### 3. LiveDemoMock (Enhanced)
 - **Photo Upload Button** - Users can upload their wall photo
@@ -156,11 +176,15 @@ roomvibe/
 - Safe area defines max canvas region for artwork
 
 ### Theme & Styling
-- **Primary Color**: Turquoise/Cyan (`--accent: #06B6D4`)
-- **Secondary Color**: Light Cyan (`--accent-2: #22D3EE`)
-- **Text**: Slate gray (`#0F172A`)
+- **Primary Color**: Lilac (`--accent: #C8A2C8`)
+- **Accent Contrast**: Black text (`--accent-contrast: #000000`)
+- **Text**: Nearly black (`#0a0a0a`)
 - **Background**: Gradient from slate-50 to white
-- **Footer**: Turquoise background with white text
+- **Footer**: Lilac background with white text
+- **Fonts**:
+  - **Display/Headings**: Playfair Display, Georgia, Times New Roman (serif)
+  - **Body Text**: Inter, system-ui, Segoe UI, Roboto (sans-serif)
+  - **Base Size**: 17px (slightly larger for better readability)
 
 ### All Icons (Inline SVG)
 - Logo, MenuIcon, SparkleIcon, PlayIcon, ArrowRightIcon
@@ -182,12 +206,12 @@ roomvibe/
 - `npm run start` - Preview production build (uses $PORT)
 - `npm run preview` - Preview production build
 
-### Build Output (Updated with Studio)
+### Build Output (Updated with Lilac Theme + Fonts + Carousel)
 ```
 dist/index.html         0.81 kB │ gzip:  0.43 kB
-dist/assets/index.css  19.74 kB │ gzip:  4.53 kB
-dist/assets/index.js  185.73 kB │ gzip: 56.79 kB
-Total gzipped: ~62 KB (+4 KB for Studio features)
+dist/assets/index.css  19.98 kB │ gzip:  4.65 kB
+dist/assets/index.js  187.39 kB │ gzip: 57.03 kB
+Total gzipped: ~62 KB (+500 bytes for fonts + carousel)
 ```
 
 ### Deployment Configuration

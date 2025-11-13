@@ -20,7 +20,7 @@ function useHashRoute() {
 export default function App() {
   const hash = useHashRoute();
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white text-slate-900">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white text-slate-900 font-body">
       <TopNav />
       {hash === "#/privacy" ? (
         <PrivacyPage />
@@ -73,7 +73,7 @@ function TopNav() {
             <a href="#/studio" className="hover:text-slate-700">Studio</a>
             <a
               href="#/studio"
-              className="inline-flex items-center rounded-full px-4 py-2 text-white shadow-sm hover:opacity-90"
+              className="inline-flex items-center rounded-full px-4 py-2 text-black shadow-sm hover:opacity-90"
               style={{ background: "var(--accent)" }}
             >
               Try Studio
@@ -103,7 +103,7 @@ function TopNav() {
             <a
               href="#/studio"
               onClick={() => setOpen(false)}
-              className="mt-3 inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-white"
+              className="mt-3 inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-black"
               style={{ background: "var(--accent)" }}
             >
               Try Studio
@@ -123,9 +123,9 @@ function Hero() {
           <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600 shadow-sm">
             <SparkleIcon className="h-3.5 w-3.5" /> Try original art in your room
           </span>
-          <h1 className="mt-6 text-3xl font-semibold tracking-tight sm:text-4xl uppercase text-black">
+          <h1 className="mt-6 text-3xl sm:text-4xl font-bold tracking-tight text-black font-display">
             <span className="">
-              Visualize Art on Your Walls
+              Visualize art on your walls
             </span>
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-slate-600">
@@ -141,7 +141,7 @@ function Hero() {
             </a>
             <a
               href="#docs"
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-slate-900 shadow-sm hover:bg-slate-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-black shadow-sm hover:bg-slate-50"
             >
               Add to Website <ArrowRightIcon className="h-4 w-4" />
             </a>
@@ -843,7 +843,7 @@ export default function Demo() {
   return (
     <section id="docs" className="relative">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-[radial-gradient(1200px_500px_at_50%_0%,#E6FAFD,white)] p-8 sm:p-12">
+        <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-[radial-gradient(1200px_500px_at_50%_0%,color-mix(in_oklab,var(--accent),white_85%),white)] p-8 sm:p-12">
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="text-2xl font-semibold">Add RoomVibe to your site</h2>
             <p className="mt-2 text-slate-600">Pick one of the two options below.</p>
