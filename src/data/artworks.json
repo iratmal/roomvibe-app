@@ -1,0 +1,23 @@
+[
+  {
+    "id": "sample-1",
+    "title": "Sample Artwork 1 (replace with Shopify URL)",
+    "widthCm": 100,
+    "heightCm": 70,
+    "imageUrl": "https://via.placeholder.com/1400x980.png?text=Artwork+1"
+  },
+  {
+    "id": "sample-2",
+    "title": "Sample Artwork 2 (replace with Shopify URL)",
+    "widthCm": 80,
+    "heightCm": 60,
+    "imageUrl": "https://via.placeholder.com/1120x840.png?text=Artwork+2"
+  },
+  {
+    "id": "sample-3",
+    "title": "Sample Artwork 3 (replace with Shopify URL)",
+    "widthCm": 150,
+    "heightCm": 100,
+    "imageUrl": "https://via.placeholder.com/1500x1000.png?text=Artwork+3"
+  }
+]

@@ -1,4 +1,6 @@
 import React, { useMemo, useRef, useState, useEffect } from "react";
+import localArtworks from "./data/artworks.json";
+import { fetchCollectionArtworks, type ShopifyArtwork } from "./shopify";
 
 /**
  * RoomVibe Landing — EN only
@@ -173,13 +175,36 @@ function LiveDemoMock() {
   const [lockRatio, setLockRatio] = useState<boolean>(true);
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   const [showSizingInfo, setShowSizingInfo] = useState(false);
+  const [artworks, setArtworks] = useState<any[]>(localArtworks as any[]);
+  const [selectedArtId, setSelectedArtId] = useState<string>(artworks[0]?.id || "");
   const fileRef = useRef<HTMLInputElement | null>(null);
+
+  // Optional: live-fetch from Shopify if env vars are set
+  useEffect(() => {
+    const handle = (import.meta as any).env.VITE_ROOMVIBE_COLLECTION_HANDLE; // e.g. "originals"
+    if (!handle) return;
+    fetchCollectionArtworks(handle, 24).then((res) => {
+      if (Array.isArray(res) && res.length) {
+        setArtworks(res);
+        setSelectedArtId(res[0].id);
+        // If width/height provided in metafields, sync defaults
+        const first = res[0];
+        if (first?.widthCm && first?.heightCm) {
+          setSizeUnit("cm");
+          setWidthVal(first.widthCm);
+          setHeightVal(first.heightCm);
+        }
+      }
+    }).catch(() => {});
+  }, []);
+
+  const selectedArtwork = artworks.find(a => a.id === selectedArtId);
 
   // Convert to cm for visual scaling if needed
   const widthCm = sizeUnit === "cm" ? widthVal : widthVal * 2.54;
   const heightCm = sizeUnit === "cm" ? heightVal : heightVal * 2.54;
 
-  // Visual-only scale mapping (not calibrated): 100cm -> 36% width; 150cm -> 48% ; roughly linear
+  // Visual-only scale mapping (not calibrated)
   const artWidthPct = Math.max(18, Math.min(60, 0.24 * widthCm + 12));
   const artAspect = Math.max(0.2, Math.min(5, widthCm / Math.max(1, heightCm))); // aspect guard
 
@@ -198,9 +223,37 @@ function LiveDemoMock() {
         <div className="order-2 lg:order-1">
           <h2 className="text-2xl font-semibold">Live Demo (preview)</h2>
           <p className="mt-2 text-slate-600">
-            Change room, set artwork size (free input), tweak wall color, or upload your own wall photo.
+            Change room, pick an artwork, set custom size, tweak wall color, or upload your wall photo.
           </p>
           <div className="mt-6 grid gap-5">
+
+            <fieldset>
+              <legend className="mb-2 text-sm font-medium text-slate-700">Artwork</legend>
+              <div className="flex flex-wrap items-center gap-2">
+                <select
+                  className="rounded-md border border-slate-300 px-2 py-1 text-sm"
+                  value={selectedArtId}
+                  onChange={(e) => setSelectedArtId(e.target.value)}
+                >
+                  {artworks.map((a) => (
+                    <option key={a.id} value={a.id}>{a.title}</option>
+                  ))}
+                </select>
+                <button
+                  className="rounded-md border border-slate-200 bg-white px-2 py-1 text-xs hover:bg-slate-50"
+                  onClick={() => {
+                    if (selectedArtwork?.widthCm && selectedArtwork?.heightCm) {
+                      setSizeUnit("cm");
+                      setWidthVal(selectedArtwork.widthCm);
+                      setHeightVal(selectedArtwork.heightCm);
+                    }
+                  }}
+                  title="Use artwork's default size (if available)"
+                >
+                  Use default size
+                </button>
+              </div>
+            </fieldset>
 
             <fieldset>
               <legend className="mb-2 text-sm font-medium text-slate-700">Room preset</legend>
@@ -298,7 +351,7 @@ function LiveDemoMock() {
                     if (lockRatio) {
                       const ratio = widthVal / Math.max(1, heightVal);
                       setHeightVal(v);
-                      setWidthVal(Math.max(1, +(v * ratio).toFixed(1)));
+                      setWidthVal(Math.max(1, +(heightVal / Math.max(1, ratio)).toFixed(1)));
                     } else {
                       setHeightVal(v);
                     }
@@ -309,7 +362,6 @@ function LiveDemoMock() {
                   value={sizeUnit}
                   onChange={(e) => {
                     const val = e.target.value as "cm" | "in";
-                    // Convert existing values when switching units
                     if (val === "in" && sizeUnit === "cm") {
                       setWidthVal(+(widthVal / 2.54).toFixed(1));
                       setHeightVal(+(heightVal / 2.54).toFixed(1));
@@ -376,13 +428,17 @@ function LiveDemoMock() {
               <div className="absolute bottom-0 left-0 right-0 h-12 bg-[linear-gradient(180deg,rgba(0,0,0,0.04),rgba(0,0,0,0.08))]" />
               <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
                 <div
-                  className="rounded-md border-8 border-white shadow-xl"
+                  className="overflow-hidden rounded-md border-8 border-white shadow-xl"
                   style={{ width: `${artWidthPct}%`, aspectRatio: `${artAspect}/1`, background: "#f8fafc" }}
                 >
-                  <div
-                    className="h-full w-full"
-                    style={{ background: "linear-gradient(135deg, color-mix(in_oklab,var(--accent),white_10%), color-mix(in_oklab,var(--accent),black_10%))" }}
-                  />
+                  {selectedArtwork?.imageUrl ? (
+                    <img src={selectedArtwork.imageUrl} alt={selectedArtwork.title} className="h-full w-full object-cover" draggable={false} />
+                  ) : (
+                    <div
+                      className="h-full w-full"
+                      style={{ background: "linear-gradient(135deg, color-mix(in_oklab,var(--accent),white_10%), color-mix(in_oklab,var(--accent),black_10%))" }}
+                    />
+                  )}
                 </div>
               </div>
             </div>
@@ -394,7 +450,6 @@ function LiveDemoMock() {
         </div>
       </div>
 
-      {/* True-to-size modal */}
       {showSizingInfo && (
         <Modal onClose={() => setShowSizingInfo(false)}>
           <div className="text-sm text-slate-700">
