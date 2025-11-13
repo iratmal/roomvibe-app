@@ -198,7 +198,7 @@ function ShowcaseCarousel() {
             <div className="text-slate-500">Rooms & Art cycling</div>
           </div>
           <div className="relative h-[500px] overflow-hidden rounded-b-3xl">
-            <img src={scene.photo} alt={scene.name} className="absolute inset-0 h-full w-full object-cover" />
+            <img src={scene?.photo} alt={scene?.name || "Room"} className="absolute inset-0 h-full w-full object-cover" />
             <div
               className="absolute -translate-x-1/2 -translate-y-1/2"
               style={{ left: `${safe.x*100}%`, top: `${safe.y*100}%`, width: `${artWidthPct}%` }}
