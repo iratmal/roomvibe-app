@@ -30,6 +30,8 @@ export default function App() {
         <main>
           <Hero />
           <SectionDivider />
+          <ShowcaseCarousel />
+          <SectionDivider />
           <LiveDemoMock />
           <SectionDivider />
           <HowItWorks />
@@ -121,8 +123,8 @@ function Hero() {
           <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600 shadow-sm">
             <SparkleIcon className="h-3.5 w-3.5" /> Try original art in your room
           </span>
-          <h1 className="mt-6 text-4xl font-semibold tracking-tight sm:text-5xl uppercase">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[var(--accent)] to-[color-mix(in_oklab,var(--accent),white_25%)]">
+          <h1 className="mt-6 text-3xl font-semibold tracking-tight sm:text-4xl uppercase text-black">
+            <span className="">
               Visualize Art on Your Walls
             </span>
           </h1>
@@ -132,7 +134,7 @@ function Hero() {
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a
               href="#/studio"
-              className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-white shadow hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-black shadow hover:opacity-90"
               style={{ background: "var(--accent)" }}
             >
               Open Studio <PlayIcon className="h-4 w-4" />
@@ -152,6 +154,67 @@ function Hero() {
         </div>
       </div>
     </Container>
+  );
+}
+
+
+function ShowcaseCarousel() {
+  const [idx, setIdx] = useState(0);
+  const [artIdx, setArtIdx] = useState(0);
+  const [arts, setArts] = useState<any[]>(localArtworks as any[]);
+
+  useEffect(() => {
+    const handle = (import.meta as any).env.VITE_ROOMVIBE_COLLECTION_HANDLE;
+    if (!handle) return;
+    fetchCollectionArtworks(handle, 48).then((res) => {
+      if (Array.isArray(res) && res.length) setArts(res);
+    }).catch(()=>{});
+  }, []);
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      setIdx((v) => (v + 1) % (presets as any).length);
+      setArtIdx((v) => (v + 1) % Math.max(1, arts.length));
+    }, 3000);
+    return () => clearInterval(t);
+  }, [arts.length]);
+
+  const scene:any = (presets as any)[idx];
+  const art = arts[artIdx] || arts[0];
+  const safe = scene?.safeArea || { x: 0.5, y: 0.38, w: 0.62, h: 0.48 };
+
+  // default showcase size (visual)
+  const widthCm = 100;
+  const heightCm = 70;
+  const artWidthPct = Math.max(18, Math.min(safe.w*100, 0.24 * widthCm + 12));
+  const aspect = Math.max(0.2, Math.min(5, widthCm / Math.max(1, heightCm)));
+
+  return (
+    <section className="relative">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="rounded-3xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3 text-sm">
+            <div className="font-medium">Showcase</div>
+            <div className="text-slate-500">Rooms & Art cycling</div>
+          </div>
+          <div className="relative h-[500px] overflow-hidden rounded-b-3xl">
+            <img src={scene.photo} alt={scene.name} className="absolute inset-0 h-full w-full object-cover" />
+            <div
+              className="absolute -translate-x-1/2 -translate-y-1/2"
+              style={{ left: `${safe.x*100}%`, top: `${safe.y*100}%`, width: `${artWidthPct}%` }}
+            >
+              <div className="overflow-hidden rounded-md border-8 border-white shadow-2xl" style={{ aspectRatio: `${aspect}/1`, background: "#f8fafc" }}>
+                {art?.imageUrl ? (
+                  <img src={art.imageUrl} alt={art.title} className="h-full w-full object-cover" draggable={false}/>
+                ) : (
+                  <div className="h-full w-full" style={{ background: "linear-gradient(135deg, color-mix(in_oklab,var(--accent),white_10%), color-mix(in_oklab,var(--accent),black_10%))" }}/>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -742,7 +805,7 @@ function Pricing() {
             </ul>
             <a
               href="#/studio"
-              className="mt-6 inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-white hover:opacity-90"
+              className="mt-6 inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-black hover:opacity-90"
               style={{ background: "var(--accent)" }}
             >
               {t.cta}
@@ -1006,7 +1069,7 @@ function SiteFooter() {
   }
 
   return (
-    <footer className="mt-16 bg-[var(--accent)] text-white">
+    <footer className="mt-16 bg-[var(--footer-bg)] text-black">
       <Container>
         <div className="grid gap-10 py-14 lg:grid-cols-3">
           <div>
@@ -1036,11 +1099,11 @@ function SiteFooter() {
                 placeholder="you@example.com"
                 value={nlEmail}
                 onChange={(e) => setNlEmail(e.target.value)}
-                className="min-w-0 flex-1 rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-white placeholder:text-white/70 outline-none backdrop-blur"
+                className="min-w-0 flex-1 rounded-lg border border-black/20 bg-white px-3 py-2 text-black placeholder:text-black/60 outline-none"
               />
               <button
                 type="submit"
-                className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow hover:opacity-90"
+                className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-black shadow hover:opacity-90"
               >
                 Subscribe
               </button>
@@ -1057,7 +1120,7 @@ function SiteFooter() {
                 placeholder="Your name"
                 value={cName}
                 onChange={(e) => setCName(e.target.value)}
-                className="rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-white placeholder:text-white/70 outline-none backdrop-blur"
+                className="rounded-lg border border-black/20 bg-white px-3 py-2 text-black placeholder:text-black/60 outline-none"
                 required
               />
               <input
@@ -1065,7 +1128,7 @@ function SiteFooter() {
                 placeholder="Email"
                 value={cEmail}
                 onChange={(e) => setCEmail(e.target.value)}
-                className="rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-white placeholder:text-white/70 outline-none backdrop-blur"
+                className="rounded-lg border border-black/20 bg-white px-3 py-2 text-black placeholder:text-black/60 outline-none"
                 required
               />
               <textarea
@@ -1073,7 +1136,7 @@ function SiteFooter() {
                 value={cMsg}
                 onChange={(e) => setCMsg(e.target.value)}
                 rows={3}
-                className="rounded-lg border border-white/25 bg-white/10 px-3 py-2 text-white placeholder:text-white/70 outline-none backdrop-blur"
+                className="rounded-lg border border-black/20 bg-white px-3 py-2 text-black placeholder:text-black/60 outline-none"
                 required
               />
               <button
