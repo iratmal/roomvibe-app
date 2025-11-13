@@ -7,14 +7,14 @@ RoomVibe Studio is a comprehensive React/TypeScript web application featuring a 
 **Last Updated**: November 13, 2025
 
 ## Recent Changes
-- **November 13, 2025: Lilac Theme + Showcase Carousel! 💜✨**
+- **November 13, 2025: Lilac Theme + Modern Typography + Showcase Carousel! 💜✨**
   - **NEW: LILAC COLOR SCHEME** (#C8A2C8) - Replaced turquoise with elegant lilac
     - All buttons, footer, and accents now use lilac
     - Black text on lilac for optimal contrast
-  - **NEW: TYPOGRAPHY UPGRADE** - Professional font stack
-    - **Playfair Display** serif for headings (elegant, Canvy-inspired)
-    - **Inter** sans-serif for body text (clean, modern)
-    - Increased base font size to 17px for better readability
+  - **NEW: MODERN TYPOGRAPHY UPGRADE** - Ultra-modern font stack
+    - **Poppins** sans-serif for all text (clean, modern, geometric)
+    - Increased base font size to **19px** for better readability (+12% larger)
+  - **NEW: LARGER ARTWORK IN SHOWCASE** - Increased from 100×70cm to 120×90cm (~50% bigger)
   - **NEW: SHOWCASE CAROUSEL** - Auto-rotating preview
     - Cycles through 10 room presets every 3 seconds
     - Syncs artwork rotation with room changes
@@ -182,9 +182,8 @@ roomvibe/
 - **Background**: Gradient from slate-50 to white
 - **Footer**: Lilac background with white text
 - **Fonts**:
-  - **Display/Headings**: Playfair Display, Georgia, Times New Roman (serif)
-  - **Body Text**: Inter, system-ui, Segoe UI, Roboto (sans-serif)
-  - **Base Size**: 17px (slightly larger for better readability)
+  - **All Text**: Poppins, system-ui, Segoe UI, Roboto (modern sans-serif)
+  - **Base Size**: 19px (12% larger for better readability)
 
 ### All Icons (Inline SVG)
 - Logo, MenuIcon, SparkleIcon, PlayIcon, ArrowRightIcon
@@ -206,12 +205,12 @@ roomvibe/
 - `npm run start` - Preview production build (uses $PORT)
 - `npm run preview` - Preview production build
 
-### Build Output (Updated with Lilac Theme + Fonts + Carousel)
+### Build Output (Updated with Lilac Theme + Poppins Font + Carousel)
 ```
-dist/index.html         0.81 kB │ gzip:  0.43 kB
+dist/index.html         1.07 kB │ gzip:  0.53 kB
 dist/assets/index.css  19.98 kB │ gzip:  4.65 kB
-dist/assets/index.js  187.39 kB │ gzip: 57.03 kB
-Total gzipped: ~62 KB (+500 bytes for fonts + carousel)
+dist/assets/index.js  187.29 kB │ gzip: 57.01 kB
+Total gzipped: ~62 KB
 ```
 
 ### Deployment Configuration
