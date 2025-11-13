@@ -146,11 +146,11 @@ function Hero() {
               Add to Website <ArrowRightIcon className="h-4 w-4" />
             </a>
           </div>
-          <div
-            aria-hidden
-            className="pointer-events-none absolute left-1/2 top-0 -z-10 h-[480px] w-[960px] -translate-x-1/2"
-            style={{ background: "radial-gradient(closest-side, color-mix(in_oklab,var(--accent),white_70%), transparent)" }}
-          ></div>
+          <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+            <div className="absolute -top-40 left-1/4 h-[500px] w-[500px] rounded-full bg-purple-200 opacity-30 blur-3xl"></div>
+            <div className="absolute top-20 right-1/4 h-[400px] w-[400px] rounded-full bg-pink-200 opacity-25 blur-3xl"></div>
+            <div className="absolute top-1/2 left-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-20 blur-3xl" style={{ background: "var(--accent)" }}></div>
+          </div>
         </div>
       </div>
     </Container>

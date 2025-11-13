@@ -7,14 +7,18 @@ RoomVibe Studio is a comprehensive React/TypeScript web application featuring a 
 **Last Updated**: November 13, 2025
 
 ## Recent Changes
-- **November 13, 2025: Lilac Theme + Modern Typography + Showcase Carousel! 💜✨**
+- **November 13, 2025: Lilac Theme + Modern Typography + Canva Background! 💜✨**
   - **NEW: LILAC COLOR SCHEME** (#C8A2C8) - Replaced turquoise with elegant lilac
     - All buttons, footer, and accents now use lilac
     - Black text on lilac for optimal contrast
   - **NEW: MODERN TYPOGRAPHY UPGRADE** - Ultra-modern font stack
     - **Poppins** sans-serif for all text (clean, modern, geometric)
     - Increased base font size to **19px** for better readability (+12% larger)
+  - **NEW: CANVA-STYLE MESH BACKGROUND** - Multi-layered blurred shapes
+    - Purple, pink, and lilac gradient orbs with blur-3xl effect
+    - Modern depth and visual interest (30% opacity max)
   - **NEW: LARGER ARTWORK IN SHOWCASE** - Increased from 100×70cm to 120×90cm (~50% bigger)
+  - **FIXED: Placeholder Images** - Replaced broken via.placeholder.com with inline SVG data URIs
   - **NEW: SHOWCASE CAROUSEL** - Auto-rotating preview
     - Cycles through 10 room presets every 3 seconds
     - Syncs artwork rotation with room changes
