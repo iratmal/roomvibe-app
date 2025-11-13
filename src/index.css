@@ -2,4 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-:root{--accent:#06B6D4;--accent-2:#22D3EE;} body{color:#0F172A} a{ text-underline-offset:2px }
+:root {
+  --accent: #06B6D4; /* turquoise */
+}
