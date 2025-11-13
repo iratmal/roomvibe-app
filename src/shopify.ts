@@ -48,8 +48,9 @@ export async function fetchCollectionArtworks(handle: string, first = 20): Promi
   const edges = json?.data?.collection?.products?.edges ?? [];
   return edges.map((e: any) => {
     const node = e.node;
-    const w = node.metafields?.find((m: any) => m.key === "width_cm")?.value;
-    const h = node.metafields?.find((m: any) => m.key === "height_cm")?.value;
+    const metafields = Array.isArray(node.metafields) ? node.metafields.filter((m: any) => m != null) : [];
+    const w = metafields.find((m: any) => m.key === "width_cm")?.value;
+    const h = metafields.find((m: any) => m.key === "height_cm")?.value;
     const img = node.images?.edges?.[0]?.node?.url;
     return {
       id: node.id,
