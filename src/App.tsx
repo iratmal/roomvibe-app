@@ -183,10 +183,10 @@ function ShowcaseCarousel() {
   const art = arts[artIdx] || arts[0];
   const safe = scene?.safeArea || { x: 0.5, y: 0.38, w: 0.62, h: 0.48 };
 
-  // default showcase size (visual)
-  const widthCm = 100;
-  const heightCm = 70;
-  const artWidthPct = Math.max(18, Math.min(safe.w*100, 0.24 * widthCm + 12));
+  // default showcase size (visual) - INCREASED for better visibility
+  const widthCm = 120;
+  const heightCm = 90;
+  const artWidthPct = Math.max(25, Math.min(safe.w*100, 0.35 * widthCm + 8));
   const aspect = Math.max(0.2, Math.min(5, widthCm / Math.max(1, heightCm)));
 
   return (
