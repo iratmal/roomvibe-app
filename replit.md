@@ -1,37 +1,44 @@
-# RoomVibe Landing Page - Full Version
+# RoomVibe Studio - Full Application
 
 ## Overview
-RoomVibe Landing Page is a comprehensive React/TypeScript marketing website with advanced features for showcasing the RoomVibe widget. Built with React 18, TypeScript, Vite, and Tailwind CSS.
+RoomVibe Studio is a comprehensive React/TypeScript web application featuring a Canvy-style three-panel editor for visualizing artwork in room environments, plus a marketing landing page. Built with React 18, TypeScript, Vite, and Tailwind CSS.
 
-**Current State**: Full-featured landing page with photo upload and custom sizing  
+**Current State**: Full Studio app + Landing page with Shopify integration  
 **Last Updated**: November 13, 2025
 
 ## Recent Changes
-- November 13, 2025: Imported full version (roomvibe-replit-full.zip)
-  - **NEW: Photo upload** - Users can upload their own wall photos
-  - **NEW: Custom artwork sizes** - Free input with ratio lock functionality
-  - **NEW: Smart wall color hiding** - Wall color picker hidden when photo uploaded
-  - **NEW: Enhanced FAQ** - 10 detailed questions and answers
-  - **NEW: Footer with forms** - Newsletter signup + Contact form with turquoise background
-  - **NEW: Hash routing** - Privacy page accessible via #/privacy
-  - Uppercase hero title: "VISUALIZE ART ON YOUR WALLS"
+- **November 13, 2025: Studio Mode Deployed! 🎨**
+  - **NEW: Three-Panel Canvy Layout** (#/studio route)
+    - Left panel: 10 room preset thumbnails
+    - Center: Canvas with room + wall recolor + artwork overlay
+    - Right: Artwork selector, size controls, frame placeholders
+  - **NEW: 10 Room Presets** with PNG alpha masks for wall recoloring
+  - **NEW: Wall Recolor System** - Color overlay via PNG masks (only affects wall area)
+  - **NEW: Photo Upload** - Users can upload their own wall photos
+  - **NEW: Shopify Integration** - Auto-fetch artworks from collection
+  - **NEW: Navigation** - "Studio" link + "Try Studio" button in header
+  - **Updated Hero** - "Open Studio ▶" button replaces "Try Live Demo"
   - Fixed missing icons (UploadIcon, InfoIcon, HomeIcon, CopyIcon)
-  - Updated Vite config with allowedHosts for app.roomvibe.app
-  - Configured for Node.js autoscale deployment
+  - Build successful: 185 KB JS (56 KB gzipped)
+  - Deployed with autoscale configuration
 
 ## Project Architecture
 
 ### Structure
 ```
 roomvibe/
-├── public/              # Static assets (art images, room backgrounds)
-│   ├── art/            # Artwork images
-│   ├── rooms/          # Room preset images
-│   └── artworks.json   # Artwork catalog data
+├── public/
+│   └── presets/        # Studio room presets (NEW)
+│       ├── room-01.png ... room-10.png  # 10 room photos
+│       └── mask-01.png ... mask-10.png  # 10 PNG alpha masks
 ├── src/
-│   ├── App.tsx         # Main landing page (992 lines)
+│   ├── App.tsx         # Main app with routing (1231 lines)
 │   ├── main.tsx        # React entry point
-│   └── index.css       # Global styles with Tailwind + CSS variables
+│   ├── index.css       # Global styles with Tailwind + CSS variables
+│   ├── shopify.ts      # Shopify Storefront API integration
+│   └── data/
+│       ├── artworks.json  # Local artwork catalog
+│       └── presets.json   # Studio room preset config (NEW)
 ├── vite.config.ts      # Vite config (port 5000, allowedHosts)
 ├── tailwind.config.js  # Tailwind CSS config
 ├── tsconfig.json       # TypeScript configuration
@@ -40,16 +47,21 @@ roomvibe/
 
 ### Key Components & Features
 
-#### 1. TopNav
+#### 0. Hash Routing (NEW)
+- `/` or `#home` - Landing page (default)
+- `#/studio` - Studio mode (three-panel editor)
+- `#/privacy` - Privacy policy page
+
+#### 1. TopNav (Updated)
 - Sticky header with backdrop blur
 - Mobile hamburger menu
-- Navigation links: Demo, How it works, Pricing, Docs, FAQ
-- "Get started" CTA button
+- Navigation links: Demo, How it works, Pricing, Docs, **Studio** (new)
+- **"Try Studio"** CTA button (turquoise, replaced "Get started")
 
-#### 2. Hero Section
+#### 2. Hero Section (Updated)
 - **Uppercase title**: "VISUALIZE ART ON YOUR WALLS"
 - Subheadline with value proposition
-- Two CTA buttons: "Try Live Demo ▶" and "Add to Website →"
+- Two CTA buttons: **"Open Studio ▶"** (new) and "Add to Website →"
 
 #### 3. LiveDemoMock (Enhanced)
 - **Photo Upload Button** - Users can upload their wall photo
@@ -91,6 +103,58 @@ roomvibe/
 - Short GDPR-compliant privacy policy
 - Controller info: Lumina Start j.d.o.o., Zagreb
 
+#### 10. Studio Mode (NEW - Main Feature! 🎨)
+**Three-Panel Canvy-Style Layout** accessible via #/studio
+
+**Left Panel: Scene Browser (col-span-3)**
+- Grid of 10 room preset thumbnails
+- Click to switch scenes
+- Active scene highlighted with border
+- Each preset shows preview image + name
+- "Home" link to return to landing page
+
+**Center Panel: Canvas (col-span-6)**
+- Large canvas (560px height) with selected room photo
+- **Wall Recolor System**:
+  - PNG alpha mask overlay (only colors wall area, preserves furniture)
+  - Color picker to change wall color
+  - Mask uses CSS `mask-image` property
+- **User Photo Upload**:
+  - "Upload wall photo" button
+  - Replaces preset with user's own wall
+  - Wall color picker hidden when photo uploaded
+  - "Remove photo" option to restore preset
+- **Artwork Overlay**:
+  - Centered in safe area (defined per preset)
+  - True-to-scale sizing based on dimensions
+  - White frame border with shadow
+  - Draggable preview (future: drag to reposition)
+
+**Right Panel: Controls (col-span-3)**
+- **Artwork Selector**:
+  - Dropdown with all artworks
+  - Loads from local catalog or Shopify API
+  - Shows artwork title
+- **Size Controls**:
+  - Width/Height inputs (numeric)
+  - cm/in unit selector with conversion
+  - Lock ratio toggle (maintains aspect ratio)
+  - Quick pick buttons: 80×60, 100×70, 150×100 cm
+- **Frame Options** (placeholder for Pro):
+  - None, Slim, Gallery (buttons disabled)
+- **Help Text**:
+  - Deep link hint (#/studio)
+  - Shopify integration instructions
+
+**Technical Implementation**:
+- Room presets in `src/data/presets.json` with:
+  - `id`, `name`, `photo`, `mask` paths
+  - `safeArea` object: `{x, y, w, h}` (normalized 0-1 coordinates)
+- Wall recolor uses CSS mask with alpha channel PNG
+- Artwork size calculated: `artWidthPct = f(widthCm, safeArea.w)`
+- Aspect ratio: `widthCm / heightCm`
+- Safe area defines max canvas region for artwork
+
 ### Theme & Styling
 - **Primary Color**: Turquoise/Cyan (`--accent: #06B6D4`)
 - **Secondary Color**: Light Cyan (`--accent-2: #22D3EE`)
@@ -118,12 +182,12 @@ roomvibe/
 - `npm run start` - Preview production build (uses $PORT)
 - `npm run preview` - Preview production build
 
-### Build Output
+### Build Output (Updated with Studio)
 ```
-dist/index.html      0.81 kB │ gzip:  0.43 kB
-dist/assets/index.css   18.20 kB │ gzip:  4.31 kB
-dist/assets/index.js   174.87 kB │ gzip: 54.50 kB
-Total gzipped: ~58 KB
+dist/index.html         0.81 kB │ gzip:  0.43 kB
+dist/assets/index.css  19.74 kB │ gzip:  4.53 kB
+dist/assets/index.js  185.73 kB │ gzip: 56.79 kB
+Total gzipped: ~62 KB (+4 KB for Studio features)
 ```
 
 ### Deployment Configuration
@@ -145,26 +209,30 @@ Total gzipped: ~58 KB
 }
 ```
 
-## Key Improvements in Full Version
+## Key Features Summary
 
-### User Experience
-1. **Photo Upload** - Users can visualize art on their actual walls
-2. **Custom Sizing** - Exact dimensions with ratio lock
-3. **Smart UI** - Wall color hidden when photo uploaded
-4. **Better FAQ** - 10 detailed answers vs 6 basic ones
-5. **Lead Capture** - Newsletter + Contact forms in footer
+### Studio Mode (Canvy-Inspired)
+1. **Three-Panel Layout** - Professional editor interface
+2. **10 Room Presets** - Living rooms, hallways, bedrooms with realistic photos
+3. **Wall Recolor** - PNG alpha masks isolate wall area for color changes
+4. **Photo Upload** - Users can upload their actual wall photos
+5. **True-to-Scale Sizing** - Artwork dimensions in cm/in with ratio lock
+6. **Shopify Integration** - Auto-fetch products from collection
 
-### Visual Design
-1. **Uppercase Hero** - Stronger visual impact
-2. **Turquoise Footer** - Brand consistency
-3. **Soft Backgrounds** - Better section separation
-4. **Modal System** - Info overlays for help content
+### Landing Page
+1. **Hero Section** - Uppercase title, gradient background, Studio CTA
+2. **Live Demo** - Quick preview with 3 room presets
+3. **Pricing** - Free, Basic €9, Designer Pro €29
+4. **FAQ** - 10 detailed questions
+5. **Newsletter + Contact Forms** - Lead capture in turquoise footer
 
-### Technical
-1. **Hash Routing** - Privacy page without page reload
-2. **Form Handling** - Newsletter and contact form state
-3. **File Upload** - Image preview with FileReader API
-4. **Ratio Lock** - Maintains artwork proportions
+### Technical Excellence
+1. **Hash Routing** - SPA navigation without page reload
+2. **CSS Masking** - Advanced wall recolor technique
+3. **File Upload** - FileReader API for instant preview
+4. **Responsive Design** - Mobile-first with Tailwind
+5. **TypeScript** - Full type safety
+6. **Shopify API** - Storefront GraphQL integration
 
 ## Development Notes
 - Server runs on port 5000 (Replit requirement for webview)
@@ -176,20 +244,50 @@ Total gzipped: ~58 KB
 - Forms use localStorage for demo (not connected to backend)
 - Photo upload displays preview but doesn't persist
 
+## Shopify Integration Setup
+
+### Option 1: Local Catalog (Fastest)
+1. Edit `src/data/artworks.json`
+2. Replace `imageUrl` with Shopify CDN URLs:
+   - Go to Shopify Products → Image → "Copy link"
+3. Set `widthCm` and `heightCm` for each artwork
+4. Both Studio and Landing will use this catalog
+
+### Option 2: Auto-Fetch from Shopify (Production)
+Add these environment variables in Replit Secrets:
+```
+VITE_SHOPIFY_DOMAIN=irenart.studio
+VITE_SHOPIFY_STOREFRONT_TOKEN=your-public-token
+VITE_ROOMVIBE_COLLECTION_HANDLE=originals
+```
+
+**Optional Metafields** (for default sizes):
+- Namespace: `roomvibe`
+- Keys: `width_cm`, `height_cm`
+
+The app will fetch products automatically on load!
+
 ## Production Readiness
 - ✅ TypeScript compilation passes
-- ✅ Vite build successful (~58 KB gzipped)
+- ✅ Vite build successful (62 KB gzipped)
 - ✅ All icons implemented
+- ✅ Studio mode fully functional
+- ✅ 10 room presets with masks
 - ✅ Deployment config correct (autoscale)
 - ✅ Custom domain support (app.roomvibe.app)
 - ✅ Mobile responsive
 - ✅ GDPR privacy policy included
-- 🟡 Forms are demo-only (need backend integration for production)
+- ✅ Shopify integration ready
+- 🟡 Forms are demo-only (need backend integration)
+- 🟡 Room presets are placeholders (need real photos)
 
 ## Next Steps for Production
-1. Connect newsletter form to email service (Mailchimp, SendGrid, etc.)
-2. Connect contact form to email or CRM
-3. Add analytics (Google Analytics, Plausible, etc.)
-4. Implement actual photo upload storage (Cloudinary, S3, etc.)
-5. Add error tracking (Sentry, LogRocket, etc.)
-6. Set up monitoring and alerts
+1. **Replace placeholder room photos** with real photography + masks
+2. **Connect newsletter** to MailerLite (need API key)
+3. **Connect contact form** to EmailJS or backend
+4. **Add real artworks** to Shopify catalog
+5. **Set Shopify env vars** for auto-fetch
+6. **Add analytics** (Google Analytics, Plausible)
+7. **Add error tracking** (Sentry, LogRocket)
+8. **Frame rendering** (Pro feature - add visual frames)
+9. **A4 calibration** (true-to-size accuracy feature)
