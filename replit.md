@@ -1,124 +1,80 @@
-# RoomVibe
+# RoomVibe Landing Page
 
 ## Overview
-RoomVibe is an embeddable React widget that lets users try artworks in room presets, select sizes/frames, customize wall colors, and purchase with one click. Built with React, TypeScript, Vite, and Tailwind CSS.
+RoomVibe Landing Page is a modern React/TypeScript marketing website showcasing the RoomVibe widget. Features hero section, live demo preview, pricing, documentation, and FAQ. Built with React 18, TypeScript, Vite, and Tailwind CSS.
 
-**Current State**: Fully functional MVP widget with demo app
-**Last Updated**: November 12, 2025
+**Current State**: Fully functional landing page  
+**Last Updated**: November 13, 2025
 
 ## Recent Changes
-- November 12, 2025: Complete rebuild as React + TypeScript widget
-  - Migrated from Python FastAPI to React + TypeScript + Vite
-  - Implemented embeddable widget (UMD + ESM builds)
-  - Added 3 room presets (Living Room, Hallway, Bedroom)
-  - Created artwork selection system with realistic scaling
-  - Implemented size & frame selection (none, black, white, oak)
-  - Added wall color picker with swatches + custom color
-  - Integrated Shopify/ThriveCart checkout links
-  - Added MailerLite email capture modal
-  - Implemented share link generation with URL state
-  - Created Designer Mode with custom width input
-  - Built 3 conversion-tested themes (Azure, Royal, Sunset)
-  - Added modern Pricing component (3 tiers)
-  - Implemented analytics events system
-  - Fixed critical issues:
-    - Collection filtering (filters artworks by tag)
-    - oneClickBuy prop (hides/shows Buy button)
-    - Checkout validation (prevents opening undefined URLs)
-    - Event architecture (emitEvent helper prevents double timestamps)
-    - Asset hosting (UMD build copies public/ folder to dist-widget/)
-    - rv_view event (fires only once on mount)
+- November 13, 2025: Imported new landing page
+  - Replaced widget demo app with full landing page
+  - Implemented sticky navigation with mobile menu
+  - Created Hero section with "Visualize Art on Your Walls" headline
+  - Added Live Demo preview section with room/wall controls
+  - Built How It Works stepper (3 steps)
+  - Implemented Pricing component (3 tiers)
+  - Added Documentation embed section with code examples
+  - Created FAQ accordion with common questions
+  - Implemented Privacy Policy page
+  - Fixed missing icon components (HomeIcon, CopyIcon)
+  - Cleaned up old widget files and folders
+  - Updated deployment configuration for Node.js autoscale
 
 ## Project Architecture
 
 ### Structure
 ```
 roomvibe/
-├── public/
-│   ├── rooms/          # Room preset images (living, hallway, bedroom)
-│   ├── art/            # Artwork images
-│   └── artworks.json   # Artwork catalog data
+├── public/             # Static assets (if any)
 ├── src/
-│   ├── widget/         # Core widget components
-│   │   ├── RoomVibe.tsx        # Main widget component
-│   │   ├── RoomViewer.tsx      # Room preview with artwork
-│   │   ├── ArtworkSelector.tsx # Artwork grid
-│   │   ├── Controls.tsx        # Size/frame/wall controls
-│   │   └── Pricing.tsx         # Pricing tiers
-│   ├── demo/           # Demo application
-│   │   └── DemoApp.tsx
-│   ├── lib/            # Utilities
-│   │   ├── analytics.ts    # Event tracking
-│   │   ├── checkout.ts     # Checkout link generation
-│   │   ├── mailerlite.ts   # Email lead capture
-│   │   └── shareLink.ts    # URL state management
-│   ├── types.ts        # TypeScript definitions
-│   ├── themes.css      # CSS variables for 3 themes
-│   ├── index.css       # Global styles
-│   └── index.tsx       # Entry point
-├── vite.config.ts      # Demo build config
-├── vite.config.umd.ts  # Widget build config (UMD + ESM)
-└── package.json
+│   ├── App.tsx         # Main landing page component (654 lines)
+│   ├── main.tsx        # React entry point
+│   └── index.css       # Global styles with Tailwind + CSS variables
+├── vite.config.ts      # Vite configuration (port 5000)
+├── tailwind.config.js  # Tailwind CSS config
+├── tsconfig.json       # TypeScript configuration
+└── package.json        # Dependencies and scripts
 ```
 
-### Key Features
-- **3 Room Presets**: Living Room, Hallway, Bedroom with realistic backgrounds
-- **Artwork Selection**: Grid of artworks with thumbnails and details
-- **Realistic Scaling**: Artwork scales proportionally based on aspect ratio
-- **Size Options**: Multiple sizes per artwork (e.g., 80x60, 100x70, 150x100 cm)
-- **Frame Styles**: None, Black, White, Oak with visual preview
-- **Wall Color**: 7 preset swatches + custom color picker
-- **Designer Mode**: Toggle for precise width input and dimension display
-- **One-Click Checkout**: Shopify/ThriveCart integration with UTM tracking
-- **Email Capture**: MailerLite modal for lead generation
-- **Share Links**: Generate shareable URLs with preserved state
-- **Three Themes**: Azure (blue), Royal (purple), Sunset (orange) with CSS variables
-- **Analytics Events**: Track all user interactions via hooks
-- **Embeddable**: Works as React component or UMD script tag
+### Key Sections
+1. **TopNav**: Sticky header with logo, navigation links, mobile menu
+2. **Hero**: Main headline, subheadline, CTA buttons
+3. **LiveDemoMock**: Interactive preview of room visualization
+4. **HowItWorks**: 3-step process explanation
+5. **Pricing**: 3-tier pricing table (Starter, Professional, Enterprise)
+6. **DocsEmbed**: Code examples for widget integration
+7. **FAQ**: Accordion with common questions
+8. **SiteFooter**: Links, legal, contact information
 
-### Component Props
-```typescript
-interface RoomVibeProps {
-  mode?: 'showcase' | 'designer';
-  collection?: string;
-  theme?: 'azure' | 'royal' | 'sunset';
-  oneClickBuy?: boolean;
-  checkoutType?: 'shopify' | 'thrivecart';
-  checkoutLinkTemplate?: string;
-  onEvent?: (event: AnalyticsEvent) => void;
-}
-```
-
-### Analytics Events
-- `rv_view` - Widget loaded
-- `rv_art_select` - Artwork selected
-- `rv_size_change` - Size changed
-- `rv_frame_change` - Frame changed
-- `rv_wall_color_change` - Wall color changed
-- `rv_room_change` - Room preset changed
-- `rv_buy_click` - Buy button clicked
-- `rv_email_submit` - Email submitted
-- `rv_share_copy` - Share link copied
-- `rv_designer_mode_toggle` - Designer mode toggled
+### Theme
+- **Primary Color**: Turquoise/Cyan (`--accent: #06B6D4`)
+- **Secondary Color**: Light Cyan (`--accent-2: #22D3EE`)
+- **Text**: Slate gray (`#0F172A`)
+- **Background**: Gradient from slate-50 to white
 
 ### Dependencies
 - **React** 18.3.1 - UI library
 - **TypeScript** 5.6.3 - Type safety
-- **Vite** 5.0.0 - Build tool
-- **Tailwind CSS** 3.4.0 - Styling
+- **Vite** 5.4.10 - Build tool and dev server
+- **Tailwind CSS** 3.4.13 - Utility-first CSS
 - **PostCSS** + **Autoprefixer** - CSS processing
 
 ### Build Commands
 - `npm run dev` - Start development server (port 5000)
-- `npm run build` - Build demo app
-- `npm run build:umd` - Build widget (UMD + ESM)
-- `npm run preview` - Preview production build
+- `npm run build` - Build for production
+- `npm run start` - Preview production build (uses $PORT)
+
+### Deployment
+- **Target**: Autoscale (Node.js)
+- **Build**: `npm run build`
+- **Run**: `npm start` (binds to $PORT environment variable)
+- **Server**: Vite preview server on 0.0.0.0:$PORT
 
 ## Development Notes
 - Server runs on port 5000 (Replit requirement for webview)
 - Uses Node.js 20 with npm
 - Hot module replacement enabled in dev mode
-- CSS variables for theme switching
-- All images stored in public folder
-- State can be serialized to URL query params for sharing
-- Old Python project backed up in `old_python_project/`
+- All icons are inline SVG components (no external icon library)
+- Responsive design with mobile-first approach
+- SEO-friendly structure with semantic HTML
