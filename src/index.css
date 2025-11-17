@@ -1,41 +1,60 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-:root {
-  --rv-bg: #FAF9FD;
-  --rv-surface: #FFFFFF;
-  --rv-border: #E4DEF5;
-  --rv-primary: #A47CF3;
-  --rv-primary-strong: #7C3AED;
-  --rv-accent-soft: #F3E8FF;
-  --rv-text-main: #14121F;
-  --rv-text-muted: #6B6680;
-  --rv-success: #16A34A;
-  --rv-warning: #F97316;
-  --rv-error: #EF4444;
 
-  --rv-radius-lg: 18px;
-  --rv-radius-xl: 24px;
-  --rv-shadow-soft: 0 18px 45px rgba(20, 18, 31, 0.08);
+/* ---------- Root varijable za RoomVibe temu ---------- */
+
+:root {
+  /* Glavna “lavanda” boja za gumbe, značke itd. */
+  --accent: #a855f7;
+  /* Mekša verzija za pozadine */
+  --accent-soft: #f5e9ff;
+  /* Footer pozadina – tamniji gradient */
+  --footer-bg: radial-gradient(circle at top left, #4c1d95, #020617);
+}
+
+/* Ove klase koristimo u App.tsx (bg-rv-bg, text-rv-text, font-body, font-display) */
+
+.bg-rv-bg {
+  /* Svijetla, moderna pozadina s laganim ljubičastim sjajem */
+  background: radial-gradient(
+      1600px 800px at 50% 0,
+      rgba(168, 85, 247, 0.18),
+      #f9fafb
+    );
+}
+
+.text-rv-text {
+  color: #020617;
+}
+
+.font-body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Segoe UI", sans-serif;
+}
+
+.font-display {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display",
+    "Segoe UI", sans-serif;
+}
+
+/* Osnovni reset da sve izgleda čisto */
+
+html,
+body,
+#root {
+  height: 100%;
 }
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
-  background: radial-gradient(circle at top left, #F3E8FF 0, #FAF9FD 40%, #FFFFFF 100%);
-  color: var(--rv-text-main);
+  background-color: #f9fafb;
+  color: #020617;
 }
 
-:root {
-  --accent: #C8A2C8;
-  --accent-contrast: #000000;
-  --footer-bg: var(--accent);
-}
+/* Linkovi u footeru – neka naslijede bijelu boju teksta */
 
-html { font-size: 19px; }
-body { 
-  color: #0a0a0a; 
-  font-family: 'Poppins', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+footer a {
+  color: inherit;
+  text-decoration-color: rgba(255, 255, 255, 0.8);
 }
-.font-display { font-family: 'Poppins', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
-.font-body { font-family: 'Poppins', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
