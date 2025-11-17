@@ -1,6 +1,6 @@
 (function () {
   // 🔧 1) EDIT THIS PART WITH YOUR REAL DATA
-  const SHOPIFY_DOMAIN = "irenartstudio.myshopify.com";
+  const SHOPIFY_DOMAIN = "c1d36e-2.myshopify.com";
   const STOREFRONT_TOKEN = "381db8b182e3b091e8ac5f35ea232c05";
   const COLLECTION_HANDLE = "roomvibe-studio";
 
