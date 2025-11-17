@@ -607,9 +607,9 @@ function Studio() {
             ))}
           </div>
 
-          <div className="mt-6 text-sm font-semibold">Frame (Pro)</div>
+          <div className="mt-6 text-sm font-semibold">FRAME (PRO)</div>
           <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
-            {["None", "Slim", "Gallery"].map((o) => (
+            {["NONE", "SLIM", "GALLERY"].map((o) => (
               <button
                 key={o}
                 className="rounded-md border border-slate-200 bg-white px-2 py-1"

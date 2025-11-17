@@ -2,15 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ---------- ROOMVIBE THEME (cool blue) ---------- */
+/* ---------- ROOMVIBE THEME (lilac) ---------- */
 
 :root {
   /* Glavni akcent (gumbi, naglasci) */
-  --accent: #8BADE5;
-  --accent-soft: #EAF2FF;
+  --accent: #C8A2C8;
+  --accent-contrast: #000000;
+  --accent-soft: #F5EDF5;
 
-  /* Footer pozadina – tamni, elegantni gradient */
-  --footer-bg: radial-gradient(circle at top left, #0f172a, #020617);
+  /* Footer pozadina – lilac gradient */
+  --footer-bg: #C8A2C8;
 }
 
 /* Svjetla, moderna pozadina sa suptilnim plavim sjajem gore */
