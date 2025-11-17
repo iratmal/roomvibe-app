@@ -12,7 +12,7 @@
         gap: 24px;
         box-sizing: border-box;
       ">
-        <!-- Sidebar: slike i kontrole -->
+        <!-- Sidebar: artworks & controls -->
         <aside style="
           width: 260px;
           border-right: 1px solid #e5e7eb;
@@ -31,7 +31,7 @@
             color: #6b7280;
             margin: 0 0 16px 0;
           ">
-            Odaberi sliku i pogledaj kako izgleda na zidu.
+            Choose an artwork and see how it looks on the wall.
           </p>
 
           <div style="margin-bottom: 16px;">
@@ -41,7 +41,7 @@
               display: block;
               margin-bottom: 4px;
             ">
-              Korak 1: Odaberi sobu (demo)
+              Step 1: Room preset (demo)
             </label>
             <select style="
               width: 100%;
@@ -51,9 +51,9 @@
               border: 1px solid #d1d5db;
               background: #f9fafb;
             ">
-              <option>Dnevni boravak – moderan</option>
-              <option>Spavaća soba – cozy</option>
-              <option>Blagovaonica – elegant</option>
+              <option>Modern living room</option>
+              <option>Cozy bedroom</option>
+              <option>Elegant dining room</option>
             </select>
           </div>
 
@@ -64,7 +64,7 @@
               display: block;
               margin-bottom: 4px;
             ">
-              Korak 2: Veličina slike (demo)
+              Step 2: Artwork size (demo)
             </label>
             <div style="display: flex; gap: 6px; flex-wrap: wrap;">
               <button type="button" data-size="small" style="
@@ -107,14 +107,14 @@
               display: block;
               margin-bottom: 4px;
             ">
-              Korak 3: Odaberi sliku (demo)
+              Step 3: Choose artwork (demo)
             </label>
             <p style="
               font-size: 12px;
               color: #9ca3af;
               margin: 0 0 8px 0;
             ">
-              U ovoj fazi koristimo demo slike – kasnije ovdje dolaze tvoji pravi radovi iz Shopify kolekcije.
+              For now these are demo artworks — later this will load your real pieces from a Shopify collection.
             </p>
             <div style="display: flex; gap: 8px;">
               <button type="button" data-art="sunrise" style="
@@ -143,7 +143,7 @@
           </div>
         </aside>
 
-        <!-- Glavni dio: vizualizator sobe -->
+        <!-- Main area: room visualizer -->
         <main style="
           flex: 1;
           box-sizing: border-box;
@@ -169,14 +169,14 @@
                   font-weight: 600;
                   margin: 0 0 4px 0;
                 ">
-                  Pogledaj sliku na zidu
+                  See the artwork on your wall
                 </h2>
                 <p style="
                   font-size: 13px;
                   color: #6b7280;
                   margin: 0;
                 ">
-                  Ovo je demo prikaz RoomVibe widgeta unutar tvoje Shopify stranice.
+                  This is a demo of the RoomVibe widget embedded into your Shopify store.
                 </p>
               </div>
               <button type="button" style="
@@ -191,7 +191,7 @@
                 align-items: center;
                 gap: 6px;
               ">
-                <span>Buy with one click</span>
+                <span>Buy in one click</span>
                 <span>⚡</span>
               </button>
             </div>
@@ -206,7 +206,7 @@
               align-items: center;
               justify-content: center;
             ">
-              <!-- Sofa / namještaj (stilizirani demo) -->
+              <!-- Sofa / furniture (stylized demo) -->
               <div style="
                 position: absolute;
                 bottom: 18px;
@@ -219,7 +219,7 @@
                 box-shadow: 0 8px 20px rgba(15,23,42,0.16);
               "></div>
 
-              <!-- Okvir slike na zidu -->
+              <!-- Artwork frame on wall -->
               <div
                 id="rv-demo-frame"
                 data-size="medium"
@@ -254,14 +254,14 @@
               color: #9ca3af;
               margin: 10px 0 0 0;
             ">
-              U sljedećoj fazi ovdje ćeš vidjeti svoje stvarne slike iz Shopify kolekcije, s točnim dimenzijama i gumbom za kupnju.
+              In the next phase, this widget will show your real artworks from a Shopify collection, with exact sizes and a live “Buy now” button.
             </p>
           </div>
         </main>
       </div>
     `;
 
-    // Mala interakcija: promjena veličine i naziva slike
+    // Tiny interactions: size + artwork change
     var frame = el.querySelector("#rv-demo-frame");
     var label = el.querySelector("#rv-demo-label");
     if (!frame || !label) return;
