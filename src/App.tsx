@@ -1,13 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import localArtworks from "./data/artworks.json";
 import presets from "./data/presets.json";
-import { fetchCollectionArtworks, type ShopifyArtwork } from "./shopify";
+import { fetchCollectionArtworks } from "./shopify";
 
 /**
- * RoomVibe – App with landing, docs page and studio editor
+ * RoomVibe — App + Landing + Studio
  */
-
-/* ---------------- Hash routing ---------------- */
 
 function useHashRoute() {
   const [hash, setHash] = useState<string>(() => window.location.hash || "");
@@ -16,41 +14,32 @@ function useHashRoute() {
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
-  return hash || "#home";
+  return hash;
 }
 
 export default function App() {
   const hash = useHashRoute();
 
-  let page: JSX.Element;
-  if (hash.startsWith("#/studio")) {
-    page = <Studio />;
-  } else if (hash.startsWith("#/privacy")) {
-    page = <PrivacyPage />;
-  } else if (hash.startsWith("#/docs")) {
-    page = <DocsPage />;
-  } else {
-    page = <LandingPage />;
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white text-slate-900">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white text-slate-900 font-body">
       <TopNav />
-      {page}
+      {hash === "#/privacy" ? (
+        <PrivacyPage />
+      ) : hash === "#/studio" ? (
+        <Studio />
+      ) : hash === "#/docs" ? (
+        <DocsPage />
+      ) : (
+        <HomePage />
+      )}
       <SiteFooter />
     </div>
   );
 }
 
-/* ---------------- Layout helpers ---------------- */
+/* ------------- Layout helper ------------- */
 
-function Container({
-  children,
-  id,
-}: {
-  children: React.ReactNode;
-  id?: string;
-}) {
+function Container({ children, id }: { children: React.ReactNode; id?: string }) {
   return (
     <section id={id} className="relative">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">{children}</div>
@@ -58,29 +47,23 @@ function Container({
   );
 }
 
-/* ---------------- Top navigation ---------------- */
+/* ------------- Top navigation ------------- */
 
 function TopNav() {
   const [open, setOpen] = useState(false);
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/80 backdrop-blur">
+    <header className="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/70 border-b border-slate-100">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <a href="#home" className="flex items-center gap-2 font-semibold">
             <Logo className="h-6 w-6" /> <span>RoomVibe</span>
           </a>
-          <nav className="hidden items-center gap-6 text-sm md:flex">
+          <nav className="hidden md:flex items-center gap-6 text-sm">
             <a href="#demo" className="hover:text-slate-700">
               Demo
             </a>
             <a href="#how" className="hover:text-slate-700">
               How it works
-            </a>
-            <a href="#why" className="hover:text-slate-700">
-              Why artists love it
-            </a>
-            <a href="#for-whom" className="hover:text-slate-700">
-              For whom
             </a>
             <a href="#pricing" className="hover:text-slate-700">
               Pricing
@@ -93,7 +76,7 @@ function TopNav() {
             </a>
             <a
               href="#/studio"
-              className="inline-flex items-center rounded-full px-4 py-2 text-sm font-medium text-black shadow-sm hover:opacity-90"
+              className="inline-flex items-center rounded-full px-4 py-2 text-black shadow-sm hover:opacity-90"
               style={{ background: "var(--accent)" }}
             >
               Try Studio
@@ -101,7 +84,7 @@ function TopNav() {
           </nav>
           <button
             aria-label="Open menu"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 md:hidden"
+            className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200"
             onClick={() => setOpen((v) => !v)}
           >
             <MenuIcon className="h-5 w-5" />
@@ -109,35 +92,31 @@ function TopNav() {
         </div>
       </div>
       {open && (
-        <div className="border-t border-slate-100 bg-white md:hidden">
+        <div className="md:hidden border-t border-slate-100 bg-white">
           <div className="mx-auto max-w-7xl px-4 py-3 text-sm">
-            <div className="flex flex-wrap gap-4">
-              <a href="#demo" onClick={() => setOpen(false)}>
-                Demo
-              </a>
-              <a href="#how" onClick={() => setOpen(false)}>
-                How it works
-              </a>
-              <a href="#why" onClick={() => setOpen(false)}>
-                Why artists love it
-              </a>
-              <a href="#for-whom" onClick={() => setOpen(false)}>
-                For whom
-              </a>
-              <a href="#pricing" onClick={() => setOpen(false)}>
-                Pricing
-              </a>
-              <a href="#/docs" onClick={() => setOpen(false)}>
-                Docs
-              </a>
-              <a href="#/studio" onClick={() => setOpen(false)}>
-                Studio
-              </a>
+            <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-1">
+                <a onClick={() => setOpen(false)} href="#demo" className="py-1">
+                  Demo
+                </a>
+                <a onClick={() => setOpen(false)} href="#how" className="py-1">
+                  How it works
+                </a>
+                <a onClick={() => setOpen(false)} href="#pricing" className="py-1">
+                  Pricing
+                </a>
+                <a onClick={() => setOpen(false)} href="#/docs" className="py-1">
+                  Docs
+                </a>
+                <a onClick={() => setOpen(false)} href="#/studio" className="py-1">
+                  Studio
+                </a>
+              </div>
             </div>
             <a
               href="#/studio"
               onClick={() => setOpen(false)}
-              className="mt-3 inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-sm font-medium text-black"
+              className="mt-3 inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-black"
               style={{ background: "var(--accent)" }}
             >
               Try Studio
@@ -149,9 +128,9 @@ function TopNav() {
   );
 }
 
-/* ---------------- Landing page ---------------- */
+/* ------------- HOMEPAGE ------------- */
 
-function LandingPage() {
+function HomePage() {
   return (
     <main>
       <Hero />
@@ -164,67 +143,65 @@ function LandingPage() {
       <SectionDivider />
       <WhyArtistsLove />
       <SectionDivider />
-      <ForWhom />
+      <PerfectFor />
       <SectionDivider />
       <Pricing />
       <SectionDivider />
-      <ShortFAQ />
+      <FAQ />
     </main>
   );
 }
 
-/* -------- Hero section -------- */
+/* ------------- Hero ------------- */
 
 function Hero() {
   return (
     <Container id="home">
-      <div className="relative isolate overflow-hidden py-16 sm:py-24">
-        <div className="mx-auto max-w-3xl text-center">
+      <div className="relative isolate overflow-hidden">
+        <div className="mx-auto max-w-3xl py-16 sm:py-24 text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600 shadow-sm">
-            <SparkleIcon className="h-3.5 w-3.5" /> Try original art in your
-            room
+            <SparkleIcon className="h-3.5 w-3.5" /> Try original art in your room
           </span>
-          <h1 className="mt-6 text-3xl font-bold tracking-tight text-slate-900 sm:text-5xl">
+          <h1 className="mt-6 text-3xl sm:text-5xl font-bold tracking-tight text-black">
             Visualize art on your walls
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-base text-slate-600 sm:text-lg">
-            Upload a photo of your wall, discover perfectly matched artworks,
-            and see them in true-to-size mockups before you buy.
+          <p className="mx-auto mt-5 max-w-2xl text-base sm:text-lg text-slate-600">
+            Upload a photo of your wall, discover perfect artworks, and see them in true-to-size mockups before you buy.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a
               href="#/studio"
-              className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-black shadow hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-black shadow hover:opacity-90"
               style={{ background: "var(--accent)" }}
             >
               Open Studio <PlayIcon className="h-4 w-4" />
             </a>
             <a
               href="#/docs"
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow-sm hover:bg-slate-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-black shadow-sm hover:bg-slate-50"
             >
               Add to Website <ArrowRightIcon className="h-4 w-4" />
             </a>
           </div>
-        </div>
 
-        {/* soft blue mesh background */}
-        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute -top-40 left-1/4 h-[480px] w-[480px] rounded-full bg-[#8BADE5] opacity-30 blur-3xl" />
-          <div className="absolute top-10 right-1/4 h-[420px] w-[420px] rounded-full bg-sky-200 opacity-30 blur-3xl" />
-          <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-slate-100 opacity-80 blur-3xl" />
+          {/* soft blue mesh background */}
+          <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+            <div className="absolute -top-40 left-1/4 h-[420px] w-[420px] rounded-full bg-[#8BADE5]/35 blur-3xl" />
+            <div className="absolute top-10 right-1/4 h-[360px] w-[360px] rounded-full bg-sky-100/60 blur-3xl" />
+            <div className="absolute top-1/2 left-1/2 h-[640px] w-[640px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#8BADE5]/20 blur-3xl" />
+          </div>
         </div>
       </div>
     </Container>
   );
 }
 
-/* -------- Showcase carousel -------- */
+/* ------------- Showcase carousel ------------- */
 
 function ShowcaseCarousel() {
   const [idx, setIdx] = useState(0);
   const [artIdx, setArtIdx] = useState(0);
-  const [arts, setArts] = useState<ShopifyArtwork[]>(localArtworks as any);
+  const [arts, setArts] = useState<any[]>(localArtworks as any[]);
 
   useEffect(() => {
     const handle = (import.meta as any).env.VITE_ROOMVIBE_COLLECTION_HANDLE;
@@ -240,7 +217,7 @@ function ShowcaseCarousel() {
     const t = setInterval(() => {
       setIdx((v) => (v + 1) % (presets as any).length);
       setArtIdx((v) => (v + 1) % Math.max(1, arts.length));
-    }, 3500);
+    }, 3000);
     return () => clearInterval(t);
   }, [arts.length]);
 
@@ -256,43 +233,34 @@ function ShowcaseCarousel() {
   return (
     <section>
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <div className="rounded-3xl border border-slate-200 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3 text-sm">
             <div className="font-medium">Showcase</div>
             <div className="text-slate-500">Rooms &amp; art cycling</div>
           </div>
-          <div className="relative h-[420px] overflow-hidden rounded-b-3xl">
-            {scene?.photo && (
-              <img
-                src={scene.photo}
-                alt={scene?.name || "Room"}
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-            )}
+          <div className="relative h-[480px] overflow-hidden rounded-b-3xl">
+            <img src={scene?.photo} alt={scene?.name || "Room"} className="absolute inset-0 h-full w-full object-cover" />
             <div
               className="absolute -translate-x-1/2 -translate-y-1/2"
-              style={{
-                left: `${safe.x * 100}%`,
-                top: `${safe.y * 100}%`,
-                width: `${artWidthPct}%`,
-              }}
+              style={{ left: `${safe.x * 100}%`, top: `${safe.y * 100}%`, width: `${artWidthPct}%` }}
             >
               <div
                 className="overflow-hidden rounded-md border-8 border-white shadow-2xl"
                 style={{
                   aspectRatio: `${aspect}/1`,
-                  backgroundColor: "#f8fafc",
+                  background: "#f8fafc",
                 }}
               >
                 {art?.imageUrl ? (
-                  <img
-                    src={art.imageUrl}
-                    alt={art.title}
-                    className="h-full w-full object-cover"
-                    draggable={false}
-                  />
+                  <img src={art.imageUrl} alt={art.title} className="h-full w-full object-cover" draggable={false} />
                 ) : (
-                  <div className="h-full w-full" />
+                  <div
+                    className="h-full w-full"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, color-mix(in_oklab,var(--accent),white_10%), color-mix(in_oklab,var(--accent),black_10%))",
+                    }}
+                  />
                 )}
               </div>
             </div>
@@ -311,683 +279,16 @@ function SectionDivider() {
   );
 }
 
-/* -------- Live Demo -------- */
-
-function LiveDemoMock() {
-  const [room, setRoom] = useState<"Living" | "Hallway" | "Bedroom">("Living");
-  const [wall, setWall] = useState("#f2f4f7");
-  const [sizeUnit, setSizeUnit] = useState<"cm" | "in">("cm");
-  const [widthVal, setWidthVal] = useState<number>(100);
-  const [heightVal, setHeightVal] = useState<number>(70);
-  const [lockRatio, setLockRatio] = useState<boolean>(true);
-  const [userPhoto, setUserPhoto] = useState<string | null>(null);
-  const [showSizingInfo, setShowSizingInfo] = useState(false);
-  const [artworks, setArtworks] = useState<ShopifyArtwork[]>(
-    localArtworks as any
-  );
-  const [selectedArtId, setSelectedArtId] = useState<string>(
-    (artworks[0] as any)?.id || ""
-  );
-  const fileRef = useRef<HTMLInputElement | null>(null);
-
-  useEffect(() => {
-    const handle = (import.meta as any).env.VITE_ROOMVIBE_COLLECTION_HANDLE;
-    if (!handle) return;
-    fetchCollectionArtworks(handle, 24)
-      .then((res) => {
-        if (Array.isArray(res) && res.length) {
-          setArtworks(res);
-          setSelectedArtId((res[0] as any).id);
-        }
-      })
-      .catch(() => {});
-  }, []);
-
-  const selectedArtwork = useMemo(
-    () => artworks.find((a: any) => a.id === selectedArtId),
-    [artworks, selectedArtId]
-  );
-
-  const widthCm = sizeUnit === "cm" ? widthVal : widthVal * 2.54;
-  const heightCm = sizeUnit === "cm" ? heightVal : heightVal * 2.54;
-
-  const artWidthPct = Math.max(18, Math.min(60, 0.24 * widthCm + 12));
-  const artAspect = Math.max(
-    0.2,
-    Math.min(5, widthCm / Math.max(1, heightCm))
-  );
-
-  function applyQuickPick(w: number, h: number) {
-    if (sizeUnit === "in") {
-      w = +(w / 2.54).toFixed(1);
-      h = +(h / 2.54).toFixed(1);
-    }
-    setWidthVal(w);
-    setHeightVal(h);
-  }
-
-  return (
-    <Container id="demo">
-      <div className="grid items-center gap-10 lg:grid-cols-2">
-        <div className="order-2 space-y-6 lg:order-1">
-          <div>
-            <h2 className="text-2xl font-semibold text-slate-900">
-              Live Demo (preview)
-            </h2>
-            <p className="mt-2 text-sm text-slate-600 sm:text-base">
-              Change room, pick an artwork, set a custom size, tweak wall color,
-              or upload your wall photo. Perfect to show buyers how your art
-              feels in their home.
-            </p>
-          </div>
-
-          <fieldset className="space-y-2">
-            <legend className="text-sm font-medium text-slate-700">
-              Artwork
-            </legend>
-            <select
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-              value={selectedArtId}
-              onChange={(e) => setSelectedArtId(e.target.value)}
-            >
-              {artworks.map((a: any) => (
-                <option key={a.id} value={a.id}>
-                  {a.title}
-                </option>
-              ))}
-            </select>
-          </fieldset>
-
-          <fieldset className="space-y-2">
-            <legend className="text-sm font-medium text-slate-700">
-              Room preset
-            </legend>
-            <div className="flex flex-wrap gap-2">
-              {["Living", "Hallway", "Bedroom"].map((r) => (
-                <button
-                  key={r}
-                  onClick={() => setRoom(r as any)}
-                  className={`rounded-lg border px-3 py-1.5 text-sm shadow-sm ${
-                    room === r
-                      ? "text-white"
-                      : "border-slate-200 bg-white hover:bg-slate-50"
-                  }`}
-                  style={room === r ? { background: "var(--accent)" } : {}}
-                >
-                  {r}
-                </button>
-              ))}
-            </div>
-          </fieldset>
-
-          <fieldset className="space-y-2">
-            <legend className="text-sm font-medium text-slate-700">
-              Your wall
-            </legend>
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-sm hover:bg-slate-50"
-                onClick={() => fileRef.current?.click()}
-              >
-                <UploadIcon className="h-4 w-4" /> Upload your wall photo
-              </button>
-              {userPhoto && (
-                <button
-                  className="text-xs text-slate-700 underline"
-                  onClick={() => setUserPhoto(null)}
-                >
-                  Remove photo
-                </button>
-              )}
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    const url = URL.createObjectURL(file);
-                    setUserPhoto(url);
-                  }
-                }}
-              />
-              <span className="text-xs text-slate-500">
-                Images stay in your browser — not uploaded.
-              </span>
-            </div>
-          </fieldset>
-
-          {!userPhoto && (
-            <fieldset className="space-y-2">
-              <legend className="text-sm font-medium text-slate-700">
-                Wall color
-              </legend>
-              <div className="flex items-center gap-3">
-                <input
-                  aria-label="Pick wall color"
-                  type="color"
-                  value={wall}
-                  onChange={(e) => setWall(e.target.value)}
-                  className="h-9 w-16 cursor-pointer rounded-md border border-slate-300 bg-white"
-                />
-                <button
-                  onClick={() => setWall("#f2f4f7")}
-                  className="rounded-md border border-slate-200 px-2 text-xs hover:bg-slate-50"
-                >
-                  Reset
-                </button>
-              </div>
-            </fieldset>
-          )}
-
-          <fieldset className="space-y-2">
-            <legend className="text-sm font-medium text-slate-700">
-              Artwork size
-            </legend>
-            <div className="flex flex-wrap items-center gap-2">
-              <label className="text-xs text-slate-700">Width</label>
-              <input
-                type="number"
-                min={1}
-                className="w-24 rounded-md border border-slate-300 px-2 py-1 text-sm"
-                value={widthVal}
-                onChange={(e) => {
-                  const v = Math.max(1, +e.target.value || 1);
-                  if (lockRatio) {
-                    const ratio = heightVal / Math.max(1, widthVal);
-                    setWidthVal(v);
-                    setHeightVal(Math.max(1, +(v * ratio).toFixed(1)));
-                  } else {
-                    setWidthVal(v);
-                  }
-                }}
-              />
-              <label className="ml-2 text-xs text-slate-700">Height</label>
-              <input
-                type="number"
-                min={1}
-                className="w-24 rounded-md border border-slate-300 px-2 py-1 text-sm"
-                value={heightVal}
-                onChange={(e) => {
-                  const v = Math.max(1, +e.target.value || 1);
-                  if (lockRatio) {
-                    const ratio = widthVal / Math.max(1, heightVal);
-                    setHeightVal(v);
-                    setWidthVal(Math.max(1, +(v * ratio).toFixed(1)));
-                  } else {
-                    setHeightVal(v);
-                  }
-                }}
-              />
-              <select
-                className="ml-2 rounded-md border border-slate-300 px-2 py-1 text-sm"
-                value={sizeUnit}
-                onChange={(e) => {
-                  const val = e.target.value as "cm" | "in";
-                  if (val === "in" && sizeUnit === "cm") {
-                    setWidthVal(+(widthVal / 2.54).toFixed(1));
-                    setHeightVal(+(heightVal / 2.54).toFixed(1));
-                  } else if (val === "cm" && sizeUnit === "in") {
-                    setWidthVal(+(widthVal * 2.54).toFixed(1));
-                    setHeightVal(+(heightVal * 2.54).toFixed(1));
-                  }
-                  setSizeUnit(val);
-                }}
-              >
-                <option value="cm">cm</option>
-                <option value="in">in</option>
-              </select>
-              <label className="ml-2 inline-flex items-center gap-1 text-xs text-slate-700">
-                <input
-                  type="checkbox"
-                  checked={lockRatio}
-                  onChange={(e) => setLockRatio(e.target.checked)}
-                />
-                Lock ratio
-              </label>
-            </div>
-            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-              Quick picks:
-              {[
-                [80, 60],
-                [100, 70],
-                [150, 100],
-              ].map(([w, h]) => (
-                <button
-                  key={`${w}x${h}`}
-                  onClick={() => applyQuickPick(w, h)}
-                  className="rounded-md border border-slate-200 bg-white px-2 py-1 hover:bg-slate-50"
-                >
-                  {w}×{h} cm
-                </button>
-              ))}
-            </div>
-            <div className="mt-2">
-              <button
-                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs shadow-sm hover:bg-slate-50"
-                onClick={() => setShowSizingInfo(true)}
-              >
-                <InfoIcon className="h-3.5 w-3.5" /> How true-to-size works
-              </button>
-            </div>
-          </fieldset>
-        </div>
-
-        <div className="order-1 lg:order-2">
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 text-sm">
-              <div className="flex items-center gap-2 text-slate-600">
-                <RoomIcon className="h-4 w-4" /> {room} room
-              </div>
-              <div className="text-xs text-slate-500">
-                {userPhoto ? (
-                  <span>Custom wall photo</span>
-                ) : (
-                  <>
-                    Wall:{" "}
-                    <span className="font-mono text-[11px]">
-                      {wall.toUpperCase()}
-                    </span>
-                  </>
-                )}
-              </div>
-            </div>
-            <div className="relative h-80 w-full">
-              {userPhoto ? (
-                <img
-                  src={userPhoto}
-                  alt="Your wall"
-                  className="absolute inset-0 h-full w-full object-cover"
-                />
-              ) : (
-                <div
-                  className="absolute inset-0"
-                  style={{ background: wall }}
-                />
-              )}
-              <div className="absolute bottom-0 left-0 right-0 h-12 bg-[linear-gradient(180deg,rgba(0,0,0,0.03),rgba(0,0,0,0.07))]" />
-              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-                <div
-                  className="overflow-hidden rounded-md border-8 border-white shadow-xl"
-                  style={{
-                    width: `${artWidthPct}%`,
-                    aspectRatio: `${artAspect}/1`,
-                    backgroundColor: "#f8fafc",
-                  }}
-                >
-                  {selectedArtwork?.imageUrl ? (
-                    <img
-                      src={selectedArtwork.imageUrl}
-                      alt={selectedArtwork.title}
-                      className="h-full w-full object-cover"
-                      draggable={false}
-                    />
-                  ) : (
-                    <div className="h-full w-full" />
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 px-4 py-2 text-xs text-slate-500">
-              <div>
-                Preview only · Size: {widthVal}×{heightVal} {sizeUnit}
-              </div>
-              <div className="flex items-center gap-3">
-                <span>Powered by RoomVibe</span>
-                {selectedArtwork?.onlineStoreUrl && (
-                  <a
-                    href={selectedArtwork.onlineStoreUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center rounded-md border border-slate-300 bg-white px-2 py-1 text-[11px] font-medium text-slate-900 hover:bg-slate-50"
-                  >
-                    View &amp; Buy on Shopify
-                  </a>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {showSizingInfo && (
-        <Modal onClose={() => setShowSizingInfo(false)}>
-          <div className="text-sm text-slate-700">
-            <h3 className="text-lg font-semibold">How true-to-size works</h3>
-            <p className="mt-2">
-              For accurate scale, the full app adds a quick one-time
-              calibration:
-            </p>
-            <ol className="mt-3 list-decimal space-y-2 pl-5">
-              <li>
-                Place a standard A4 paper or a credit card on the wall and take
-                a photo.
-              </li>
-              <li>
-                Mark the reference corners. We compute the pixel-to-cm ratio and
-                perspective.
-              </li>
-              <li>
-                Enter the artwork size (e.g. 100 × 70 cm). The mockup snaps to
-                exact scale.
-              </li>
-            </ol>
-            <p className="mt-3">
-              Your photo stays local in the browser for the demo. Merchants can
-              optionally store photos with consent in production.
-            </p>
-          </div>
-        </Modal>
-      )}
-    </Container>
-  );
-}
-
-/* -------- How it works -------- */
-
-function HowItWorks() {
-  const steps = [
-    {
-      title: "Pick a room",
-      desc: "Choose from presets or upload a photo of your own wall.",
-      icon: <HomeIcon className="h-5 w-5" />,
-    },
-    {
-      title: "Adjust size & wall color",
-      desc: "Use cm/in, lock ratio, and recolor walls to match your interior.",
-      icon: <RulerIcon className="h-5 w-5" />,
-    },
-    {
-      title: "Add to your website",
-      desc: "Install the RoomVibe widget and let visitors try art on their walls.",
-      icon: <CodeIcon className="h-5 w-5" />,
-    },
-  ];
-  return (
-    <Container id="how">
-      <div className="mx-auto max-w-3xl text-center">
-        <h2 className="text-2xl font-semibold text-slate-900">
-          How RoomVibe works
-        </h2>
-        <p className="mt-2 text-sm text-slate-600 sm:text-base">
-          A lightweight, embeddable widget designed for artists, galleries and
-          interior designers.
-        </p>
-      </div>
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {steps.map((s, i) => (
-          <div
-            key={i}
-            className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md"
-          >
-            <div
-              className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-white"
-              style={{ background: "var(--accent)" }}
-            >
-              {s.icon}
-            </div>
-            <h3 className="mt-4 text-base font-semibold text-slate-900">
-              {s.title}
-            </h3>
-            <p className="mt-1 text-sm text-slate-600">{s.desc}</p>
-          </div>
-        ))}
-      </div>
-    </Container>
-  );
-}
-
-/* -------- Why artists love it -------- */
-
-function WhyArtistsLove() {
-  const items = [
-    {
-      title: "Instant mockups",
-      desc: "Create beautiful room mockups in seconds — no Photoshop or complex tools.",
-    },
-    {
-      title: "Sell more originals",
-      desc: "Buyers can see your paintings on their walls, which builds trust and increases conversions.",
-    },
-    {
-      title: "Designer-friendly",
-      desc: "Interior designers can test placements and sizes with clients before ordering the artwork.",
-    },
-  ];
-
-  return (
-    <Container id="why">
-      <div className="grid items-center gap-10 lg:grid-cols-2">
-        <div>
-          <h2 className="text-2xl font-semibold text-slate-900">
-            Why artists love RoomVibe
-          </h2>
-          <p className="mt-2 text-sm text-slate-600 sm:text-base">
-            RoomVibe is built for artists who value original, hand-made work and
-            want a simple way to show it in modern interiors.
-          </p>
-          <div className="mt-6 space-y-4">
-            {items.map((item) => (
-              <div key={item.title} className="flex gap-3">
-                <div className="mt-1">
-                  <CheckIcon className="h-4 w-4" />
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-slate-900">
-                    {item.title}
-                  </div>
-                  <div className="text-sm text-slate-600">{item.desc}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="lg:justify-self-end">
-          <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-md">
-            <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 text-xs text-slate-500">
-              <span>Artist view</span>
-              <span>Try multiple rooms &amp; sizes</span>
-            </div>
-            <div className="h-72 bg-slate-100" />
-          </div>
-        </div>
-      </div>
-    </Container>
-  );
-}
-
-/* -------- For whom -------- */
-
-function ForWhom() {
-  const cards = [
-    {
-      title: "Artists",
-      desc: "Show your originals in beautiful modern rooms and help buyers feel the artwork in their space.",
-    },
-    {
-      title: "Galleries",
-      desc: "Embed RoomVibe on your website and let visitors try artworks directly on their walls.",
-    },
-    {
-      title: "Interior designers",
-      desc: "Use Studio mode to plan art placements and sizes for client projects.",
-    },
-  ];
-  return (
-    <Container id="for-whom">
-      <div className="mx-auto max-w-3xl text-center">
-        <h2 className="text-2xl font-semibold text-slate-900">
-          Perfect for artists, galleries &amp; designers
-        </h2>
-      </div>
-      <div className="mt-8 grid gap-6 md:grid-cols-3">
-        {cards.map((c) => (
-          <div
-            key={c.title}
-            className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-sm"
-          >
-            <div className="text-base font-semibold text-slate-900">
-              {c.title}
-            </div>
-            <p className="mt-2">{c.desc}</p>
-          </div>
-        ))}
-      </div>
-    </Container>
-  );
-}
-
-/* -------- Pricing -------- */
-
-function Pricing() {
-  const tiers = [
-    {
-      name: "Free",
-      price: "€0 / mo",
-      highlight: false,
-      features: [
-        "1 room preset (Living)",
-        "Up to 5 artworks",
-        "Up to 2 sizes per artwork",
-        "Color picker (no upload)",
-      ],
-      cta: "Start Free",
-    },
-    {
-      name: "Basic",
-      price: "€9 / mo",
-      highlight: true,
-      features: [
-        "10 room presets",
-        "Up to 50 artworks",
-        "Up to 5 sizes per artwork",
-        "Swatches + color picker",
-        "Designer Mode enabled (width input)",
-      ],
-      cta: "Choose Basic",
-    },
-    {
-      name: "Designer Pro",
-      price: "€29 / mo",
-      highlight: false,
-      features: [
-        "Unlimited room presets",
-        "Unlimited artworks",
-        "Unlimited sizes per artwork",
-        "Designer Mode advanced (ruler + cm/in)",
-      ],
-      cta: "Go Pro",
-    },
-  ];
-  return (
-    <Container id="pricing">
-      <div className="mx-auto max-w-3xl text-center">
-        <h2 className="text-2xl font-semibold text-slate-900">Pricing</h2>
-        <p className="mt-2 text-sm text-slate-600 sm:text-base">
-          Simple plans that scale with your gallery.
-        </p>
-      </div>
-      <div className="mt-8 grid gap-6 md:grid-cols-3">
-        {tiers.map((t) => (
-          <div
-            key={t.name}
-            className={`relative flex h-full flex-col rounded-2xl border p-6 shadow-sm ${
-              t.highlight
-                ? "border-slate-900 bg-gradient-to-b from-white to-slate-50"
-                : "border-slate-200 bg-white"
-            }`}
-          >
-            {t.highlight && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium shadow-sm">
-                Recommended
-              </div>
-            )}
-            <div className="text-sm text-slate-500">{t.name}</div>
-            <div className="mt-1 text-3xl font-semibold text-slate-900">
-              {t.price}
-            </div>
-            <ul className="mt-4 grid flex-1 gap-2 text-sm text-slate-700">
-              {t.features.map((f) => (
-                <li key={f} className="flex items-start gap-2">
-                  <CheckIcon className="mt-0.5 h-4 w-4" />
-                  <span>{f}</span>
-                </li>
-              ))}
-            </ul>
-            <a
-              href="#/studio"
-              className="mt-6 inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold text-black hover:opacity-90"
-              style={{ background: "var(--accent)" }}
-            >
-              {t.cta}
-            </a>
-          </div>
-        ))}
-      </div>
-    </Container>
-  );
-}
-
-/* -------- Short FAQ -------- */
-
-function ShortFAQ() {
-  const faqs = [
-    {
-      q: "How do I add RoomVibe to my website?",
-      a: "Go to the Docs page, copy the script or React example, and paste it into your site. You can embed it on Shopify, custom sites, or other platforms.",
-    },
-    {
-      q: "How does true-to-size sizing work?",
-      a: "RoomVibe uses a quick calibration step with a known reference (like A4 paper). Once calibrated, artworks are scaled in centimeters or inches on your wall photo.",
-    },
-    {
-      q: "Do you store my room photos?",
-      a: "In the demo, photos stay local in your browser. Merchants can optionally store photos with consent in a production setup.",
-    },
-    {
-      q: "Can I sell my art through RoomVibe?",
-      a: "Yes. RoomVibe connects to your existing checkout (e.g. Shopify or ThriveCart). Buyers preview art in RoomVibe and complete payment in your store.",
-    },
-  ];
-
-  return (
-    <Container id="faq">
-      <div className="mx-auto max-w-3xl text-center">
-        <h2 className="text-2xl font-semibold text-slate-900">FAQ</h2>
-        <p className="mt-2 text-sm text-slate-600 sm:text-base">
-          A few quick answers before you start.
-        </p>
-      </div>
-      <div className="mx-auto mt-6 max-w-3xl divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white">
-        {faqs.map((f, i) => (
-          <details key={i} className="group open:rounded-2xl">
-            <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-4">
-              <span className="text-sm font-medium text-slate-900">{f.q}</span>
-              <ChevronDown className="h-4 w-4 text-slate-500 transition group-open:rotate-180" />
-            </summary>
-            <div className="px-5 pb-4 text-sm text-slate-600">{f.a}</div>
-          </details>
-        ))}
-      </div>
-    </Container>
-  );
-}
-
-/* ---------------- Studio editor (Canvy-style) ---------------- */
+/* ------------- Studio (Canvy-style editor) ------------- */
 
 function Studio() {
   const [sceneId, setSceneId] = useState<string>((presets as any)[0]?.id || "");
   const [wallColor, setWallColor] = useState<string>("#f2f4f7");
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
 
-  const [artworksState, setArtworksState] = useState<ShopifyArtwork[]>(
-    localArtworks as any
-  );
-  const [artId, setArtId] = useState<string>(
-    (artworksState[0] as any)?.id || ""
-  );
-  const art = artworksState.find((a: any) => a.id === artId);
+  const [artworksState, setArtworksState] = useState<any[]>(localArtworks as any);
+  const [artId, setArtId] = useState<string>(artworksState[0]?.id || "");
+  const art = artworksState.find((a) => a.id === artId);
 
   const [sizeUnit, setSizeUnit] = useState<"cm" | "in">("cm");
   const [wVal, setWVal] = useState<number>(100);
@@ -1003,24 +304,19 @@ function Studio() {
       .then((res) => {
         if (Array.isArray(res) && res.length) {
           setArtworksState(res);
-          setArtId((res[0] as any).id);
+          setArtId(res[0].id);
         }
       })
       .catch(() => {});
   }, []);
 
-  const scene: any =
-    (presets as any).find((p: any) => p.id === sceneId) ||
-    (presets as any)[0];
+  const scene: any = (presets as any).find((p: any) => p.id === sceneId) || (presets as any)[0];
   const safe = scene?.safeArea || { x: 0.5, y: 0.4, w: 0.6, h: 0.5 };
 
   const widthCm = sizeUnit === "cm" ? wVal : wVal * 2.54;
   const heightCm = sizeUnit === "cm" ? hVal : hVal * 2.54;
   const artWidthPct = Math.max(18, Math.min(safe.w * 100, 0.24 * widthCm + 12));
-  const aspect = Math.max(
-    0.2,
-    Math.min(5, widthCm / Math.max(1, heightCm))
-  );
+  const aspect = Math.max(0.2, Math.min(5, widthCm / Math.max(1, heightCm)));
 
   function quickPick(w: number, h: number) {
     if (sizeUnit === "in") {
@@ -1032,16 +328,17 @@ function Studio() {
   }
 
   return (
-    <main className="py-8">
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+    <main>
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-4 text-sm text-slate-600">
+          <span className="font-medium">RoomVibe Studio</span> · Upload a wall photo, pick a room preset, and see your art true-to-size.
+        </div>
         <div className="grid grid-cols-12 gap-6">
-          {/* Left: Scenes */}
-          <aside className="col-span-12 h-[78vh] overflow-auto rounded-2xl border border-slate-200 bg-white/70 p-4 md:col-span-3">
+          {/* Left: Scenes gallery */}
+          <aside className="col-span-3 rounded-2xl border border-slate-200 bg-white/70 backdrop-blur p-4 h-[78vh] overflow-auto">
             <div className="mb-3 flex items-center justify-between">
-              <div className="text-sm font-semibold text-slate-900">
-                Scenes
-              </div>
-              <a href="#home" className="text-xs text-slate-600 underline">
+              <div className="text-sm font-semibold">Scenes</div>
+              <a href="#home" className="text-xs underline">
                 Home
               </a>
             </div>
@@ -1051,35 +348,25 @@ function Studio() {
                   key={p.id}
                   onClick={() => setSceneId(p.id)}
                   className={`group relative overflow-hidden rounded-xl border ${
-                    sceneId === p.id
-                      ? "border-slate-900"
-                      : "border-slate-200"
+                    sceneId === p.id ? "border-slate-900" : "border-slate-200"
                   } bg-white`}
                 >
-                  {p.photo && (
-                    <img
-                      src={p.photo}
-                      alt={p.name}
-                      className="h-24 w-full object-cover"
-                    />
-                  )}
-                  <div className="absolute inset-0 rounded-xl ring-0 transition group-hover:ring-2 group-hover:ring-[var(--accent)]" />
-                  <div className="absolute bottom-0 left-0 right-0 bg-black/40 px-2 py-1 text-[10px] text-white">
-                    {p.name}
-                  </div>
+                  <img src={p.photo} alt={p.name} className="h-24 w-full object-cover" />
+                  <div className="absolute inset-0 ring-0 group-hover:ring-2 group-hover:ring-[var(--accent)] rounded-xl transition" />
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/40 px-2 py-1 text-[10px] text-white">{p.name}</div>
                 </button>
               ))}
             </div>
           </aside>
 
           {/* Center: Canvas */}
-          <section className="col-span-12 md:col-span-6">
+          <section className="col-span-6">
             <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
               <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 text-sm">
                 <div className="flex items-center gap-2 text-slate-600">
                   <RoomIcon className="h-4 w-4" /> {scene?.name}
                 </div>
-                <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                <div className="flex items-center gap-3 text-slate-500">
                   {!userPhoto && <span>Wall:</span>}
                   {!userPhoto && (
                     <input
@@ -1096,10 +383,7 @@ function Studio() {
                     Upload wall photo
                   </button>
                   {userPhoto && (
-                    <button
-                      className="text-xs text-slate-700 underline"
-                      onClick={() => setUserPhoto(null)}
-                    >
+                    <button className="text-xs underline" onClick={() => setUserPhoto(null)}>
                       Remove photo
                     </button>
                   )}
@@ -1121,59 +405,43 @@ function Studio() {
 
               <div className="relative h-[560px] w-full overflow-hidden rounded-b-2xl">
                 {userPhoto ? (
-                  <img
-                    src={userPhoto}
-                    alt="Your wall"
-                    className="absolute inset-0 h-full w-full object-cover"
-                  />
+                  <img src={userPhoto} alt="Your wall" className="absolute inset-0 h-full w-full object-cover" />
                 ) : (
-                  <>
-                    {scene.photo && (
-                      <img
-                        src={scene.photo}
-                        alt={scene.name}
-                        className="absolute inset-0 h-full w-full object-cover"
-                      />
-                    )}
-                    <div
-                      className="absolute inset-0"
-                      style={{
-                        background: wallColor,
-                        WebkitMaskImage: `url(${scene.mask})` as any,
-                        maskImage: `url(${scene.mask})` as any,
-                        WebkitMaskSize: "cover",
-                        maskSize: "cover",
-                        WebkitMaskPosition: "center",
-                        maskPosition: "center",
-                        opacity: 0.9,
-                      }}
-                    />
-                  </>
+                  <img src={scene.photo} alt={scene.name} className="absolute inset-0 h-full w-full object-cover" />
+                )}
+                {!userPhoto && (
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background: wallColor,
+                      WebkitMaskImage: `url(${scene.mask})` as any,
+                      maskImage: `url(${scene.mask})` as any,
+                      WebkitMaskSize: "cover",
+                      maskSize: "cover",
+                      WebkitMaskPosition: "center",
+                      maskPosition: "center",
+                      opacity: 0.9,
+                    }}
+                  />
                 )}
                 <div
                   className="absolute -translate-x-1/2 -translate-y-1/2"
-                  style={{
-                    left: `${safe.x * 100}%`,
-                    top: `${safe.y * 100}%`,
-                    width: `${artWidthPct}%`,
-                  }}
+                  style={{ left: `${safe.x * 100}%`, top: `${safe.y * 100}%`, width: `${artWidthPct}%` }}
                 >
                   <div
                     className="overflow-hidden rounded-md border-8 border-white shadow-2xl"
-                    style={{
-                      aspectRatio: `${aspect}/1`,
-                      backgroundColor: "#f8fafc",
-                    }}
+                    style={{ aspectRatio: `${aspect}/1`, background: "#f8fafc" }}
                   >
                     {art?.imageUrl ? (
-                      <img
-                        src={art.imageUrl}
-                        alt={art.title}
-                        className="h-full w-full object-cover"
-                        draggable={false}
-                      />
+                      <img src={art.imageUrl} alt={art.title} className="h-full w-full object-cover" draggable={false} />
                     ) : (
-                      <div className="h-full w-full" />
+                      <div
+                        className="h-full w-full"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, color-mix(in_oklab,var(--accent),white_10%), color-mix(in_oklab,var(--accent),black_10%))",
+                        }}
+                      />
                     )}
                   </div>
                 </div>
@@ -1182,15 +450,15 @@ function Studio() {
           </section>
 
           {/* Right: Controls */}
-          <aside className="col-span-12 h-[78vh] overflow-auto rounded-2xl border border-slate-200 bg-white p-4 md:col-span-3">
-            <div className="text-sm font-semibold text-slate-900">Artwork</div>
+          <aside className="col-span-3 rounded-2xl border border-slate-200 bg-white p-4 h-[78vh] overflow-auto">
+            <div className="text-sm font-semibold">Artwork</div>
             <div className="mt-2 flex items-center gap-2">
               <select
                 className="w-full rounded-md border border-slate-300 px-2 py-1 text-sm"
                 value={artId}
                 onChange={(e) => setArtId(e.target.value)}
               >
-                {artworksState.map((a: any) => (
+                {artworksState.map((a) => (
                   <option key={a.id} value={a.id}>
                     {a.title}
                   </option>
@@ -1198,9 +466,7 @@ function Studio() {
               </select>
             </div>
 
-            <div className="mt-4 text-sm font-semibold text-slate-900">
-              Size
-            </div>
+            <div className="mt-4 text-sm font-semibold">Size</div>
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <label className="text-xs text-slate-700">Width</label>
               <input
@@ -1210,16 +476,21 @@ function Studio() {
                 value={wVal}
                 onChange={(e) => {
                   const v = Math.max(1, +e.target.value || 1);
+                  const currentWidthCm = sizeUnit === "cm" ? wVal : wVal * 2.54;
+                  const currentHeightCm = sizeUnit === "cm" ? hVal : hVal * 2.54;
+
                   if (lockR) {
-                    const ratio = heightCm / Math.max(1, widthCm);
+                    const ratio = currentHeightCm / Math.max(1, currentWidthCm);
+                    const newWidth = v;
+                    const newHeight = +(newWidth * ratio).toFixed(1);
                     setWVal(v);
-                    setHVal(Math.max(1, +(v * ratio).toFixed(1)));
+                    setHVal(newHeight);
                   } else {
                     setWVal(v);
                   }
                 }}
               />
-              <label className="ml-2 text-xs text-slate-700">Height</label>
+              <label className="text-xs text-slate-700 ml-2">Height</label>
               <input
                 type="number"
                 min={1}
@@ -1227,10 +498,15 @@ function Studio() {
                 value={hVal}
                 onChange={(e) => {
                   const v = Math.max(1, +e.target.value || 1);
+                  const currentWidthCm = sizeUnit === "cm" ? wVal : wVal * 2.54;
+                  const currentHeightCm = sizeUnit === "cm" ? hVal : hVal * 2.54;
+
                   if (lockR) {
-                    const ratio = widthCm / Math.max(1, heightCm);
+                    const ratio = currentWidthCm / Math.max(1, currentHeightCm);
+                    const newHeight = v;
+                    const newWidth = +(newHeight * ratio).toFixed(1);
                     setHVal(v);
-                    setWVal(Math.max(1, +(v * ratio).toFixed(1)));
+                    setWVal(newWidth);
                   } else {
                     setHVal(v);
                   }
@@ -1255,11 +531,7 @@ function Studio() {
                 <option value="in">in</option>
               </select>
               <label className="ml-2 inline-flex items-center gap-1 text-xs text-slate-700">
-                <input
-                  type="checkbox"
-                  checked={lockR}
-                  onChange={(e) => setLockR(e.target.checked)}
-                />
+                <input type="checkbox" checked={lockR} onChange={(e) => setLockR(e.target.checked)} />
                 Lock ratio
               </label>
             </div>
@@ -1281,23 +553,18 @@ function Studio() {
               ))}
             </div>
 
-            <div className="mt-6 text-sm font-semibold text-slate-900">
-              Frame (Pro)
-            </div>
+            <div className="mt-6 text-sm font-semibold">Frame (Pro)</div>
             <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
               {["None", "Slim", "Gallery"].map((o) => (
-                <button
-                  key={o}
-                  className="rounded-md border border-slate-200 bg-white px-2 py-1"
-                >
+                <button key={o} className="rounded-md border border-slate-200 bg-white px-2 py-1">
                   {o}
                 </button>
               ))}
             </div>
 
-            {art?.onlineStoreUrl && (
+            {art && (
               <a
-                href={art.onlineStoreUrl}
+                href={(art as any).onlineStoreUrl || "#"}
                 target="_blank"
                 rel="noreferrer"
                 className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-900 shadow-sm hover:bg-slate-50"
@@ -1311,11 +578,7 @@ function Studio() {
                 Use <b>#/studio</b> to deep-link this editor.
               </div>
               <div>
-                Replace placeholders in{" "}
-                <code className="rounded bg-slate-100 px-1">
-                  src/data/artworks.json
-                </code>{" "}
-                with Shopify CDN URLs, or set env vars to fetch automatically.
+                Replace placeholders in <code>src/data/artworks.json</code> with Shopify CDN URLs, or set env vars to fetch automatically.
               </div>
             </div>
           </aside>
@@ -1325,9 +588,632 @@ function Studio() {
   );
 }
 
-/* ---------------- Docs page ---------------- */
+/* ------------- Live demo on homepage ------------- */
+
+function LiveDemoMock() {
+  const [room, setRoom] = useState<"Living" | "Hallway" | "Bedroom">("Living");
+  const [wall, setWall] = useState("#f2f4f7");
+  const [sizeUnit, setSizeUnit] = useState<"cm" | "in">("cm");
+  const [widthVal, setWidthVal] = useState<number>(100);
+  const [heightVal, setHeightVal] = useState<number>(70);
+  const [lockRatio, setLockRatio] = useState<boolean>(true);
+  const [userPhoto, setUserPhoto] = useState<string | null>(null);
+  const [showSizingInfo, setShowSizingInfo] = useState(false);
+  const [artworks, setArtworks] = useState<any[]>(localArtworks as any[]);
+  const [selectedArtId, setSelectedArtId] = useState<string>(artworks[0]?.id || "");
+  const fileRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    const handle = (import.meta as any).env.VITE_ROOMVIBE_COLLECTION_HANDLE;
+    if (!handle) return;
+    fetchCollectionArtworks(handle, 24)
+      .then((res) => {
+        if (Array.isArray(res) && res.length) {
+          setArtworks(res);
+          setSelectedArtId(res[0].id);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const selectedArtwork = artworks.find((a) => a.id === selectedArtId);
+
+  const widthCm = sizeUnit === "cm" ? widthVal : widthVal * 2.54;
+  const heightCm = sizeUnit === "cm" ? heightVal : heightVal * 2.54;
+
+  const artWidthPct = Math.max(18, Math.min(60, 0.24 * widthCm + 12));
+  const artAspect = Math.max(0.2, Math.min(5, widthCm / Math.max(1, heightCm)));
+
+  function applyQuickPick(w: number, h: number) {
+    if (sizeUnit === "in") {
+      w = +(w / 2.54).toFixed(1);
+      h = +(h / 2.54).toFixed(1);
+    }
+    setWidthVal(w);
+    setHeightVal(h);
+  }
+
+  return (
+    <Container id="demo">
+      <div className="grid items-center gap-8 lg:grid-cols-2">
+        <div className="order-2 lg:order-1">
+          <h2 className="text-2xl font-semibold">Live demo (preview)</h2>
+          <p className="mt-2 text-slate-600">
+            Change room, pick an artwork, set size, tweak wall color, or upload your wall photo – exactly what your visitors will do.
+          </p>
+          <div className="mt-6 grid gap-5">
+            <fieldset>
+              <legend className="mb-2 text-sm font-medium text-slate-700">Artwork</legend>
+              <div className="flex flex-wrap items-center gap-2">
+                <select
+                  className="rounded-md border border-slate-300 px-2 py-1 text-sm"
+                  value={selectedArtId}
+                  onChange={(e) => setSelectedArtId(e.target.value)}
+                >
+                  {artworks.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend className="mb-2 text-sm font-medium text-slate-700">Room preset</legend>
+              <div className="flex flex-wrap gap-2">
+                {["Living", "Hallway", "Bedroom"].map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => setRoom(r as any)}
+                    className={`rounded-lg border px-3 py-1.5 text-sm shadow-sm ${
+                      room === r ? "text-white" : "border-slate-200 bg-white hover:bg-slate-50"
+                    }`}
+                    style={room === r ? { background: "var(--accent)" } : {}}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend className="mb-2 text-sm font-medium text-slate-700">Your wall</legend>
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-sm hover:bg-slate-50"
+                  onClick={() => fileRef.current?.click()}
+                >
+                  <UploadIcon className="h-4 w-4" /> Upload your wall photo
+                </button>
+                {userPhoto && (
+                  <button className="text-xs underline text-slate-700" onClick={() => setUserPhoto(null)}>
+                    Remove photo
+                  </button>
+                )}
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const url = URL.createObjectURL(file);
+                      setUserPhoto(url);
+                    }
+                  }}
+                />
+                <span className="text-xs text-slate-500">Images stay local in your browser — not uploaded.</span>
+              </div>
+            </fieldset>
+
+            {!userPhoto && (
+              <fieldset>
+                <legend className="mb-2 text-sm font-medium text-slate-700">Wall color</legend>
+                <div className="flex items-center gap-3">
+                  <input
+                    aria-label="Pick wall color"
+                    type="color"
+                    value={wall}
+                    onChange={(e) => setWall(e.target.value)}
+                    className="h-9 w-16 cursor-pointer rounded-md border border-slate-300 bg-white"
+                  />
+                  <button
+                    onClick={() => setWall("#f2f4f7")}
+                    className="rounded-md border border-slate-200 px-2 text-xs hover:bg-slate-50"
+                  >
+                    Reset
+                  </button>
+                </div>
+              </fieldset>
+            )}
+
+            <fieldset>
+              <legend className="mb-2 text-sm font-medium text-slate-700">Artwork size</legend>
+              <div className="flex flex-wrap items-center gap-2">
+                <label className="text-xs text-slate-700">Width</label>
+                <input
+                  type="number"
+                  min={1}
+                  className="w-24 rounded-md border border-slate-300 px-2 py-1 text-sm"
+                  value={widthVal}
+                  onChange={(e) => {
+                    const v = Math.max(1, +e.target.value || 1);
+                    const currentWidthCm = sizeUnit === "cm" ? widthVal : widthVal * 2.54;
+                    const currentHeightCm = sizeUnit === "cm" ? heightVal : heightVal * 2.54;
+
+                    if (lockRatio) {
+                      const ratio = currentHeightCm / Math.max(1, currentWidthCm);
+                      const newWidth = v;
+                      const newHeight = +(newWidth * ratio).toFixed(1);
+                      setWidthVal(v);
+                      setHeightVal(newHeight);
+                    } else {
+                      setWidthVal(v);
+                    }
+                  }}
+                />
+                <label className="text-xs text-slate-700 ml-2">Height</label>
+                <input
+                  type="number"
+                  min={1}
+                  className="w-24 rounded-md border border-slate-300 px-2 py-1 text-sm"
+                  value={heightVal}
+                  onChange={(e) => {
+                    const v = Math.max(1, +e.target.value || 1);
+                    const currentWidthCm = sizeUnit === "cm" ? widthVal : widthVal * 2.54;
+                    const currentHeightCm = sizeUnit === "cm" ? heightVal : heightVal * 2.54;
+
+                    if (lockRatio) {
+                      const ratio = currentWidthCm / Math.max(1, currentHeightCm);
+                      const newHeight = v;
+                      const newWidth = +(newHeight * ratio).toFixed(1);
+                      setHeightVal(v);
+                      setWidthVal(newWidth);
+                    } else {
+                      setHeightVal(v);
+                    }
+                  }}
+                />
+                <select
+                  className="ml-2 rounded-md border border-slate-300 px-2 py-1 text-sm"
+                  value={sizeUnit}
+                  onChange={(e) => {
+                    const val = e.target.value as "cm" | "in";
+                    if (val === "in" && sizeUnit === "cm") {
+                      setWidthVal(+(widthVal / 2.54).toFixed(1));
+                      setHeightVal(+(heightVal / 2.54).toFixed(1));
+                    } else if (val === "cm" && sizeUnit === "in") {
+                      setWidthVal(+(widthVal * 2.54).toFixed(1));
+                      setHeightVal(+(heightVal * 2.54).toFixed(1));
+                    }
+                    setSizeUnit(val);
+                  }}
+                >
+                  <option value="cm">cm</option>
+                  <option value="in">in</option>
+                </select>
+                <label className="ml-2 inline-flex items-center gap-1 text-xs text-slate-700">
+                  <input type="checkbox" checked={lockRatio} onChange={(e) => setLockRatio(e.target.checked)} />
+                  Lock ratio
+                </label>
+              </div>
+              <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+                Quick picks:
+                {[
+                  [80, 60],
+                  [100, 70],
+                  [150, 100],
+                ].map(([w, h]) => (
+                  <button
+                    key={`${w}x${h}`}
+                    onClick={() => applyQuickPick(w, h)}
+                    className="rounded-md border border-slate-200 bg-white px-2 py-1 hover:bg-slate-50"
+                  >
+                    {w}×{h} cm
+                  </button>
+                ))}
+              </div>
+              <div className="mt-2">
+                <button
+                  className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs shadow-sm hover:bg-slate-50"
+                  onClick={() => setShowSizingInfo(true)}
+                  title="How true-to-size works"
+                >
+                  <InfoIcon className="h-3.5 w-3.5" /> How true-to-size works
+                </button>
+              </div>
+            </fieldset>
+          </div>
+        </div>
+
+        <div className="order-1 lg:order-2">
+          <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 text-sm">
+              <div className="flex items-center gap-2 text-slate-600">
+                <RoomIcon className="h-4 w-4" /> {room} room
+              </div>
+              <div className="text-slate-500">
+                {userPhoto ? (
+                  <span>Custom wall photo</span>
+                ) : (
+                  <>
+                    Wall: <span className="font-mono text-xs">{wall.toUpperCase()}</span>
+                  </>
+                )}
+              </div>
+            </div>
+            <div className="relative h-80 w-full">
+              {userPhoto ? (
+                <img src={userPhoto} alt="Your wall" className="absolute inset-0 h-full w-full object-cover" />
+              ) : (
+                <div className="absolute inset-0" style={{ background: wall }} />
+              )}
+              <div className="absolute bottom-0 left-0 right-0 h-12 bg-[linear-gradient(180deg,rgba(0,0,0,0.04),rgba(0,0,0,0.08))]" />
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                <div
+                  className="overflow-hidden rounded-md border-8 border-white shadow-xl"
+                  style={{ width: `${artWidthPct}%`, aspectRatio: `${artAspect}/1`, background: "#f8fafc" }}
+                >
+                  {selectedArtwork?.imageUrl ? (
+                    <img src={selectedArtwork.imageUrl} alt={selectedArtwork.title} className="h-full w-full object-cover" draggable={false} />
+                  ) : (
+                    <div
+                      className="h-full w-full"
+                      style={{
+                        background:
+                          "linear-gradient(135deg, color-mix(in_oklab,var(--accent),white_10%), color-mix(in_oklab,var(--accent),black_10%))",
+                      }}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 px-4 py-2 text-xs text-slate-500">
+              <div>
+                Preview only · Size: {widthVal}×{heightVal} {sizeUnit}
+              </div>
+              <div className="flex items-center gap-3">
+                <span>Powered by RoomVibe</span>
+                {selectedArtwork && (
+                  <a
+                    href={(selectedArtwork as any).onlineStoreUrl || "#"}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center rounded-md border border-slate-300 bg-white px-2 py-1 text-[11px] font-medium text-slate-900 hover:bg-slate-50"
+                  >
+                    View &amp; Buy on Shopify
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {showSizingInfo && (
+        <Modal onClose={() => setShowSizingInfo(false)}>
+          <div className="text-sm text-slate-700">
+            <h3 className="text-lg font-semibold">How true-to-size works</h3>
+            <p className="mt-2">For accurate scale, we’ll add a quick one-time calibration in the full app:</p>
+            <ol className="mt-3 list-decimal space-y-2 pl-5">
+              <li>
+                <b>Reference object:</b> Place a standard A4 paper (210 × 297 mm) or a credit card on the wall and take a photo.
+              </li>
+              <li>
+                <b>Calibrate:</b> Mark the reference corners in the photo. We compute the pixel-to-cm ratio and perspective.
+              </li>
+              <li>
+                <b>Verify:</b> Enter the artwork size (e.g., 100 × 70 cm). The mockup snaps to the exact scale on your wall photo.
+              </li>
+            </ol>
+            <p className="mt-3">Your photo stays local in the browser during preview. For embeds, merchants can opt-in to store a copy with consent.</p>
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => setShowSizingInfo(false)}
+                className="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs hover:bg-slate-50"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+    </Container>
+  );
+}
+
+/* ------------- How it works ------------- */
+
+function HowItWorks() {
+  const steps = [
+    {
+      title: "Pick a room",
+      desc: "Choose from presets or upload your own wall photo.",
+      icon: <HomeIcon className="h-5 w-5" />,
+    },
+    {
+      title: "Adjust size & wall color",
+      desc: "Use cm/in, lock ratio and recolor walls with one click.",
+      icon: <RulerIcon className="h-5 w-5" />,
+    },
+    {
+      title: "Embed on your site",
+      desc: "Drop in the RoomVibe widget so visitors can try art live.",
+      icon: <CodeIcon className="h-5 w-5" />,
+    },
+  ];
+  return (
+    <Container id="how">
+      <div className="mx-auto max-w-3xl text-center">
+        <h2 className="text-2xl font-semibold">How it works</h2>
+        <p className="mt-2 text-slate-600">
+          RoomVibe is a lightweight, embeddable widget for visualizing original art in real rooms — for you and your collectors.
+        </p>
+      </div>
+      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {steps.map((s, i) => (
+          <div key={i} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md">
+            <div
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-white"
+              style={{ background: "var(--accent)" }}
+            >
+              {s.icon}
+            </div>
+            <h3 className="mt-4 text-lg font-semibold">{s.title}</h3>
+            <p className="mt-1 text-sm text-slate-600">{s.desc}</p>
+          </div>
+        ))}
+      </div>
+    </Container>
+  );
+}
+
+/* ------------- Why artists love RoomVibe ------------- */
+
+function WhyArtistsLove() {
+  const items = [
+    {
+      title: "Instant mockups",
+      text: "Create beautiful room previews in seconds — no Photoshop, no manual cropping.",
+    },
+    {
+      title: "Sell more originals",
+      text: "Buyers see your art on their own wall, true-to-size, which increases confidence and conversions.",
+    },
+    {
+      title: "Designer-friendly",
+      text: "Interior designers can plan placements for clients and share interactive previews.",
+    },
+  ];
+
+  return (
+    <Container>
+      <div className="grid gap-10 lg:grid-cols-2 items-center">
+        <div>
+          <h2 className="text-2xl font-semibold">Why artists love RoomVibe</h2>
+          <p className="mt-2 text-slate-600">
+            RoomVibe turns your artwork into a visual experience. Show collectors exactly how a piece will feel in their space — before you ship it.
+          </p>
+          <div className="mt-6 space-y-4">
+            {items.map((item) => (
+              <div key={item.title} className="flex gap-3">
+                <div
+                  className="mt-1 inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full"
+                  style={{ background: "var(--accent-soft)" }}
+                >
+                  <CheckIcon className="h-4 w-4" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold">{item.title}</div>
+                  <div className="text-sm text-slate-600">{item.text}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="text-xs font-medium text-slate-500 uppercase tracking-wide">For collectors</div>
+          <h3 className="mt-3 text-lg font-semibold">“I can finally see if a piece truly fits my home.”</h3>
+          <p className="mt-2 text-sm text-slate-600">
+            Buyers can upload a photo of their living room, hallway or bedroom and instantly see how your work looks on their wall. No guessing, no
+            measuring tape drama — just clarity.
+          </p>
+          <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 text-xs text-slate-600">
+            Perfect for:
+            <ul className="mt-1 list-disc pl-4 space-y-1">
+              <li>Large statement pieces that are hard to imagine in a room</li>
+              <li>High-end collectors who want to be sure before investing</li>
+              <li>Designers presenting options to their clients</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </Container>
+  );
+}
+
+/* ------------- Perfect for... ------------- */
+
+function PerfectFor() {
+  const cards = [
+    {
+      title: "Artists & galleries",
+      text: "Showcase originals and prints in real interiors, embed the Studio on your site and let buyers try art on their walls.",
+    },
+    {
+      title: "Interior designers",
+      text: "Plan art placement in client homes or projects and export reference screenshots for presentations.",
+    },
+    {
+      title: "Online art buyers",
+      text: "Upload a wall photo, test different pieces and sizes, and buy directly from the artist with confidence.",
+    },
+  ];
+
+  return (
+    <Container>
+      <div className="mx-auto max-w-3xl text-center">
+        <h2 className="text-2xl font-semibold">Perfect for artists, galleries &amp; designers</h2>
+        <p className="mt-2 text-slate-600">
+          One tool that works for original art, limited prints and high-end interior projects.
+        </p>
+      </div>
+      <div className="mt-8 grid gap-6 md:grid-cols-3">
+        {cards.map((c) => (
+          <div key={c.title} className="rounded-2xl border border-slate-200 bg-white p-5 text-sm shadow-sm">
+            <div className="text-sm font-semibold">{c.title}</div>
+            <p className="mt-2 text-slate-600">{c.text}</p>
+          </div>
+        ))}
+      </div>
+    </Container>
+  );
+}
+
+/* ------------- Pricing ------------- */
+
+function Pricing() {
+  const tiers = [
+    {
+      name: "Free",
+      price: "€0 / mo",
+      highlight: false,
+      features: ["1 room preset (Living)", "Up to 5 artworks", "Up to 2 sizes per artwork", "Color picker (no upload)", "Designer Mode: —"],
+      cta: "Start Free",
+    },
+    {
+      name: "Basic",
+      price: "€9 / mo",
+      highlight: true,
+      features: [
+        "10 room presets",
+        "Up to 50 artworks",
+        "Up to 5 sizes per artwork",
+        "Swatches + color picker",
+        "Designer Mode enabled (width input)",
+      ],
+      cta: "Choose Basic",
+    },
+    {
+      name: "Designer Pro",
+      price: "€29 / mo",
+      highlight: false,
+      features: [
+        "Unlimited room presets",
+        "Unlimited artworks",
+        "Unlimited sizes per artwork",
+        "Unlimited palettes",
+        "Designer Mode advanced (ruler + cm/in)",
+      ],
+      cta: "Go Pro",
+    },
+  ];
+  return (
+    <Container id="pricing">
+      <div className="mx-auto max-w-3xl text-center">
+        <h2 className="text-2xl font-semibold">Pricing</h2>
+        <p className="mt-2 text-slate-600">Simple plans that scale with your gallery.</p>
+      </div>
+      <div className="mt-8 grid gap-6 md:grid-cols-3">
+        {tiers.map((t) => (
+          <div
+            key={t.name}
+            className={`relative rounded-2xl border p-6 shadow-sm ${
+              t.highlight ? "border-slate-900 bg-gradient-to-b from-white to-slate-50" : "border-slate-200 bg-white"
+            }`}
+          >
+            {t.highlight && (
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium shadow-sm">
+                Recommended
+              </div>
+            )}
+            <div className="text-sm text-slate-500">{t.name}</div>
+            <div className="mt-1 text-3xl font-semibold">{t.price}</div>
+            <ul className="mt-4 grid gap-2 text-sm text-slate-700">
+              {t.features.map((f) => (
+                <li key={f} className="flex items-start gap-2">
+                  <CheckIcon className="mt-0.5 h-4 w-4" />
+                  <span>{f}</span>
+                </li>
+              ))}
+            </ul>
+            <a
+              href="#/studio"
+              className="mt-6 inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-black hover:opacity-90"
+              style={{ background: "var(--accent)" }}
+            >
+              {t.cta}
+            </a>
+          </div>
+        ))}
+      </div>
+    </Container>
+  );
+}
+
+/* ------------- FAQ (kraća verzija) ------------- */
+
+function FAQ() {
+  const faqs = [
+    {
+      q: "How do I add RoomVibe to my website?",
+      a: "Use the Docs page to copy a small script tag or React component. Paste it into your site template, connect your artworks, and you’re live.",
+    },
+    {
+      q: "How does true-to-size sizing work?",
+      a: "In the full app we’ll add a calibration step with A4 paper or a credit card. We then compute pixel-to-centimeter ratio so artwork snaps to exact size.",
+    },
+    {
+      q: "Do you store photos of my walls?",
+      a: "In the demo, photos stay only in your browser. In Pro, merchants can choose to store photos with visitor consent, for reuse across products.",
+    },
+    {
+      q: "Can I sell my art through RoomVibe?",
+      a: "Yes. RoomVibe connects to Shopify or your existing checkout. Buyers preview art in the widget and finish payment in your store.",
+    },
+  ];
+  return (
+    <Container id="faq">
+      <div className="mx-auto max-w-3xl text-center">
+        <h2 className="text-2xl font-semibold">FAQ</h2>
+        <p className="mt-2 text-slate-600">Quick answers to the most common questions.</p>
+      </div>
+      <div className="mx-auto mt-6 max-w-3xl divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white">
+        {faqs.map((f, i) => (
+          <details key={i} className="group open:rounded-2xl">
+            <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-4">
+              <span className="text-sm font-medium text-slate-900">{f.q}</span>
+              <ChevronDown className="h-4 w-4 text-slate-500 transition group-open:rotate-180" />
+            </summary>
+            <div className="px-5 pb-4 text-sm text-slate-600">{f.a}</div>
+          </details>
+        ))}
+      </div>
+    </Container>
+  );
+}
+
+/* ------------- Docs page (kodovi) ------------- */
 
 function DocsPage() {
+  return (
+    <main>
+      <Container>
+        <div className="mx-auto max-w-3xl text-center">
+          <h1 className="text-3xl font-semibold">Developer docs &amp; embed code</h1>
+          <p className="mt-2 text-slate-600">
+            Add RoomVibe to your website with a simple script tag or React component. Copy the snippets below and publish.
+          </p>
+        </div>
+      </Container>
+      <DocsEmbed />
+    </main>
+  );
+}
+
+function DocsEmbed() {
   const umd = `<div id="roomvibe-root"></div>
 <script
   src="https://cdn.example.com/roomvibe.widget.umd.js"
@@ -1351,108 +1237,78 @@ export default function Demo() {
 }`;
 
   return (
-    <main>
-      <Container id="docs">
-        <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-[radial-gradient(1100px_450px_at_50%_0%,rgba(139,173,229,0.18),white)] p-8 sm:p-12">
+    <section className="relative mt-8 mb-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-[radial-gradient(1200px_500px_at_50%_0%,color-mix(in_oklab,var(--accent),white_85%),white)] p-8 sm:p-12">
           <div className="mx-auto max-w-3xl text-center">
-            <h1 className="text-2xl font-semibold text-slate-900">
-              Add RoomVibe to your site
-            </h1>
-            <p className="mt-2 text-sm text-slate-600 sm:text-base">
-              Pick one of the options below to install RoomVibe on Shopify or a
-              custom website.
-            </p>
+            <h2 className="text-2xl font-semibold">Add RoomVibe to your site</h2>
+            <p className="mt-2 text-slate-600">Pick one of the two options below.</p>
           </div>
 
           <div className="mt-8 grid gap-6 lg:grid-cols-2">
-            <CodeCard title="UMD / Script embed" code={umd} />
+            <CodeCard title="UMD / Script Embed" code={umd} />
             <CodeCard title="React (ESM)" code={react} />
           </div>
 
           <div className="mx-auto mt-8 max-w-3xl text-sm text-slate-700">
-            <h3 className="text-base font-semibold text-slate-900">
-              Step-by-step
-            </h3>
+            <h3 className="text-base font-semibold">Step-by-step</h3>
             <ol className="mt-2 list-decimal space-y-2 pl-5">
               <li>
-                Create a placeholder container:{" "}
-                <code className="rounded bg-slate-100 px-1">
-                  {"<div id=\"roomvibe-root\"></div>"}
-                </code>
+                Create a placeholder container: <code className="rounded bg-slate-100 px-1">{'<div id="roomvibe-root"></div>'}</code>
               </li>
               <li>Add the script (UMD) or install the React package (ESM).</li>
               <li>
-                Configure props:{" "}
-                <code className="rounded bg-slate-100 px-1">mode</code>,{" "}
+                Configure props: <code className="rounded bg-slate-100 px-1">mode</code>,{" "}
                 <code className="rounded bg-slate-100 px-1">collection</code>,{" "}
                 <code className="rounded bg-slate-100 px-1">oneClickBuy</code>.
               </li>
-              <li>
-                Publish and test. Open DevTools to watch{" "}
-                <code className="rounded bg-slate-100 px-1">onEvent</code> logs.
-              </li>
+              <li>Publish and test. Open DevTools to watch onEvent logs.</li>
             </ol>
 
-            <h4 className="mt-4 text-sm font-semibold text-slate-900">
-              Shopify (quick note)
-            </h4>
+            <h4 className="mt-4 text-sm font-semibold">Shopify (quick note)</h4>
             <p className="mt-1">
-              Online Store → Themes → Edit code → add the container + UMD script
-              in the desired template/section. For Online Store 2.0, you can
-              also add a custom liquid section.
+              Online Store → Themes → Edit code → add the container + UMD script in the desired template/section. For app-block integration, we’ll ship a
+              block later.
             </p>
+
+            <div className="mt-4 text-sm text-slate-600">
+              By embedding RoomVibe on a Shopify store, you also accept the{" "}
+              <a className="text-slate-900 underline" href="https://www.shopify.com/legal/cookies" target="_blank" rel="noreferrer">
+                Shopify Cookie Policy
+              </a>
+              .
+            </div>
           </div>
         </div>
-      </Container>
-    </main>
+      </div>
+    </section>
   );
 }
 
-/* ---------------- Privacy (short) ---------------- */
+/* ------------- Privacy ------------- */
 
 function PrivacyPage() {
   return (
     <main>
       <Container id="privacy">
         <div className="mx-auto max-w-3xl">
-          <h1 className="text-3xl font-semibold text-slate-900">
-            Privacy Policy — RoomVibe (Short)
-          </h1>
-          <p className="mt-2 text-sm text-slate-500">
-            Last updated: November 13, 2025
-          </p>
+          <h1 className="text-3xl font-semibold">Privacy Policy — RoomVibe (Short)</h1>
+          <p className="mt-2 text-sm text-slate-500">Last updated: November 13, 2025</p>
 
-          <div className="mt-6 grid gap-4 text-sm text-slate-700">
+          <div className="mt-6 grid gap-4 text-slate-700">
             <p>
-              This short version applies to the RoomVibe widget/app, demo and
-              embeds. For store cookies on Shopify, please refer to their Cookie
-              Policy.
+              This short version applies to the RoomVibe widget/app, demo and embeds. For store cookies on Shopify, please refer to their Cookie Policy.
             </p>
+            <p>Controller: Lumina Start j.d.o.o., Drašnička 6, 10000 Zagreb, Croatia · info@irenart.studio</p>
             <p>
-              Controller: Lumina Start j.d.o.o., Drašnička 6, 10000 Zagreb,
-              Croatia · info@irenart.studio
+              What we collect: (i) contact/leads you submit, (ii) display preferences you choose, (iii) technical logs for security and performance.
+              Payments are processed by Shopify/ThriveCart and Stripe/PayPal — RoomVibe does not store payment data.
             </p>
+            <p>Your rights (GDPR): access, rectification, erasure, restriction, portability, objection; and you can withdraw consent where applicable.</p>
             <p>
-              What we collect: (i) contact/leads you submit, (ii) display
-              preferences you choose, (iii) technical logs for security and
-              performance. Payments are processed by Shopify/ThriveCart and
-              Stripe/PayPal — RoomVibe does not store payment data.
-            </p>
-            <p>
-              Your rights (GDPR): access, rectification, erasure, restriction,
-              portability, objection; and you can withdraw consent where
-              applicable.
-            </p>
-            <p>
-              Cookies: we use essential cookies/localStorage for widget
-              functionality; analytics/marketing only with consent. Shopify
-              stores use Shopify’s cookie framework.{" "}
-              <a
-                className="text-slate-900 underline"
-                href="https://www.shopify.com/legal/cookies"
-                target="_blank"
-                rel="noreferrer"
-              >
+              Cookies: we use essential cookies/localStorage for widget functionality; analytics/marketing only with consent. Shopify stores use Shopify’s
+              cookie framework.{" "}
+              <a className="text-slate-900 underline" href="https://www.shopify.com/legal/cookies" target="_blank" rel="noreferrer">
                 View Shopify Cookie Policy
               </a>
               .
@@ -1460,11 +1316,7 @@ function PrivacyPage() {
           </div>
 
           <div className="mt-8">
-            <a
-              href="#home"
-              className="inline-flex items-center rounded-xl px-4 py-2 text-sm font-medium text-white hover:opacity-90"
-              style={{ background: "var(--accent)" }}
-            >
+            <a href="#home" className="inline-flex items-center rounded-xl px-4 py-2 text-white hover:opacity-90" style={{ background: "var(--accent)" }}>
               ← Home
             </a>
           </div>
@@ -1474,7 +1326,7 @@ function PrivacyPage() {
   );
 }
 
-/* ---------------- Shared components ---------------- */
+/* ------------- Shared components ------------- */
 
 function CodeCard({ title, code }: { title: string; code: string }) {
   const preRef = useRef<HTMLPreElement | null>(null);
@@ -1486,7 +1338,7 @@ function CodeCard({ title, code }: { title: string; code: string }) {
           onClick={async () => {
             try {
               await navigator.clipboard.writeText(code);
-            } catch {
+            } catch (e) {
               const el = preRef.current;
               if (el) {
                 const r = document.createRange();
@@ -1504,31 +1356,67 @@ function CodeCard({ title, code }: { title: string; code: string }) {
           <CopyIcon className="h-3.5 w-3.5" /> Copy
         </button>
       </div>
-      <pre
-        ref={preRef}
-        className="mt-3 max-h-[260px] overflow-auto rounded-xl bg-slate-950 p-4 text-xs leading-relaxed text-slate-200"
-      >
+      <pre ref={preRef} className="mt-3 overflow-auto rounded-xl bg-slate-950 p-4 text-xs leading-relaxed text-slate-200">
         <code>{code}</code>
       </pre>
     </div>
   );
 }
 
-function Modal({
-  onClose,
-  children,
-}: {
-  onClose: () => void;
-  children: React.ReactNode;
-}) {
+function SiteFooter() {
+  return (
+    <footer className="mt-16 bg-[var(--footer-bg)] text-black">
+      <Container>
+        <div className="flex flex-col gap-6 py-10 md:flex-row md:items-center md:justify-between">
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center gap-2 font-semibold">
+              <Logo className="h-5 w-5" /> RoomVibe
+            </div>
+            <p className="text-sm text-black/80">
+              Visualize art on your walls. Upload a wall photo, try sizes, and embed the experience on your site.
+            </p>
+          </div>
+          <div className="flex gap-8 text-sm">
+            <div className="space-y-1">
+              <div className="font-semibold">Product</div>
+              <a href="#/studio" className="block hover:underline underline-offset-2">
+                Studio
+              </a>
+              <a href="#pricing" className="block hover:underline underline-offset-2">
+                Pricing
+              </a>
+            </div>
+            <div className="space-y-1">
+              <div className="font-semibold">Company</div>
+              <a href="#/privacy" className="block hover:underline underline-offset-2">
+                Privacy
+              </a>
+              <a href="#/docs" className="block hover:underline underline-offset-2">
+                Docs
+              </a>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center justify-between border-t border-black/10 py-4 text-xs text-black/70">
+          <div>© 2025 RoomVibe. All rights reserved.</div>
+          <a href="#home" className="hover:underline underline-offset-2">
+            Back to top
+          </a>
+        </div>
+      </Container>
+    </footer>
+  );
+}
+
+/* ------------- Modal + icons ------------- */
+
+function Modal({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
   return (
     <div className="fixed inset-0 z-[60]">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="absolute left-1/2 top-1/2 w-[min(96vw,560px)] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-slate-200 bg-white p-5 shadow-xl">
         <div className="flex items-center justify-between">
-          <div className="text-xs uppercase tracking-wide text-slate-500">
-            Info
-          </div>
+          <div className="text-xs uppercase tracking-wide text-slate-500">Info</div>
           <button
             onClick={onClose}
             className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 hover:bg-slate-50"
@@ -1541,71 +1429,6 @@ function Modal({
     </div>
   );
 }
-
-/* ---------------- Footer ---------------- */
-
-function SiteFooter() {
-  return (
-    <footer className="mt-16 bg-slate-900 text-slate-100">
-      <Container>
-        <div className="grid gap-10 py-12 md:grid-cols-3">
-          <div>
-            <div className="flex items-center gap-2 font-semibold">
-              <Logo className="h-5 w-5" /> RoomVibe
-            </div>
-            <p className="mt-3 text-sm text-slate-300">
-              Visualize art on your walls. Upload a wall photo, try sizes, and
-              embed the experience into your website.
-            </p>
-          </div>
-          <div>
-            <div className="text-sm font-semibold">Product</div>
-            <ul className="mt-3 space-y-1 text-sm text-slate-300">
-              <li>
-                <a href="#/studio" className="hover:underline">
-                  Studio
-                </a>
-              </li>
-              <li>
-                <a href="#pricing" className="hover:underline">
-                  Pricing
-                </a>
-              </li>
-              <li>
-                <a href="#/docs" className="hover:underline">
-                  Docs
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <div className="text-sm font-semibold">Company</div>
-            <ul className="mt-3 space-y-1 text-sm text-slate-300">
-              <li>
-                <a href="#/privacy" className="hover:underline">
-                  Privacy policy
-                </a>
-              </li>
-              <li>
-                <a
-                  href="mailto:info@irenart.studio"
-                  className="hover:underline"
-                >
-                  Contact
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div className="border-t border-slate-800 py-4 text-xs text-slate-400">
-          © 2025 RoomVibe. All rights reserved.
-        </div>
-      </Container>
-    </footer>
-  );
-}
-
-/* ---------------- Icons ---------------- */
 
 function UploadIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
