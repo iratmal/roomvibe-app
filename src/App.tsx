@@ -1,10 +1,10 @@
 import React, { useRef, useState, useEffect } from "react";
 import localArtworks from "./data/artworks.json";
 import presets from "./data/presets.json";
-import { fetchCollectionArtworks } from "./shopify";
+import { fetchCollectionArtworks, type ShopifyArtwork } from "./shopify";
 
 /**
- * RoomVibe (EN) — Canvy-inspired studio + landing (cool blue theme)
+ * RoomVibe — Studio + Landing (hladno plava tema)
  */
 
 function useHashRoute() {
@@ -20,7 +20,7 @@ function useHashRoute() {
 export default function App() {
   const hash = useHashRoute();
   return (
-    <div className="min-h-screen bg-rv-bg text-rv-text font-body">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white text-slate-900 font-body">
       <TopNav />
       {hash === "#/privacy" ? (
         <PrivacyPage />
@@ -65,13 +65,13 @@ function Container({
 function TopNav() {
   const [open, setOpen] = useState(false);
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/80 backdrop-blur">
+    <header className="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/70 border-b border-slate-100">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <a href="#home" className="flex items-center gap-2 font-semibold">
             <Logo className="h-6 w-6" /> <span>RoomVibe</span>
           </a>
-          <nav className="hidden items-center gap-6 text-sm md:flex">
+          <nav className="hidden md:flex items-center gap-6 text-sm">
             <a href="#demo" className="hover:text-slate-700">
               Demo
             </a>
@@ -89,7 +89,7 @@ function TopNav() {
             </a>
             <a
               href="#/studio"
-              className="inline-flex items-center rounded-full px-4 py-2 text-sm font-medium text-black shadow-sm hover:opacity-90"
+              className="inline-flex items-center rounded-full px-4 py-2 text-black shadow-sm hover:opacity-90"
               style={{ background: "var(--accent)" }}
             >
               Try Studio
@@ -97,7 +97,7 @@ function TopNav() {
           </nav>
           <button
             aria-label="Open menu"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 md:hidden"
+            className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200"
             onClick={() => setOpen((v) => !v)}
           >
             <MenuIcon className="h-5 w-5" />
@@ -105,14 +105,22 @@ function TopNav() {
         </div>
       </div>
       {open && (
-        <div className="border-t border-slate-100 bg-white md:hidden">
+        <div className="md:hidden border-t border-slate-100 bg-white">
           <div className="mx-auto max-w-7xl px-4 py-3 text-sm">
             <div className="flex items-center justify-between">
               <div className="flex gap-4">
-                <a onClick={() => setOpen(false)} href="#demo" className="py-2">
+                <a
+                  onClick={() => setOpen(false)}
+                  href="#demo"
+                  className="py-2"
+                >
                   Demo
                 </a>
-                <a onClick={() => setOpen(false)} href="#how" className="py-2">
+                <a
+                  onClick={() => setOpen(false)}
+                  href="#how"
+                  className="py-2"
+                >
                   How it works
                 </a>
                 <a
@@ -122,7 +130,11 @@ function TopNav() {
                 >
                   Pricing
                 </a>
-                <a onClick={() => setOpen(false)} href="#docs" className="py-2">
+                <a
+                  onClick={() => setOpen(false)}
+                  href="#docs"
+                  className="py-2"
+                >
                   Docs
                 </a>
                 <a
@@ -137,7 +149,7 @@ function TopNav() {
             <a
               href="#/studio"
               onClick={() => setOpen(false)}
-              className="mt-3 inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-sm font-medium text-black"
+              className="mt-3 inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-black"
               style={{ background: "var(--accent)" }}
             >
               Try Studio
@@ -153,44 +165,44 @@ function Hero() {
   return (
     <Container id="home">
       <div className="relative isolate overflow-hidden">
-        <div className="mx-auto max-w-3xl py-16 text-center sm:py-24">
+        <div className="mx-auto max-w-3xl py-16 sm:py-24 text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600 shadow-sm">
             <SparkleIcon className="h-3.5 w-3.5" /> Try original art in your
             room
           </span>
-          <h1 className="mt-8 text-4xl font-semibold tracking-tight text-black font-display sm:text-5xl lg:text-6xl">
+          <h1 className="mt-6 text-3xl sm:text-4xl font-bold tracking-tight text-black font-display">
             Visualize art on your walls
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-base text-slate-600 sm:text-lg">
+          <p className="mx-auto mt-5 max-w-2xl text-slate-600">
             Upload a photo of your wall, discover perfect artworks, and see them
             in true-to-size mockups.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a
               href="#/studio"
-              className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium text-black shadow hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-black shadow hover:opacity-90"
               style={{ background: "var(--accent)" }}
             >
               Open Studio <PlayIcon className="h-4 w-4" />
             </a>
             <a
               href="#docs"
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-black shadow-sm hover:bg-slate-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-black shadow-sm hover:bg-slate-50"
             >
               Add to Website <ArrowRightIcon className="h-4 w-4" />
             </a>
           </div>
 
-          {/* Soft blue mesh background */}
+          {/* Hladno plavi soft gradient u pozadini */}
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
           >
-            <div className="absolute -top-40 left-1/4 h-[520px] w-[520px] rounded-full bg-[#EAF2FF] opacity-80 blur-3xl" />
-            <div className="absolute top-24 right-1/5 h-[420px] w-[420px] rounded-full bg-[#EFF4FF] opacity-80 blur-3xl" />
+            <div className="absolute -top-40 left-1/4 h-[500px] w-[500px] rounded-full bg-[#8BADE5] opacity-25 blur-3xl" />
+            <div className="absolute top-20 right-1/4 h-[400px] w-[400px] rounded-full bg-[#C4D8FF] opacity-30 blur-3xl" />
             <div
-              className="absolute left-1/2 top-1/2 h-[620px] w-[620px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-60 blur-3xl"
-              style={{ background: "var(--accent-soft)" }}
+              className="absolute top-1/2 left-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-20 blur-3xl"
+              style={{ background: "var(--accent)" }}
             />
           </div>
         </div>
@@ -202,7 +214,9 @@ function Hero() {
 function ShowcaseCarousel() {
   const [idx, setIdx] = useState(0);
   const [artIdx, setArtIdx] = useState(0);
-  const [arts, setArts] = useState<any[]>(localArtworks as any[]);
+  const [arts, setArts] = useState<ShopifyArtwork[]>(
+    localArtworks as unknown as ShopifyArtwork[]
+  );
 
   useEffect(() => {
     const handle = (import.meta as any).env.VITE_ROOMVIBE_COLLECTION_HANDLE;
@@ -295,12 +309,14 @@ function SectionDivider() {
 
 // --- Studio (Canvy-inspired layout) ---
 function Studio() {
-  const [sceneId, setSceneId] = useState<string>((presets as any)[0]?.id || "");
+  const [sceneId, setSceneId] = useState<string>(
+    (presets as any)[0]?.id || ""
+  );
   const [wallColor, setWallColor] = useState<string>("#f2f4f7");
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
 
-  const [artworksState, setArtworksState] = useState<any[]>(
-    localArtworks as any,
+  const [artworksState, setArtworksState] = useState<ShopifyArtwork[]>(
+    localArtworks as unknown as ShopifyArtwork[]
   );
   const [artId, setArtId] = useState<string>(artworksState[0]?.id || "");
   const art = artworksState.find((a) => a.id === artId);
@@ -331,7 +347,10 @@ function Studio() {
 
   const widthCm = sizeUnit === "cm" ? wVal : wVal * 2.54;
   const heightCm = sizeUnit === "cm" ? hVal : hVal * 2.54;
-  const artWidthPct = Math.max(18, Math.min(safe.w * 100, 0.24 * widthCm + 12));
+  const artWidthPct = Math.max(
+    18,
+    Math.min(safe.w * 100, 0.24 * widthCm + 12)
+  );
   const aspect = Math.max(0.2, Math.min(5, widthCm / Math.max(1, heightCm)));
 
   function quickPick(w: number, h: number) {
@@ -344,33 +363,31 @@ function Studio() {
   }
 
   return (
-    <div className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8">
       <div className="grid grid-cols-12 gap-6">
         {/* Left: Scenes gallery */}
-        <aside className="col-span-12 h-[260px] rounded-2xl border border-slate-200 bg-white/70 p-4 backdrop-blur sm:col-span-3 sm:h-[78vh] sm:overflow-auto">
+        <aside className="col-span-12 md:col-span-3 rounded-2xl border border-slate-200 bg-white/70 backdrop-blur p-4 md:h-[78vh] md:overflow-auto">
           <div className="mb-3 flex items-center justify-between">
             <div className="text-sm font-semibold">Scenes</div>
             <a href="#home" className="text-xs underline">
               Home
             </a>
           </div>
-          <div className="grid grid-cols-3 gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-2 gap-3">
             {(presets as any).map((p: any) => (
               <button
                 key={p.id}
                 onClick={() => setSceneId(p.id)}
-                className={`group relative overflow-hidden rounded-xl border bg-white ${
-                  sceneId === p.id
-                    ? "border-slate-900"
-                    : "border-slate-200 hover:border-slate-300"
-                }`}
+                className={`group relative overflow-hidden rounded-xl border ${
+                  sceneId === p.id ? "border-slate-900" : "border-slate-200"
+                } bg-white`}
               >
                 <img
                   src={p.photo}
                   alt={p.name}
-                  className="h-20 w-full object-cover sm:h-24"
+                  className="h-24 w-full object-cover"
                 />
-                <div className="absolute inset-0 rounded-xl ring-0 transition group-hover:ring-2 group-hover:ring-[var(--accent)]" />
+                <div className="absolute inset-0 ring-0 group-hover:ring-2 group-hover:ring-[var(--accent)] rounded-xl transition" />
                 <div className="absolute bottom-0 left-0 right-0 bg-black/40 px-2 py-1 text-[10px] text-white">
                   {p.name}
                 </div>
@@ -380,14 +397,14 @@ function Studio() {
         </aside>
 
         {/* Center: Canvas */}
-        <section className="col-span-12 sm:col-span-6">
+        <section className="col-span-12 md:col-span-6">
           <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 text-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 text-sm">
               <div className="flex items-center gap-2 text-slate-600">
                 <RoomIcon className="h-4 w-4" /> {scene?.name}
               </div>
-              <div className="flex items-center gap-3 text-slate-500">
-                {!userPhoto && <span className="text-xs">Wall:</span>}
+              <div className="flex flex-wrap items-center gap-3 text-slate-500">
+                {!userPhoto && <span>Wall:</span>}
                 {!userPhoto && (
                   <input
                     type="color"
@@ -426,7 +443,7 @@ function Studio() {
               </div>
             </div>
 
-            <div className="relative h-[420px] w-full overflow-hidden rounded-b-2xl sm:h-[560px]">
+            <div className="relative h-[560px] w-full overflow-hidden rounded-b-2xl">
               {userPhoto ? (
                 <img
                   src={userPhoto}
@@ -493,7 +510,7 @@ function Studio() {
         </section>
 
         {/* Right: Controls */}
-        <aside className="col-span-12 h-[320px] rounded-2xl border border-slate-200 bg-white p-4 sm:col-span-3 sm:h-[78vh] sm:overflow-auto">
+        <aside className="col-span-12 md:col-span-3 rounded-2xl border border-slate-200 bg-white p-4 md:h-[78vh] md:overflow-auto">
           <div className="text-sm font-semibold">Artwork</div>
           <div className="mt-2 flex items-center gap-2">
             <select
@@ -528,7 +545,7 @@ function Studio() {
                 }
               }}
             />
-            <label className="ml-2 text-xs text-slate-700">Height</label>
+            <label className="text-xs text-slate-700 ml-2">Height</label>
             <input
               type="number"
               min={1}
@@ -625,11 +642,10 @@ function Studio() {
               Use <b>#/studio</b> to deep-link this editor.
             </div>
             <div>
-              Replace placeholders in <code>src/data/artworks.json</code> with Shopify
-              CDN URLs, or set env vars to fetch automatically.
+              Replace placeholders in{" "}
+              <code>src/data/artworks.json</code> with Shopify CDN URLs, or set
+              env vars to fetch automatically.
             </div>
-          </div>
-
           </div>
         </aside>
       </div>
@@ -647,9 +663,11 @@ function LiveDemoMock() {
   const [lockRatio, setLockRatio] = useState<boolean>(true);
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   const [showSizingInfo, setShowSizingInfo] = useState(false);
-  const [artworks, setArtworks] = useState<any[]>(localArtworks as any[]);
+  const [artworks, setArtworks] = useState<ShopifyArtwork[]>(
+    localArtworks as unknown as ShopifyArtwork[]
+  );
   const [selectedArtId, setSelectedArtId] = useState<string>(
-    artworks[0]?.id || "",
+    artworks[0]?.id || ""
   );
   const fileRef = useRef<HTMLInputElement | null>(null);
 
@@ -672,7 +690,10 @@ function LiveDemoMock() {
   const heightCm = sizeUnit === "cm" ? heightVal : heightVal * 2.54;
 
   const artWidthPct = Math.max(18, Math.min(60, 0.24 * widthCm + 12));
-  const artAspect = Math.max(0.2, Math.min(5, widthCm / Math.max(1, heightCm)));
+  const artAspect = Math.max(
+    0.2,
+    Math.min(5, widthCm / Math.max(1, heightCm))
+  );
 
   function applyQuickPick(w: number, h: number) {
     if (sizeUnit === "in") {
@@ -749,7 +770,7 @@ function LiveDemoMock() {
                 </button>
                 {userPhoto && (
                   <button
-                    className="text-xs text-slate-700 underline"
+                    className="text-xs underline text-slate-700"
                     onClick={() => setUserPhoto(null)}
                   >
                     Remove photo
@@ -819,7 +840,7 @@ function LiveDemoMock() {
                     }
                   }}
                 />
-                <label className="ml-2 text-xs text-slate-700">Height</label>
+                <label className="text-xs text-slate-700 ml-2">Height</label>
                 <input
                   type="number"
                   min={1}
@@ -898,13 +919,13 @@ function LiveDemoMock() {
               <div className="flex items-center gap-2 text-slate-600">
                 <RoomIcon className="h-4 w-4" /> {room} room
               </div>
-              <div className="text-xs text-slate-500">
+              <div className="text-slate-500">
                 {userPhoto ? (
                   <span>Custom wall photo</span>
                 ) : (
                   <>
                     Wall:{" "}
-                    <span className="font-mono text-[11px]">
+                    <span className="font-mono text-xs">
                       {wall.toUpperCase()}
                     </span>
                   </>
@@ -953,11 +974,28 @@ function LiveDemoMock() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center justify-between border-t border-slate-100 px-4 py-2 text-xs text-slate-500">
+
+            {/* DONJI RED — PREVIEW INFO + BUY BUTTON */}
+            <div className="border-t border-slate-100 px-4 py-3 text-xs text-slate-500 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 Preview only · Size: {widthVal}×{heightVal} {sizeUnit}
               </div>
-              <div>Powered by RoomVibe</div>
+              <div className="flex items-center gap-3">
+                {selectedArtwork?.onlineStoreUrl && (
+                  <a
+                    href={selectedArtwork.onlineStoreUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-medium text-black shadow hover:opacity-90"
+                    style={{ background: "var(--accent)" }}
+                  >
+                    View &amp; Buy on Shopify
+                  </a>
+                )}
+                <span className="text-[11px] text-slate-500">
+                  Powered by RoomVibe
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -1008,12 +1046,12 @@ function HowItWorks() {
   const steps = [
     {
       title: "Pick a room",
-      desc: "Choose from presets or upload your own.",
+      desc: "Choose from presets or upload your own wall.",
       icon: <HomeIcon className="h-5 w-5" />,
     },
     {
       title: "Adjust size & wall color",
-      desc: "Use cm/in, lock ratio, recolor walls via mask.",
+      desc: "Use cm/in, lock ratio, and recolor walls via mask.",
       icon: <RulerIcon className="h-5 w-5" />,
     },
     {
@@ -1129,7 +1167,7 @@ function Pricing() {
             </ul>
             <a
               href="#/studio"
-              className="mt-6 inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-sm font-medium text-black hover:opacity-90"
+              className="mt-6 inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-black hover:opacity-90"
               style={{ background: "var(--accent)" }}
             >
               {t.cta}
@@ -1159,7 +1197,7 @@ export default function Demo() {
       mode="showcase"
       collection="originals"
       oneClickBuy
-      onEvent={(e) => console.log('RoomVibe', e)}
+      onEvent={(e) => console.log('RV', e)}
     />
   );
 }`;
@@ -1169,9 +1207,7 @@ export default function Demo() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-[radial-gradient(1200px_500px_at_50%_0%,color-mix(in_oklab,var(--accent),white_85%),white)] p-8 sm:p-12">
           <div className="mx-auto max-w-3xl text-center">
-            <h2 className="text-2xl font-semibold">
-              Add RoomVibe to your site
-            </h2>
+            <h2 className="text-2xl font-semibold">Add RoomVibe to your site</h2>
             <p className="mt-2 text-slate-600">
               Pick one of the two options below.
             </p>
@@ -1188,10 +1224,12 @@ export default function Demo() {
               <li>
                 Create a placeholder container:{" "}
                 <code className="rounded bg-slate-100 px-1">
-                  {'<div id="roomvibe-root"></div>'}
+                  {"<div id=\"roomvibe-root\"></div>"}
                 </code>
               </li>
-              <li>Add the script (UMD) or install the React package (ESM).</li>
+              <li>
+                Add the script (UMD) or install the React package (ESM).
+              </li>
               <li>
                 Configure props:{" "}
                 <code className="rounded bg-slate-100 px-1">mode</code>,{" "}
@@ -1285,7 +1323,9 @@ function FAQ() {
         {faqs.map((f, i) => (
           <details key={i} className="group open:rounded-2xl">
             <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-4">
-              <span className="text-sm font-medium text-slate-900">{f.q}</span>
+              <span className="text-sm font-medium text-slate-900">
+                {f.q}
+              </span>
               <ChevronDown className="h-4 w-4 text-slate-500 transition group-open:rotate-180" />
             </summary>
             <div className="px-5 pb-4 text-sm text-slate-600">{f.a}</div>
@@ -1302,9 +1342,7 @@ function PrivacyPage() {
     <main>
       <Container id="privacy">
         <div className="mx-auto max-w-3xl">
-          <h1 className="text-3xl font-semibold">
-            Privacy Policy — RoomVibe (Short)
-          </h1>
+          <h1 className="text-3xl font-semibold">Privacy Policy — RoomVibe (Short)</h1>
           <p className="mt-2 text-sm text-slate-500">
             Last updated: November 13, 2025
           </p>
@@ -1349,7 +1387,7 @@ function PrivacyPage() {
           <div className="mt-8">
             <a
               href="#home"
-              className="inline-flex items-center rounded-xl px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+              className="inline-flex items-center rounded-xl px-4 py-2 text-white hover:opacity-90"
               style={{ background: "var(--accent)" }}
             >
               ← Home
@@ -1391,7 +1429,7 @@ function CodeCard({ title, code }: { title: string; code: string }) {
       </div>
       <pre
         ref={preRef}
-        className="mt-3 max-h-[260px] overflow-auto rounded-xl bg-slate-950 p-4 text-xs leading-relaxed text-slate-200"
+        className="mt-3 overflow-auto rounded-xl bg-slate-950 p-4 text-xs leading-relaxed text-slate-200"
       >
         <code>{code}</code>
       </pre>
@@ -1579,10 +1617,7 @@ function SiteFooter() {
         <div className="flex flex-col gap-3 border-t border-black/10 py-6 text-xs text-black/70 sm:flex-row sm:items-center sm:justify-between">
           <div>© {new Date().getFullYear()} RoomVibe. All rights reserved.</div>
           <div className="flex items-center gap-4">
-            <a
-              href="#home"
-              className="underline-offset-2 hover:underline"
-            >
+            <a href="#home" className="underline-offset-2 hover:underline">
               Back to top
             </a>
           </div>
@@ -1593,13 +1628,7 @@ function SiteFooter() {
 }
 
 // ---- Modal + Icons ----
-function Modal({
-  onClose,
-  children,
-}: {
-  onClose: () => void;
-  children: React.ReactNode;
-}) {
+function Modal({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
   return (
     <div className="fixed inset-0 z-[60]">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
@@ -1623,13 +1652,7 @@ function Modal({
 
 function UploadIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      {...props}
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" {...props}>
       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
       <polyline points="17 8 12 3 7 8" />
       <line x1="12" y1="3" x2="12" y2="15" />
@@ -1638,13 +1661,7 @@ function UploadIcon(props: React.SVGProps<SVGSVGElement>) {
 }
 function InfoIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      {...props}
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" {...props}>
       <circle cx="12" cy="12" r="10" />
       <line x1="12" y1="16" x2="12" y2="12" />
       <line x1="12" y1="8" x2="12.01" y2="8" />
@@ -1653,13 +1670,7 @@ function InfoIcon(props: React.SVGProps<SVGSVGElement>) {
 }
 function HomeIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      {...props}
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" {...props}>
       <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
       <path d="M9 22V12h6v10" />
     </svg>
@@ -1667,13 +1678,7 @@ function HomeIcon(props: React.SVGProps<SVGSVGElement>) {
 }
 function CopyIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      {...props}
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" {...props}>
       <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
       <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
     </svg>
@@ -1681,47 +1686,22 @@ function CopyIcon(props: React.SVGProps<SVGSVGElement>) {
 }
 function Logo(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      {...props}
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" {...props}>
       <rect x="3" y="5" width="18" height="14" rx="3" className="fill-white" />
-      <rect
-        x="6"
-        y="8"
-        width="12"
-        height="8"
-        rx="2"
-        className="fill-current text-slate-900"
-      />
+      <rect x="6" y="8" width="12" height="8" rx="2" className="fill-current text-slate-900" />
     </svg>
   );
 }
 function MenuIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      {...props}
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" {...props}>
       <path d="M4 7h16M4 12h16M4 17h16" />
     </svg>
   );
 }
 function SparkleIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      {...props}
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" {...props}>
       <path d="M12 3l1.8 3.9L18 9l-4.2 2.1L12 15l-1.8-3.9L6 9l4.2-2.1L12 3z" />
       <circle cx="19" cy="5" r="1" />
       <circle cx="5" cy="17" r="1" />
@@ -1737,26 +1717,14 @@ function PlayIcon(props: React.SVGProps<SVGSVGElement>) {
 }
 function ArrowRightIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      {...props}
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" {...props}>
       <path d="M5 12h14M13 5l7 7-7 7" />
     </svg>
   );
 }
 function RoomIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      {...props}
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" {...props}>
       <path d="M4 8l8-4 8 4v10a2 2 0 01-2 2H6a2 2 0 01-2-2V8z" />
       <path d="M10 20v-6h4v6" />
     </svg>
@@ -1764,13 +1732,7 @@ function RoomIcon(props: React.SVGProps<SVGSVGElement>) {
 }
 function RulerIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      {...props}
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" {...props}>
       <path d="M3 17l11-11 4 4L7 21H3v-4z" />
       <path d="M14 6l4 4" />
       <path d="M12 8l2 2" />
@@ -1780,13 +1742,7 @@ function RulerIcon(props: React.SVGProps<SVGSVGElement>) {
 }
 function CodeIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      {...props}
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" {...props}>
       <path d="M9 18l-6-6 6-6" />
       <path d="M15 6l6 6-6 6" />
     </svg>
@@ -1794,26 +1750,14 @@ function CodeIcon(props: React.SVGProps<SVGSVGElement>) {
 }
 function CheckIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      {...props}
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" {...props}>
       <path d="M20 6L9 17l-5-5" />
     </svg>
   );
 }
 function ChevronDown(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      {...props}
-    >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" {...props}>
       <path d="M6 9l6 6 6-6" />
     </svg>
   );

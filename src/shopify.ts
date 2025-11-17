@@ -1,33 +1,46 @@
-export type ShopifyArtwork = {
+// src/shopify.ts
+
+export interface ShopifyArtwork {
   id: string;
   title: string;
-  widthCm?: number;
-  heightCm?: number;
   imageUrl: string;
-};
+  /**
+   * URL na Shopify product page – koristimo ga za
+   * "View & Buy on Shopify" gumbe u App.tsx
+   */
+  onlineStoreUrl?: string;
+}
 
-const DOMAIN = import.meta.env.VITE_SHOPIFY_DOMAIN;            // e.g. irenart.studio
-const TOKEN  = import.meta.env.VITE_SHOPIFY_STOREFRONT_TOKEN;  // Storefront API access token
-const API = DOMAIN ? `https://${DOMAIN}/api/2024-10/graphql.json` : "";
+export async function fetchCollectionArtworks(
+  collectionHandle: string,
+  limit: number = 24
+): Promise<ShopifyArtwork[]> {
+  const domain = import.meta.env.VITE_SHOPIFY_DOMAIN;
+  const token = import.meta.env.VITE_SHOPIFY_STOREFRONT_TOKEN;
 
-export async function fetchCollectionArtworks(handle: string, first = 20): Promise<ShopifyArtwork[]> {
-  if (!API || !TOKEN) return [];
-  const query = `#graphql
-    query CollectionProducts($handle: String!, $first: Int!) {
-      collection(handle: $handle) {
-        title
-        products(first: $first) {
+  // Ako env varijable nisu postavljene, samo vrati prazan niz — App.tsx već ima localArtworks fallback
+  if (!domain || !token || !collectionHandle) {
+    console.warn(
+      "[RoomVibe] Missing Shopify env vars (VITE_SHOPIFY_DOMAIN, VITE_SHOPIFY_STOREFRONT_TOKEN) or collection handle."
+    );
+    return [];
+  }
+
+  const endpoint = `https://${domain}/api/2023-07/graphql.json`;
+
+  const query = `
+    query RoomVibeCollection($handle: String!, $limit: Int!) {
+      collectionByHandle(handle: $handle) {
+        products(first: $limit) {
           edges {
             node {
               id
               title
-              images(first: 1) { edges { node { url } } }
-              metafields(identifiers: [
-                {namespace: "roomvibe", key: "width_cm"},
-                {namespace: "roomvibe", key: "height_cm"}
-              ]) {
-                key
-                value
+              handle
+              onlineStoreUrl
+              featuredImage {
+                url
+                altText
               }
             }
           }
@@ -35,29 +48,69 @@ export async function fetchCollectionArtworks(handle: string, first = 20): Promi
       }
     }
   `;
-  const res = await fetch(API, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Shopify-Storefront-Access-Token": TOKEN
-    },
-    body: JSON.stringify({ query, variables: { handle, first } })
-  });
-  if (!res.ok) return [];
-  const json = await res.json();
-  const edges = json?.data?.collection?.products?.edges ?? [];
-  return edges.map((e: any) => {
-    const node = e.node;
-    const metafields = Array.isArray(node.metafields) ? node.metafields.filter((m: any) => m != null) : [];
-    const w = metafields.find((m: any) => m.key === "width_cm")?.value;
-    const h = metafields.find((m: any) => m.key === "height_cm")?.value;
-    const img = node.images?.edges?.[0]?.node?.url;
-    return {
-      id: node.id,
-      title: node.title,
-      imageUrl: img,
-      widthCm: w ? parseFloat(w) : undefined,
-      heightCm: h ? parseFloat(h) : undefined,
-    } as ShopifyArtwork;
-  });
+
+  const variables = {
+    handle: collectionHandle,
+    limit,
+  };
+
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Shopify-Storefront-Access-Token": token,
+      },
+      body: JSON.stringify({ query, variables }),
+    });
+
+    if (!res.ok) {
+      console.error("[RoomVibe] Storefront API error:", res.status, res.statusText);
+      return [];
+    }
+
+    const json = await res.json();
+
+    if (json.errors) {
+      console.error("[RoomVibe] Storefront API GraphQL errors:", json.errors);
+      return [];
+    }
+
+    const collection = json.data?.collectionByHandle;
+    if (!collection) {
+      console.warn(
+        "[RoomVibe] No collection found for handle:",
+        collectionHandle
+      );
+      return [];
+    }
+
+    const edges = collection.products?.edges || [];
+
+    const artworks: ShopifyArtwork[] = edges
+      .map((edge: any) => {
+        const node = edge?.node;
+        if (!node) return null;
+
+        const img = node.featuredImage;
+        const imageUrl: string | undefined = img?.url;
+
+        if (!imageUrl) return null;
+
+        const artwork: ShopifyArtwork = {
+          id: node.id,
+          title: node.title,
+          imageUrl,
+          onlineStoreUrl: node.onlineStoreUrl || undefined,
+        };
+
+        return artwork;
+      })
+      .filter(Boolean) as ShopifyArtwork[];
+
+    return artworks;
+  } catch (err) {
+    console.error("[RoomVibe] Error fetching Shopify collection:", err);
+    return [];
+  }
 }
