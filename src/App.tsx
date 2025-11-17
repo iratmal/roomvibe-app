@@ -1405,7 +1405,7 @@ function SiteFooter() {
       localStorage.setItem(key, JSON.stringify(list));
       setNlEmail("");
       setNlMsg(
-        "Thanks! You’re subscribed. We’ll send art tips and early room presets.",
+        "Thanks! You’re subscribed. We’ll send art tips and early room presets."
       );
     } catch {
       setNlMsg("Saved locally. We’ll wire this to MailerLite/Shopify next.");
@@ -1427,7 +1427,7 @@ function SiteFooter() {
       setCEmail("");
       setCMsg("");
       setCStatus(
-        "Thanks! Your message is saved locally. We’ll reach you shortly.",
+        "Thanks! Your message is saved locally. We’ll reach you shortly."
       );
     } catch {
       setCStatus("Saved locally. We’ll wire this to MailerLite/Shopify next.");
@@ -1435,18 +1435,19 @@ function SiteFooter() {
   }
 
   return (
-    <footer className="mt-16 bg-[var(--footer-bg)] text-white">
+    <footer className="mt-16 bg-[#EAF2FF] text-black">
       <Container>
         <div className="grid gap-10 py-14 lg:grid-cols-3">
+          {/* Logo + linkovi */}
           <div>
             <div className="flex items-center gap-2 font-semibold">
               <Logo className="h-5 w-5" /> RoomVibe
             </div>
-            <p className="mt-3 text-sm leading-6 text-white/90">
+            <p className="mt-3 text-sm leading-6 text-black/80">
               Visualize art on your walls. Upload a wall photo, try sizes, embed
               on your site.
             </p>
-            <ul className="mt-4 space-y-1 text-sm leading-6 text-white/80">
+            <ul className="mt-4 space-y-1 text-sm leading-6 text-black/80">
               <li>
                 <a
                   href="#/studio"
@@ -1484,9 +1485,10 @@ function SiteFooter() {
             </ul>
           </div>
 
+          {/* Newsletter */}
           <div>
             <div className="text-sm font-semibold">Newsletter</div>
-            <p className="mt-2 text-sm leading-6 text-white/90">
+            <p className="mt-2 text-sm leading-6 text-black/80">
               Join for presets, launch updates, and art-fit tips.
             </p>
             <form className="mt-4 flex gap-2" onSubmit={handleNewsletterSubmit}>
@@ -1496,21 +1498,24 @@ function SiteFooter() {
                 placeholder="you@example.com"
                 value={nlEmail}
                 onChange={(e) => setNlEmail(e.target.value)}
-                className="min-w-0 flex-1 rounded-lg border border-white/20 bg-white px-3 py-2 text-black placeholder:text-black/60 outline-none"
+                className="min-w-0 flex-1 rounded-lg border border-black/15 bg-white px-3 py-2 text-sm text-black placeholder:text-black/60 outline-none"
               />
               <button
                 type="submit"
-                className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-black shadow hover:opacity-90"
+                className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white shadow hover:opacity-90"
               >
                 Subscribe
               </button>
             </form>
-            {nlMsg && <div className="mt-2 text-xs text-white">{nlMsg}</div>}
+            {nlMsg && (
+              <div className="mt-2 text-xs text-black/80">{nlMsg}</div>
+            )}
           </div>
 
+          {/* Kontakt forma */}
           <div>
             <div className="text-sm font-semibold">Contact</div>
-            <p className="mt-2 text-sm leading-6 text-white/90">
+            <p className="mt-2 text-sm leading-6 text-black/80">
               Have a question? Send us a message.
             </p>
             <form className="mt-4 grid gap-2" onSubmit={handleContactSubmit}>
@@ -1519,7 +1524,7 @@ function SiteFooter() {
                 placeholder="Your name"
                 value={cName}
                 onChange={(e) => setCName(e.target.value)}
-                className="rounded-lg border border-white/20 bg-white px-3 py-2 text-black placeholder:text-black/60 outline-none"
+                className="rounded-lg border border-black/15 bg-white px-3 py-2 text-sm text-black placeholder:text-black/60 outline-none"
                 required
               />
               <input
@@ -1527,7 +1532,7 @@ function SiteFooter() {
                 placeholder="Email"
                 value={cEmail}
                 onChange={(e) => setCEmail(e.target.value)}
-                className="rounded-lg border border-white/20 bg-white px-3 py-2 text-black placeholder:text-black/60 outline-none"
+                className="rounded-lg border border-black/15 bg-white px-3 py-2 text-sm text-black placeholder:text-black/60 outline-none"
                 required
               />
               <textarea
@@ -1535,28 +1540,29 @@ function SiteFooter() {
                 value={cMsg}
                 onChange={(e) => setCMsg(e.target.value)}
                 rows={3}
-                className="rounded-lg border border-white/20 bg-white px-3 py-2 text-black placeholder:text-black/60 outline-none"
+                className="rounded-lg border border-black/15 bg-white px-3 py-2 text-sm text-black placeholder:text-black/60 outline-none"
                 required
               />
               <button
                 type="submit"
-                className="mt-1 rounded-lg bg-white px-4 py-2 text-sm font-medium text-slate-900 shadow hover:opacity-90"
+                className="mt-1 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white shadow hover:opacity-90"
               >
                 Send
               </button>
             </form>
             {cStatus && (
-              <div className="mt-2 text-xs text-white">{cStatus}</div>
+              <div className="mt-2 text-xs text-black/80">{cStatus}</div>
             )}
           </div>
         </div>
 
-        <div className="flex items-center justify-between border-t border-white/20 py-6 text-xs text-white/80">
-          <div>
-            © {new Date().getFullYear()} RoomVibe. All rights reserved.
-          </div>
+        <div className="flex flex-col gap-3 border-t border-black/10 py-6 text-xs text-black/70 sm:flex-row sm:items-center sm:justify-between">
+          <div>© {new Date().getFullYear()} RoomVibe. All rights reserved.</div>
           <div className="flex items-center gap-4">
-            <a href="#home" className="underline-offset-2 hover:underline">
+            <a
+              href="#home"
+              className="underline-offset-2 hover:underline"
+            >
               Back to top
             </a>
           </div>
