@@ -602,14 +602,34 @@ function Studio() {
             ))}
           </div>
 
+          {/* BUY BUTTON ZA STUDIO */}
+          {art?.onlineStoreUrl && (
+            <div className="mt-6">
+              <a
+                href={art.onlineStoreUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-sm font-medium text-black shadow hover:opacity-90"
+                style={{ background: "var(--accent)" }}
+              >
+                View &amp; Buy on Shopify
+              </a>
+              <p className="mt-2 text-xs text-slate-600">
+                Opens the product page on your Shopify store in a new tab.
+              </p>
+            </div>
+          )}
+
           <div className="mt-6 grid gap-2 text-xs text-slate-600">
             <div>
               Use <b>#/studio</b> to deep-link this editor.
             </div>
             <div>
-              Replace placeholders in <code>src/data/artworks.json</code> with
-              Shopify CDN URLs, or set env vars to fetch automatically.
+              Replace placeholders in <code>src/data/artworks.json</code> with Shopify
+              CDN URLs, or set env vars to fetch automatically.
             </div>
+          </div>
+
           </div>
         </aside>
       </div>
