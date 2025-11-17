@@ -1,23 +1,42 @@
 [
   {
-    "id": "sample-1",
-    "title": "Abstract Composition",
+    "id": "art-1",
+    "title": "Energy in Motion I",
+    "imageUrl": "https://images.pexels.com/photos/1812960/pexels-photo-1812960.jpeg",
     "widthCm": 100,
     "heightCm": 70,
-    "imageUrl": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1400' height='980'%3E%3Cdefs%3E%3ClinearGradient id='g1' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23e0c3fc'/%3E%3Cstop offset='100%25' style='stop-color:%238ec5fc'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1400' height='980' fill='url(%23g1)'/%3E%3Ccircle cx='700' cy='490' r='200' fill='%23fff' opacity='0.3'/%3E%3C/svg%3E"
+    "onlineStoreUrl": "https://c1d36e-2.myshopify.com/products/energy-in-motion-1"
   },
   {
-    "id": "sample-2",
-    "title": "Modern Minimalism",
+    "id": "art-2",
+    "title": "Good Vibes Sunset",
+    "imageUrl": "https://images.pexels.com/photos/1036936/pexels-photo-1036936.jpeg",
+    "widthCm": 120,
+    "heightCm": 80,
+    "onlineStoreUrl": "https://c1d36e-2.myshopify.com/products/good-vibes-sunset"
+  },
+  {
+    "id": "art-3",
+    "title": "Ocean Flow",
+    "imageUrl": "https://images.pexels.com/photos/1020315/pexels-photo-1020315.jpeg",
+    "widthCm": 90,
+    "heightCm": 90,
+    "onlineStoreUrl": "https://c1d36e-2.myshopify.com/products/ocean-flow"
+  },
+  {
+    "id": "art-4",
+    "title": "Golden Rhythm",
+    "imageUrl": "https://images.pexels.com/photos/2693212/pexels-photo-2693212.jpeg",
+    "widthCm": 140,
+    "heightCm": 100,
+    "onlineStoreUrl": "https://c1d36e-2.myshopify.com/products/golden-rhythm"
+  },
+  {
+    "id": "art-5",
+    "title": "Calm Morning",
+    "imageUrl": "https://images.pexels.com/photos/2693211/pexels-photo-2693211.jpeg",
     "widthCm": 80,
     "heightCm": 60,
-    "imageUrl": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1120' height='840'%3E%3Cdefs%3E%3ClinearGradient id='g2' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23fbc2eb'/%3E%3Cstop offset='100%25' style='stop-color:%23a6c1ee'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1120' height='840' fill='url(%23g2)'/%3E%3Crect x='300' y='250' width='520' height='340' fill='%23fff' opacity='0.4'/%3E%3C/svg%3E"
-  },
-  {
-    "id": "sample-3",
-    "title": "Vibrant Energy",
-    "widthCm": 150,
-    "heightCm": 100,
-    "imageUrl": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1500' height='1000'%3E%3Cdefs%3E%3ClinearGradient id='g3' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23ffecd2'/%3E%3Cstop offset='100%25' style='stop-color:%23fcb69f'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1500' height='1000' fill='url(%23g3)'/%3E%3Ccircle cx='750' cy='500' r='250' fill='%23fff' opacity='0.25'/%3E%3Ccircle cx='400' cy='300' r='150' fill='%23000' opacity='0.15'/%3E%3C/svg%3E"
+    "onlineStoreUrl": "https://c1d36e-2.myshopify.com/products/calm-morning"
   }
 ]
