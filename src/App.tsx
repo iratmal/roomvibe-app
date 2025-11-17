@@ -4,10 +4,10 @@ import presets from "./data/presets.json";
 import { fetchCollectionArtworks } from "./shopify";
 
 /**
- * RoomVibe (EN) — Canvy-inspired studio + landing
+ * RoomVibe (EN) — Canvy-inspired studio + landing (cool blue theme)
  */
 
-function useHashRoute(): string {
+function useHashRoute() {
   const [hash, setHash] = useState<string>(() => window.location.hash || "");
   useEffect(() => {
     const onHash = () => setHash(window.location.hash || "");
@@ -19,7 +19,6 @@ function useHashRoute(): string {
 
 export default function App() {
   const hash = useHashRoute();
-
   return (
     <div className="min-h-screen bg-rv-bg text-rv-text font-body">
       <TopNav />
@@ -66,13 +65,13 @@ function Container({
 function TopNav() {
   const [open, setOpen] = useState(false);
   return (
-    <header className="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/70 border-b border-slate-100">
+    <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/80 backdrop-blur">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <a href="#home" className="flex items-center gap-2 font-semibold">
             <Logo className="h-6 w-6" /> <span>RoomVibe</span>
           </a>
-          <nav className="hidden md:flex items-center gap-6 text-sm">
+          <nav className="hidden items-center gap-6 text-sm md:flex">
             <a href="#demo" className="hover:text-slate-700">
               Demo
             </a>
@@ -90,7 +89,7 @@ function TopNav() {
             </a>
             <a
               href="#/studio"
-              className="inline-flex items-center rounded-full px-4 py-2 text-black shadow-sm hover:opacity-90"
+              className="inline-flex items-center rounded-full px-4 py-2 text-sm font-medium text-black shadow-sm hover:opacity-90"
               style={{ background: "var(--accent)" }}
             >
               Try Studio
@@ -98,7 +97,7 @@ function TopNav() {
           </nav>
           <button
             aria-label="Open menu"
-            className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 md:hidden"
             onClick={() => setOpen((v) => !v)}
           >
             <MenuIcon className="h-5 w-5" />
@@ -106,7 +105,7 @@ function TopNav() {
         </div>
       </div>
       {open && (
-        <div className="md:hidden border-t border-slate-100 bg-white">
+        <div className="border-t border-slate-100 bg-white md:hidden">
           <div className="mx-auto max-w-7xl px-4 py-3 text-sm">
             <div className="flex items-center justify-between">
               <div className="flex gap-4">
@@ -138,7 +137,7 @@ function TopNav() {
             <a
               href="#/studio"
               onClick={() => setOpen(false)}
-              className="mt-3 inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-black"
+              className="mt-3 inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-sm font-medium text-black"
               style={{ background: "var(--accent)" }}
             >
               Try Studio
@@ -154,42 +153,44 @@ function Hero() {
   return (
     <Container id="home">
       <div className="relative isolate overflow-hidden">
-        <div className="mx-auto max-w-3xl py-16 sm:py-24 text-center">
+        <div className="mx-auto max-w-3xl py-16 text-center sm:py-24">
           <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600 shadow-sm">
             <SparkleIcon className="h-3.5 w-3.5" /> Try original art in your
             room
           </span>
-          <h1 className="mt-6 text-3xl sm:text-4xl font-bold tracking-tight text-black font-display">
-            <span>Visualize art on your walls</span>
+          <h1 className="mt-8 text-4xl font-semibold tracking-tight text-black font-display sm:text-5xl lg:text-6xl">
+            Visualize art on your walls
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-slate-600">
+          <p className="mx-auto mt-5 max-w-2xl text-base text-slate-600 sm:text-lg">
             Upload a photo of your wall, discover perfect artworks, and see them
             in true-to-size mockups.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a
               href="#/studio"
-              className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-black shadow hover:opacity-90"
+              className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium text-black shadow hover:opacity-90"
               style={{ background: "var(--accent)" }}
             >
               Open Studio <PlayIcon className="h-4 w-4" />
             </a>
             <a
               href="#docs"
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-black shadow-sm hover:bg-slate-50"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-black shadow-sm hover:bg-slate-50"
             >
               Add to Website <ArrowRightIcon className="h-4 w-4" />
             </a>
           </div>
+
+          {/* Soft blue mesh background */}
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
           >
-            <div className="absolute -top-40 left-1/4 h-[500px] w-[500px] rounded-full bg-purple-200 opacity-30 blur-3xl" />
-            <div className="absolute top-20 right-1/4 h-[400px] w-[400px] rounded-full bg-pink-200 opacity-25 blur-3xl" />
+            <div className="absolute -top-40 left-1/4 h-[520px] w-[520px] rounded-full bg-[#EAF2FF] opacity-80 blur-3xl" />
+            <div className="absolute top-24 right-1/5 h-[420px] w-[420px] rounded-full bg-[#EFF4FF] opacity-80 blur-3xl" />
             <div
-              className="absolute top-1/2 left-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-20 blur-3xl"
-              style={{ background: "var(--accent)" }}
+              className="absolute left-1/2 top-1/2 h-[620px] w-[620px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-60 blur-3xl"
+              style={{ background: "var(--accent-soft)" }}
             />
           </div>
         </div>
@@ -236,7 +237,7 @@ function ShowcaseCarousel() {
         <div className="rounded-3xl border border-slate-200 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3 text-sm">
             <div className="font-medium">Showcase</div>
-            <div className="text-slate-500">Rooms & Art cycling</div>
+            <div className="text-slate-500">Rooms &amp; Art cycling</div>
           </div>
           <div className="relative h-[500px] overflow-hidden rounded-b-3xl">
             <img
@@ -326,12 +327,7 @@ function Studio() {
 
   const scene: any =
     (presets as any).find((p: any) => p.id === sceneId) || (presets as any)[0];
-  const safe = scene?.safeArea || {
-    x: 0.5,
-    y: 0.4,
-    w: 0.6,
-    h: 0.5,
-  };
+  const safe = scene?.safeArea || { x: 0.5, y: 0.4, w: 0.6, h: 0.5 };
 
   const widthCm = sizeUnit === "cm" ? wVal : wVal * 2.54;
   const heightCm = sizeUnit === "cm" ? hVal : hVal * 2.54;
@@ -348,31 +344,33 @@ function Studio() {
   }
 
   return (
-    <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8">
+    <div className="mx-auto max-w-[1400px] px-4 py-8 sm:px-6 lg:px-8">
       <div className="grid grid-cols-12 gap-6">
         {/* Left: Scenes gallery */}
-        <aside className="col-span-3 rounded-2xl border border-slate-200 bg-white/70 backdrop-blur p-4 h-[78vh] overflow-auto">
+        <aside className="col-span-12 h-[260px] rounded-2xl border border-slate-200 bg-white/70 p-4 backdrop-blur sm:col-span-3 sm:h-[78vh] sm:overflow-auto">
           <div className="mb-3 flex items-center justify-between">
             <div className="text-sm font-semibold">Scenes</div>
             <a href="#home" className="text-xs underline">
               Home
             </a>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3 sm:grid-cols-2">
             {(presets as any).map((p: any) => (
               <button
                 key={p.id}
                 onClick={() => setSceneId(p.id)}
-                className={`group relative overflow-hidden rounded-xl border ${
-                  sceneId === p.id ? "border-slate-900" : "border-slate-200"
-                } bg-white`}
+                className={`group relative overflow-hidden rounded-xl border bg-white ${
+                  sceneId === p.id
+                    ? "border-slate-900"
+                    : "border-slate-200 hover:border-slate-300"
+                }`}
               >
                 <img
                   src={p.photo}
                   alt={p.name}
-                  className="h-24 w-full object-cover"
+                  className="h-20 w-full object-cover sm:h-24"
                 />
-                <div className="absolute inset-0 ring-0 group-hover:ring-2 group-hover:ring-[var(--accent)] rounded-xl transition" />
+                <div className="absolute inset-0 rounded-xl ring-0 transition group-hover:ring-2 group-hover:ring-[var(--accent)]" />
                 <div className="absolute bottom-0 left-0 right-0 bg-black/40 px-2 py-1 text-[10px] text-white">
                   {p.name}
                 </div>
@@ -382,14 +380,14 @@ function Studio() {
         </aside>
 
         {/* Center: Canvas */}
-        <section className="col-span-6">
+        <section className="col-span-12 sm:col-span-6">
           <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
             <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 text-sm">
               <div className="flex items-center gap-2 text-slate-600">
                 <RoomIcon className="h-4 w-4" /> {scene?.name}
               </div>
               <div className="flex items-center gap-3 text-slate-500">
-                {!userPhoto && <span>Wall:</span>}
+                {!userPhoto && <span className="text-xs">Wall:</span>}
                 {!userPhoto && (
                   <input
                     type="color"
@@ -428,7 +426,7 @@ function Studio() {
               </div>
             </div>
 
-            <div className="relative h-[560px] w-full overflow-hidden rounded-b-2xl">
+            <div className="relative h-[420px] w-full overflow-hidden rounded-b-2xl sm:h-[560px]">
               {userPhoto ? (
                 <img
                   src={userPhoto}
@@ -495,7 +493,7 @@ function Studio() {
         </section>
 
         {/* Right: Controls */}
-        <aside className="col-span-3 rounded-2xl border border-slate-200 bg-white p-4 h-[78vh] overflow-auto">
+        <aside className="col-span-12 h-[320px] rounded-2xl border border-slate-200 bg-white p-4 sm:col-span-3 sm:h-[78vh] sm:overflow-auto">
           <div className="text-sm font-semibold">Artwork</div>
           <div className="mt-2 flex items-center gap-2">
             <select
@@ -530,7 +528,7 @@ function Studio() {
                 }
               }}
             />
-            <label className="text-xs text-slate-700 ml-2">Height</label>
+            <label className="ml-2 text-xs text-slate-700">Height</label>
             <input
               type="number"
               min={1}
@@ -654,10 +652,7 @@ function LiveDemoMock() {
   const heightCm = sizeUnit === "cm" ? heightVal : heightVal * 2.54;
 
   const artWidthPct = Math.max(18, Math.min(60, 0.24 * widthCm + 12));
-  const artAspect = Math.max(
-    0.2,
-    Math.min(5, widthVal / Math.max(1, heightVal)),
-  );
+  const artAspect = Math.max(0.2, Math.min(5, widthCm / Math.max(1, heightCm)));
 
   function applyQuickPick(w: number, h: number) {
     if (sizeUnit === "in") {
@@ -711,7 +706,9 @@ function LiveDemoMock() {
                         ? "text-white"
                         : "border-slate-200 bg-white hover:bg-slate-50"
                     }`}
-                    style={room === r ? { background: "var(--accent)" } : {}}
+                    style={
+                      room === r ? { background: "var(--accent)" } : undefined
+                    }
                   >
                     {r}
                   </button>
@@ -732,7 +729,7 @@ function LiveDemoMock() {
                 </button>
                 {userPhoto && (
                   <button
-                    className="text-xs underline text-slate-700"
+                    className="text-xs text-slate-700 underline"
                     onClick={() => setUserPhoto(null)}
                   >
                     Remove photo
@@ -802,7 +799,7 @@ function LiveDemoMock() {
                     }
                   }}
                 />
-                <label className="text-xs text-slate-700 ml-2">Height</label>
+                <label className="ml-2 text-xs text-slate-700">Height</label>
                 <input
                   type="number"
                   min={1}
@@ -881,13 +878,13 @@ function LiveDemoMock() {
               <div className="flex items-center gap-2 text-slate-600">
                 <RoomIcon className="h-4 w-4" /> {room} room
               </div>
-              <div className="text-slate-500">
+              <div className="text-xs text-slate-500">
                 {userPhoto ? (
                   <span>Custom wall photo</span>
                 ) : (
                   <>
                     Wall:{" "}
-                    <span className="font-mono text-xs">
+                    <span className="font-mono text-[11px]">
                       {wall.toUpperCase()}
                     </span>
                   </>
@@ -991,7 +988,7 @@ function HowItWorks() {
   const steps = [
     {
       title: "Pick a room",
-      desc: "Choose from 10 presets or upload your own.",
+      desc: "Choose from presets or upload your own.",
       icon: <HomeIcon className="h-5 w-5" />,
     },
     {
@@ -1112,7 +1109,7 @@ function Pricing() {
             </ul>
             <a
               href="#/studio"
-              className="mt-6 inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-black hover:opacity-90"
+              className="mt-6 inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-sm font-medium text-black hover:opacity-90"
               style={{ background: "var(--accent)" }}
             >
               {t.cta}
@@ -1142,7 +1139,7 @@ export default function Demo() {
       mode="showcase"
       collection="originals"
       oneClickBuy
-      onEvent={(e) => console.log('RV', e)}
+      onEvent={(e) => console.log('RoomVibe', e)}
     />
   );
 }`;
@@ -1332,7 +1329,7 @@ function PrivacyPage() {
           <div className="mt-8">
             <a
               href="#home"
-              className="inline-flex items-center rounded-xl px-4 py-2 text-white hover:opacity-90"
+              className="inline-flex items-center rounded-xl px-4 py-2 text-sm font-medium text-white hover:opacity-90"
               style={{ background: "var(--accent)" }}
             >
               ← Home
@@ -1354,7 +1351,7 @@ function CodeCard({ title, code }: { title: string; code: string }) {
           onClick={async () => {
             try {
               await navigator.clipboard.writeText(code);
-            } catch {
+            } catch (e) {
               const el = preRef.current;
               if (el) {
                 const r = document.createRange();
@@ -1374,7 +1371,7 @@ function CodeCard({ title, code }: { title: string; code: string }) {
       </div>
       <pre
         ref={preRef}
-        className="mt-3 overflow-auto rounded-xl bg-slate-950 p-4 text-xs leading-relaxed text-slate-200"
+        className="mt-3 max-h-[260px] overflow-auto rounded-xl bg-slate-950 p-4 text-xs leading-relaxed text-slate-200"
       >
         <code>{code}</code>
       </pre>
@@ -1424,12 +1421,7 @@ function SiteFooter() {
     try {
       const key = "rv_inquiries";
       const list = JSON.parse(localStorage.getItem(key) || "[]");
-      list.push({
-        name: cName,
-        email: cEmail,
-        message: cMsg,
-        ts: Date.now(),
-      });
+      list.push({ name: cName, email: cEmail, message: cMsg, ts: Date.now() });
       localStorage.setItem(key, JSON.stringify(list));
       setCName("");
       setCEmail("");
@@ -1443,18 +1435,18 @@ function SiteFooter() {
   }
 
   return (
-    <footer className="mt-16 bg-[var(--footer-bg)] text-black">
+    <footer className="mt-16 bg-[var(--footer-bg)] text-white">
       <Container>
         <div className="grid gap-10 py-14 lg:grid-cols-3">
           <div>
             <div className="flex items-center gap-2 font-semibold">
               <Logo className="h-5 w-5" /> RoomVibe
             </div>
-            <p className="mt-3 text-sm/6 text-white/90">
+            <p className="mt-3 text-sm leading-6 text-white/90">
               Visualize art on your walls. Upload a wall photo, try sizes, embed
               on your site.
             </p>
-            <ul className="mt-4 space-y-1 text-sm/6 text-white/80">
+            <ul className="mt-4 space-y-1 text-sm leading-6 text-white/80">
               <li>
                 <a
                   href="#/studio"
@@ -1494,7 +1486,7 @@ function SiteFooter() {
 
           <div>
             <div className="text-sm font-semibold">Newsletter</div>
-            <p className="mt-2 text-sm/6 text-white/90">
+            <p className="mt-2 text-sm leading-6 text-white/90">
               Join for presets, launch updates, and art-fit tips.
             </p>
             <form className="mt-4 flex gap-2" onSubmit={handleNewsletterSubmit}>
@@ -1504,7 +1496,7 @@ function SiteFooter() {
                 placeholder="you@example.com"
                 value={nlEmail}
                 onChange={(e) => setNlEmail(e.target.value)}
-                className="min-w-0 flex-1 rounded-lg border border-black/20 bg-white px-3 py-2 text-black placeholder:text-black/60 outline-none"
+                className="min-w-0 flex-1 rounded-lg border border-white/20 bg-white px-3 py-2 text-black placeholder:text-black/60 outline-none"
               />
               <button
                 type="submit"
@@ -1518,7 +1510,7 @@ function SiteFooter() {
 
           <div>
             <div className="text-sm font-semibold">Contact</div>
-            <p className="mt-2 text-sm/6 text-white/90">
+            <p className="mt-2 text-sm leading-6 text-white/90">
               Have a question? Send us a message.
             </p>
             <form className="mt-4 grid gap-2" onSubmit={handleContactSubmit}>
@@ -1527,7 +1519,7 @@ function SiteFooter() {
                 placeholder="Your name"
                 value={cName}
                 onChange={(e) => setCName(e.target.value)}
-                className="rounded-lg border border-black/20 bg-white px-3 py-2 text-black placeholder:text-black/60 outline-none"
+                className="rounded-lg border border-white/20 bg-white px-3 py-2 text-black placeholder:text-black/60 outline-none"
                 required
               />
               <input
@@ -1535,7 +1527,7 @@ function SiteFooter() {
                 placeholder="Email"
                 value={cEmail}
                 onChange={(e) => setCEmail(e.target.value)}
-                className="rounded-lg border border-black/20 bg-white px-3 py-2 text-black placeholder:text-black/60 outline-none"
+                className="rounded-lg border border-white/20 bg-white px-3 py-2 text-black placeholder:text-black/60 outline-none"
                 required
               />
               <textarea
@@ -1543,7 +1535,7 @@ function SiteFooter() {
                 value={cMsg}
                 onChange={(e) => setCMsg(e.target.value)}
                 rows={3}
-                className="rounded-lg border border-black/20 bg-white px-3 py-2 text-black placeholder:text-black/60 outline-none"
+                className="rounded-lg border border-white/20 bg-white px-3 py-2 text-black placeholder:text-black/60 outline-none"
                 required
               />
               <button
@@ -1564,7 +1556,7 @@ function SiteFooter() {
             © {new Date().getFullYear()} RoomVibe. All rights reserved.
           </div>
           <div className="flex items-center gap-4">
-            <a href="#home" className="hover:underline underline-offset-2">
+            <a href="#home" className="underline-offset-2 hover:underline">
               Back to top
             </a>
           </div>

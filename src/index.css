@@ -2,44 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ---------- Root varijable za RoomVibe temu ---------- */
+/* ---------- ROOMVIBE THEME (cool blue) ---------- */
 
 :root {
-  /* Glavna “lavanda” boja za gumbe, značke itd. */
-  --accent: #a855f7;
-  /* Mekša verzija za pozadine */
-  --accent-soft: #f5e9ff;
-  /* Footer pozadina – tamniji gradient */
-  --footer-bg: radial-gradient(circle at top left, #4c1d95, #020617);
+  /* Glavni akcent (gumbi, naglasci) */
+  --accent: #8BADE5;
+  --accent-soft: #EAF2FF;
+
+  /* Footer pozadina – tamni, elegantni gradient */
+  --footer-bg: radial-gradient(circle at top left, #0f172a, #020617);
 }
 
-/* Ove klase koristimo u App.tsx (bg-rv-bg, text-rv-text, font-body, font-display) */
-
+/* Svjetla, moderna pozadina sa suptilnim plavim sjajem gore */
 .bg-rv-bg {
-  /* Svijetla, moderna pozadina s laganim ljubičastim sjajem */
-  background: radial-gradient(
-      1600px 800px at 50% 0,
-      rgba(168, 85, 247, 0.18),
+  background:
+    radial-gradient(
+      1400px 700px at 50% 0,
+      rgba(139, 173, 229, 0.28),
       #f9fafb
     );
 }
 
 .text-rv-text {
-  color: #020617;
+  color: #111827;
 }
 
+/* Fontovi – jednostavno, moderno */
 .font-body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
-    "Segoe UI", sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont,
+    "SF Pro Text", "Segoe UI", sans-serif;
 }
 
 .font-display {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display",
-    "Segoe UI", sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont,
+    "SF Pro Display", "Segoe UI", sans-serif;
 }
 
-/* Osnovni reset da sve izgleda čisto */
-
+/* Basic reset */
 html,
 body,
 #root {
@@ -49,12 +48,11 @@ body,
 body {
   margin: 0;
   background-color: #f9fafb;
-  color: #020617;
+  color: #111827;
 }
 
-/* Linkovi u footeru – neka naslijede bijelu boju teksta */
-
+/* Linkovi u footeru nasljeđuju boju teksta */
 footer a {
   color: inherit;
-  text-decoration-color: rgba(255, 255, 255, 0.8);
+  text-decoration-color: rgba(255, 255, 255, 0.85);
 }
