@@ -1,12 +1,20 @@
 # RoomVibe Studio - Full Application
 
 ## Overview
-RoomVibe Studio is a comprehensive React/TypeScript web application featuring a Canvy-style three-panel editor for visualizing artwork in room environments, plus a marketing landing page. Built with React 18, TypeScript, Vite, and Tailwind CSS. Features a **Lilac (#C8A2C8)** color scheme with elegant **Playfair Display** serif headings.
+RoomVibe Studio is a comprehensive React/TypeScript web application featuring a Canvy-style three-panel editor for visualizing artwork in room environments, plus a marketing landing page. Built with React 18, TypeScript, Vite, and Tailwind CSS. Features a **Blue (#8BADE5)** color scheme with modern Poppins typography.
 
-**Current State**: Full Studio app + Landing page + Showcase carousel + Lilac theme + Typography upgrade  
-**Last Updated**: November 13, 2025
+**Current State**: Full Studio app + Landing page + Showcase carousel + Blue theme + Restored after misconfiguration  
+**Last Updated**: November 20, 2025
 
 ## Recent Changes
+- **November 20, 2025: Fixed Misconfiguration + Restored src/ Files! 🔧✅**
+  - **FIXED: package.json dev script** - Changed from `node server.js` to `vite --host 0.0.0.0 --port 5000`
+  - **RESTORED: All src/ files** - Recovered from `src/backup_old_ui/data/` backup
+  - **FIXED: Workflow setup** - Properly configured RoomVibe Widget workflow
+  - **VERIFIED: App running** - Vite dev server operational on port 5000
+  - App now loads correctly and displays landing page + showcase carousel
+
+## Previous Changes
 - **November 13, 2025: Lilac Theme + Modern Typography + Canva Background! 💜✨**
   - **NEW: LILAC COLOR SCHEME** (#C8A2C8) - Replaced turquoise with elegant lilac
     - All buttons, footer, and accents now use lilac

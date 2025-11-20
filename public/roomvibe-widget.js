@@ -23,7 +23,7 @@
                 onlineStoreUrl
                 featuredImage {
                   url
-                  altText
+                  altTextsualizer
                 }
                 variants(first: 10) {
                   edges {

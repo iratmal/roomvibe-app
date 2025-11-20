@@ -1,11 +1,10 @@
-modules = ["python-3.11", "nodejs-20"]
+run = "npm run dev"
+language = "nodejs"
+entrypoint = "api/server.js"
+modules = ["nodejs-20"]
 
 [agent]
 expertMode = true
-
-[nix]
-channel = "stable-25_05"
-packages = ["freetype", "lcms2", "libimagequant", "libjpeg", "libtiff", "libwebp", "libxcrypt", "openjpeg", "tcl", "tk", "zlib"]
 
 [workflows]
 runButton = "Project"
@@ -36,14 +35,5 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 5001
+localPort = 44149
 externalPort = 3000
-
-[[ports]]
-localPort = 44145
-externalPort = 3001
-
-[deployment]
-deploymentTarget = "autoscale"
-build = ["npm", "run", "build"]
-run = ["npm", "start"]
