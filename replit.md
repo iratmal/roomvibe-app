@@ -12,6 +12,8 @@ RoomVibe Studio is a comprehensive React/TypeScript web application featuring a 
   - **RESTORED: All src/ files** - Recovered from `src/backup_old_ui/data/` backup
   - **FIXED: Workflow setup** - Properly configured RoomVibe Widget workflow
   - **VERIFIED: App running** - Vite dev server operational on port 5000
+  - **ADDED: Production server** - Express server (`server.js`) for Autoscale deployment
+  - **DEPLOYMENT: Ready for Autoscale** - Build: `npm run build`, Run: `npm start`
   - App now loads correctly and displays landing page + showcase carousel
 
 ## Previous Changes
@@ -226,11 +228,13 @@ Total gzipped: ~62 KB
 ```
 
 ### Deployment Configuration
-- **Target**: Static (Client-side React app)
+- **Target**: Autoscale (Agent projects require Autoscale or Reserved VM)
 - **Build Command**: `npm run build`
-- **Public Directory**: `dist`
+- **Run Command**: `npm start` (runs Express server on port 5000)
+- **Production Server**: `server.js` - Express serving static files from `dist/`
 - **Build Output**: ~63KB gzipped (index.html + CSS + JS)
 - **Custom Domain**: app.roomvibe.app (configured)
+- **Note**: Static deployment not available for Agent-created projects
 
 ### Vite Configuration
 ```typescript
