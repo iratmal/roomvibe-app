@@ -226,11 +226,11 @@ Total gzipped: ~62 KB
 ```
 
 ### Deployment Configuration
-- **Target**: Autoscale (Node.js)
+- **Target**: Static (Client-side React app)
 - **Build Command**: `npm run build`
-- **Run Command**: `npm start`
-- **Port**: Uses $PORT environment variable (5000 default)
-- **Allowed Hosts**: app.roomvibe.app, .replit.dev, .repl.co
+- **Public Directory**: `dist`
+- **Build Output**: ~63KB gzipped (index.html + CSS + JS)
+- **Custom Domain**: app.roomvibe.app (configured)
 
 ### Vite Configuration
 ```typescript
