@@ -32,7 +32,7 @@ export default function App() {
       ) : (
         <HomePage />
       )}
-      <SiteFooter />
+      {hash !== "#/studio" && <SiteFooter />}
     </div>
   );
 }
