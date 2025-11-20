@@ -22,7 +22,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white text-slate-900 font-body">
-      <TopNav />
+      {hash !== "#/studio" && <TopNav />}
       {hash === "#/privacy" ? (
         <PrivacyPage />
       ) : hash === "#/studio" ? (

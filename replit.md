@@ -16,7 +16,7 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS, feat
 - **Layout**: Three-panel Canvy-style editor for the studio mode, accessible via `#/studio`.
 - **Responsive Design**: Mobile-first approach using Tailwind CSS.
 - **Iconography**: All icons are inline SVG components.
-- **Footer**: Conditionally rendered; hidden on the `#/studio` route for clean embedding.
+- **Clean Embedding**: Both TopNav and SiteFooter are conditionally hidden on the `#/studio` route for iframe embedding in Shopify, showing only the pure Studio UI (scene browser, canvas, controls).
 
 **Technical Implementations & Feature Specifications:**
 - **Hash Routing**: `/` (landing page), `#/studio` (editor), `#/privacy` (privacy policy).
