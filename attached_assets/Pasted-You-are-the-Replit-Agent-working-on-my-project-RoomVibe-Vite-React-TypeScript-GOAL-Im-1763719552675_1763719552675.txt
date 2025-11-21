@@ -1,0 +1,233 @@
+You are the Replit Agent working on my project **RoomVibe** (Vite + React + TypeScript).
+
+🎯 GOAL
+Implement a modern UI with:
+1) Landing view (hero + “How it works”)
+2) Visualizer view (toolbar + canvas + gallery + bottom CTA bar)
+
+Use React (no manual DOM in index.html), and the design + code below.
+
+--------------------------------
+1) INDEX.HTML
+--------------------------------
+Make sure index.html only contains the React root and script, like:
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>RoomVibe</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
+--------------------------------
+2) MAIN.TSX
+--------------------------------
+In src/main.tsx import App and index.css:
+
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import "./index.css";
+
+ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+--------------------------------
+3) APP.TSX
+--------------------------------
+Replace src/App.tsx with this component:
+
+import React, { useState, ChangeEvent } from "react";
+
+type View = "landing" | "visualizer";
+
+const App: React.FC = () => {
+  const [view, setView] = useState<View>("landing");
+  const [wallImage, setWallImage] = useState<string | null>(null);
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (typeof event.target?.result === "string") {
+        setWallImage(event.target.result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const showLanding = () => setView("landing");
+  const showVisualizer = () => setView("visualizer");
+
+  return (
+    <>
+      <header className="rv-header">
+        <div className="rv-logo">RoomVibe</div>
+        <nav className="rv-nav">
+          <button className="rv-nav-btn" onClick={showLanding}>
+            Home
+          </button>
+          <button className="rv-nav-btn" onClick={showVisualizer}>
+            Visualizer
+          </button>
+        </nav>
+      </header>
+
+      <main>
+        {/* LANDING VIEW */}
+        <section
+          id="landing-view"
+          className={`rv-view ${view === "landing" ? "active" : ""}`}
+        >
+          <div className="rv-hero">
+            <div className="rv-hero-text">
+              <h1>Visualize Art on Your Walls.</h1>
+              <p>
+                Upload a photo of your wall, try different artworks, and see how
+                they look before you buy.
+              </p>
+              <button
+                id="start-visualizing-btn"
+                className="rv-btn-primary"
+                onClick={showVisualizer}
+              >
+                Start Visualizing
+              </button>
+            </div>
+            <div className="rv-hero-mockup">
+              <div className="rv-hero-mockup-card">
+                <div className="rv-hero-wall">
+                  <div className="rv-hero-art" />
+                </div>
+              </div>
+              <span className="rv-hero-caption">
+                Preview art in your space in seconds.
+              </span>
+            </div>
+          </div>
+
+          <section className="rv-section">
+            <h2>How it works</h2>
+            <div className="rv-steps">
+              <div className="rv-step-card">
+                <span className="rv-step-number">1</span>
+                <h3>Upload your wall</h3>
+                <p>Take a photo of your wall with your phone and upload it.</p>
+              </div>
+              <div className="rv-step-card">
+                <span className="rv-step-number">2</span>
+                <h3>Choose an artwork</h3>
+                <p>
+                  Browse your art collection and pick the piece you want to test.
+                </p>
+              </div>
+              <div className="rv-step-card">
+                <span className="rv-step-number">3</span>
+                <h3>Visualize & buy</h3>
+                <p>
+                  Adjust size and position, then go to Shopify to complete the
+                  purchase.
+                </p>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        {/* VISUALIZER VIEW */}
+        <section
+          id="visualizer-view"
+          className={`rv-view ${view === "visualizer" ? "active" : ""}`}
+        >
+          <div className="rv-visualizer-layout">
+            {/* Left toolbar */}
+            <aside className="rv-toolbar-left">
+              <h3>Tools</h3>
+              <button className="rv-tool-btn">Move</button>
+              <button className="rv-tool-btn">Resize</button>
+              <button className="rv-tool-btn">Brightness</button>
+              <button className="rv-tool-btn">Reset</button>
+              <button className="rv-tool-btn">Before / After</button>
+            </aside>
+
+            {/* Canvas area */}
+            <section className="rv-canvas-area">
+              {!wallImage && (
+                <label className="rv-upload-box">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="rv-upload-input"
+                    onChange={handleFileChange}
+                  />
+                  <div className="rv-upload-content">
+                    <p className="rv-upload-title">Upload Your Wall</p>
+                    <p className="rv-upload-sub">
+                      Click to upload or drag &amp; drop a photo here.
+                    </p>
+                  </div>
+                </label>
+              )}
+
+              {wallImage && (
+                <div id="canvas-preview" className="rv-canvas-preview">
+                  <div className="rv-wall-preview">
+                    <img src={wallImage} alt="Wall preview" />
+                    <div className="rv-art-on-wall" />
+                  </div>
+                  <p className="rv-canvas-hint">
+                    Choose an artwork on the right to place it on your wall.
+                  </p>
+                </div>
+              )}
+            </section>
+
+            {/* Right gallery */}
+            <aside className="rv-gallery-right">
+              <h3>Artworks</h3>
+              <div className="rv-art-list">
+                {/* Later this will be dynamic from backend / Shopify */}
+                <div className="rv-art-card">
+                  <div className="rv-art-thumb placeholder" />
+                  <div className="rv-art-info">
+                    <p className="rv-art-title">Abstract Energy #1</p>
+                    <p className="rv-art-meta">120 × 80 cm</p>
+                  </div>
+                </div>
+                <div className="rv-art-card">
+                  <div className="rv-art-thumb placeholder" />
+                  <div className="rv-art-info">
+                    <p className="rv-art-title">Good Vibes #3</p>
+                    <p className="rv-art-meta">100 × 70 cm</p>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </div>
+
+          {/* Bottom CTA bar */}
+          <footer className="rv-bottom-bar">
+            <button className="rv-btn-primary">Download Preview</button>
+            <button className="rv-btn-secondary">Buy on Shopify</button>
+          </footer>
+        </section>
+      </main>
+
+      <footer className="rv-footer">
+        <span>© 2025 RoomVibe</span>
+      </footer>
+    </>
+  );
+};
+
+export default App;
+```
