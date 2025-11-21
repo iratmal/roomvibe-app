@@ -4,10 +4,12 @@
 RoomVibe Studio is a comprehensive React/TypeScript web application offering a Canvy-style three-panel editor for visualizing artwork in room environments, complemented by a marketing landing page. Its primary purpose is to allow users to visualize how artworks would look on their walls, with features such as wall recoloring and true-to-scale sizing. The project aims to provide a modern, user-friendly experience for art visualization and is ready for integration with e-commerce platforms like Shopify.
 
 ## Recent Changes (November 21, 2025)
-**Studio Bug Fixes & Production Deployment:**
-- Fixed **Bug 1 (Size auto-population)**: Dimension fields now automatically populate from artwork metadata when selection changes. Effect depends solely on `artId` to prevent overwriting during cm↔in unit toggles.
-- Fixed **Bug 2 (Buy button)**: "View & Buy on Shopify" button now consistently uses correct `buyUrl` from enriched data. Implemented `artIdRef` tracking to handle race conditions during Shopify API hydration with automatic fallback to first artwork if current selection is missing.
-- Fixed **Bug 3 (Frame functionality)**: Implemented working Frame selector with None (8px white border), Slim (12px black), and Gallery (20px dark + shadow) options that apply visual CSS styling to artwork preview.
+**FINAL Studio Bug Fixes & Production Deployment:**
+- Fixed **Bug 1 (Size auto-population)**: Dimension fields now automatically populate from artwork metadata when selection changes. Effect depends solely on `artId` to prevent overwriting during cm↔in unit toggles. ✅
+- Fixed **Bug 2 (Buy button)**: "View & Buy on Shopify" button now consistently uses correct `buyUrl` from enriched data by using LOCAL artworks.json as the authoritative data source instead of Shopify API merge. Removed collection mismatch issue where env variable was calling "roomvibe-studio" collection instead of "all-products" + "original-artwork-2" collections. ✅
+- Fixed **Bug 3 (Frame functionality)**: Implemented working Frame selector with None (8px white border), Slim (2px black - thinner), and Gallery (20px dark + shadow - thicker) options that apply visual CSS styling to artwork preview. ✅
+- **Root cause analysis**: Shopify merge was fetching "roomvibe-studio" demo collection (env variable), but local artworks.json contains 30 artworks from TWO different collections: "all-products" (20 artworks) + "original-artwork-2" (10 artworks including Sandy, Light My Fire). Merge couldn't find handle matches, so Size defaulted to 100x70 and buyUrl pointed to wrong products.
+- **Solution**: Removed all Shopify `fetchCollectionArtworks` merge logic from Studio, ShowcaseCarousel, and LiveDemoMock. Now using LOCAL artworks.json as single source of truth with all enriched data (widthCm, heightCm, buyUrl, imageUrl).
 - **Production readiness**: Gated console.log debugging behind `import.meta.env.DEV` flag to prevent logging in production builds.
 - **Deployment configured**: Autoscale deployment with `npm run build` (TypeScript compile + Vite bundle) and `npm start` (Express server serving dist/ folder on port 5000).
 
