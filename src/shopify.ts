@@ -9,6 +9,12 @@ export interface ShopifyArtwork {
    * "View & Buy on Shopify" gumbe u App.tsx
    */
   onlineStoreUrl?: string;
+  /**
+   * Direktan link na stvarnu product page gdje korisnik može kupiti artwork.
+   * Za Shopify artworks: koristi onlineStoreUrl ili build iz handle-a.
+   * Za lokalne artworks: ručno postavljen URL.
+   */
+  buyUrl?: string;
 }
 
 export async function fetchCollectionArtworks(
@@ -97,11 +103,18 @@ export async function fetchCollectionArtworks(
 
         if (!imageUrl) return null;
 
+        // Build buyUrl: use onlineStoreUrl if available, otherwise construct from handle
+        let buyUrl: string | undefined = node.onlineStoreUrl;
+        if (!buyUrl && node.handle) {
+          buyUrl = `https://${domain}/products/${node.handle}`;
+        }
+
         const artwork: ShopifyArtwork = {
           id: node.id,
           title: node.title,
           imageUrl,
           onlineStoreUrl: node.onlineStoreUrl || undefined,
+          buyUrl,
         };
 
         return artwork;

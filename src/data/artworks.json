@@ -5,7 +5,8 @@
     "imageUrl": "https://images.pexels.com/photos/1812960/pexels-photo-1812960.jpeg",
     "widthCm": 100,
     "heightCm": 70,
-    "onlineStoreUrl": "https://c1d36e-2.myshopify.com/products/energy-in-motion-1"
+    "onlineStoreUrl": "https://c1d36e-2.myshopify.com/products/energy-in-motion-1",
+    "buyUrl": "https://YOUR-STORE.myshopify.com/products/energy-in-motion-1"
   },
   {
     "id": "art-2",
@@ -13,7 +14,8 @@
     "imageUrl": "https://images.pexels.com/photos/1036936/pexels-photo-1036936.jpeg",
     "widthCm": 120,
     "heightCm": 80,
-    "onlineStoreUrl": "https://c1d36e-2.myshopify.com/products/good-vibes-sunset"
+    "onlineStoreUrl": "https://c1d36e-2.myshopify.com/products/good-vibes-sunset",
+    "buyUrl": "https://YOUR-STORE.myshopify.com/products/good-vibes-sunset"
   },
   {
     "id": "art-3",
@@ -21,7 +23,8 @@
     "imageUrl": "https://images.pexels.com/photos/1020315/pexels-photo-1020315.jpeg",
     "widthCm": 90,
     "heightCm": 90,
-    "onlineStoreUrl": "https://c1d36e-2.myshopify.com/products/ocean-flow"
+    "onlineStoreUrl": "https://c1d36e-2.myshopify.com/products/ocean-flow",
+    "buyUrl": "https://YOUR-STORE.myshopify.com/products/ocean-flow"
   },
   {
     "id": "art-4",
@@ -29,7 +32,8 @@
     "imageUrl": "https://images.pexels.com/photos/2693212/pexels-photo-2693212.jpeg",
     "widthCm": 140,
     "heightCm": 100,
-    "onlineStoreUrl": "https://c1d36e-2.myshopify.com/products/golden-rhythm"
+    "onlineStoreUrl": "https://c1d36e-2.myshopify.com/products/golden-rhythm",
+    "buyUrl": "https://YOUR-STORE.myshopify.com/products/golden-rhythm"
   },
   {
     "id": "art-5",
@@ -37,6 +41,7 @@
     "imageUrl": "https://images.pexels.com/photos/2693211/pexels-photo-2693211.jpeg",
     "widthCm": 80,
     "heightCm": 60,
-    "onlineStoreUrl": "https://c1d36e-2.myshopify.com/products/calm-morning"
+    "onlineStoreUrl": "https://c1d36e-2.myshopify.com/products/calm-morning",
+    "buyUrl": "https://YOUR-STORE.myshopify.com/products/calm-morning"
   }
 ]

@@ -684,7 +684,7 @@ function Studio() {
 
             {art && (
               <a
-                href={(art as any).onlineStoreUrl || "#"}
+                href={(art as any).buyUrl || (art as any).onlineStoreUrl || "#"}
                 target="_blank"
                 rel="noreferrer"
                 className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-900 shadow-sm hover:bg-slate-50"
