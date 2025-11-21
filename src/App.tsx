@@ -22,17 +22,19 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white text-slate-900 font-body">
-      {hash !== "#/studio" && <TopNav />}
+      {hash !== "#/studio" && hash !== "#/simple" && <TopNav />}
       {hash === "#/privacy" ? (
         <PrivacyPage />
       ) : hash === "#/studio" ? (
         <Studio />
+      ) : hash === "#/simple" ? (
+        <SimpleVisualizer />
       ) : hash === "#/docs" ? (
         <DocsPage />
       ) : (
         <HomePage />
       )}
-      {hash !== "#/studio" && <SiteFooter />}
+      {hash !== "#/studio" && hash !== "#/simple" && <SiteFooter />}
     </div>
   );
 }
@@ -157,39 +159,30 @@ function HomePage() {
 function Hero() {
   return (
     <Container id="home">
-      <div className="relative isolate overflow-hidden">
-        <div className="mx-auto max-w-3xl py-16 sm:py-24 text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600 shadow-sm">
-            <SparkleIcon className="h-3.5 w-3.5" /> Try original art in your room
-          </span>
-          <h1 className="mt-6 text-3xl sm:text-5xl font-bold tracking-tight text-black">
-            Visualize art on your walls
-          </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-base sm:text-lg text-slate-600">
+      <div className="rv-hero">
+        <div className="rv-hero-text">
+          <h1>Visualize Art on Your Walls.</h1>
+          <p>
             Upload a photo of your wall, discover perfect artworks, and see them in true-to-size mockups before you buy.
           </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <a
-              href="#/studio"
-              className="inline-flex items-center gap-2 rounded-xl px-5 py-3 text-black shadow hover:opacity-90"
-              style={{ background: "var(--accent)" }}
-            >
-              Open Studio <PlayIcon className="h-4 w-4" />
+          <div className="flex gap-3">
+            <a href="#/studio" className="rv-btn-primary">
+              Open Studio
             </a>
-            <a
-              href="#/docs"
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-3 text-black shadow-sm hover:bg-slate-50"
-            >
-              Add to Website <ArrowRightIcon className="h-4 w-4" />
+            <a href="#/docs" className="rv-btn-secondary">
+              Add to Website
             </a>
           </div>
-
-          {/* soft blue mesh background */}
-          <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-            <div className="absolute -top-40 left-1/4 h-[420px] w-[420px] rounded-full bg-[#8BADE5]/35 blur-3xl" />
-            <div className="absolute top-10 right-1/4 h-[360px] w-[360px] rounded-full bg-sky-100/60 blur-3xl" />
-            <div className="absolute top-1/2 left-1/2 h-[640px] w-[640px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#8BADE5]/20 blur-3xl" />
+        </div>
+        <div className="rv-hero-mockup">
+          <div className="rv-hero-mockup-card">
+            <div className="rv-hero-wall">
+              <div className="rv-hero-art" />
+            </div>
           </div>
+          <span className="rv-hero-caption">
+            Preview art in your space in seconds.
+          </span>
         </div>
       </div>
     </Container>
@@ -275,6 +268,95 @@ function SectionDivider() {
   return (
     <div className="mx-auto my-10 max-w-7xl px-4 sm:px-6 lg:px-8">
       <div className="h-px w-full bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+    </div>
+  );
+}
+
+/* ------------- Simple Visualizer ------------- */
+
+function SimpleVisualizer() {
+  const [wallImage, setWallImage] = useState<string | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (typeof event.target?.result === "string") {
+        setWallImage(event.target.result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  return (
+    <div className="rv-view active" style={{ paddingTop: '20px', paddingBottom: '20px' }}>
+      <div className="rv-visualizer-layout">
+        <aside className="rv-toolbar-left">
+          <h3>Tools</h3>
+          <button className="rv-tool-btn">Move</button>
+          <button className="rv-tool-btn">Resize</button>
+          <button className="rv-tool-btn">Brightness</button>
+          <button className="rv-tool-btn">Reset</button>
+          <button className="rv-tool-btn">Before / After</button>
+        </aside>
+
+        <section className="rv-canvas-area">
+          {!wallImage && (
+            <label className="rv-upload-box">
+              <input
+                type="file"
+                accept="image/*"
+                className="rv-upload-input"
+                onChange={handleFileChange}
+              />
+              <div className="rv-upload-content">
+                <p className="rv-upload-title">Upload Your Wall</p>
+                <p className="rv-upload-sub">
+                  Click to upload or drag &amp; drop a photo here.
+                </p>
+              </div>
+            </label>
+          )}
+
+          {wallImage && (
+            <div className="rv-canvas-preview">
+              <div className="rv-wall-preview">
+                <img src={wallImage} alt="Wall preview" />
+                <div className="rv-art-on-wall" />
+              </div>
+              <p className="rv-canvas-hint">
+                Choose an artwork on the right to place it on your wall.
+              </p>
+            </div>
+          )}
+        </section>
+
+        <aside className="rv-gallery-right">
+          <h3>Artworks</h3>
+          <div className="rv-art-list">
+            <div className="rv-art-card">
+              <div className="rv-art-thumb placeholder" style={{ width: '60px', height: '60px' }} />
+              <div className="rv-art-info">
+                <p className="rv-art-title">Abstract Energy #1</p>
+                <p className="rv-art-meta">120 × 80 cm</p>
+              </div>
+            </div>
+            <div className="rv-art-card">
+              <div className="rv-art-thumb placeholder" style={{ width: '60px', height: '60px' }} />
+              <div className="rv-art-info">
+                <p className="rv-art-title">Good Vibes #3</p>
+                <p className="rv-art-meta">100 × 70 cm</p>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <footer className="rv-bottom-bar">
+        <button className="rv-btn-primary">Download Preview</button>
+        <button className="rv-btn-secondary">Buy on Shopify</button>
+      </footer>
     </div>
   );
 }
@@ -931,40 +1013,32 @@ function HowItWorks() {
     {
       title: "Pick a room",
       desc: "Choose from presets or upload your own wall photo.",
-      icon: <HomeIcon className="h-5 w-5" />,
     },
     {
       title: "Adjust size & wall color",
       desc: "Use cm/in, lock ratio and recolor walls with one click.",
-      icon: <RulerIcon className="h-5 w-5" />,
     },
     {
       title: "Embed on your site",
       desc: "Drop in the RoomVibe widget so visitors can try art live.",
-      icon: <CodeIcon className="h-5 w-5" />,
     },
   ];
   return (
     <Container id="how">
-      <div className="mx-auto max-w-3xl text-center">
-        <h2 className="text-2xl font-semibold">How it works</h2>
+      <div className="rv-section">
+        <h2>How it works</h2>
         <p className="mt-2 text-slate-600">
           RoomVibe is a lightweight, embeddable widget for visualizing original art in real rooms — for you and your collectors.
         </p>
-      </div>
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {steps.map((s, i) => (
-          <div key={i} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md">
-            <div
-              className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-white"
-              style={{ background: "var(--accent)" }}
-            >
-              {s.icon}
+        <div className="rv-steps">
+          {steps.map((s, i) => (
+            <div key={i} className="rv-step-card">
+              <span className="rv-step-number">{i + 1}</span>
+              <h3>{s.title}</h3>
+              <p>{s.desc}</p>
             </div>
-            <h3 className="mt-4 text-lg font-semibold">{s.title}</h3>
-            <p className="mt-1 text-sm text-slate-600">{s.desc}</p>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </Container>
   );

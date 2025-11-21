@@ -1,0 +1,326 @@
+:root {
+  --rv-navy: #283593;
+  --rv-electric-blue: #4cc9f0;
+  --rv-purple: #9b5de5;
+  --rv-grey: #dde1e7;
+  --rv-gold: #d8b46a;
+  --rv-radius-lg: 16px;
+  --rv-radius-md: 10px;
+  --rv-shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+/* GLOBAL */
+body {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  background: #ffffff;
+  color: #111827;
+}
+
+/* HEADER */
+.rv-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 32px;
+  border-bottom: 1px solid var(--rv-grey);
+  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.rv-logo {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--rv-navy);
+}
+
+.rv-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.rv-nav-btn {
+  background: none;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--rv-navy);
+  font-weight: 500;
+}
+.rv-nav-btn:hover {
+  background: var(--rv-grey);
+}
+
+/* VIEWS */
+.rv-view {
+  display: none;
+  padding: 40px;
+  max-width: 1220px;
+  margin: 0 auto;
+}
+.rv-view.active {
+  display: block;
+}
+
+/* BUTTONS */
+.rv-btn-primary {
+  background: var(--rv-electric-blue);
+  color: white;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--rv-shadow-soft);
+  transition: 0.16s;
+}
+.rv-btn-primary:hover {
+  background: #3dbedf;
+  transform: translateY(-1px);
+}
+
+.rv-btn-secondary {
+  background: white;
+  border: 1px solid var(--rv-navy);
+  color: var(--rv-navy);
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.rv-btn-secondary:hover {
+  background: var(--rv-grey);
+}
+
+/* LANDING – HERO */
+.rv-hero {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 40px;
+  align-items: center;
+}
+
+.rv-hero-text h1 {
+  font-size: 42px;
+  line-height: 1.1;
+  margin-bottom: 16px;
+  color: var(--rv-navy);
+}
+.rv-hero-text p {
+  max-width: 440px;
+  color: #4b5563;
+  margin-bottom: 24px;
+  font-size: 16px;
+}
+
+/* HERO MOCKUP */
+.rv-hero-mockup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.rv-hero-mockup-card {
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: var(--rv-radius-lg);
+  box-shadow: var(--rv-shadow-soft);
+  width: 100%;
+  max-width: 360px;
+}
+.rv-hero-wall {
+  height: 180px;
+  background: linear-gradient(135deg, #e5e7eb, #ffffff);
+  border-radius: 16px;
+  position: relative;
+}
+.rv-hero-art {
+  position: absolute;
+  top: 26%;
+  left: 18%;
+  width: 55%;
+  height: 48%;
+  border-radius: 10px;
+  background: linear-gradient(
+    135deg,
+    var(--rv-navy),
+    var(--rv-purple),
+    var(--rv-electric-blue)
+  );
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.2);
+}
+
+/* HOW IT WORKS */
+.rv-section h2 {
+  font-size: 24px;
+  color: var(--rv-navy);
+}
+.rv-steps {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.rv-step-card {
+  background: white;
+  border-radius: var(--rv-radius-md);
+  padding: 16px;
+  box-shadow: var(--rv-shadow-soft);
+  border: 1px solid #e5e7eb;
+}
+.rv-step-number {
+  width: 26px;
+  height: 26px;
+  background: var(--rv-purple);
+  color: white;
+  border-radius: 50%;
+  font-weight: 600;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+/* VISUALIZER LAYOUT */
+.rv-visualizer-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr 260px;
+  gap: 20px;
+}
+
+/* TOOLBAR */
+.rv-toolbar-left {
+  background: #f9fafb;
+  padding: 14px;
+  border-radius: var(--rv-radius-lg);
+  border: 1px solid #e5e7eb;
+  box-shadow: var(--rv-shadow-soft);
+}
+.rv-tool-btn {
+  width: 100%;
+  background: var(--rv-grey);
+  padding: 9px 12px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  border: none;
+  cursor: pointer;
+}
+.rv-tool-btn:hover {
+  background: var(--rv-purple);
+  color: white;
+}
+
+/* CANVAS */
+.rv-canvas-area {
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: var(--rv-radius-lg);
+  border: 1px solid #e5e7eb;
+  box-shadow: var(--rv-shadow-soft);
+}
+
+.rv-upload-box {
+  border: 2px dashed var(--rv-purple);
+  padding: 60px 20px;
+  border-radius: var(--rv-radius-lg);
+  background: #fdf2ff;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+}
+.rv-upload-input {
+  opacity: 0;
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+}
+.rv-upload-title {
+  font-size: 18px;
+  color: var(--rv-navy);
+  font-weight: 600;
+}
+
+.rv-wall-preview {
+  border-radius: var(--rv-radius-md);
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  position: relative;
+  background: #e5e7eb;
+}
+.rv-wall-preview img {
+  width: 100%;
+  display: block;
+}
+
+/* ARTWORK OVERLAY */
+.rv-art-on-wall {
+  position: absolute;
+  top: 26%;
+  left: 18%;
+  width: 45%;
+  height: 40%;
+  border: 3px solid white;
+  border-radius: 10px;
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.4);
+  background: linear-gradient(135deg, var(--rv-navy), var(--rv-electric-blue));
+}
+
+/* GALLERY */
+.rv-gallery-right {
+  background: #f9fafb;
+  padding: 14px;
+  border-radius: var(--rv-radius-lg);
+  border: 1px solid #e5e7eb;
+  box-shadow: var(--rv-shadow-soft);
+}
+.rv-art-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.rv-art-card {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: white;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.rv-art-card:hover {
+  border-color: var(--rv-electric-blue);
+  transform: translateY(-2px);
+  box-shadow: var(--rv-shadow-soft);
+}
+.rv-art-thumb.placeholder {
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--rv-navy), var(--rv-purple));
+}
+
+/* FOOTER */
+.rv-footer {
+  padding: 14px;
+  text-align: center;
+  font-size: 13px;
+  color: #6b7280;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .rv-hero {
+    grid-template-columns: 1fr;
+  }
+  .rv-visualizer-layout {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .rv-steps {
+    grid-template-columns: 1fr;
+  }
+}
