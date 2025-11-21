@@ -17,6 +17,17 @@ function useHashRoute() {
   return hash;
 }
 
+function useIsInIframe() {
+  const [isIframe] = useState<boolean>(() => {
+    try {
+      return window.self !== window.top;
+    } catch {
+      return false;
+    }
+  });
+  return isIframe;
+}
+
 export default function App() {
   const hash = useHashRoute();
 
@@ -361,9 +372,35 @@ function SimpleVisualizer() {
   );
 }
 
+/* ------------- Studio Header (shown when NOT in iframe) ------------- */
+
+function StudioHeader() {
+  return (
+    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur">
+      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+        <div className="flex h-14 items-center justify-between">
+          <a href="#/" className="flex items-center gap-2 text-lg font-semibold text-slate-900">
+            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--rv-navy)] text-white text-xs">
+              RV
+            </div>
+            <span>RoomVibe</span>
+          </a>
+          <a
+            href="#/"
+            className="text-sm font-medium text-slate-600 hover:text-slate-900 transition"
+          >
+            ← Back to Home
+          </a>
+        </div>
+      </div>
+    </header>
+  );
+}
+
 /* ------------- Studio (Canvy-style editor) ------------- */
 
 function Studio() {
+  const isInIframe = useIsInIframe();
   const [sceneId, setSceneId] = useState<string>((presets as any)[0]?.id || "");
   const [wallColor, setWallColor] = useState<string>("#f2f4f7");
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
@@ -411,6 +448,7 @@ function Studio() {
 
   return (
     <main>
+      {!isInIframe && <StudioHeader />}
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-4 text-sm text-slate-600">
           <span className="font-medium">RoomVibe Studio</span> · Upload a wall photo, pick a room preset, and see your art true-to-size.
