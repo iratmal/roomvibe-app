@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import localArtworks from "./data/artworks.json";
 import presets from "./data/presets.json";
-import { fetchCollectionArtworks } from "./shopify";
 
 /**
  * RoomVibe — App + Landing + Studio
