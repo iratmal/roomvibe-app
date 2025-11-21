@@ -1,5 +1,12 @@
+/* === TAILWIND DIRECTIVES === */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* === ROOMVIBE GLOBAL STYLES === */
 :root {
+  --accent: #8BADE5;
+  --accent-soft: #dce9f7;
   --rv-navy: #283593;
   --rv-electric-blue: #4cc9f0;
   --rv-purple: #9b5de5;
@@ -18,9 +25,10 @@
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+  font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: #ffffff;
   color: #111827;
+  font-size: 19px;
 }
 
 /* HEADER / NAV */

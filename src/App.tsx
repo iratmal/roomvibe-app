@@ -21,7 +21,7 @@ export default function App() {
   const hash = useHashRoute();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white text-slate-900 font-body">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white text-slate-900">
       {hash !== "#/studio" && hash !== "#/simple" && <TopNav />}
       {hash === "#/privacy" ? (
         <PrivacyPage />
