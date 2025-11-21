@@ -3,6 +3,20 @@
 ## Overview
 RoomVibe Studio is a comprehensive React/TypeScript web application offering a Canvy-style three-panel editor for visualizing artwork in room environments, complemented by a marketing landing page. Its primary purpose is to allow users to visualize how artworks would look on their walls, with features such as wall recoloring and true-to-scale sizing. The project aims to provide a modern, user-friendly experience for art visualization and is ready for integration with e-commerce platforms like Shopify.
 
+## Recent Changes (November 21, 2025)
+**UI Modernization Completed:**
+- Added new `.rv-*` CSS system (navy/electric-blue/purple/gold palette) alongside existing Tailwind utilities for flexible modern styling.
+- Modernized landing page Hero section with `.rv-hero` layout and mockup card featuring gradient artwork.
+- Updated "How It Works" section with `.rv-step-card` components showing numbered badges (1, 2, 3).
+- Applied modern button styles (`.rv-btn-primary` electric blue, `.rv-btn-secondary` outline).
+- Created new **Simple Visualizer** route (`#/simple`) with toolbar + canvas + gallery layout using modern `.rv-*` styles.
+- Fixed critical rendering issues:
+  - Removed static HTML from `index.html` (was preventing React from rendering).
+  - Added `@tailwind` directives to `index.css` (Tailwind wasn't generating classes).
+  - Removed undefined `font-body` class and set Poppins globally on body element.
+  - Added `--accent` CSS variable for compatibility with existing components.
+- **All existing functionality preserved**: Studio, Shopify integration, presets, wall masking, true-to-scale sizing.
+
 ## User Preferences
 I prefer simple language in explanations. I like functional programming paradigms where applicable. I want iterative development, with small, testable changes. Ask before making major architectural changes or introducing new dependencies. I prefer detailed explanations for complex logic. Do not make changes to files in the `public/presets` folder. Do not make changes to the `server.js` file.
 
