@@ -438,12 +438,14 @@ function Studio() {
     if (art && art.widthCm && art.heightCm) {
       const newWidth = sizeUnit === "cm" ? art.widthCm : +(art.widthCm / 2.54).toFixed(1);
       const newHeight = sizeUnit === "cm" ? art.heightCm : +(art.heightCm / 2.54).toFixed(1);
-      console.log(`[Studio] Auto-populating dimensions for "${art.title}": ${newWidth} x ${newHeight} ${sizeUnit}`, {
-        artId: art.id,
-        widthCm: art.widthCm,
-        heightCm: art.heightCm,
-        buyUrl: art.buyUrl,
-      });
+      if (import.meta.env.DEV) {
+        console.log(`[Studio] Auto-populating dimensions for "${art.title}": ${newWidth} x ${newHeight} ${sizeUnit}`, {
+          artId: art.id,
+          widthCm: art.widthCm,
+          heightCm: art.heightCm,
+          buyUrl: art.buyUrl,
+        });
+      }
       setWVal(newWidth);
       setHVal(newHeight);
     }
