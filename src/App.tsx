@@ -244,8 +244,8 @@ function ShowcaseCarousel() {
                   background: "#f8fafc",
                 }}
               >
-                {art?.imageUrl ? (
-                  <img src={art.imageUrl} alt={art.title} className="h-full w-full object-cover" draggable={false} />
+                {art?.imageUrl || art?.overlayImageUrl ? (
+                  <img src={art.overlayImageUrl || art.imageUrl} alt={art.title} className="h-full w-full object-cover" draggable={false} />
                 ) : (
                   <div
                     className="h-full w-full"
@@ -564,8 +564,8 @@ function Studio() {
                           : "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
                     }}
                   >
-                    {art?.imageUrl ? (
-                      <img src={art.imageUrl} alt={art.title} className="h-full w-full object-cover" draggable={false} />
+                    {art?.imageUrl || art?.overlayImageUrl ? (
+                      <img src={art.overlayImageUrl || art.imageUrl} alt={art.title} className="h-full w-full object-cover" draggable={false} />
                     ) : (
                       <div
                         className="h-full w-full"
@@ -983,8 +983,8 @@ function LiveDemoMock() {
                   className="overflow-hidden rounded-md border-8 border-white shadow-xl"
                   style={{ width: `${artWidthPct}%`, aspectRatio: `${artAspect}/1`, background: "#f8fafc" }}
                 >
-                  {selectedArtwork?.imageUrl ? (
-                    <img src={selectedArtwork.imageUrl} alt={selectedArtwork.title} className="h-full w-full object-cover" draggable={false} />
+                  {selectedArtwork?.imageUrl || selectedArtwork?.overlayImageUrl ? (
+                    <img src={selectedArtwork.overlayImageUrl || selectedArtwork.imageUrl} alt={selectedArtwork.title} className="h-full w-full object-cover" draggable={false} />
                   ) : (
                     <div
                       className="h-full w-full"

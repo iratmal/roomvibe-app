@@ -1,0 +1,62 @@
+Još jedno važno pojašnjenje oko slika za Studio.
+
+Trenutno stanje:
+– Studio koristi Shopify featured image za artwork (imageUrl) kao overlay na zidu.
+– Kod mene su featured slike na glavnim proizvodima mockupovi (slika + krevet/zid).
+– Zato kad korisnik u Studiju učita SVOJU sobu, preko nje se preklapa mockup (slika + krevet), što ne želim.
+
+Kako sam to riješila u Shopifyju:
+– Napravila sam posebnu kolekciju: "RoomVibe Photos"
+  (handle može biti npr. roomvibe-photos – provjeri točan handle u Shopifyju).
+– U toj kolekciji su SAMO čiste fotografije slika (bez kreveta, bez zida, bez mockupova).
+
+Što želim da Studio radi:
+
+1) DVA IZVORA SLIKE ZA SVAKI ARTWORK
+
+Za svaki rad trebamo razlikovati:
+- productImage (mockup/slike za product page)
+- overlayImage (čista fotka slike koja ide na zid u Studiju)
+
+Molim te da:
+- za "View & Buy on Shopify" i dalje koristiš moj postojeći product (buyUrl koji smo već postavili).
+- ali za overlay u Studiju (art.imageUrl) koristiš fotku iz "RoomVibe Photos" kolekcije.
+
+Mogući način (predloži ako imaš bolju ideju):
+
+VARIJANTA A (preporučena, ako je izvediva):
+- U RoomVibe Photos kolekciji držiš proizvode/medije koji imaju isti handle kao originali
+  ili neki dogovoreni pattern.
+- U enrichmentu:
+  • za svaki artwork iz src/data/artworks.json koristiš handle za dohvat:
+    – glavnog proizvoda (za buyUrl / product link – što već imamo)
+    – i odgovarajućeg proizvoda iz "RoomVibe Photos" kolekcije
+  • product iz RoomVibe Photos kolekcije koristiš za overlayImageUrl (čista slika slike).
+
+VARIJANTA B (ako je lakše):
+- U artworks.json dodaš novo polje npr. `overlayImageUrl`.
+- Ti možeš koristiti Shopify API da iz RoomVibe Photos kolekcije povučeš čiste slike
+  i upišeš ih u `overlayImageUrl` za svaki id (preko enrich skripte).
+- Studio onda:
+  • za overlay koristi `overlayImageUrl` (ako postoji) ili fallback na postojeći imageUrl
+  • za "View & Buy on Shopify" i dalje koristi `buyUrl`.
+
+VAŽNO:
+- Kad korisnik učita SVOJ zid:
+   • background = user upload
+   • overlay = ČISTA fotka slike iz RoomVibe Photos (overlayImageUrl)
+   • nikad se ne smije koristiti mockup image kao overlay.
+- Kad korisnik NE učita zid i koristi samo Room presets:
+   • background = demo scena (Room 01–10)
+   • overlay = ista čista fotka slike.
+
+Molim te:
+1) Implementiraj rješenje gdje Studio overlay uvijek koristi clean "RoomVibe Photos" sliku.
+2) Zadrži postojeće ponašanje “View & Buy on Shopify” (link na moj glavni produkt).
+3) Nakon toga testiraj na barem 2 rada (npr. "Rustica" i "Sandy"):
+   – učitaj Room preset bez uploada zida
+   – učitaj moju vlastitu fotku zida
+   – u oba slučaja overlay treba prikazivati samo sliku, bez kreveta/zida iz mockupa.
+
+Napiši mi koju si točno strukturu polja na kraju koristio (imageUrl / overlayImageUrl itd.),
+da znam kako dalje dodavati nove radove.
