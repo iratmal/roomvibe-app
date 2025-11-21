@@ -2,6 +2,7 @@
 
 export interface ShopifyArtwork {
   id: string;
+  handle?: string;
   title: string;
   imageUrl: string;
   /**
@@ -15,6 +16,8 @@ export interface ShopifyArtwork {
    * Za lokalne artworks: ručno postavljen URL.
    */
   buyUrl?: string;
+  widthCm?: number;
+  heightCm?: number;
 }
 
 export async function fetchCollectionArtworks(
@@ -111,6 +114,7 @@ export async function fetchCollectionArtworks(
 
         const artwork: ShopifyArtwork = {
           id: node.id,
+          handle: node.handle || undefined,
           title: node.title,
           imageUrl,
           onlineStoreUrl: node.onlineStoreUrl || undefined,
@@ -125,5 +129,79 @@ export async function fetchCollectionArtworks(
   } catch (err) {
     console.error("[RoomVibe] Error fetching Shopify collection:", err);
     return [];
+  }
+}
+
+export interface ProductDetails {
+  handle: string;
+  title: string;
+  imageUrl?: string;
+  description?: string;
+}
+
+export async function fetchProductByHandle(
+  handle: string
+): Promise<ProductDetails | null> {
+  const domain = typeof import.meta !== 'undefined' && import.meta.env 
+    ? import.meta.env.VITE_SHOPIFY_DOMAIN 
+    : process.env.VITE_SHOPIFY_DOMAIN;
+  const token = typeof import.meta !== 'undefined' && import.meta.env 
+    ? import.meta.env.VITE_SHOPIFY_STOREFRONT_TOKEN 
+    : process.env.VITE_SHOPIFY_STOREFRONT_TOKEN;
+
+  if (!domain || !token) {
+    console.warn("[RoomVibe] Missing Shopify env vars for fetchProductByHandle");
+    return null;
+  }
+
+  const endpoint = `https://${domain}/api/2023-07/graphql.json`;
+
+  const query = `
+    query GetProduct($handle: String!) {
+      productByHandle(handle: $handle) {
+        handle
+        title
+        description
+        featuredImage {
+          url
+        }
+      }
+    }
+  `;
+
+  const variables = { handle };
+
+  try {
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Shopify-Storefront-Access-Token": token,
+      },
+      body: JSON.stringify({ query, variables }),
+    });
+
+    if (!res.ok) {
+      console.error("[RoomVibe] fetchProductByHandle error:", res.status);
+      return null;
+    }
+
+    const json = await res.json();
+    const product = json?.data?.productByHandle;
+
+    if (!product) {
+      console.warn(`[RoomVibe] Product not found: ${handle}`);
+      return null;
+    }
+
+    return {
+      handle: product.handle,
+      title: product.title,
+      imageUrl: product.featuredImage?.url,
+      description: product.description,
+    };
+  } catch (err) {
+    console.error("[RoomVibe] Error fetching product:", handle, err);
+    return null;
   }
 }

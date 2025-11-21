@@ -212,7 +212,21 @@ function ShowcaseCarousel() {
     if (!handle) return;
     fetchCollectionArtworks(handle, 48)
       .then((res) => {
-        if (Array.isArray(res) && res.length) setArts(res);
+        if (Array.isArray(res) && res.length) {
+          const enrichedMap = new Map(localArtworks.map((a: any) => [a.id, a]));
+          const merged = res.map((shopifyArt: any) => {
+            const local = enrichedMap.get(shopifyArt.handle || shopifyArt.id);
+            return {
+              ...local,
+              ...shopifyArt,
+              id: shopifyArt.handle || shopifyArt.id,
+              widthCm: local?.widthCm || shopifyArt.widthCm || 120,
+              heightCm: local?.heightCm || shopifyArt.heightCm || 90,
+              buyUrl: local?.buyUrl || shopifyArt.buyUrl || shopifyArt.onlineStoreUrl,
+            };
+          });
+          setArts(merged);
+        }
       })
       .catch(() => {});
   }, []);
@@ -229,8 +243,8 @@ function ShowcaseCarousel() {
   const art = arts[artIdx] || arts[0];
   const safe = scene?.safeArea || { x: 0.5, y: 0.38, w: 0.62, h: 0.48 };
 
-  const widthCm = 120;
-  const heightCm = 90;
+  const widthCm = art?.widthCm || 120;
+  const heightCm = art?.heightCm || 90;
   const artWidthPct = Math.max(25, Math.min(safe.w * 100, 0.35 * widthCm + 8));
   const aspect = Math.max(0.2, Math.min(5, widthCm / Math.max(1, heightCm)));
 
@@ -410,20 +424,39 @@ function Studio() {
   const art = artworksState.find((a) => a.id === artId);
 
   const [sizeUnit, setSizeUnit] = useState<"cm" | "in">("cm");
-  const [wVal, setWVal] = useState<number>(100);
-  const [hVal, setHVal] = useState<number>(70);
+  const [wVal, setWVal] = useState<number>(artworksState[0]?.widthCm || 100);
+  const [hVal, setHVal] = useState<number>(artworksState[0]?.heightCm || 70);
   const [lockR, setLockR] = useState<boolean>(true);
+
+  useEffect(() => {
+    if (art && art.widthCm && art.heightCm) {
+      setWVal(art.widthCm);
+      setHVal(art.heightCm);
+    }
+  }, [artId, art]);
 
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    const handle = (import.meta as any).env.VITE_ROOMVIBE_COLLECTION_HANDLE;
-    if (!handle) return;
-    fetchCollectionArtworks(handle, 24)
+    const collHandle = (import.meta as any).env.VITE_ROOMVIBE_COLLECTION_HANDLE;
+    if (!collHandle) return;
+    fetchCollectionArtworks(collHandle, 24)
       .then((res) => {
         if (Array.isArray(res) && res.length) {
-          setArtworksState(res);
-          setArtId(res[0].id);
+          const enrichedMap = new Map(localArtworks.map((a: any) => [a.id, a]));
+          const merged = res.map((shopifyArt: any) => {
+            const local = enrichedMap.get(shopifyArt.handle || shopifyArt.id);
+            return {
+              ...local,
+              ...shopifyArt,
+              id: shopifyArt.handle || shopifyArt.id,
+              widthCm: local?.widthCm || shopifyArt.widthCm || 100,
+              heightCm: local?.heightCm || shopifyArt.heightCm || 70,
+              buyUrl: local?.buyUrl || shopifyArt.buyUrl || shopifyArt.onlineStoreUrl,
+            };
+          });
+          setArtworksState(merged);
+          setArtId(merged[0].id);
         }
       })
       .catch(() => {});
@@ -729,8 +762,20 @@ function LiveDemoMock() {
     fetchCollectionArtworks(handle, 24)
       .then((res) => {
         if (Array.isArray(res) && res.length) {
-          setArtworks(res);
-          setSelectedArtId(res[0].id);
+          const enrichedMap = new Map(localArtworks.map((a: any) => [a.id, a]));
+          const merged = res.map((shopifyArt: any) => {
+            const local = enrichedMap.get(shopifyArt.handle || shopifyArt.id);
+            return {
+              ...local,
+              ...shopifyArt,
+              id: shopifyArt.handle || shopifyArt.id,
+              widthCm: local?.widthCm || shopifyArt.widthCm || 100,
+              heightCm: local?.heightCm || shopifyArt.heightCm || 70,
+              buyUrl: local?.buyUrl || shopifyArt.buyUrl || shopifyArt.onlineStoreUrl,
+            };
+          });
+          setArtworks(merged);
+          setSelectedArtId(merged[0].id);
         }
       })
       .catch(() => {});

@@ -1,0 +1,49 @@
+Odlična pitanja, hvala ti! 🙌
+
+Ne želim ručno skupljati 30 imageUrl-ova i dimenzija, već bih radije da se to riješi automatski preko Shopify API-ja.
+
+Već imamo:
+– DOMAIN, TOKEN, COLLECTION_HANDLE u env-u
+– artworks.json sa:
+   • id (handle)
+   • title
+   • collectionHandle
+   • buyUrl
+
+Molim te napravi sljedeće:
+
+1) AUTOMATSKI FETCH imageUrl:
+   – Za svaki artwork iz artworks.json, koristeći `id` kao product handle:
+     • preko Shopify Storefront API-ja dohvatiti produkt
+     • uzeti featured image (glavnu sliku) i spremiti je kao `imageUrl`
+   – Ako već imaš funkciju koja dohvaća proizvode (npr. fetchCollectionArtworks),
+     možeš je iskoristiti ili proširiti.
+
+2) AUTOMATSKI IZVUCI DIMENZIJE (widthCm, heightCm):
+   – Pokušaj iz naslova (title) ili opisa proizvoda izvući dimenzije u centimetrima:
+     • regex tipa:  (\d+)\s*x\s*(\d+)
+       npr. "100 x 80 cm" → widthCm = 100, heightCm = 80
+   – Ako ih nađeš:
+     • upiši `widthCm` i `heightCm` u artwork model koji koristi Studio
+   – Ako kod nekog proizvoda dimenzije ne postoje ili ih ne možeš pouzdano izvući:
+     • stavi neki razuman fallback (npr. 100 x 80) i napiši mi u komentaru
+       za koje ID-eve nije bilo moguće pročitati dimenzije, pa ih kasnije možemo ručno dopuniti.
+
+3) SPOJI S VIEW & BUY:
+   – Neka Studio koristi:
+     • `title` za prikaz u dropdownu / listi
+     • `imageUrl` za preview na zidu
+     • `widthCm` i `heightCm` za realnu skalu
+     • `buyUrl` za gumb “View & Buy on Shopify”
+
+4) BITNO:
+   – Nemoj mijenjati postojeće behavior za Shopify integraciju, samo nadogradi artwork podatke
+     sa `imageUrl`, `widthCm` i `heightCm`.
+   – Ako trebaš prilagoditi strukturu artworks.json, slobodno to napravi,
+     samo mi na kraju napiši točan finalni oblik (polja) koje Studio koristi.
+
+Cilj:
+– Da za svih 30 originalnih radova:
+   • na zidu vidim pravu sliku (imageUrl iz Shopifyja)
+   • dimenzije budu realne (widthCm / heightCm)
+   • gumb “View & Buy on Shopify” vodi na pravi Shopify product (buyUrl koji sam već dala).
