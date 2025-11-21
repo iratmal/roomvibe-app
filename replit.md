@@ -4,6 +4,20 @@
 RoomVibe Studio is a comprehensive React/TypeScript web application offering a Canvy-style three-panel editor for visualizing artwork in room environments, complemented by a marketing landing page. Its primary purpose is to allow users to visualize how artworks would look on their walls, with features such as wall recoloring and true-to-scale sizing. The project aims to provide a modern, user-friendly experience for art visualization and is ready for integration with e-commerce platforms like Shopify.
 
 ## Recent Changes (November 21, 2025)
+**Automatic Artwork Enrichment System:**
+- Replaced 5 demo artworks with **30 real artworks** from irenart.studio Shopify store.
+- Implemented **automatic artwork enrichment pipeline**:
+  - `fetchProductByHandle()` in `src/shopify.ts`: Fetches individual product details (title, imageUrl, description) from Shopify Storefront API with dual env support (browser + Node.js).
+  - `scripts/enrichArtworks.ts`: Automated script that fetches all 30 artworks from Shopify and extracts dimensions from product titles using regex (`(\d+)\s*x\s*(\d+)\s*cm`).
+  - `npm run enrich`: Command to re-run enrichment and update `src/data/artworks.json` with fresh Shopify data.
+- **Handle-based merging**: Studio, Showcase, and LiveDemoMock now merge Shopify API data with enriched local data:
+  - Preserves `widthCm`, `heightCm`, `buyUrl` from `artworks.json`.
+  - Gets fresh `imageUrl` and `title` from Shopify GraphQL.
+  - Uses product `handle` (not GraphQL ID) for consistent artwork identification.
+- **True-to-scale sizing**: Studio auto-populates artwork dimensions when selection changes via `useEffect` hook.
+- **buyUrl system**: "View & Buy on Shopify" button now links to real irenart.studio product pages.
+- **All 30 artworks successfully enriched** with Shopify CDN imageUrl and accurate real-world dimensions extracted from product data.
+
 **UI Modernization Completed:**
 - Added new `.rv-*` CSS system (navy/electric-blue/purple/gold palette) alongside existing Tailwind utilities for flexible modern styling.
 - Modernized landing page Hero section with `.rv-hero` layout and mockup card featuring gradient artwork.
