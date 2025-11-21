@@ -1,273 +1,242 @@
 [
   {
-    "id": "the-boat",
-    "title": "The Boat",
-    "collectionHandle": "all-products",
-    "buyUrl": "https://irenart.studio/collections/all-products/products/the-boat",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/theboat4.jpg?v=1747040569",
-    "overlayImageUrl": "",
-    "widthCm": 150,
-    "heightCm": 100
-  },
-  {
-    "id": "whisper",
-    "title": "Whisper",
-    "collectionHandle": "all-products",
-    "buyUrl": "https://irenart.studio/collections/all-products/products/whisper",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/whisper3.jpg?v=1746693561",
-    "widthCm": 90,
-    "heightCm": 90
-  },
-  {
-    "id": "pulse",
-    "title": "Pulse",
-    "collectionHandle": "all-products",
-    "buyUrl": "https://irenart.studio/collections/all-products/products/pulse",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/pulse3.jpg?v=1746692255",
-    "widthCm": 90,
-    "heightCm": 90
-  },
-  {
-    "id": "rose-gold",
-    "title": "Rose Gold",
-    "collectionHandle": "all-products",
-    "buyUrl": "https://irenart.studio/collections/all-products/products/rose-gold",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/rose_gold3.jpg?v=1746603152",
-    "widthCm": 150,
-    "heightCm": 100
-  },
-  {
-    "id": "serenity",
-    "title": "Serenity",
-    "collectionHandle": "all-products",
-    "buyUrl": "https://irenart.studio/collections/all-products/products/serenity",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/serenity3.jpg?v=1746615690",
-    "widthCm": 90,
-    "heightCm": 90
-  },
-  {
-    "id": "shiny-green-acrylic-on-canvas-with-epoxy-resin-finish-100-x-80-x-4-cm-1",
-    "title": "Shiny Green",
-    "collectionHandle": "all-products",
-    "buyUrl": "https://irenart.studio/collections/all-products/products/shiny-green-acrylic-on-canvas-with-epoxy-resin-finish-100-x-80-x-4-cm-1",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/shinygreen2_301cd9e5-d0b3-46f9-9d81-cc24562885ce.jpg?v=1746615564",
-    "widthCm": 100,
-    "heightCm": 80
-  },
-  {
-    "id": "coastline-acrylic-on-canvas-100-x-60-x-4-cm",
-    "title": "Coastline",
-    "collectionHandle": "all-products",
-    "buyUrl": "https://irenart.studio/collections/all-products/products/coastline-acrylic-on-canvas-100-x-60-x-4-cm",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/coastline2.jpg?v=1746615491",
-    "widthCm": 100,
-    "heightCm": 60
-  },
-  {
-    "id": "dynamic-acrylic-on-canvas-70-x-50-cm",
-    "title": "Dynamic",
-    "collectionHandle": "all-products",
-    "buyUrl": "https://irenart.studio/collections/all-products/products/dynamic-acrylic-on-canvas-70-x-50-cm",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/dynamic2.jpg?v=1746528621",
-    "widthCm": 70,
-    "heightCm": 50
-  },
-  {
-    "id": "electric-acrylic-on-canvas-70-x-50-cm",
-    "title": "Electric",
-    "collectionHandle": "all-products",
-    "buyUrl": "https://irenart.studio/collections/all-products/products/electric-acrylic-on-canvas-70-x-50-cm",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/electric2.jpg?v=1746528501",
-    "widthCm": 70,
-    "heightCm": 50
-  },
-  {
-    "id": "golden-green-acrylic-on-canvas-80-x-80-cm",
-    "title": "Golden Green",
-    "collectionHandle": "all-products",
-    "buyUrl": "https://irenart.studio/collections/all-products/products/golden-green-acrylic-on-canvas-80-x-80-cm",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/goldengreen3.jpg?v=1746615366",
-    "widthCm": 80,
-    "heightCm": 80
-  },
-  {
-    "id": "mr-brown-acrylic-on-canvas-80-x-60-cm",
-    "title": "Mr Brown",
-    "collectionHandle": "all-products",
-    "buyUrl": "https://irenart.studio/collections/all-products/products/mr-brown-acrylic-on-canvas-80-x-60-cm",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Mr.Brown2.jpg?v=1746530382",
-    "widthCm": 80,
-    "heightCm": 60
-  },
-  {
-    "id": "turquoise-mist-acrylic-on-canvas-100-x-70-cm",
-    "title": "Turquoise Mist",
-    "collectionHandle": "all-products",
-    "buyUrl": "https://irenart.studio/collections/all-products/products/turquoise-mist-acrylic-on-canvas-100-x-70-cm",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/TurquoiseMist2_d3e96df1-cae3-440d-8172-e19b1e50a56d.jpg?v=1746615212",
-    "widthCm": 100,
-    "heightCm": 70
-  },
-  {
-    "id": "voltage-acrylic-on-canvas-80-x-60-x-4-cm",
-    "title": "Voltage",
-    "collectionHandle": "all-products",
-    "buyUrl": "https://irenart.studio/collections/all-products/products/voltage-acrylic-on-canvas-80-x-60-x-4-cm",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/voltage3.jpg?v=1746615173",
-    "widthCm": 80,
-    "heightCm": 60
-  },
-  {
-    "id": "the-heads-acrylic-on-canvas-190-x-100-cm",
-    "title": "The Heads",
-    "collectionHandle": "all-products",
-    "buyUrl": "https://irenart.studio/collections/all-products/products/the-heads-acrylic-on-canvas-190-x-100-cm",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/theheads4.jpg?v=1746526441",
-    "widthCm": 190,
-    "heightCm": 100
-  },
-  {
-    "id": "city-acrylic-on-canvas-150-x-100-cm",
-    "title": "City",
-    "collectionHandle": "all-products",
-    "buyUrl": "https://irenart.studio/collections/all-products/products/city-acrylic-on-canvas-150-x-100-cm",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/city3.jpg?v=1746526371",
-    "widthCm": 150,
-    "heightCm": 100
-  },
-  {
-    "id": "dragon-bird",
-    "title": "Dragon Bird",
-    "collectionHandle": "all-products",
-    "buyUrl": "https://irenart.studio/collections/all-products/products/dragon-bird",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/dragonbird3.jpg?v=1746614844",
-    "widthCm": 150,
-    "heightCm": 100
-  },
-  {
-    "id": "harmony",
-    "title": "Harmony",
-    "collectionHandle": "all-products",
-    "buyUrl": "https://irenart.studio/collections/all-products/products/harmony",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/harmony2.jpg?v=1746530306",
-    "widthCm": 150,
-    "heightCm": 100
-  },
-  {
-    "id": "red-city",
-    "title": "Red City",
-    "collectionHandle": "all-products",
-    "buyUrl": "https://irenart.studio/collections/all-products/products/red-city",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/redcity3.jpg?v=1746614757",
-    "widthCm": 150,
-    "heightCm": 100
-  },
-  {
-    "id": "red-sunset",
-    "title": "Red Sunset",
-    "collectionHandle": "all-products",
-    "buyUrl": "https://irenart.studio/collections/all-products/products/red-sunset",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/redsunset3.jpg?v=1746530252",
-    "widthCm": 150,
-    "heightCm": 100
-  },
-  {
-    "id": "rose-city",
-    "title": "Rose City",
-    "collectionHandle": "all-products",
-    "buyUrl": "https://irenart.studio/collections/all-products/products/rose-city",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/rosecity2.jpg?v=1746530261",
-    "widthCm": 150,
-    "heightCm": 100
-  },
-  {
-    "id": "whispers-of-the-ring",
-    "title": "Whispers of the Ring",
-    "collectionHandle": "original-artwork-2",
-    "buyUrl": "https://irenart.studio/collections/original-artwork-2/products/whispers-of-the-ring",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/whispersofthering3.jpg?v=1749636551",
-    "widthCm": 120,
-    "heightCm": 100
-  },
-  {
-    "id": "mordor-veil",
-    "title": "Mordor Veil",
-    "collectionHandle": "original-artwork-2",
-    "buyUrl": "https://irenart.studio/collections/original-artwork-2/products/mordor-veil",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/mordorveil2.jpg?v=1748952832",
-    "widthCm": 100,
-    "heightCm": 100
-  },
-  {
-    "id": "rustica",
-    "title": "Rustica",
-    "collectionHandle": "original-artwork-2",
-    "buyUrl": "https://irenart.studio/collections/original-artwork-2/products/rustica",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/rustica3.jpg?v=1746614722",
-    "widthCm": 100,
-    "heightCm": 80
-  },
-  {
-    "id": "deep-blue",
-    "title": "Deep Blue",
-    "collectionHandle": "original-artwork-2",
-    "buyUrl": "https://irenart.studio/collections/original-artwork-2/products/deep-blue",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/deepblue2.jpg?v=1746691099",
-    "widthCm": 90,
-    "heightCm": 90
-  },
-  {
-    "id": "joy-acrylic-on-canvas-100-x-80-cm",
-    "title": "Joy",
-    "collectionHandle": "original-artwork-2",
-    "buyUrl": "https://irenart.studio/collections/original-artwork-2/products/joy-acrylic-on-canvas-100-x-80-cm",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/joy3.jpg?v=1746691045",
-    "widthCm": 100,
-    "heightCm": 80
-  },
-  {
-    "id": "energy-acrylic-on-canvas-100-x-80-cm",
-    "title": "Energy",
-    "collectionHandle": "original-artwork-2",
-    "buyUrl": "https://irenart.studio/collections/original-artwork-2/products/energy-acrylic-on-canvas-100-x-80-cm",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/energy3.jpg?v=1746691009",
-    "widthCm": 120,
-    "heightCm": 80
-  },
-  {
-    "id": "light-my-fire-acrylic-on-canvas-140-x-70-cm",
-    "title": "Light My Fire",
-    "collectionHandle": "original-artwork-2",
-    "buyUrl": "https://irenart.studio/collections/original-artwork-2/products/light-my-fire-acrylic-on-canvas-140-x-70-cm",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/lightmyfire4.jpg?v=1746688649",
-    "widthCm": 140,
-    "heightCm": 70
-  },
-  {
-    "id": "movement-acrylic-on-canvas-90-x-90-cm",
-    "title": "Movement",
-    "collectionHandle": "original-artwork-2",
-    "buyUrl": "https://irenart.studio/collections/original-artwork-2/products/movement-acrylic-on-canvas-90-x-90-cm",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/movement3.jpg?v=1746688590",
-    "widthCm": 90,
-    "heightCm": 90
-  },
-  {
-    "id": "optimism-acrylic-on-canvas-90-x-90-cm",
-    "title": "Optimism",
-    "collectionHandle": "original-artwork-2",
-    "buyUrl": "https://irenart.studio/collections/original-artwork-2/products/optimism-acrylic-on-canvas-90-x-90-cm",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/optimism2.jpg?v=1746688531",
-    "widthCm": 90,
-    "heightCm": 90
-  },
-  {
-    "id": "sandy-acrylic-on-canvas-90-x-90-cm",
+    "id": "sandy-90-90-cm-roomvibe",
     "title": "Sandy",
-    "collectionHandle": "original-artwork-2",
     "buyUrl": "https://irenart.studio/collections/original-artwork-2/products/sandy-acrylic-on-canvas-90-x-90-cm",
-    "imageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/sandy.2jpg.jpg?v=1744122560",
     "widthCm": 90,
-    "heightCm": 90
+    "heightCm": 90,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/sandy_a78c3a05-cd20-4bcd-9962-c9cbbe67ec6f.jpg?v=1763727730"
+  },
+  {
+    "id": "optimism-90-90-cm-roomvibe",
+    "title": "Optimism",
+    "buyUrl": "https://irenart.studio/collections/original-artwork-2/products/optimism-acrylic-on-canvas-90-x-90-cm",
+    "widthCm": 90,
+    "heightCm": 90,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Optimism_444d5a48-58a3-4885-a01f-40b4271914ca.jpg?v=1763727665"
+  },
+  {
+    "id": "movement-90-90-cm-roomvibe",
+    "title": "Movement",
+    "buyUrl": "https://irenart.studio/collections/original-artwork-2/products/movement-acrylic-on-canvas-90-x-90-cm",
+    "widthCm": 90,
+    "heightCm": 90,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Movement_12a7235c-ab19-4fcc-9891-5911e7575d76.jpg?v=1763727585"
+  },
+  {
+    "id": "light-my-fire-140-70-cm-roomvibe",
+    "title": "Light my fire",
+    "buyUrl": "https://irenart.studio/collections/original-artwork-2/products/light-my-fire-acrylic-on-canvas-140-x-70-cm",
+    "widthCm": 140,
+    "heightCm": 70,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Lightmyfire_88f725e0-438d-45a5-a299-218153868803.jpg?v=1763727466"
+  },
+  {
+    "id": "energy-80-120-cm-roomvibe",
+    "title": "Energy",
+    "buyUrl": "https://irenart.studio/collections/original-artwork-2/products/energy-acrylic-on-canvas-100-x-80-cm",
+    "widthCm": 80,
+    "heightCm": 120,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Energy_447be09f-3326-4770-9ef9-6958db7ed923.jpg?v=1763727381"
+  },
+  {
+    "id": "joy-100-80-cm-roomvibe",
+    "title": "Joy",
+    "buyUrl": "https://irenart.studio/collections/original-artwork-2/products/joy-acrylic-on-canvas-100-x-80-cm",
+    "widthCm": 100,
+    "heightCm": 80,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Joy_c1319d4f-e44d-4fe2-9cdc-7ce6aa6db618.jpg?v=1763727300"
+  },
+  {
+    "id": "deep-blue-90-90-cm-roomvibe",
+    "title": "Deep Blue",
+    "buyUrl": "https://irenart.studio/collections/original-artwork-2/products/deep-blue",
+    "widthCm": 90,
+    "heightCm": 90,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/IMG_2215_b9776fe9-3280-4875-bb58-772f37014874.jpg?v=1763727139"
+  },
+  {
+    "id": "rustica-100-80-cm-roomvibe",
+    "title": "Rustica",
+    "buyUrl": "https://irenart.studio/collections/original-artwork-2/products/rustica",
+    "widthCm": 100,
+    "heightCm": 80,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Rustica_a4e87907-4572-41ab-9aa0-a063a0bcf64d.jpg?v=1763727031"
+  },
+  {
+    "id": "mordor-veil-100-100-cm-roomvibe",
+    "title": "Mordor Veil",
+    "buyUrl": "https://irenart.studio/collections/original-artwork-2/products/mordor-veil",
+    "widthCm": 100,
+    "heightCm": 100,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/MordorVeil_f137b9ea-75a6-4469-b3dc-ddb5ba794681.jpg?v=1763726948"
+  },
+  {
+    "id": "rose-city-150-100-cm-roomvibe",
+    "title": "Rose City",
+    "buyUrl": "https://irenart.studio/collections/all-products/products/rose-city",
+    "widthCm": 150,
+    "heightCm": 100,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Rosecity_446b4357-147c-41b7-b3b4-0a81a8bba695.jpg?v=1763726858"
+  },
+  {
+    "id": "red-sunset-150-100-cm-roomvibe",
+    "title": "Red Sunset",
+    "buyUrl": "https://irenart.studio/collections/all-products/products/red-sunset",
+    "widthCm": 150,
+    "heightCm": 100,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/RedSunset_87da6398-47c3-4204-8974-259217e77e7f.jpg?v=1763726549"
+  },
+  {
+    "id": "red-city-150-100-cm-roomvibe",
+    "title": "Red City",
+    "buyUrl": "https://irenart.studio/collections/all-products/products/red-city",
+    "widthCm": 150,
+    "heightCm": 100,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/redcity_b332ff26-f92d-4e72-ba32-839cf10b29f0.jpg?v=1763726383"
+  },
+  {
+    "id": "harmony-100-150-cm-roomvibe",
+    "title": "Harmony",
+    "buyUrl": "https://irenart.studio/collections/all-products/products/harmony",
+    "widthCm": 100,
+    "heightCm": 150,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/harmony_6def8a2f-bc5c-40af-a607-068cfa1450bb.jpg?v=1763725813"
+  },
+  {
+    "id": "dragon-bird-150-100-cm-roomvibe",
+    "title": "Dragon Bird",
+    "buyUrl": "https://irenart.studio/collections/all-products/products/dragon-bird",
+    "widthCm": 150,
+    "heightCm": 100,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/DragonBird_894badfd-ff2d-4d4f-a567-316ea1e4bc07.jpg?v=1763725319"
+  },
+  {
+    "id": "city-150-100-cm-roomvibe",
+    "title": "City",
+    "buyUrl": "https://irenart.studio/collections/all-products/products/city-acrylic-on-canvas-150-x-100-cm",
+    "widthCm": 150,
+    "heightCm": 100,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/City_eec070db-2777-44cc-957d-9f773062c50c.jpg?v=1763725216"
+  },
+  {
+    "id": "the-heads-190-100-cm-roomvibe",
+    "title": "The Heads",
+    "buyUrl": "https://irenart.studio/collections/all-products/products/the-heads-acrylic-on-canvas-190-x-100-cm",
+    "widthCm": 190,
+    "heightCm": 100,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Theheads.jpg?v=1763725133"
+  },
+  {
+    "id": "voltage-60-80-cm-roomvibe",
+    "title": "Voltage",
+    "buyUrl": "https://irenart.studio/collections/all-products/products/voltage-acrylic-on-canvas-80-x-60-x-4-cm",
+    "widthCm": 60,
+    "heightCm": 80,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Voltage_e053133c-e922-4bed-8e0c-913f2223200f.jpg?v=1763725049"
+  },
+  {
+    "id": "turquoise-mist-100-70-cm-roomvibe",
+    "title": "Turquoise Mist",
+    "buyUrl": "https://irenart.studio/collections/all-products/products/turquoise-mist-acrylic-on-canvas-100-x-70-cm",
+    "widthCm": 100,
+    "heightCm": 70,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Turquoisemist_56282887-9b35-4ffc-ade5-42bea23246b9.jpg?v=1763724919"
+  },
+  {
+    "id": "mr.-brown-80-60-cm-roomvibe",
+    "title": "Mr. Brown",
+    "buyUrl": "https://irenart.studio/collections/all-products/products/mr-brown-acrylic-on-canvas-80-x-60-cm",
+    "widthCm": 80,
+    "heightCm": 60,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Mr.Brown_ae509721-e52b-438c-b9dd-2be4a25b55ac.jpg?v=1763724565"
+  },
+  {
+    "id": "shiny-green-100-80-cm-roomvibe",
+    "title": "Shiny Green",
+    "buyUrl": "https://irenart.studio/collections/all-products/products/shiny-green-acrylic-on-canvas-with-epoxy-resin-finish-100-x-80-x-4-cm-1",
+    "widthCm": 100,
+    "heightCm": 80,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/shinygreen_08910a67-140c-4122-a04b-262b0a2e83b1.jpg?v=1763724423"
+  },
+  {
+    "id": "golden-green-80-80-cm-roomvibe",
+    "title": "Golden Green",
+    "buyUrl": "https://irenart.studio/collections/all-products/products/golden-green-acrylic-on-canvas-80-x-80-cm",
+    "widthCm": 80,
+    "heightCm": 80,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/GoldenGreen_dc246469-867c-4462-a0d8-e5911d95c6c5.jpg?v=1763411448"
+  },
+  {
+    "id": "electric-70-50-cm-roomvibe",
+    "title": "Electric",
+    "buyUrl": "https://irenart.studio/collections/all-products/products/electric-acrylic-on-canvas-70-x-50-cm",
+    "widthCm": 70,
+    "heightCm": 50,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Electric_d410c78b-e709-4172-b1b7-3f8bdf4e595a.jpg?v=1763411326"
+  },
+  {
+    "id": "dynamic-50-70-cm-roomvibe",
+    "title": "Dynamic",
+    "buyUrl": "https://irenart.studio/collections/all-products/products/dynamic-acrylic-on-canvas-70-x-50-cm",
+    "widthCm": 50,
+    "heightCm": 70,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Dynamic_ffe36be2-fd86-4a55-9f8c-31568c591d6a.jpg?v=1763411244"
+  },
+  {
+    "id": "serenity-90-90-cm-roomvibe",
+    "title": "Serenity",
+    "buyUrl": "https://irenart.studio/collections/all-products/products/serenity",
+    "widthCm": 90,
+    "heightCm": 90,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Serenity_ea585c70-5975-44f5-97e5-a47bb682fb11.jpg?v=1763410784"
+  },
+  {
+    "id": "rosegold-100-150-cm-roomvibe",
+    "title": "Rosegold",
+    "buyUrl": "https://irenart.studio/collections/all-products/products/rose-gold",
+    "widthCm": 100,
+    "heightCm": 150,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Rosegold_cfa960e9-e5d6-4681-9c93-a96ec38cf404.jpg?v=1763401220"
+  },
+  {
+    "id": "pulse-90-90-cm-roomvibe",
+    "title": "Pulse",
+    "buyUrl": "https://irenart.studio/collections/all-products/products/pulse",
+    "widthCm": 90,
+    "heightCm": 90,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Pulse_9e825d2f-7569-4d8c-9696-b0fb4fa0a0a7.jpg?v=1763401075"
+  },
+  {
+    "id": "whisper-90-90-cm-roomvibe",
+    "title": "Whisper",
+    "buyUrl": "https://irenart.studio/collections/all-products/products/whisper",
+    "widthCm": 90,
+    "heightCm": 90,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Whisper_59dc7c42-f380-4883-ac08-88159a2623cd.jpg?v=1763401012"
+  },
+  {
+    "id": "the-boat-150-100-cm-roomvibe",
+    "title": "The Boat",
+    "buyUrl": "https://irenart.studio/collections/all-products/products/the-boat",
+    "widthCm": 150,
+    "heightCm": 100,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Theboat_40070739-ef22-49ec-b206-a2ddff0dcc67.jpg?v=1763400904"
+  },
+  {
+    "id": "whispers-of-the-ring-100-120-cm-roomvibe",
+    "title": "Whispers of the Ring",
+    "buyUrl": "https://irenart.studio/collections/original-artwork-2/products/whispers-of-the-ring",
+    "widthCm": 100,
+    "heightCm": 120,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/WhispersoftheRing_476e5d5f-61fd-4844-977b-39d030d7ed1e.jpg?v=1763400747"
+  },
+  {
+    "id": "coastline-100-60-cm-roomvibe",
+    "title": "Coastline",
+    "buyUrl": "https://irenart.studio/collections/all-products/products/coastline-acrylic-on-canvas-100-x-60-x-4-cm",
+    "widthCm": 100,
+    "heightCm": 60,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Coastline_8374bda2-1590-47d6-b3e6-3afc390d5879.jpg?v=1763411122"
   }
 ]

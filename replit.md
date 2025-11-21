@@ -17,14 +17,14 @@ RoomVibe Studio is a comprehensive React/TypeScript web application offering a C
 - Added **overlayImageUrl field** to artwork model to separate product images from clean overlay images
 - **Problem solved**: Product featured images often contain mockups (artwork + bed/wall), which creates visual issues when overlaid on user-uploaded walls in Studio
 - **Solution**: 
-  - `imageUrl`: Product page image (can be mockup) - used for marketing/showcase
-  - `overlayImageUrl`: Clean artwork photo without mockup - used for Studio overlay
+  - `overlayImageUrl`: Clean artwork photo without mockup - used for Studio overlay (PRIMARY)
   - Studio, ShowcaseCarousel, LiveDemoMock now use `overlayImageUrl || imageUrl` fallback logic
+- **Current status**: All 30 artworks in `src/data/artworks.json` have `overlayImageUrl` populated with clean Shopify CDN URLs
 - **Workflow for adding new artworks**:
   1. Create clean artwork photo in Shopify "RoomVibe Photos" collection or similar
   2. Add artwork to `src/data/artworks.json` with all required fields:
-     - `id` (handle), `title`, `collectionHandle`, `buyUrl`, `imageUrl`, `overlayImageUrl`, `widthCm`, `heightCm`
-  3. If `overlayImageUrl` is empty or missing, Studio falls back to `imageUrl`
+     - `id` (handle), `title`, `buyUrl`, `widthCm`, `heightCm`, `overlayImageUrl`
+  3. Studio automatically uses clean photo for overlay
 
 **Automatic Artwork Enrichment System:**
 - Replaced 5 demo artworks with **30 real artworks** from irenart.studio Shopify store.
