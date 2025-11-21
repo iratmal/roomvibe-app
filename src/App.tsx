@@ -417,7 +417,7 @@ function Studio() {
         </div>
         <div className="grid grid-cols-12 gap-6">
           {/* Left: Scenes gallery */}
-          <aside className="col-span-3 rounded-2xl border border-slate-200 bg-white/70 backdrop-blur p-4 h-[78vh] overflow-auto">
+          <aside className="col-span-12 lg:col-span-3 rounded-2xl border border-slate-200 bg-white/70 backdrop-blur p-4 h-[78vh] overflow-auto">
             <div className="mb-3 flex items-center justify-between">
               <div className="text-sm font-semibold">Scenes</div>
               <a href="#home" className="text-xs underline">
@@ -442,7 +442,7 @@ function Studio() {
           </aside>
 
           {/* Center: Canvas */}
-          <section className="col-span-6">
+          <section className="col-span-12 lg:col-span-6">
             <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
               <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 text-sm">
                 <div className="flex items-center gap-2 text-slate-600">
@@ -532,7 +532,7 @@ function Studio() {
           </section>
 
           {/* Right: Controls */}
-          <aside className="col-span-3 rounded-2xl border border-slate-200 bg-white p-4 h-[78vh] overflow-auto">
+          <aside className="col-span-12 lg:col-span-3 rounded-2xl border border-slate-200 bg-white p-4 h-[78vh] overflow-auto">
             <div className="text-sm font-semibold">Artwork</div>
             <div className="mt-2 flex items-center gap-2">
               <select
