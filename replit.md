@@ -13,18 +13,30 @@ RoomVibe Studio is a comprehensive React/TypeScript web application offering a C
 - **Production readiness**: Gated console.log debugging behind `import.meta.env.DEV` flag to prevent logging in production builds.
 - **Deployment configured**: Autoscale deployment with `npm run build` (TypeScript compile + Vite bundle) and `npm start` (Express server serving dist/ folder on port 5000).
 
+**Artwork Overlay System (Clean Images for Studio):**
+- Added **overlayImageUrl field** to artwork model to separate product images from clean overlay images
+- **Problem solved**: Product featured images often contain mockups (artwork + bed/wall), which creates visual issues when overlaid on user-uploaded walls in Studio
+- **Solution**: 
+  - `imageUrl`: Product page image (can be mockup) - used for marketing/showcase
+  - `overlayImageUrl`: Clean artwork photo without mockup - used for Studio overlay
+  - Studio, ShowcaseCarousel, LiveDemoMock now use `overlayImageUrl || imageUrl` fallback logic
+- **Workflow for adding new artworks**:
+  1. Create clean artwork photo in Shopify "RoomVibe Photos" collection or similar
+  2. Add artwork to `src/data/artworks.json` with all required fields:
+     - `id` (handle), `title`, `collectionHandle`, `buyUrl`, `imageUrl`, `overlayImageUrl`, `widthCm`, `heightCm`
+  3. If `overlayImageUrl` is empty or missing, Studio falls back to `imageUrl`
+
 **Automatic Artwork Enrichment System:**
 - Replaced 5 demo artworks with **30 real artworks** from irenart.studio Shopify store.
 - Implemented **automatic artwork enrichment pipeline**:
   - `fetchProductByHandle()` in `src/shopify.ts`: Fetches individual product details (title, imageUrl, description) from Shopify Storefront API with dual env support (browser + Node.js).
   - `scripts/enrichArtworks.ts`: Automated script that fetches all 30 artworks from Shopify and extracts dimensions from product titles using regex (`(\d+)\s*x\s*(\d+)\s*cm`).
   - `npm run enrich`: Command to re-run enrichment and update `src/data/artworks.json` with fresh Shopify data.
-- **Handle-based merging**: Studio, Showcase, and LiveDemoMock now merge Shopify API data with enriched local data:
-  - Preserves `widthCm`, `heightCm`, `buyUrl` from `artworks.json`.
-  - Gets fresh `imageUrl` and `title` from Shopify GraphQL.
-  - Uses product `handle` (not GraphQL ID) for consistent artwork identification.
+- **Local artworks.json as source of truth**: Studio, ShowcaseCarousel, and LiveDemoMock use LOCAL artworks.json directly (no Shopify API merge at runtime)
+  - Preserves `widthCm`, `heightCm`, `buyUrl`, `overlayImageUrl` from local JSON
+  - All 30 artworks from TWO collections: "all-products" (20) + "original-artwork-2" (10)
 - **True-to-scale sizing**: Studio auto-populates artwork dimensions when selection changes via `useEffect` hook.
-- **buyUrl system**: "View & Buy on Shopify" button now links to real irenart.studio product pages.
+- **buyUrl system**: "View & Buy on Shopify" button links to real irenart.studio product pages.
 - **All 30 artworks successfully enriched** with Shopify CDN imageUrl and accurate real-world dimensions extracted from product data.
 
 **UI Modernization Completed:**
