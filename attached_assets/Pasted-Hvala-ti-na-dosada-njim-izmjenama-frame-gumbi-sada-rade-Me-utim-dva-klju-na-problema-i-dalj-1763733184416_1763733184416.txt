@@ -1,0 +1,96 @@
+Hvala ti na dosadašnjim izmjenama – frame gumbi sada rade. 🙌  
+Međutim, dva ključna problema i dalje postoje u LIVE verziji:
+
+1) Size uvijek ostaje 100 x 70 (ne koristi widthCm / heightCm)
+2) "View & Buy on Shopify" i dalje otvara stare RoomVibe demo proizvode,
+   a ne moje originale s irenart.studio
+
+Opis ponašanja u produkciji:
+
+- Otvorim Studio (#/studio)
+- Odaberem različite radove u Artwork dropdownu:
+  • "Sandy – 90 x 90 cm – RoomVibe"
+  • "The Boat – 150 x 100 cm – RoomVibe"
+  • "Light My Fire – 140 x 70 cm – RoomVibe"
+- U svim slučajevima:
+  • Size polja ostaju 100 x 70 (ne mijenjaju se)
+  • "View & Buy on Shopify" vodi na stare RoomVibe demo proizvode,
+    a ne na URL-ove koje smo definirali u src/data/artworks.json
+
+To znači da:
+
+A) Studio editor očito ne koristi enriched artworke
+   (one iz src/data/artworks.json nakon npm run enrich),
+   nego još uvijek neku staru/dummy kolekciju.
+
+B) Mjesto gdje radiš merge Shopify + lokalni artwork (enriched)
+   vjerojatno nije povezano na Studio dropdown.
+
+Molba – konkretni zadaci:
+
+1) POVEŽI STUDIO S ENRICHED ARTWORK PODACIMA
+
+– Pronađi gdje se puni lista artworka za Studio (dropdown na desnoj strani).
+  Vjerojatno nešto poput: useArtworks(), useShopifyArtworks() ili sl.
+– Osiguraj da Studio koristi ONO što dolazi iz merge logike
+  (gdje si spajao Shopify podatke + lokalni artworks.json, handle-based).
+– Neka svaki element u toj listi sadrži:
+  id (handle), title, widthCm, heightCm, imageUrl, buyUrl.
+
+2) SIZE STATE MORA OVISITI O ODABRANOM ARTWORKU
+
+– U komponenti gdje su Size kontrole (Width / Height) provjeri useState/useEffect.
+  Trenutno se čini da:
+
+  • W/H state se inicijalizira na 100 i 70
+  • ali se NE update-a kada se promijeni artId
+
+– Napravi useEffect koji radi ovako:
+
+  useEffect(() => {
+    if (art && art.widthCm && art.heightCm) {
+      setWVal(art.widthCm);
+      setHVal(art.heightCm);
+    }
+  }, [artId, art]);
+
+– Važno: nemoj override-at vrijednosti ako korisnik ručno promijeni Width/Height,
+  samo kad se promijeni odabrani artwork.
+
+3) VIEW & BUY MORA KORISTITI buyUrl IZ ENRICHED ARTWORKA
+
+– U Studio gumbu "View & Buy on Shopify" provjeri koji se objekt koristi za `art`.
+– Uvjeri se da je to isti art koji dolazi iz enriched liste (s buyUrl),
+  a ne neki demo objekt.
+– Console.log(art) u Studio viewu može pomoći – posebno art.id, art.title, art.buyUrl.
+– Očekivanje:
+  • za "Sandy – 90 x 90 cm – RoomVibe"
+    art.buyUrl === "https://irenart.studio/collections/original-artwork-2/products/sandy-acrylic-on-canvas-90-x-90-cm"
+  • isto analogno za ostale radove.
+
+– Gumb neka ostane:
+  href={art.buyUrl || art.onlineStoreUrl || "#"}
+  ALI važno je da `art` bude enriched art, a ne demo.
+
+4) FRAME – SLIM
+
+– Slim okvir je trenutno jednako debeo kao Gallery.
+– Molim te:
+  • Gallery: može ostati deblji i sa jačom sjenom.
+  • Slim: tanji border (npr. 2px) i slabija sjena, da vizualno bude “laganiji”.
+
+5) MOLIM TE TESTIRAJ NA OVIH 3:
+
+– "Sandy – 90 x 90 cm – RoomVibe"
+– "The Boat – 150 x 100 cm – RoomVibe"
+– "Light My Fire – 140 x 70 cm – RoomVibe"
+
+Za svaki:
+– promijeni artwork u dropdownu
+– provjeri:
+  • Size: prikazuje točne dimenzije (npr. Sandy 90 x 90)
+  • klik na "View & Buy on Shopify" otvara TOČAN irenart.studio produkt
+  • Frame: None / Slim / Gallery mijenjaju izgled okvira
+
+Kad sve to proradi u developmentu, napravi novi deploy
+i molim te javi mi koje si fileove točno mijenjao.

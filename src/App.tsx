@@ -462,16 +462,32 @@ function Studio() {
           const enrichedMap = new Map(localArtworks.map((a: any) => [a.id, a]));
           const merged = res.map((shopifyArt: any) => {
             const local = enrichedMap.get(shopifyArt.handle || shopifyArt.id);
-            return {
-              ...local,
-              ...shopifyArt,
+            const mergedArt = {
               id: shopifyArt.handle || shopifyArt.id,
+              title: shopifyArt.title || local?.title,
+              imageUrl: shopifyArt.imageUrl || local?.imageUrl,
               widthCm: local?.widthCm || shopifyArt.widthCm || 100,
               heightCm: local?.heightCm || shopifyArt.heightCm || 70,
               buyUrl: local?.buyUrl || shopifyArt.buyUrl || shopifyArt.onlineStoreUrl,
+              collectionHandle: local?.collectionHandle || shopifyArt.collectionHandle,
             };
+            if (import.meta.env.DEV) {
+              console.log(`[Merge] ${mergedArt.id}:`, {
+                shopifyHandle: shopifyArt.handle,
+                hasLocal: !!local,
+                localWidthCm: local?.widthCm,
+                localBuyUrl: local?.buyUrl,
+                mergedWidthCm: mergedArt.widthCm,
+                mergedBuyUrl: mergedArt.buyUrl,
+              });
+            }
+            return mergedArt;
           });
           setArtworksState(merged);
+          if (import.meta.env.DEV) {
+            console.log('[Studio] Merged artworks:', merged.length, 'artworks');
+            console.log('[Studio] First 3 artworks:', merged.slice(0, 3));
+          }
           const currentArtStillExists = merged.find((a) => a.id === artIdRef.current);
           if (!currentArtStillExists) {
             setArtId(merged[0].id);
@@ -609,7 +625,7 @@ function Studio() {
                         frameStyle === "None"
                           ? "8px solid white"
                           : frameStyle === "Slim"
-                          ? "12px solid #1a1a1a"
+                          ? "2px solid #1a1a1a"
                           : "20px solid #2d2d2d",
                       boxShadow:
                         frameStyle === "Gallery"
