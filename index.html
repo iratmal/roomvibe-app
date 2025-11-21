@@ -2,17 +2,150 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <title>RoomVibe</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RoomVibe — Visualize Art on Your Walls</title>
-    <meta name="description" content="VISUALIZE ART ON YOUR WALLS — Upload a photo of your wall, discover perfect artworks, and see them in true-to-size mockups." />
-    <meta property="og:title" content="RoomVibe — Visualize Art on Your Walls" />
-    <meta property="og:description" content="Upload a photo of your wall, discover perfect artworks, and see them in true-to-size mockups." />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css" />
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <header class="rv-header">
+      <div class="rv-logo">RoomVibe</div>
+      <nav class="rv-nav">
+        <button class="rv-nav-btn" data-view="landing">Home</button>
+        <button class="rv-nav-btn" data-view="visualizer">Visualizer</button>
+      </nav>
+    </header>
+
+    <main>
+      <!-- LANDING SEKCIJA -->
+      <section id="landing-view" class="rv-view active">
+        <div class="rv-hero">
+          <div class="rv-hero-text">
+            <h1>Visualize Art on Your Walls.</h1>
+            <p>
+              Upload a photo of your wall, try different artworks, and see how
+              they look before you buy.
+            </p>
+            <button id="start-visualizing-btn" class="rv-btn-primary">
+              Start Visualizing
+            </button>
+          </div>
+          <div class="rv-hero-mockup">
+            <div class="rv-hero-mockup-card">
+              <div class="rv-hero-wall"></div>
+              <div class="rv-hero-art"></div>
+            </div>
+            <span class="rv-hero-caption"
+              >Preview art in your space in seconds.</span
+            >
+          </div>
+        </div>
+
+        <section class="rv-section">
+          <h2>How it works</h2>
+          <div class="rv-steps">
+            <div class="rv-step-card">
+              <span class="rv-step-number">1</span>
+              <h3>Upload your wall</h3>
+              <p>
+                Take a simple photo of your wall with your phone and upload it.
+              </p>
+            </div>
+            <div class="rv-step-card">
+              <span class="rv-step-number">2</span>
+              <h3>Choose an artwork</h3>
+              <p>
+                Browse your art collection and pick the piece you want to test.
+              </p>
+            </div>
+            <div class="rv-step-card">
+              <span class="rv-step-number">3</span>
+              <h3>Visualize & buy</h3>
+              <p>
+                Adjust size and position, then go to Shopify to complete
+                purchase.
+              </p>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- VIZUALIZATOR SEKCIJA -->
+      <section id="visualizer-view" class="rv-view">
+        <div class="rv-visualizer-layout">
+          <!-- Lijevi toolbar -->
+          <aside class="rv-toolbar-left">
+            <h3>Tools</h3>
+            <button class="rv-tool-btn">Move</button>
+            <button class="rv-tool-btn">Resize</button>
+            <button class="rv-tool-btn">Brightness</button>
+            <button class="rv-tool-btn">Reset</button>
+            <button class="rv-tool-btn">Before / After</button>
+          </aside>
+
+          <!-- Glavni canvas -->
+          <section class="rv-canvas-area">
+            <div id="upload-area" class="rv-upload-box">
+              <input
+                type="file"
+                id="wall-upload-input"
+                accept="image/*"
+                class="rv-upload-input"
+              />
+              <div class="rv-upload-content">
+                <p class="rv-upload-title">Upload Your Wall</p>
+                <p class="rv-upload-sub">
+                  Click to upload or drag & drop a photo here.
+                </p>
+              </div>
+            </div>
+
+            <div id="canvas-preview" class="rv-canvas-preview hidden">
+              <div class="rv-wall-preview">
+                <img id="wall-preview-img" alt="Wall preview" />
+                <div class="rv-art-on-wall"></div>
+              </div>
+              <p class="rv-canvas-hint">
+                Choose an artwork on the right to place it on your wall.
+              </p>
+            </div>
+          </section>
+
+          <!-- Desna galerija -->
+          <aside class="rv-gallery-right">
+            <h3>Artworks</h3>
+            <div class="rv-art-list">
+              <!-- Ovdje ćeš kasnije spojiti Shopify / backend -->
+              <div class="rv-art-card" data-art-id="1">
+                <div class="rv-art-thumb placeholder"></div>
+                <div class="rv-art-info">
+                  <p class="rv-art-title">Abstract Energy #1</p>
+                  <p class="rv-art-meta">120 x 80 cm</p>
+                </div>
+              </div>
+              <div class="rv-art-card" data-art-id="2">
+                <div class="rv-art-thumb placeholder"></div>
+                <div class="rv-art-info">
+                  <p class="rv-art-title">Good Vibes #3</p>
+                  <p class="rv-art-meta">100 x 70 cm</p>
+                </div>
+              </div>
+              <!-- Dodavat ćemo dinamički kasnije -->
+            </div>
+          </aside>
+        </div>
+
+        <!-- Donji CTA bar -->
+        <footer class="rv-bottom-bar">
+          <button class="rv-btn-primary">Download Preview</button>
+          <button class="rv-btn-secondary">Buy on Shopify</button>
+        </footer>
+      </section>
+    </main>
+
+    <footer class="rv-footer">
+      <span>© 2025 RoomVibe</span>
+    </footer>
+
+    <script src="script.js"></script>
   </body>
 </html>
