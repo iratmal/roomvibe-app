@@ -421,19 +421,33 @@ function Studio() {
 
   const [artworksState, setArtworksState] = useState<any[]>(localArtworks as any);
   const [artId, setArtId] = useState<string>(artworksState[0]?.id || "");
+  const artIdRef = useRef<string>(artId);
   const art = artworksState.find((a) => a.id === artId);
 
   const [sizeUnit, setSizeUnit] = useState<"cm" | "in">("cm");
-  const [wVal, setWVal] = useState<number>(artworksState[0]?.widthCm || 100);
-  const [hVal, setHVal] = useState<number>(artworksState[0]?.heightCm || 70);
+  const [wVal, setWVal] = useState<number>(100);
+  const [hVal, setHVal] = useState<number>(70);
   const [lockR, setLockR] = useState<boolean>(true);
+  const [frameStyle, setFrameStyle] = useState<"None" | "Slim" | "Gallery">("None");
+
+  useEffect(() => {
+    artIdRef.current = artId;
+  }, [artId]);
 
   useEffect(() => {
     if (art && art.widthCm && art.heightCm) {
-      setWVal(art.widthCm);
-      setHVal(art.heightCm);
+      const newWidth = sizeUnit === "cm" ? art.widthCm : +(art.widthCm / 2.54).toFixed(1);
+      const newHeight = sizeUnit === "cm" ? art.heightCm : +(art.heightCm / 2.54).toFixed(1);
+      console.log(`[Studio] Auto-populating dimensions for "${art.title}": ${newWidth} x ${newHeight} ${sizeUnit}`, {
+        artId: art.id,
+        widthCm: art.widthCm,
+        heightCm: art.heightCm,
+        buyUrl: art.buyUrl,
+      });
+      setWVal(newWidth);
+      setHVal(newHeight);
     }
-  }, [artId, art]);
+  }, [artId]);
 
   const fileRef = useRef<HTMLInputElement | null>(null);
 
@@ -456,7 +470,10 @@ function Studio() {
             };
           });
           setArtworksState(merged);
-          setArtId(merged[0].id);
+          const currentArtStillExists = merged.find((a) => a.id === artIdRef.current);
+          if (!currentArtStillExists) {
+            setArtId(merged[0].id);
+          }
         }
       })
       .catch(() => {});
@@ -582,8 +599,21 @@ function Studio() {
                   style={{ left: `${safe.x * 100}%`, top: `${safe.y * 100}%`, width: `${artWidthPct}%` }}
                 >
                   <div
-                    className="overflow-hidden rounded-md border-8 border-white shadow-2xl"
-                    style={{ aspectRatio: `${aspect}/1`, background: "#f8fafc" }}
+                    className="overflow-hidden rounded-md shadow-2xl"
+                    style={{
+                      aspectRatio: `${aspect}/1`,
+                      background: "#f8fafc",
+                      border:
+                        frameStyle === "None"
+                          ? "8px solid white"
+                          : frameStyle === "Slim"
+                          ? "12px solid #1a1a1a"
+                          : "20px solid #2d2d2d",
+                      boxShadow:
+                        frameStyle === "Gallery"
+                          ? "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
+                          : "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+                    }}
                   >
                     {art?.imageUrl ? (
                       <img src={art.imageUrl} alt={art.title} className="h-full w-full object-cover" draggable={false} />
@@ -708,8 +738,16 @@ function Studio() {
 
             <div className="mt-6 text-sm font-semibold">Frame (Pro)</div>
             <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
-              {["None", "Slim", "Gallery"].map((o) => (
-                <button key={o} className="rounded-md border border-slate-200 bg-white px-2 py-1">
+              {(["None", "Slim", "Gallery"] as const).map((o) => (
+                <button
+                  key={o}
+                  onClick={() => setFrameStyle(o)}
+                  className={`rounded-md border px-2 py-1 transition ${
+                    frameStyle === o
+                      ? "border-[var(--accent)] bg-[var(--accent)] text-white"
+                      : "border-slate-200 bg-white hover:bg-slate-50"
+                  }`}
+                >
                   {o}
                 </button>
               ))}

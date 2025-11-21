@@ -1,0 +1,72 @@
+Imamo nekoliko bugova u Studiju koje treba popraviti:
+
+1) SIZE NE VUČE DIMENZIJE IZ ARTWORKA
+
+Problem:
+– Bez obzira koji artwork odaberem (npr. “Sandy – 90 x 90 cm – RoomVibe”),
+  polja Size (Width/Height) ostaju na 100 x 70.
+– Očekivanje: za svaki od 30 radova Studio treba automatski postaviti widthCm/heightCm
+  koje si već upisao u enriched artworks.json.
+
+Molim te:
+
+- Provjeri u src/data/artworks.json da li su za npr. “sandy-…90-x-90-cm” stvarno zapisani:
+  "widthCm": 90, "heightCm": 90
+- U Studio komponenti (editor gdje su Size kontrole) napravi da se LOCAL state za širinu/visinu
+  ažurira kad se promijeni odabrani artwork:
+
+  – ako artwork ima widthCm / heightCm → postavi ta dva broja
+  – ako NEMA widthCm / heightCm → tek onda koristi default (100 x 70)
+
+Trenutno se čini da se state za Size inicijalizira na 100 x 70 i više se ne mijenja,
+zato svaki artwork ostaje na tim vrijednostima.
+
+2) "VIEW & BUY ON SHOPIFY" JOŠ NE OTVARA PRAVI PRODUKT
+
+Kod kaže da koristi:
+  href={art.buyUrl || art.onlineStoreUrl || "#"}
+
+Ali u praksi:
+– Kad odaberem npr. “Sandy – 90 x 90 cm – RoomVibe” u Studiju,
+  klik "View & Buy on Shopify" i dalje otvara onaj stari/demo RoomVibe proizvod,
+  umjesto pravog produkta na irenart.studio koji sam dala u artworks.json.
+
+Molim te:
+
+- U Studio viewu (gdje je gumb “View & Buy on Shopify”) logiraj `art.id`, `art.title`, `art.buyUrl`
+  da budeš siguran da se za odabrani rad koriste enriched podaci.
+- Uvjeri se da merging logika stvarno uzima `buyUrl` iz artworks.json za Studio,
+  a ne neki drugi izvor (demo lista).
+- Nakon popravka očekujem:
+  – odaberem sliku u dropdownu
+  – klik na "View & Buy on Shopify"
+  – otvara se konkretan produkt na https://irenart.studio/... točno za taj rad.
+
+3) FRAME (PRO) GUMBI NE RADE NIŠTA
+
+U desnom panelu postoje gumbi "None / Slim / Gallery" pod Frame (Pro),
+ali klik na njih trenutno ne mijenja izgled slike na zidu (nema nikakvog okvira).
+
+Molim te:
+
+- Ili:
+  a) jednostavno implementiraj osnovnu funkcionalnost:
+     – "None" = bez okvira
+     – "Slim" = tanak border oko slike
+     – "Gallery" = malo deblji border + možda diskretna sjena
+     (možeš to riješiti kao različite CSS klase na artwork preview elementu)
+- Ili:
+  b) ako to trenutno nije prioritet, privremeno sakrij cijeli "Frame (Pro)" section
+     da korisnika ne zbunjuje dok ne bude radilo.
+
+CILJ:
+– Kad izmijenimo artwork u dropdownu:
+   • Size polja automatski postave realne dimenzije iz widthCm/heightCm
+   • "View & Buy on Shopify" otvori pravi produkt na irenart.studio
+   • Frame gumbi ili rade vidljivu promjenu, ili su privremeno skriveni.
+
+Molim te javi mi konkretno:
+– koji si fileove mijenjao
+– i potvrdi na jednom primjeru (npr. “Sandy – 90 x 90 cm – RoomVibe”) da:
+   • Size = 90 x 90 čim odaberem taj artwork
+   • “View & Buy on Shopify” vodi na točan product URL za Sandy.
