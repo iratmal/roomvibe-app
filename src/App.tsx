@@ -205,31 +205,7 @@ function Hero() {
 function ShowcaseCarousel() {
   const [idx, setIdx] = useState(0);
   const [artIdx, setArtIdx] = useState(0);
-  const [arts, setArts] = useState<any[]>(localArtworks as any[]);
-
-  useEffect(() => {
-    const handle = (import.meta as any).env.VITE_ROOMVIBE_COLLECTION_HANDLE;
-    if (!handle) return;
-    fetchCollectionArtworks(handle, 48)
-      .then((res) => {
-        if (Array.isArray(res) && res.length) {
-          const enrichedMap = new Map(localArtworks.map((a: any) => [a.id, a]));
-          const merged = res.map((shopifyArt: any) => {
-            const local = enrichedMap.get(shopifyArt.handle || shopifyArt.id);
-            return {
-              ...local,
-              ...shopifyArt,
-              id: shopifyArt.handle || shopifyArt.id,
-              widthCm: local?.widthCm || shopifyArt.widthCm || 120,
-              heightCm: local?.heightCm || shopifyArt.heightCm || 90,
-              buyUrl: local?.buyUrl || shopifyArt.buyUrl || shopifyArt.onlineStoreUrl,
-            };
-          });
-          setArts(merged);
-        }
-      })
-      .catch(() => {});
-  }, []);
+  const arts = localArtworks as any[];
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -420,7 +396,7 @@ function Studio() {
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
 
   const [artworksState, setArtworksState] = useState<any[]>(localArtworks as any);
-  const [artId, setArtId] = useState<string>(artworksState[0]?.id || "");
+  const [artId, setArtId] = useState<string>(localArtworks[0]?.id || "");
   const artIdRef = useRef<string>(artId);
   const art = artworksState.find((a) => a.id === artId);
 
@@ -452,50 +428,6 @@ function Studio() {
   }, [artId]);
 
   const fileRef = useRef<HTMLInputElement | null>(null);
-
-  useEffect(() => {
-    const collHandle = (import.meta as any).env.VITE_ROOMVIBE_COLLECTION_HANDLE;
-    if (!collHandle) return;
-    fetchCollectionArtworks(collHandle, 24)
-      .then((res) => {
-        if (Array.isArray(res) && res.length) {
-          const enrichedMap = new Map(localArtworks.map((a: any) => [a.id, a]));
-          const merged = res.map((shopifyArt: any) => {
-            const local = enrichedMap.get(shopifyArt.handle || shopifyArt.id);
-            const mergedArt = {
-              id: shopifyArt.handle || shopifyArt.id,
-              title: shopifyArt.title || local?.title,
-              imageUrl: shopifyArt.imageUrl || local?.imageUrl,
-              widthCm: local?.widthCm || shopifyArt.widthCm || 100,
-              heightCm: local?.heightCm || shopifyArt.heightCm || 70,
-              buyUrl: local?.buyUrl || shopifyArt.buyUrl || shopifyArt.onlineStoreUrl,
-              collectionHandle: local?.collectionHandle || shopifyArt.collectionHandle,
-            };
-            if (import.meta.env.DEV) {
-              console.log(`[Merge] ${mergedArt.id}:`, {
-                shopifyHandle: shopifyArt.handle,
-                hasLocal: !!local,
-                localWidthCm: local?.widthCm,
-                localBuyUrl: local?.buyUrl,
-                mergedWidthCm: mergedArt.widthCm,
-                mergedBuyUrl: mergedArt.buyUrl,
-              });
-            }
-            return mergedArt;
-          });
-          setArtworksState(merged);
-          if (import.meta.env.DEV) {
-            console.log('[Studio] Merged artworks:', merged.length, 'artworks');
-            console.log('[Studio] First 3 artworks:', merged.slice(0, 3));
-          }
-          const currentArtStillExists = merged.find((a) => a.id === artIdRef.current);
-          if (!currentArtStillExists) {
-            setArtId(merged[0].id);
-          }
-        }
-      })
-      .catch(() => {});
-  }, []);
 
   const scene: any = (presets as any).find((p: any) => p.id === sceneId) || (presets as any)[0];
   const safe = scene?.safeArea || { x: 0.5, y: 0.4, w: 0.6, h: 0.5 };
@@ -808,34 +740,9 @@ function LiveDemoMock() {
   const [lockRatio, setLockRatio] = useState<boolean>(true);
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   const [showSizingInfo, setShowSizingInfo] = useState(false);
-  const [artworks, setArtworks] = useState<any[]>(localArtworks as any[]);
-  const [selectedArtId, setSelectedArtId] = useState<string>(artworks[0]?.id || "");
+  const artworks = localArtworks as any[];
+  const [selectedArtId, setSelectedArtId] = useState<string>(localArtworks[0]?.id || "");
   const fileRef = useRef<HTMLInputElement | null>(null);
-
-  useEffect(() => {
-    const handle = (import.meta as any).env.VITE_ROOMVIBE_COLLECTION_HANDLE;
-    if (!handle) return;
-    fetchCollectionArtworks(handle, 24)
-      .then((res) => {
-        if (Array.isArray(res) && res.length) {
-          const enrichedMap = new Map(localArtworks.map((a: any) => [a.id, a]));
-          const merged = res.map((shopifyArt: any) => {
-            const local = enrichedMap.get(shopifyArt.handle || shopifyArt.id);
-            return {
-              ...local,
-              ...shopifyArt,
-              id: shopifyArt.handle || shopifyArt.id,
-              widthCm: local?.widthCm || shopifyArt.widthCm || 100,
-              heightCm: local?.heightCm || shopifyArt.heightCm || 70,
-              buyUrl: local?.buyUrl || shopifyArt.buyUrl || shopifyArt.onlineStoreUrl,
-            };
-          });
-          setArtworks(merged);
-          setSelectedArtId(merged[0].id);
-        }
-      })
-      .catch(() => {});
-  }, []);
 
   const selectedArtwork = artworks.find((a) => a.id === selectedArtId);
 
