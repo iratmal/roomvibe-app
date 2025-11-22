@@ -1,0 +1,72 @@
+Hi! I’d like a small UX polish + one new feature in the RoomVibe Studio view.
+
+1) Clean up the right sidebar (Artwork panel)
+
+In the Studio editor (route #/studio), in the right column where we have:
+
+Artwork dropdown
+
+Size (Width / Height / cm–in / Lock ratio)
+
+Frame (Pro) – None / Slim / Gallery
+
+View & Buy button
+
+Please remove all helper text under the “View & Buy” button, specifically:
+
+“Use #/studio to deep-link this editor.”
+
+“Replace placeholders in src/data/artworks.json with Shopify CDN URLs, or set env vars to fetch automatically.”
+
+I want the right panel to end visually with the View & Buy button and no text below it.
+
+2) Enable drag-to-move for the artwork on the wall
+
+Goal: In Studio, the user should be able to move (drag) the artwork around the wall:
+
+Desktop: click + drag with the mouse
+
+Mobile: touch + drag with finger
+
+Implementation details (you can choose the best place in the code):
+
+In the component that renders the artwork on top of the room scene (the canvas/overlay in the center panel), add state for the artwork position, e.g. offsetX, offsetY (or similar, relative to the wall/container).
+
+Implement drag logic:
+
+On mousedown / touchstart on the artwork, store the start position.
+
+On mousemove / touchmove, update offsetX / offsetY so the artwork follows the pointer/finger.
+
+On mouseup / touchend, finish the drag.
+
+Constrain movement so that the artwork stays inside the wall area / mask:
+
+It should not go outside the visible wall (no dragging out of bounds).
+
+Use the existing wall mask / container bounds to clamp the position.
+
+Keep the current sizing behaviour:
+
+Width/Height fields in the Size section still define the size (scale) of the artwork.
+
+Drag only changes the position, not the size.
+
+Please add a small text button or link under the Size / Frame block, for example:
+
+“Reset position”
+When clicked, it should reset the artwork position back to the default (center of the wall / your current default).
+
+Make sure drag works both:
+
+with the default room presets (Artplacer Rooms 1–10), and
+
+when the user uploads their own wall photo (Upload wall photo).
+
+After implementing, please:
+
+test on desktop and in mobile viewport (drag with touch),
+
+run the build and deploy the updated version.
+
+Thanks a lot!

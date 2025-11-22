@@ -404,6 +404,11 @@ function Studio() {
   const [hVal, setHVal] = useState<number>(70);
   const [lockR, setLockR] = useState<boolean>(true);
   const [frameStyle, setFrameStyle] = useState<"None" | "Slim" | "Gallery">("None");
+  
+  const [offsetX, setOffsetX] = useState<number>(0);
+  const [offsetY, setOffsetY] = useState<number>(0);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     artIdRef.current = artId;
@@ -662,15 +667,6 @@ function Studio() {
                 View &amp; Buy
               </a>
             )}
-
-            <div className="mt-6 grid gap-2 text-xs text-slate-600">
-              <div>
-                Use <b>#/studio</b> to deep-link this editor.
-              </div>
-              <div>
-                Replace placeholders in <code>src/data/artworks.json</code> with Shopify CDN URLs, or set env vars to fetch automatically.
-              </div>
-            </div>
           </aside>
         </div>
       </div>
