@@ -707,7 +707,7 @@ function LiveDemoMock() {
         <div className="order-2 lg:order-1">
           <h2 className="text-2xl font-semibold">Live demo (preview)</h2>
           <p className="mt-2 text-slate-600">
-            Change room, pick an artwork, set size, tweak wall color, or upload your wall photo – exactly what your visitors will do.
+            Change room, pick an artwork, set size, or upload your wall photo – exactly what your visitors will do.
           </p>
           <div className="mt-6 grid gap-5">
             <fieldset>
@@ -775,27 +775,6 @@ function LiveDemoMock() {
                 <span className="text-xs text-slate-500">Images stay local in your browser — not uploaded.</span>
               </div>
             </fieldset>
-
-            {!userPhoto && (
-              <fieldset>
-                <legend className="mb-2 text-sm font-medium text-slate-700">Wall color</legend>
-                <div className="flex items-center gap-3">
-                  <input
-                    aria-label="Pick wall color"
-                    type="color"
-                    value={wall}
-                    onChange={(e) => setWall(e.target.value)}
-                    className="h-9 w-16 cursor-pointer rounded-md border border-slate-300 bg-white"
-                  />
-                  <button
-                    onClick={() => setWall("#f2f4f7")}
-                    className="rounded-md border border-slate-200 px-2 text-xs hover:bg-slate-50"
-                  >
-                    Reset
-                  </button>
-                </div>
-              </fieldset>
-            )}
 
             <fieldset>
               <legend className="mb-2 text-sm font-medium text-slate-700">Artwork size</legend>
@@ -985,8 +964,8 @@ function HowItWorks() {
       desc: "Choose from presets or upload your own wall photo.",
     },
     {
-      title: "Adjust size & wall color",
-      desc: "Use cm/in, lock ratio and recolor walls with one click.",
+      title: "Adjust artwork size",
+      desc: "Use cm/in units, lock aspect ratio for true-to-scale visualization.",
     },
     {
       title: "Embed on your site",
