@@ -519,21 +519,6 @@ function Studio() {
                 ) : (
                   <img src={scene.photo} alt={scene.name} className="absolute inset-0 h-full w-full object-cover" />
                 )}
-                {!userPhoto && (
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      background: wallColor,
-                      WebkitMaskImage: `url(${scene.mask})` as any,
-                      maskImage: `url(${scene.mask})` as any,
-                      WebkitMaskSize: "cover",
-                      maskSize: "cover",
-                      WebkitMaskPosition: "center",
-                      maskPosition: "center",
-                      opacity: 0.9,
-                    }}
-                  />
-                )}
                 <div
                   className="absolute -translate-x-1/2 -translate-y-1/2"
                   style={{ left: `${safe.x * 100}%`, top: `${safe.y * 100}%`, width: `${artWidthPct}%` }}
