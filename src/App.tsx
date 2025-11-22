@@ -477,15 +477,6 @@ function Studio() {
                   <RoomIcon className="h-4 w-4" /> {scene?.name}
                 </div>
                 <div className="flex items-center gap-3 text-slate-500">
-                  {!userPhoto && <span>Wall:</span>}
-                  {!userPhoto && (
-                    <input
-                      type="color"
-                      value={wallColor}
-                      onChange={(e) => setWallColor(e.target.value)}
-                      className="h-6 w-10 rounded border border-slate-300"
-                    />
-                  )}
                   <button
                     className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs hover:bg-slate-50"
                     onClick={() => fileRef.current?.click()}
