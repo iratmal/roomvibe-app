@@ -409,6 +409,7 @@ function Studio() {
   const [offsetY, setOffsetY] = useState<number>(0);
   const isDraggingRef = useRef<boolean>(false);
   const dragStartRef = useRef<{ x: number; y: number } | null>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     artIdRef.current = artId;
@@ -460,7 +461,7 @@ function Studio() {
   };
 
   const handleDragMove = (e: MouseEvent | TouchEvent) => {
-    if (!isDraggingRef.current || !dragStartRef.current) return;
+    if (!isDraggingRef.current || !dragStartRef.current || !canvasRef.current) return;
     e.preventDefault();
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
@@ -468,19 +469,34 @@ function Studio() {
     const newOffsetX = clientX - dragStartRef.current.x;
     const newOffsetY = clientY - dragStartRef.current.y;
     
-    // Calculate boundary constraints based on canvas size (560px) and safe area dimensions
-    // Use refs to get latest values (updated when scene/size changes)
-    const canvasWidth = 800; // approximate based on responsive layout
-    const canvasHeight = 560;
+    // Measure actual canvas dimensions from DOM (responsive layout)
+    const canvasWidth = canvasRef.current.clientWidth;
+    const canvasHeight = canvasRef.current.clientHeight;
     const artworkWidthPx = (artWidthPctRef.current / 100) * canvasWidth;
     const artworkHeightPx = artworkWidthPx / aspectRef.current;
     
-    // Allow movement within safe area bounds, accounting for artwork size
-    const maxOffsetX = Math.max(50, (safeRef.current.w * canvasWidth - artworkWidthPx) / 2);
-    const maxOffsetY = Math.max(50, (safeRef.current.h * canvasHeight - artworkHeightPx) / 2);
+    // Calculate absolute safe area bounds in pixels
+    // Safe area is defined by center point (x,y) and dimensions (w,h)
+    const safeCenterX = safeRef.current.x * canvasWidth;
+    const safeCenterY = safeRef.current.y * canvasHeight;
+    const safeWidth = safeRef.current.w * canvasWidth;
+    const safeHeight = safeRef.current.h * canvasHeight;
     
-    const clampedX = Math.max(-maxOffsetX, Math.min(maxOffsetX, newOffsetX));
-    const clampedY = Math.max(-maxOffsetY, Math.min(maxOffsetY, newOffsetY));
+    // Convert to absolute pixel boundaries
+    const safeLeft = safeCenterX - safeWidth / 2;
+    const safeRight = safeCenterX + safeWidth / 2;
+    const safeTop = safeCenterY - safeHeight / 2;
+    const safeBottom = safeCenterY + safeHeight / 2;
+    
+    // Artwork is centered at (safeCenterX + offsetX, safeCenterY + offsetY)
+    // Calculate max offsets that keep artwork edges within safe area
+    const maxOffsetX = (safeRight - safeCenterX) - artworkWidthPx / 2;
+    const minOffsetX = (safeLeft - safeCenterX) + artworkWidthPx / 2;
+    const maxOffsetY = (safeBottom - safeCenterY) - artworkHeightPx / 2;
+    const minOffsetY = (safeTop - safeCenterY) + artworkHeightPx / 2;
+    
+    const clampedX = Math.max(minOffsetX, Math.min(maxOffsetX, newOffsetX));
+    const clampedY = Math.max(minOffsetY, Math.min(maxOffsetY, newOffsetY));
     
     setOffsetX(clampedX);
     setOffsetY(clampedY);
@@ -579,7 +595,7 @@ function Studio() {
                 </div>
               </div>
 
-              <div className="relative h-[560px] w-full overflow-hidden rounded-b-2xl">
+              <div ref={canvasRef} className="relative h-[560px] w-full overflow-hidden rounded-b-2xl">
                 {userPhoto ? (
                   <img src={userPhoto} alt="Your wall" className="absolute inset-0 h-full w-full object-cover" />
                 ) : (
