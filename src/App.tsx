@@ -710,15 +710,6 @@ function LiveDemoMock() {
   const artWidthPct = Math.max(18, Math.min(60, 0.24 * widthCm + 12));
   const artAspect = Math.max(0.2, Math.min(5, widthCm / Math.max(1, heightCm)));
 
-  function applyQuickPick(w: number, h: number) {
-    if (sizeUnit === "in") {
-      w = +(w / 2.54).toFixed(1);
-      h = +(h / 2.54).toFixed(1);
-    }
-    setWidthVal(w);
-    setHeightVal(h);
-  }
-
   return (
     <Container id="demo">
       <div className="grid items-center gap-8 lg:grid-cols-2">
@@ -884,22 +875,6 @@ function LiveDemoMock() {
                   <input type="checkbox" checked={lockRatio} onChange={(e) => setLockRatio(e.target.checked)} />
                   Lock ratio
                 </label>
-              </div>
-              <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-                Quick picks:
-                {[
-                  [80, 60],
-                  [100, 70],
-                  [150, 100],
-                ].map(([w, h]) => (
-                  <button
-                    key={`${w}x${h}`}
-                    onClick={() => applyQuickPick(w, h)}
-                    className="rounded-md border border-slate-200 bg-white px-2 py-1 hover:bg-slate-50"
-                  >
-                    {w}×{h} cm
-                  </button>
-                ))}
               </div>
               <div className="mt-2">
                 <button
