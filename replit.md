@@ -4,6 +4,20 @@
 RoomVibe Studio is a comprehensive React/TypeScript web application offering a Canvy-style three-panel editor for visualizing artwork in room environments, complemented by a marketing landing page. Its primary purpose is to allow users to visualize how artworks would look on their walls, with features such as wall recoloring and true-to-scale sizing. The project aims to provide a modern, user-friendly experience for art visualization and is ready for integration with e-commerce platforms like Shopify.
 
 ## Recent Changes (November 22, 2025)
+**STUDIO UI SIMPLIFICATION:**
+- Removed Quick picks buttons from Size panel in Studio and LiveDemoMock components
+  - Deleted `quickPick()` and `applyQuickPick()` helper functions
+  - Size controls now show only: Width/Height inputs, cm/in toggle, Lock ratio checkbox
+  - Manual size input remains with unit conversion support
+- Disabled wall mask PNG rendering in Studio canvas
+  - Removed CSS mask-image overlay div that applied PNG alpha masks with color tinting
+  - Canvas now displays clean layering: room background → artwork overlay → frame styling
+  - Wall mask files (roomXX_mask.png) remain in project but not used in rendering
+  - This eliminates the white film/flashing effect during scene changes
+- Changed buy button text from "View & Buy on Shopify" → "View & Buy" for cleaner appearance
+- Production build successful (195.62 kB), all changes verified by architect
+- Wall recolor feature temporarily disabled; intended for future advanced implementation
+
 **NEW ROOM PACK INTEGRATION:**
 - Replaced all room preset assets with user-provided room pack (10 new scenes)
 - New rooms: Modern Living Room 1/2, Cozy Living Room, Dining Room, Boho Living Room, Elegant Bedroom, Luxury Bathroom, Scandinavian Entryway, Gallery Wall, Modern Office
@@ -82,12 +96,12 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS, feat
 - **Studio Mode**:
     - **Left Panel (Scene Browser)**: Grid of 10 room preset thumbnails with active scene highlighting.
     - **Center Panel (Canvas)**: Displays selected room photo.
-        - **Wall Recolor System**: Uses PNG alpha masks to isolate and recolor wall areas via CSS `mask-image`.
-        - **User Photo Upload**: Allows users to upload their own wall photos, disabling the wall color picker.
+        - **Wall Recolor System**: DISABLED (wall mask PNG files exist but not rendered; reserved for future advanced feature).
+        - **User Photo Upload**: Allows users to upload their own wall photos.
         - **Artwork Overlay**: Displays artwork centered in a preset `safeArea` with true-to-scale sizing.
     - **Right Panel (Controls)**:
         - **Artwork Selector**: Dropdown to select artworks from a local catalog or Shopify.
-        - **Size Controls**: Numeric inputs for width/height (cm/in), lock ratio toggle, and quick-pick size buttons.
+        - **Size Controls**: Manual numeric inputs for width/height (cm/in) with lock ratio toggle.
         - **Frame Options**: Placeholder for future frame selection.
 - **Landing Page Components**:
     - **TopNav**: Sticky header with navigation links and a "Try Studio" CTA.
