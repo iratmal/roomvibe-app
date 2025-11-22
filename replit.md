@@ -4,6 +4,25 @@
 RoomVibe Studio is a comprehensive React/TypeScript web application offering a Canvy-style three-panel editor for visualizing artwork in room environments, complemented by a marketing landing page. Its primary purpose is to allow users to visualize how artworks would look on their walls, with features such as wall recoloring and true-to-scale sizing. The project aims to provide a modern, user-friendly experience for art visualization and is ready for integration with e-commerce platforms like Shopify.
 
 ## Recent Changes (November 22, 2025)
+**DRAG-TO-MOVE ARTWORK POSITIONING:**
+- Implemented drag-to-move functionality allowing users to reposition artwork on canvas
+  - Mouse and touch support with smooth dragging experience
+  - Cursor feedback: "grab" when hovering, "grabbing" while dragging
+  - Boundary constraints calculated from absolute safe area geometry
+  - Artwork stays within visible wall bounds (respects safeArea dimensions)
+  - Works with preset rooms and user-uploaded wall photos
+- Technical implementation:
+  - Uses refs (isDraggingRef, dragStartRef, canvasRef) to avoid stale closure issues
+  - Event listeners registered once on mount for stable performance
+  - Dynamic canvas dimension measurement (canvasRef.current.clientWidth/Height)
+  - Dimension refs (artWidthPctRef, aspectRef, safeRef) updated via useEffect
+  - Absolute boundary calculation: converts safe area center/size to pixel bounds
+  - No arbitrary guard bands - precise min/max offsets based on artwork size
+- "Reset position" button under Size/Frame section to recenter artwork
+- Supports asymmetric safe areas (left/right/top/bottom biased rooms)
+- Responsive across all viewport sizes and screen orientations
+- Production build successful (196.25 kB), all changes verified by architect
+
 **ARTPLACER ROOM PACK INTEGRATION:**
 - Replaced all room preset assets with Artplacer professional room photography pack
   - Extracted 10 new rooms (room01-room10) + alpha masks from artplacer_rooms_pack.zip
