@@ -441,6 +441,56 @@ function Studio() {
   const artWidthPct = Math.max(18, Math.min(safe.w * 100, 0.24 * widthCm + 12));
   const aspect = Math.max(0.2, Math.min(5, widthCm / Math.max(1, heightCm)));
 
+  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    setIsDragging(true);
+    setDragStart({ x: clientX - offsetX, y: clientY - offsetY });
+  };
+
+  const handleDragMove = (e: MouseEvent | TouchEvent) => {
+    if (!isDragging || !dragStart) return;
+    e.preventDefault();
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    
+    const newOffsetX = clientX - dragStart.x;
+    const newOffsetY = clientY - dragStart.y;
+    
+    // Apply boundary constraints (limit movement within reasonable bounds)
+    const maxOffset = 200;
+    const clampedX = Math.max(-maxOffset, Math.min(maxOffset, newOffsetX));
+    const clampedY = Math.max(-maxOffset, Math.min(maxOffset, newOffsetY));
+    
+    setOffsetX(clampedX);
+    setOffsetY(clampedY);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+    setDragStart(null);
+  };
+
+  const resetPosition = () => {
+    setOffsetX(0);
+    setOffsetY(0);
+  };
+
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleDragMove);
+      window.addEventListener('mouseup', handleDragEnd);
+      window.addEventListener('touchmove', handleDragMove, { passive: false });
+      window.addEventListener('touchend', handleDragEnd);
+      return () => {
+        window.removeEventListener('mousemove', handleDragMove);
+        window.removeEventListener('mouseup', handleDragEnd);
+        window.removeEventListener('touchmove', handleDragMove);
+        window.removeEventListener('touchend', handleDragEnd);
+      };
+    }
+  }, [isDragging, dragStart, offsetX, offsetY]);
+
   return (
     <main>
       {!isInIframe && <StudioHeader />}
@@ -517,7 +567,14 @@ function Studio() {
                 )}
                 <div
                   className="absolute -translate-x-1/2 -translate-y-1/2"
-                  style={{ left: `${safe.x * 100}%`, top: `${safe.y * 100}%`, width: `${artWidthPct}%` }}
+                  style={{ 
+                    left: `calc(${safe.x * 100}% + ${offsetX}px)`, 
+                    top: `calc(${safe.y * 100}% + ${offsetY}px)`, 
+                    width: `${artWidthPct}%`,
+                    cursor: isDragging ? 'grabbing' : 'grab'
+                  }}
+                  onMouseDown={handleDragStart}
+                  onTouchStart={handleDragStart}
                 >
                   <div
                     className="overflow-hidden rounded-md shadow-2xl"
@@ -655,6 +712,15 @@ function Studio() {
                   {o}
                 </button>
               ))}
+            </div>
+
+            <div className="mt-4">
+              <button
+                onClick={resetPosition}
+                className="text-xs text-slate-600 hover:text-slate-900 underline"
+              >
+                Reset position
+              </button>
             </div>
 
             {art && (
