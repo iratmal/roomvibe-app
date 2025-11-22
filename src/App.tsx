@@ -436,15 +436,6 @@ function Studio() {
   const artWidthPct = Math.max(18, Math.min(safe.w * 100, 0.24 * widthCm + 12));
   const aspect = Math.max(0.2, Math.min(5, widthCm / Math.max(1, heightCm)));
 
-  function quickPick(w: number, h: number) {
-    if (sizeUnit === "in") {
-      w = +(w / 2.54).toFixed(1);
-      h = +(h / 2.54).toFixed(1);
-    }
-    setWVal(w);
-    setHVal(h);
-  }
-
   return (
     <main>
       {!isInIframe && <StudioHeader />}
@@ -668,23 +659,6 @@ function Studio() {
               </label>
             </div>
 
-            <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-              Quick picks:
-              {[
-                [80, 60],
-                [100, 70],
-                [150, 100],
-              ].map(([w, h]) => (
-                <button
-                  key={`${w}x${h}`}
-                  onClick={() => quickPick(w, h)}
-                  className="rounded-md border border-slate-200 bg-white px-2 py-1 hover:bg-slate-50"
-                >
-                  {w}×{h} cm
-                </button>
-              ))}
-            </div>
-
             <div className="mt-6 text-sm font-semibold">Frame (Pro)</div>
             <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
               {(["None", "Slim", "Gallery"] as const).map((o) => (
@@ -709,7 +683,7 @@ function Studio() {
                 rel="noreferrer"
                 className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-900 shadow-sm hover:bg-slate-50"
               >
-                View &amp; Buy on Shopify
+                View &amp; Buy
               </a>
             )}
 
@@ -1010,7 +984,7 @@ function LiveDemoMock() {
                     rel="noreferrer"
                     className="inline-flex items-center rounded-md border border-slate-300 bg-white px-2 py-1 text-[11px] font-medium text-slate-900 hover:bg-slate-50"
                   >
-                    View &amp; Buy on Shopify
+                    View &amp; Buy
                   </a>
                 )}
               </div>
