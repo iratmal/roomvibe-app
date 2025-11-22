@@ -3,6 +3,16 @@
 ## Overview
 RoomVibe Studio is a comprehensive React/TypeScript web application offering a Canvy-style three-panel editor for visualizing artwork in room environments, complemented by a marketing landing page. Its primary purpose is to allow users to visualize how artworks would look on their walls, with features such as wall recoloring and true-to-scale sizing. The project aims to provide a modern, user-friendly experience for art visualization and is ready for integration with e-commerce platforms like Shopify.
 
+## Recent Changes (November 22, 2025)
+**NEW ROOM PACK INTEGRATION:**
+- Replaced all room preset assets with user-provided room pack (10 new scenes)
+- New rooms: Modern Living Room 1/2, Cozy Living Room, Dining Room, Boho Living Room, Elegant Bedroom, Luxury Bathroom, Scandinavian Entryway, Gallery Wall, Modern Office
+- Updated asset paths: `/presets/room-*.png` → `/rooms/room0*.png`
+- All room files extracted to `public/rooms/` (room01.png - room10.png + alpha masks)
+- Updated `src/data/presets.json` with new paths and descriptive room labels
+- Removed legacy `/public/presets` folder
+- Production build successful with new asset pack (11MB total room assets)
+
 ## Recent Changes (November 21, 2025)
 **FINAL Studio Bug Fixes & Production Deployment:**
 - Fixed **Bug 1 (Size auto-population)**: Dimension fields now automatically populate from artwork metadata when selection changes. Effect depends solely on `artId` to prevent overwriting during cm↔in unit toggles. ✅
