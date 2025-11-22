@@ -407,8 +407,8 @@ function Studio() {
   
   const [offsetX, setOffsetX] = useState<number>(0);
   const [offsetY, setOffsetY] = useState<number>(0);
-  const [isDragging, setIsDragging] = useState<boolean>(false);
-  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
+  const isDraggingRef = useRef<boolean>(false);
+  const dragStartRef = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     artIdRef.current = artId;
@@ -441,34 +441,54 @@ function Studio() {
   const artWidthPct = Math.max(18, Math.min(safe.w * 100, 0.24 * widthCm + 12));
   const aspect = Math.max(0.2, Math.min(5, widthCm / Math.max(1, heightCm)));
 
+  // Store latest values in refs for drag handlers
+  const artWidthPctRef = useRef(artWidthPct);
+  const aspectRef = useRef(aspect);
+  const safeRef = useRef(safe);
+  
+  useEffect(() => {
+    artWidthPctRef.current = artWidthPct;
+    aspectRef.current = aspect;
+    safeRef.current = safe;
+  }, [artWidthPct, aspect, safe]);
+
   const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    setIsDragging(true);
-    setDragStart({ x: clientX - offsetX, y: clientY - offsetY });
+    dragStartRef.current = { x: clientX - offsetX, y: clientY - offsetY };
+    isDraggingRef.current = true;
   };
 
   const handleDragMove = (e: MouseEvent | TouchEvent) => {
-    if (!isDragging || !dragStart) return;
+    if (!isDraggingRef.current || !dragStartRef.current) return;
     e.preventDefault();
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     
-    const newOffsetX = clientX - dragStart.x;
-    const newOffsetY = clientY - dragStart.y;
+    const newOffsetX = clientX - dragStartRef.current.x;
+    const newOffsetY = clientY - dragStartRef.current.y;
     
-    // Apply boundary constraints (limit movement within reasonable bounds)
-    const maxOffset = 200;
-    const clampedX = Math.max(-maxOffset, Math.min(maxOffset, newOffsetX));
-    const clampedY = Math.max(-maxOffset, Math.min(maxOffset, newOffsetY));
+    // Calculate boundary constraints based on canvas size (560px) and safe area dimensions
+    // Use refs to get latest values (updated when scene/size changes)
+    const canvasWidth = 800; // approximate based on responsive layout
+    const canvasHeight = 560;
+    const artworkWidthPx = (artWidthPctRef.current / 100) * canvasWidth;
+    const artworkHeightPx = artworkWidthPx / aspectRef.current;
+    
+    // Allow movement within safe area bounds, accounting for artwork size
+    const maxOffsetX = Math.max(50, (safeRef.current.w * canvasWidth - artworkWidthPx) / 2);
+    const maxOffsetY = Math.max(50, (safeRef.current.h * canvasHeight - artworkHeightPx) / 2);
+    
+    const clampedX = Math.max(-maxOffsetX, Math.min(maxOffsetX, newOffsetX));
+    const clampedY = Math.max(-maxOffsetY, Math.min(maxOffsetY, newOffsetY));
     
     setOffsetX(clampedX);
     setOffsetY(clampedY);
   };
 
   const handleDragEnd = () => {
-    setIsDragging(false);
-    setDragStart(null);
+    isDraggingRef.current = false;
+    dragStartRef.current = null;
   };
 
   const resetPosition = () => {
@@ -477,19 +497,19 @@ function Studio() {
   };
 
   useEffect(() => {
-    if (isDragging) {
-      window.addEventListener('mousemove', handleDragMove);
-      window.addEventListener('mouseup', handleDragEnd);
-      window.addEventListener('touchmove', handleDragMove, { passive: false });
-      window.addEventListener('touchend', handleDragEnd);
-      return () => {
-        window.removeEventListener('mousemove', handleDragMove);
-        window.removeEventListener('mouseup', handleDragEnd);
-        window.removeEventListener('touchmove', handleDragMove);
-        window.removeEventListener('touchend', handleDragEnd);
-      };
-    }
-  }, [isDragging, dragStart, offsetX, offsetY]);
+    const options = { passive: false };
+    window.addEventListener('mousemove', handleDragMove);
+    window.addEventListener('mouseup', handleDragEnd);
+    window.addEventListener('touchmove', handleDragMove, options);
+    window.addEventListener('touchend', handleDragEnd);
+    
+    return () => {
+      window.removeEventListener('mousemove', handleDragMove);
+      window.removeEventListener('mouseup', handleDragEnd);
+      window.removeEventListener('touchmove', handleDragMove, options as any);
+      window.removeEventListener('touchend', handleDragEnd);
+    };
+  }, []);
 
   return (
     <main>
@@ -571,7 +591,7 @@ function Studio() {
                     left: `calc(${safe.x * 100}% + ${offsetX}px)`, 
                     top: `calc(${safe.y * 100}% + ${offsetY}px)`, 
                     width: `${artWidthPct}%`,
-                    cursor: isDragging ? 'grabbing' : 'grab'
+                    cursor: isDraggingRef.current ? 'grabbing' : 'grab'
                   }}
                   onMouseDown={handleDragStart}
                   onTouchStart={handleDragStart}
