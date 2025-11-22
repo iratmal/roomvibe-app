@@ -4,6 +4,21 @@
 RoomVibe Studio is a comprehensive React/TypeScript web application offering a Canvy-style three-panel editor for visualizing artwork in room environments, complemented by a marketing landing page. Its primary purpose is to allow users to visualize how artworks would look on their walls, with features such as wall recoloring and true-to-scale sizing. The project aims to provide a modern, user-friendly experience for art visualization and is ready for integration with e-commerce platforms like Shopify.
 
 ## Recent Changes (November 22, 2025)
+**ARTPLACER ROOM PACK INTEGRATION:**
+- Replaced all room preset assets with Artplacer professional room photography pack
+  - Extracted 10 new rooms (room01-room10) + alpha masks from artplacer_rooms_pack.zip
+  - Room labels updated to "Artplacer Room 1" through "Artplacer Room 10"
+  - All room images are real photographic scenes (~200KB - 636KB per image)
+  - Total: 20 PNG files (10 room images + 10 alpha masks) in public/rooms/
+- Updated `src/data/presets.json` with Artplacer room labels while preserving structure
+- Removed wall color picker UI from both Studio and LiveDemoMock components
+  - Deleted color input and "Wall:" label from Studio canvas header
+  - Deleted "Wall color" fieldset with color picker and Reset button from LiveDemoMock
+  - Updated all text references: removed "tweak wall color" mentions
+  - Updated "How It Works" step from "Adjust size & wall color" to "Adjust artwork size"
+- Wall color state variables remain in code but UI is completely hidden
+- Production build successful (194.95 kB), all changes verified by architect
+
 **STUDIO UI SIMPLIFICATION:**
 - Removed Quick picks buttons from Size panel in Studio and LiveDemoMock components
   - Deleted `quickPick()` and `applyQuickPick()` helper functions
