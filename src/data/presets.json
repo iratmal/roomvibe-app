@@ -1,9 +1,9 @@
 [
   {
-    "id": "preset-01",
-    "name": "Room 01",
-    "photo": "/presets/room-01.png",
-    "mask": "/presets/mask-01.png",
+    "id": "room01",
+    "name": "Modern Living Room 1",
+    "photo": "/rooms/room01.png",
+    "mask": "/rooms/room01_mask.png",
     "safeArea": {
       "x": 0.5,
       "y": 0.38,
@@ -12,10 +12,10 @@
     }
   },
   {
-    "id": "preset-02",
-    "name": "Room 02",
-    "photo": "/presets/room-02.png",
-    "mask": "/presets/mask-02.png",
+    "id": "room02",
+    "name": "Modern Living Room 2",
+    "photo": "/rooms/room02.png",
+    "mask": "/rooms/room02_mask.png",
     "safeArea": {
       "x": 0.5,
       "y": 0.38,
@@ -24,10 +24,10 @@
     }
   },
   {
-    "id": "preset-03",
-    "name": "Room 03",
-    "photo": "/presets/room-03.png",
-    "mask": "/presets/mask-03.png",
+    "id": "room03",
+    "name": "Cozy Living Room",
+    "photo": "/rooms/room03.png",
+    "mask": "/rooms/room03_mask.png",
     "safeArea": {
       "x": 0.5,
       "y": 0.38,
@@ -36,10 +36,10 @@
     }
   },
   {
-    "id": "preset-04",
-    "name": "Room 04",
-    "photo": "/presets/room-04.png",
-    "mask": "/presets/mask-04.png",
+    "id": "room04",
+    "name": "Dining Room",
+    "photo": "/rooms/room04.png",
+    "mask": "/rooms/room04_mask.png",
     "safeArea": {
       "x": 0.5,
       "y": 0.38,
@@ -48,10 +48,10 @@
     }
   },
   {
-    "id": "preset-05",
-    "name": "Room 05",
-    "photo": "/presets/room-05.png",
-    "mask": "/presets/mask-05.png",
+    "id": "room05",
+    "name": "Boho Living Room",
+    "photo": "/rooms/room05.png",
+    "mask": "/rooms/room05_mask.png",
     "safeArea": {
       "x": 0.5,
       "y": 0.38,
@@ -60,10 +60,10 @@
     }
   },
   {
-    "id": "preset-06",
-    "name": "Room 06",
-    "photo": "/presets/room-06.png",
-    "mask": "/presets/mask-06.png",
+    "id": "room06",
+    "name": "Elegant Bedroom",
+    "photo": "/rooms/room06.png",
+    "mask": "/rooms/room06_mask.png",
     "safeArea": {
       "x": 0.5,
       "y": 0.38,
@@ -72,10 +72,10 @@
     }
   },
   {
-    "id": "preset-07",
-    "name": "Room 07",
-    "photo": "/presets/room-07.png",
-    "mask": "/presets/mask-07.png",
+    "id": "room07",
+    "name": "Luxury Bathroom",
+    "photo": "/rooms/room07.png",
+    "mask": "/rooms/room07_mask.png",
     "safeArea": {
       "x": 0.5,
       "y": 0.38,
@@ -84,10 +84,10 @@
     }
   },
   {
-    "id": "preset-08",
-    "name": "Room 08",
-    "photo": "/presets/room-08.png",
-    "mask": "/presets/mask-08.png",
+    "id": "room08",
+    "name": "Scandinavian Entryway",
+    "photo": "/rooms/room08.png",
+    "mask": "/rooms/room08_mask.png",
     "safeArea": {
       "x": 0.5,
       "y": 0.38,
@@ -96,10 +96,10 @@
     }
   },
   {
-    "id": "preset-09",
-    "name": "Room 09",
-    "photo": "/presets/room-09.png",
-    "mask": "/presets/mask-09.png",
+    "id": "room09",
+    "name": "Gallery Wall",
+    "photo": "/rooms/room09.png",
+    "mask": "/rooms/room09_mask.png",
     "safeArea": {
       "x": 0.5,
       "y": 0.38,
@@ -108,10 +108,10 @@
     }
   },
   {
-    "id": "preset-10",
-    "name": "Room 10",
-    "photo": "/presets/room-10.png",
-    "mask": "/presets/mask-10.png",
+    "id": "room10",
+    "name": "Modern Office",
+    "photo": "/rooms/room10.png",
+    "mask": "/rooms/room10_mask.png",
     "safeArea": {
       "x": 0.5,
       "y": 0.38,

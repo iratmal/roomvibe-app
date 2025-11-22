@@ -35,7 +35,7 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 38633
+localPort = 34985
 externalPort = 3000
 
 [deployment]
@@ -45,3 +45,4 @@ run = ["npm", "start"]
 
 [nix]
 channel = "stable-25_05"
+packages = ["unzip"]

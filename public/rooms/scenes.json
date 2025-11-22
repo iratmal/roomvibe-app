@@ -1,0 +1,62 @@
+[
+  {
+    "id": "room01",
+    "label": "Modern Living Room 1",
+    "image": "/rooms/room01.png",
+    "mask": "/rooms/room01_mask.png"
+  },
+  {
+    "id": "room02",
+    "label": "Modern Living Room 2",
+    "image": "/rooms/room02.png",
+    "mask": "/rooms/room02_mask.png"
+  },
+  {
+    "id": "room03",
+    "label": "Cozy Living Room",
+    "image": "/rooms/room03.png",
+    "mask": "/rooms/room03_mask.png"
+  },
+  {
+    "id": "room04",
+    "label": "Dining Room",
+    "image": "/rooms/room04.png",
+    "mask": "/rooms/room04_mask.png"
+  },
+  {
+    "id": "room05",
+    "label": "Boho Living Room",
+    "image": "/rooms/room05.png",
+    "mask": "/rooms/room05_mask.png"
+  },
+  {
+    "id": "room06",
+    "label": "Elegant Bedroom",
+    "image": "/rooms/room06.png",
+    "mask": "/rooms/room06_mask.png"
+  },
+  {
+    "id": "room07",
+    "label": "Luxury Bathroom",
+    "image": "/rooms/room07.png",
+    "mask": "/rooms/room07_mask.png"
+  },
+  {
+    "id": "room08",
+    "label": "Scandinavian Entryway",
+    "image": "/rooms/room08.png",
+    "mask": "/rooms/room08_mask.png"
+  },
+  {
+    "id": "room09",
+    "label": "Gallery Wall",
+    "image": "/rooms/room09.png",
+    "mask": "/rooms/room09_mask.png"
+  },
+  {
+    "id": "room10",
+    "label": "Modern Office",
+    "image": "/rooms/room10.png",
+    "mask": "/rooms/room10_mask.png"
+  }
+]
