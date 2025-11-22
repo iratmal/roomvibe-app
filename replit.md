@@ -4,24 +4,31 @@
 RoomVibe Studio is a comprehensive React/TypeScript web application offering a Canvy-style three-panel editor for visualizing artwork in room environments, complemented by a marketing landing page. Its primary purpose is to allow users to visualize how artworks would look on their walls, with features such as wall recoloring and true-to-scale sizing. The project aims to provide a modern, user-friendly experience for art visualization and is ready for integration with e-commerce platforms like Shopify.
 
 ## Recent Changes (November 22, 2025)
-**DRAG-TO-MOVE ARTWORK POSITIONING:**
-- Implemented drag-to-move functionality allowing users to reposition artwork on canvas
+**EXTENDED DRAG AREA & INTERACTIVE RESIZE HANDLES:**
+- **Extended drag-to-move area**: Artwork can now be dragged across entire wall image (not just central region)
+  - Uses full canvas dimensions with 20px padding as bounding box (was limited to safe area)
   - Mouse and touch support with smooth dragging experience
   - Cursor feedback: "grab" when hovering, "grabbing" while dragging
-  - Boundary constraints calculated from absolute safe area geometry
-  - Artwork stays within visible wall bounds (respects safeArea dimensions)
-  - Works with preset rooms and user-uploaded wall photos
+  - Artwork stays within visible wall bounds across all room presets and user photos
+  - Responsive across all viewport sizes and screen orientations
+- **Interactive resize handles**: Added direct canvas resize via bottom-right corner handle
+  - Visual: 24x24px white handle with gray border and se-resize cursor
+  - Dragging handle resizes artwork in real-time, updates Width/Height inputs
+  - Respects "Lock ratio" checkbox for aspect ratio control
+  - True-to-scale conversion: pixel delta → cm based on actual artwork size (accurate physical dimensions)
+  - Diagonal vector projection `(deltaX + deltaY)/√2` for natural resize behavior
+  - Works correctly in both cm and inch modes with unit conversion
+  - Min/max constraints: 10-300 cm enforced
+  - Artwork automatically re-clamped to stay within bounds after resize
 - Technical implementation:
-  - Uses refs (isDraggingRef, dragStartRef, canvasRef) to avoid stale closure issues
-  - Event listeners registered once on mount for stable performance
-  - Dynamic canvas dimension measurement (canvasRef.current.clientWidth/Height)
+  - Drag: Uses refs (isDraggingRef, dragStartRef, canvasRef) for stable event handlers
+  - Resize: handleResizeStart/Move/End with resizeStartRef for dimension tracking
+  - Event listeners registered once on mount (both drag and resize in same useEffect)
   - Dimension refs (artWidthPctRef, aspectRef, safeRef) updated via useEffect
-  - Absolute boundary calculation: converts safe area center/size to pixel bounds
-  - No arbitrary guard bands - precise min/max offsets based on artwork size
-- "Reset position" button under Size/Frame section to recenter artwork
-- Supports asymmetric safe areas (left/right/top/bottom biased rooms)
-- Responsive across all viewport sizes and screen orientations
-- Production build successful (196.25 kB), all changes verified by architect
+  - Re-clamp effect watches artWidthPct/aspect to maintain bounds during resize/unit toggle
+  - Accurate cm-to-pixel ratio: `pixelToCmRatio = startWidthCm / startArtWidthPx`
+- "Reset position" button recenters artwork (doesn't affect size)
+- Production build successful (198.19 kB), all changes verified by architect
 
 **ARTPLACER ROOM PACK INTEGRATION:**
 - Replaced all room preset assets with Artplacer professional room photography pack

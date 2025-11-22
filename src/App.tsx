@@ -456,6 +456,35 @@ function Studio() {
     safeRef.current = safe;
   }, [artWidthPct, aspect, safe]);
 
+  // Re-clamp offsets when artwork size changes (e.g., from resize handle)
+  useEffect(() => {
+    if (!canvasRef.current) return;
+    
+    const canvasWidth = canvasRef.current.clientWidth;
+    const canvasHeight = canvasRef.current.clientHeight;
+    const artworkWidthPx = (artWidthPct / 100) * canvasWidth;
+    const artworkHeightPx = artworkWidthPx / aspect;
+    
+    const padding = 20;
+    const safeCenterX = safe.x * canvasWidth;
+    const safeCenterY = safe.y * canvasHeight;
+    
+    // Calculate bounds: artwork can move across entire wall
+    const maxOffsetX = (canvasWidth - padding) - safeCenterX - artworkWidthPx / 2;
+    const minOffsetX = padding - safeCenterX + artworkWidthPx / 2;
+    const maxOffsetY = (canvasHeight - padding) - safeCenterY - artworkHeightPx / 2;
+    const minOffsetY = padding - safeCenterY + artworkHeightPx / 2;
+    
+    // Clamp current offsets if they're out of bounds
+    const clampedX = Math.max(minOffsetX, Math.min(maxOffsetX, offsetX));
+    const clampedY = Math.max(minOffsetY, Math.min(maxOffsetY, offsetY));
+    
+    if (clampedX !== offsetX || clampedY !== offsetY) {
+      setOffsetX(clampedX);
+      setOffsetY(clampedY);
+    }
+  }, [artWidthPct, aspect, sceneId]);
+
   const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
@@ -528,32 +557,45 @@ function Studio() {
     const deltaX = clientX - resizeStartRef.current.x;
     const deltaY = clientY - resizeStartRef.current.y;
     
-    // Use diagonal delta for resize (average of X and Y movement)
-    const delta = (deltaX + deltaY) / 2;
+    // Project delta onto SE diagonal (45-degree resize handle)
+    // This ensures only diagonal movement affects size
+    const diagonalDelta = (deltaX + deltaY) / Math.sqrt(2);
     
-    // Convert delta pixels to cm (approximate scaling factor)
+    // Convert start dimensions to cm (resize always calculates in cm)
+    const startWidthCm = sizeUnit === "cm" ? resizeStartRef.current.startWidth : resizeStartRef.current.startWidth * 2.54;
+    const startHeightCm = sizeUnit === "cm" ? resizeStartRef.current.startHeight : resizeStartRef.current.startHeight * 2.54;
+    
+    // Calculate current artwork width in pixels to get accurate cm-to-pixel ratio
     const canvasWidth = canvasRef.current.clientWidth;
-    const scaleFactor = 0.3; // Adjust this for resize sensitivity
-    const deltaCm = (delta / canvasWidth) * 100 * scaleFactor;
+    const startArtWidthPct = Math.max(18, Math.min(safe.w * 100, 0.24 * startWidthCm + 12));
+    const startArtWidthPx = (startArtWidthPct / 100) * canvasWidth;
     
-    let newWidth = resizeStartRef.current.startWidth + deltaCm;
-    let newHeight = resizeStartRef.current.startHeight;
+    // Convert pixel delta to cm based on actual artwork size
+    const pixelToCmRatio = startWidthCm / startArtWidthPx;
+    const deltaCm = diagonalDelta * pixelToCmRatio;
+    
+    let newWidthCm = startWidthCm + deltaCm;
+    let newHeightCm = startHeightCm;
     
     if (lockR) {
       // Keep aspect ratio
-      const aspectRatio = resizeStartRef.current.startWidth / resizeStartRef.current.startHeight;
-      newHeight = newWidth / aspectRatio;
+      const aspectRatio = startWidthCm / startHeightCm;
+      newHeightCm = newWidthCm / aspectRatio;
     } else {
-      // Free resize (both dimensions change proportionally for now)
-      newHeight = newHeight + deltaCm / aspectRef.current;
+      // Free resize (both dimensions change proportionally)
+      newHeightCm = startHeightCm + deltaCm / aspectRef.current;
     }
     
-    // Min/max constraints
-    newWidth = Math.max(10, Math.min(300, newWidth));
-    newHeight = Math.max(10, Math.min(300, newHeight));
+    // Min/max constraints in cm
+    newWidthCm = Math.max(10, Math.min(300, newWidthCm));
+    newHeightCm = Math.max(10, Math.min(300, newHeightCm));
     
-    setWVal(+newWidth.toFixed(1));
-    setHVal(+newHeight.toFixed(1));
+    // Convert back to current unit
+    const finalWidth = sizeUnit === "cm" ? newWidthCm : newWidthCm / 2.54;
+    const finalHeight = sizeUnit === "cm" ? newHeightCm : newHeightCm / 2.54;
+    
+    setWVal(+finalWidth.toFixed(1));
+    setHVal(+finalHeight.toFixed(1));
   };
 
   const handleResizeEnd = () => {
