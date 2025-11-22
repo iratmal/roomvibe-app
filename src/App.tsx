@@ -410,6 +410,9 @@ function Studio() {
   const isDraggingRef = useRef<boolean>(false);
   const dragStartRef = useRef<{ x: number; y: number } | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
+  
+  const [isResizing, setIsResizing] = useState<boolean>(false);
+  const resizeStartRef = useRef<{ x: number; y: number; startWidth: number; startHeight: number } | null>(null);
 
   useEffect(() => {
     artIdRef.current = artId;
@@ -475,25 +478,16 @@ function Studio() {
     const artworkWidthPx = (artWidthPctRef.current / 100) * canvasWidth;
     const artworkHeightPx = artworkWidthPx / aspectRef.current;
     
-    // Calculate absolute safe area bounds in pixels
-    // Safe area is defined by center point (x,y) and dimensions (w,h)
+    // Use full canvas as bounding box with small padding (20px)
+    const padding = 20;
     const safeCenterX = safeRef.current.x * canvasWidth;
     const safeCenterY = safeRef.current.y * canvasHeight;
-    const safeWidth = safeRef.current.w * canvasWidth;
-    const safeHeight = safeRef.current.h * canvasHeight;
     
-    // Convert to absolute pixel boundaries
-    const safeLeft = safeCenterX - safeWidth / 2;
-    const safeRight = safeCenterX + safeWidth / 2;
-    const safeTop = safeCenterY - safeHeight / 2;
-    const safeBottom = safeCenterY + safeHeight / 2;
-    
-    // Artwork is centered at (safeCenterX + offsetX, safeCenterY + offsetY)
-    // Calculate max offsets that keep artwork edges within safe area
-    const maxOffsetX = (safeRight - safeCenterX) - artworkWidthPx / 2;
-    const minOffsetX = (safeLeft - safeCenterX) + artworkWidthPx / 2;
-    const maxOffsetY = (safeBottom - safeCenterY) - artworkHeightPx / 2;
-    const minOffsetY = (safeTop - safeCenterY) + artworkHeightPx / 2;
+    // Calculate bounds: artwork can move across entire wall
+    const maxOffsetX = (canvasWidth - padding) - safeCenterX - artworkWidthPx / 2;
+    const minOffsetX = padding - safeCenterX + artworkWidthPx / 2;
+    const maxOffsetY = (canvasHeight - padding) - safeCenterY - artworkHeightPx / 2;
+    const minOffsetY = padding - safeCenterY + artworkHeightPx / 2;
     
     const clampedX = Math.max(minOffsetX, Math.min(maxOffsetX, newOffsetX));
     const clampedY = Math.max(minOffsetY, Math.min(maxOffsetY, newOffsetY));
@@ -512,6 +506,61 @@ function Studio() {
     setOffsetY(0);
   };
 
+  const handleResizeStart = (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    resizeStartRef.current = { 
+      x: clientX, 
+      y: clientY, 
+      startWidth: wVal, 
+      startHeight: hVal 
+    };
+    setIsResizing(true);
+  };
+
+  const handleResizeMove = (e: MouseEvent | TouchEvent) => {
+    if (!isResizing || !resizeStartRef.current || !canvasRef.current) return;
+    e.preventDefault();
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    
+    const deltaX = clientX - resizeStartRef.current.x;
+    const deltaY = clientY - resizeStartRef.current.y;
+    
+    // Use diagonal delta for resize (average of X and Y movement)
+    const delta = (deltaX + deltaY) / 2;
+    
+    // Convert delta pixels to cm (approximate scaling factor)
+    const canvasWidth = canvasRef.current.clientWidth;
+    const scaleFactor = 0.3; // Adjust this for resize sensitivity
+    const deltaCm = (delta / canvasWidth) * 100 * scaleFactor;
+    
+    let newWidth = resizeStartRef.current.startWidth + deltaCm;
+    let newHeight = resizeStartRef.current.startHeight;
+    
+    if (lockR) {
+      // Keep aspect ratio
+      const aspectRatio = resizeStartRef.current.startWidth / resizeStartRef.current.startHeight;
+      newHeight = newWidth / aspectRatio;
+    } else {
+      // Free resize (both dimensions change proportionally for now)
+      newHeight = newHeight + deltaCm / aspectRef.current;
+    }
+    
+    // Min/max constraints
+    newWidth = Math.max(10, Math.min(300, newWidth));
+    newHeight = Math.max(10, Math.min(300, newHeight));
+    
+    setWVal(+newWidth.toFixed(1));
+    setHVal(+newHeight.toFixed(1));
+  };
+
+  const handleResizeEnd = () => {
+    setIsResizing(false);
+    resizeStartRef.current = null;
+  };
+
   useEffect(() => {
     const options = { passive: false };
     window.addEventListener('mousemove', handleDragMove);
@@ -519,13 +568,23 @@ function Studio() {
     window.addEventListener('touchmove', handleDragMove, options);
     window.addEventListener('touchend', handleDragEnd);
     
+    window.addEventListener('mousemove', handleResizeMove);
+    window.addEventListener('mouseup', handleResizeEnd);
+    window.addEventListener('touchmove', handleResizeMove, options);
+    window.addEventListener('touchend', handleResizeEnd);
+    
     return () => {
       window.removeEventListener('mousemove', handleDragMove);
       window.removeEventListener('mouseup', handleDragEnd);
       window.removeEventListener('touchmove', handleDragMove, options as any);
       window.removeEventListener('touchend', handleDragEnd);
+      
+      window.removeEventListener('mousemove', handleResizeMove);
+      window.removeEventListener('mouseup', handleResizeEnd);
+      window.removeEventListener('touchmove', handleResizeMove, options as any);
+      window.removeEventListener('touchend', handleResizeEnd);
     };
-  }, []);
+  }, [isResizing, lockR]);
 
   return (
     <main>
@@ -613,7 +672,7 @@ function Studio() {
                   onTouchStart={handleDragStart}
                 >
                   <div
-                    className="overflow-hidden rounded-md shadow-2xl"
+                    className="overflow-hidden rounded-md shadow-2xl relative"
                     style={{
                       aspectRatio: `${aspect}/1`,
                       background: "#f8fafc",
@@ -640,6 +699,16 @@ function Studio() {
                         }}
                       />
                     )}
+                    <div
+                      className="absolute bottom-0 right-0 w-6 h-6 bg-white border-2 border-slate-400 rounded-tl-md hover:bg-slate-100 hover:border-slate-600 transition-colors"
+                      style={{ cursor: 'se-resize' }}
+                      onMouseDown={handleResizeStart}
+                      onTouchStart={handleResizeStart}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-full h-full text-slate-600">
+                        <path d="M9 15l6-6m0 4l-4 4" strokeWidth="2" strokeLinecap="round" />
+                      </svg>
+                    </div>
                   </div>
                 </div>
               </div>

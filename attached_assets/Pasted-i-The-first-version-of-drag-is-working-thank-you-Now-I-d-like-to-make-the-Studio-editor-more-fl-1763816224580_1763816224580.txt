@@ -1,0 +1,86 @@
+i! The first version of drag is working, thank you 🙌
+Now I’d like to make the Studio editor more flexible and intuitive with two improvements:
+
+1) Extend drag area – artwork should move across the whole wall
+
+Right now the artwork can only move a little bit left/right.
+I would like the artwork to be draggable across the entire wall area (the full central scene), not just a small central box.
+
+Please update the drag constraints:
+
+Use the full wall container (the image area where the room/scene is rendered) as the bounding box for offsetX / offsetY.
+
+The user should be able to move the artwork:
+
+left/right all the way to the edges of the visible wall,
+
+up/down much more than now (again, constrained by the wall image, not a tiny central region).
+
+It’s OK to keep a small padding from the absolute edge, but the feeling should be:
+
+“I can place the artwork anywhere on this wall.”
+
+In short: relax the drag limits so the painting can be positioned freely over the wall, not only near the center.
+
+2) Add direct resize handles on the artwork (interactive scaling)
+
+I would like to be able to resize the artwork directly on the canvas, not only by typing Width/Height.
+
+Expected behaviour:
+
+Add a small resize handle (for example in the bottom-right corner of the artwork frame).
+
+Cursor style: se-resize on hover.
+
+On mousedown / touchstart on this handle:
+
+Start a resize operation.
+
+On mousemove / touchmove:
+
+Change the artwork size according to the drag delta (diagonal).
+
+If “Lock ratio” is ON:
+
+keep aspect ratio while resizing
+
+If “Lock ratio” is OFF:
+
+allow free resize (width/height independently) – but if this is too much work, it’s OK to keep lock-ratio only.
+
+On mouseup / touchend:
+
+Finish the resize operation.
+
+Sync with Size controls (true-to-size logic):
+
+The existing Width/Height fields (in cm) and true-to-size scaling should stay the “source of truth”.
+
+When the user drags the resize handle:
+
+update the underlying width/height state that you already use for cm → px conversion,
+
+keep the Width/Height input values in sync (so the numbers change as we resize by handle).
+
+You can reuse the current cm-to-pixels factor you already use in Studio to maintain real-world scaling.
+
+Constraints:
+
+While resizing, keep the artwork inside the wall bounds (don’t allow it to grow outside the visible wall container).
+
+Reset position should not change the size – only position.
+(Size is controlled via Width/Height and the new resize handle.)
+
+After implementing:
+
+Please test:
+
+that I can drag the artwork freely across the whole wall area,
+
+that I can resize via the corner handle and the Width/Height fields update accordingly,
+
+that everything still respects the wall bounds and true-to-size logic.
+
+Then run build + deploy and share the updated URL.
+
+Thank you! 🙏
