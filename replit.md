@@ -3,6 +3,22 @@
 ## Overview
 RoomVibe Studio is a comprehensive React/TypeScript web application designed to visualize artwork in various room environments using a Canvy-style three-panel editor. Its core purpose is to allow users to see how artworks would look on their walls, featuring functionalities like true-to-scale sizing and the potential for wall recoloring. The application aims to provide a modern, user-friendly art visualization experience, ready for integration with e-commerce platforms like Shopify.
 
+## Recent Changes (November 23, 2025)
+**NEW ROOM PRESET IMAGES & FRAME FIX:**
+- **Room preset images replaced**: All 10 room background images updated with new professional mockup photos
+  - Replaced room01.png through room10.png in public/rooms/ directory
+  - Modern, clean room environments with neutral wall colors
+  - File sizes: 439KB - 1.5MB per image
+  - Variety of interior styles: living rooms, bedrooms, modern minimalist spaces
+- **Room labels simplified**: Renamed from "Artplacer Room X" to "Room X" (removed "Artplacer" prefix)
+  - Updated in src/data/presets.json
+  - Cleaner UI appearance in Scene Browser panel
+- **"None" frame option fixed**: Corrected styling to show absolutely no border when "None" is selected
+  - Changed from `border: "8px solid white"` to `border: "none"`
+  - Only "Slim" and "Gallery" frame options now show visible borders
+  - True frameless display when user selects "None"
+- Production build successful (198.08 kB), all changes deployed
+
 ## User Preferences
 I prefer simple language in explanations. I like functional programming paradigms where applicable. I want iterative development, with small, testable changes. Ask before making major architectural changes or introducing new dependencies. I prefer detailed explanations for complex logic. Do not make changes to files in the `public/presets` folder. Do not make changes to the `server.js` file.
 
