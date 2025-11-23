@@ -13,16 +13,16 @@ RoomVibe Studio is a comprehensive React/TypeScript web application designed to 
   - Maintains true-to-size as starting point, user can adjust within safe ranges
 - **Frame behavior fixed** - frames now truly add OUTSIDE artwork:
   - Frame thickness stays at physical dimensions (3cm Slim, 8cm Gallery) regardless of artwork scale
-  - Frames rendered using CSS borders with content-box sizing (border adds outside)
-  - Artwork size never shrinks - frame adds to total visual size
-  - Inner wrapper with overflow:hidden maintains rounded corners and clean edges
+  - Wrapper sized to totalWidthPx/totalHeightPx with border-box sizing (border included in total)
+  - Inner artwork explicitly sized to artworkWidthPx/artworkHeightPx (never shrinks)
+  - Frame adds to total visual size: total = artwork + 2×frame thickness
 - **Default artwork changed** to "Light My Fire" for better first impression
 - **Real-scale rendering system** (implemented earlier):
   - Room wall height mapping: All 10 rooms use standardized 270cm wall height
   - Pixel-to-cm ratio: `pxPerCm = canvasHeightPx / 270`
   - Artwork sizing: `artworkWidthPx = art.widthCm * pxPerCm * scale`
   - Drag-to-move with automatic bounds checking (includes frame in calculations)
-- Production build successful (196.68 kB), all changes architect-reviewed and deployed
+- Production build successful (196.71 kB), all changes architect-reviewed and deployed
 
 ## User Preferences
 I prefer simple language in explanations. I like functional programming paradigms where applicable. I want iterative development, with small, testable changes. Ask before making major architectural changes or introducing new dependencies. I prefer detailed explanations for complex logic. Do not make changes to files in the `public/presets` folder. Do not make changes to the `server.js` file.

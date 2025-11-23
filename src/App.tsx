@@ -716,30 +716,31 @@ function Studio() {
                     left: `calc(${safe.x * 100}% + ${offsetX}px)`, 
                     top: `calc(${safe.y * 100}% + ${offsetY}px)`, 
                     transform: "translate(-50%, -50%)",
-                    width: `${artworkWidthPx}px`,
-                    height: `${artworkHeightPx}px`,
+                    width: `${totalWidthPx}px`,
+                    height: `${totalHeightPx}px`,
                     borderStyle: frameStyle === "None" ? "none" : "solid",
                     borderWidth: frameStyle === "None" ? 0 : `${frameThicknessPx}px`,
                     borderColor: frameStyle === "Slim" ? "#1a1a1a" : "#2d2d2d",
                     background: "#f8fafc",
                     cursor: isDraggingRef.current ? 'grabbing' : 'grab',
+                    boxSizing: "border-box",
                     boxShadow:
                       frameStyle === "Gallery"
                         ? "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
                         : "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-                    overflow: "visible", // Allow resize handle to be visible
+                    overflow: "visible",
                   }}
                   onMouseDown={handleDragStart}
                   onTouchStart={handleDragStart}
                 >
-                  <div className="overflow-hidden rounded-md" style={{ width: "100%", height: "100%" }}>
+                  <div className="overflow-hidden rounded-md" style={{ width: `${artworkWidthPx}px`, height: `${artworkHeightPx}px` }}>
                     {art?.imageUrl || art?.overlayImageUrl ? (
                       <img 
                         src={art.overlayImageUrl || art.imageUrl} 
                         alt={art.title} 
                         style={{
-                          width: "100%",
-                          height: "100%",
+                          width: `${artworkWidthPx}px`,
+                          height: `${artworkHeightPx}px`,
                           display: "block",
                           objectFit: "cover"
                         }} 
@@ -748,8 +749,8 @@ function Studio() {
                     ) : (
                       <div
                         style={{
-                          width: "100%",
-                          height: "100%",
+                          width: `${artworkWidthPx}px`,
+                          height: `${artworkHeightPx}px`,
                           background:
                             "linear-gradient(135deg, color-mix(in_oklab,var(--accent),white_10%), color-mix(in_oklab,var(--accent),black_10%))",
                         }}
