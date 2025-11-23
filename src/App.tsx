@@ -720,7 +720,7 @@ function Studio() {
                       background: "#f8fafc",
                       border:
                         frameStyle === "None"
-                          ? "8px solid white"
+                          ? "none"
                           : frameStyle === "Slim"
                           ? "2px solid #1a1a1a"
                           : "20px solid #2d2d2d",

@@ -1,7 +1,7 @@
 [
   {
     "id": "room01",
-    "name": "Artplacer Room 1",
+    "name": "Room 1",
     "photo": "/rooms/room01.png",
     "mask": "/rooms/room01_mask.png",
     "safeArea": {
@@ -13,7 +13,7 @@
   },
   {
     "id": "room02",
-    "name": "Artplacer Room 2",
+    "name": "Room 2",
     "photo": "/rooms/room02.png",
     "mask": "/rooms/room02_mask.png",
     "safeArea": {
@@ -25,7 +25,7 @@
   },
   {
     "id": "room03",
-    "name": "Artplacer Room 3",
+    "name": "Room 3",
     "photo": "/rooms/room03.png",
     "mask": "/rooms/room03_mask.png",
     "safeArea": {
@@ -37,7 +37,7 @@
   },
   {
     "id": "room04",
-    "name": "Artplacer Room 4",
+    "name": "Room 4",
     "photo": "/rooms/room04.png",
     "mask": "/rooms/room04_mask.png",
     "safeArea": {
@@ -49,7 +49,7 @@
   },
   {
     "id": "room05",
-    "name": "Artplacer Room 5",
+    "name": "Room 5",
     "photo": "/rooms/room05.png",
     "mask": "/rooms/room05_mask.png",
     "safeArea": {
@@ -61,7 +61,7 @@
   },
   {
     "id": "room06",
-    "name": "Artplacer Room 6",
+    "name": "Room 6",
     "photo": "/rooms/room06.png",
     "mask": "/rooms/room06_mask.png",
     "safeArea": {
@@ -73,7 +73,7 @@
   },
   {
     "id": "room07",
-    "name": "Artplacer Room 7",
+    "name": "Room 7",
     "photo": "/rooms/room07.png",
     "mask": "/rooms/room07_mask.png",
     "safeArea": {
@@ -85,7 +85,7 @@
   },
   {
     "id": "room08",
-    "name": "Artplacer Room 8",
+    "name": "Room 8",
     "photo": "/rooms/room08.png",
     "mask": "/rooms/room08_mask.png",
     "safeArea": {
@@ -97,7 +97,7 @@
   },
   {
     "id": "room09",
-    "name": "Artplacer Room 9",
+    "name": "Room 9",
     "photo": "/rooms/room09.png",
     "mask": "/rooms/room09_mask.png",
     "safeArea": {
@@ -109,7 +109,7 @@
   },
   {
     "id": "room10",
-    "name": "Artplacer Room 10",
+    "name": "Room 10",
     "photo": "/rooms/room10.png",
     "mask": "/rooms/room10_mask.png",
     "safeArea": {
