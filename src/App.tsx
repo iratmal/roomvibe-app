@@ -141,37 +141,43 @@ function HomePage() {
 function Hero() {
   return (
     <Container id="home">
-      <div className="py-16 md:py-24">
-        <div className="grid gap-12 md:grid-cols-2 md:items-center">
-          {/* Left side: Text */}
-          <div className="space-y-6">
-            <h1 className="text-4xl font-bold leading-tight md:text-5xl lg:text-6xl">
-              Visualize Art on Your Walls — Instantly.
-            </h1>
-            <p className="text-lg text-slate-600 md:text-xl">
-              Preview real-size artwork on your wall or choose a preset room and start visualizing immediately.
-            </p>
-            <div>
-              <a
-                href="#/studio"
-                className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-lg font-medium text-black shadow-md hover:opacity-90 transition-opacity"
-                style={{ background: "var(--accent)" }}
-              >
-                Start Visualizing →
-              </a>
-            </div>
-          </div>
+      <div className="mt-8 mb-16 md:mb-24">
+        <div 
+          className="relative overflow-hidden rounded-3xl shadow-2xl"
+          style={{
+            backgroundImage: 'url("/roomvibe-hero-desktop.jpg")',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            minHeight: '500px'
+          }}
+        >
+          {/* Gradient overlay for text readability */}
+          <div 
+            className="absolute inset-0 rounded-3xl"
+            style={{
+              background: 'linear-gradient(to right, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0))'
+            }}
+          />
           
-          {/* Right side: Hero image */}
-          <div className="relative order-first md:order-last">
-            <picture>
-              <source srcSet="/roomvibe-hero-room-only-v2.webp" type="image/webp" />
-              <img
-                src="/roomvibe-hero-room-only-v2.jpg"
-                alt="Artwork displayed above a sofa in a modern living room"
-                className="rounded-2xl shadow-xl w-full h-auto"
-              />
-            </picture>
+          {/* Hero content */}
+          <div className="relative z-10 px-8 py-16 md:px-16 md:py-20">
+            <div className="max-w-xl space-y-6">
+              <h1 className="text-4xl font-bold leading-tight text-white md:text-5xl lg:text-6xl">
+                Visualize Art on Your Walls — Instantly.
+              </h1>
+              <p className="text-lg text-white/90 md:text-xl">
+                Preview real-size artwork on your wall or choose a preset room and start visualizing immediately.
+              </p>
+              <div>
+                <a
+                  href="#/studio"
+                  className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-lg font-medium text-black shadow-md hover:opacity-90 transition-opacity"
+                  style={{ background: "var(--accent)" }}
+                >
+                  Start Visualizing →
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </div>
