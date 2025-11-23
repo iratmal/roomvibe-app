@@ -388,6 +388,27 @@ function StudioHeader() {
 
 /* ------------- Studio (Canvy-style editor) ------------- */
 
+// Real wall height in centimeters for each room preset
+const ROOM_WALL_HEIGHTS_CM: Record<string, number> = {
+  room01: 270,
+  room02: 270,
+  room03: 270,
+  room04: 270,
+  room05: 270,
+  room06: 270,
+  room07: 270,
+  room08: 270,
+  room09: 270,
+  room10: 270,
+};
+
+// Frame thickness in centimeters (added OUTSIDE the artwork)
+const FRAME_THICKNESS_CM: Record<string, number> = {
+  None: 0,
+  Slim: 3,
+  Gallery: 8,
+};
+
 function Studio() {
   const isInIframe = useIsInIframe();
   const [sceneId, setSceneId] = useState<string>((presets as any)[0]?.id || "");
@@ -400,9 +421,6 @@ function Studio() {
   const art = artworksState.find((a) => a.id === artId);
 
   const [sizeUnit, setSizeUnit] = useState<"cm" | "in">("cm");
-  const [wVal, setWVal] = useState<number>(100);
-  const [hVal, setHVal] = useState<number>(70);
-  const [lockR, setLockR] = useState<boolean>(true);
   const [frameStyle, setFrameStyle] = useState<"None" | "Slim" | "Gallery">("None");
   
   const [offsetX, setOffsetX] = useState<number>(0);
@@ -411,69 +429,77 @@ function Studio() {
   const dragStartRef = useRef<{ x: number; y: number } | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   
-  const [isResizing, setIsResizing] = useState<boolean>(false);
-  const resizeStartRef = useRef<{ x: number; y: number; startWidth: number; startHeight: number } | null>(null);
+  const [pxPerCm, setPxPerCm] = useState<number>(2); // pixels per centimeter ratio
 
   useEffect(() => {
     artIdRef.current = artId;
   }, [artId]);
 
+  // Calculate px/cm ratio based on canvas height and room wall height
   useEffect(() => {
-    if (art && art.widthCm && art.heightCm) {
-      const newWidth = sizeUnit === "cm" ? art.widthCm : +(art.widthCm / 2.54).toFixed(1);
-      const newHeight = sizeUnit === "cm" ? art.heightCm : +(art.heightCm / 2.54).toFixed(1);
-      if (import.meta.env.DEV) {
-        console.log(`[Studio] Auto-populating dimensions for "${art.title}": ${newWidth} x ${newHeight} ${sizeUnit}`, {
-          artId: art.id,
-          widthCm: art.widthCm,
-          heightCm: art.heightCm,
-          buyUrl: art.buyUrl,
-        });
-      }
-      setWVal(newWidth);
-      setHVal(newHeight);
+    if (!canvasRef.current) return;
+    
+    const wallHeightCm = ROOM_WALL_HEIGHTS_CM[sceneId] || 270;
+    const wallPxHeight = canvasRef.current.clientHeight;
+    const ratio = wallPxHeight / wallHeightCm;
+    
+    setPxPerCm(ratio);
+    
+    if (import.meta.env.DEV) {
+      console.log(`[Real-Scale] Room ${sceneId}: ${wallHeightCm}cm wall = ${wallPxHeight}px, ratio = ${ratio.toFixed(2)} px/cm`);
     }
-  }, [artId]);
+  }, [sceneId, canvasRef.current?.clientHeight]);
 
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   const scene: any = (presets as any).find((p: any) => p.id === sceneId) || (presets as any)[0];
   const safe = scene?.safeArea || { x: 0.5, y: 0.4, w: 0.6, h: 0.5 };
 
-  const widthCm = sizeUnit === "cm" ? wVal : wVal * 2.54;
-  const heightCm = sizeUnit === "cm" ? hVal : hVal * 2.54;
-  const artWidthPct = Math.max(18, Math.min(safe.w * 100, 0.24 * widthCm + 12));
-  const aspect = Math.max(0.2, Math.min(5, widthCm / Math.max(1, heightCm)));
+  // Real-scale artwork dimensions in pixels
+  const artworkWidthCm = art?.widthCm || 100;
+  const artworkHeightCm = art?.heightCm || 70;
+  const artworkWidthPx = artworkWidthCm * pxPerCm;
+  const artworkHeightPx = artworkHeightCm * pxPerCm;
+
+  // Frame thickness in pixels (added OUTSIDE the artwork)
+  const frameThicknessCm = FRAME_THICKNESS_CM[frameStyle] || 0;
+  const frameThicknessPx = frameThicknessCm * pxPerCm;
+
+  // Total dimensions including frame
+  const totalWidthPx = artworkWidthPx + frameThicknessPx * 2;
+  const totalHeightPx = artworkHeightPx + frameThicknessPx * 2;
 
   // Store latest values in refs for drag handlers
-  const artWidthPctRef = useRef(artWidthPct);
-  const aspectRef = useRef(aspect);
+  const artworkWidthPxRef = useRef(artworkWidthPx);
+  const artworkHeightPxRef = useRef(artworkHeightPx);
+  const totalWidthPxRef = useRef(totalWidthPx);
+  const totalHeightPxRef = useRef(totalHeightPx);
   const safeRef = useRef(safe);
   
   useEffect(() => {
-    artWidthPctRef.current = artWidthPct;
-    aspectRef.current = aspect;
+    artworkWidthPxRef.current = artworkWidthPx;
+    artworkHeightPxRef.current = artworkHeightPx;
+    totalWidthPxRef.current = totalWidthPx;
+    totalHeightPxRef.current = totalHeightPx;
     safeRef.current = safe;
-  }, [artWidthPct, aspect, safe]);
+  }, [artworkWidthPx, artworkHeightPx, totalWidthPx, totalHeightPx, safe]);
 
-  // Re-clamp offsets when artwork size changes (e.g., from resize handle)
+  // Re-clamp offsets when artwork size or frame changes
   useEffect(() => {
     if (!canvasRef.current) return;
     
     const canvasWidth = canvasRef.current.clientWidth;
     const canvasHeight = canvasRef.current.clientHeight;
-    const artworkWidthPx = (artWidthPct / 100) * canvasWidth;
-    const artworkHeightPx = artworkWidthPx / aspect;
     
     const padding = 20;
     const safeCenterX = safe.x * canvasWidth;
     const safeCenterY = safe.y * canvasHeight;
     
-    // Calculate bounds: artwork can move across entire wall
-    const maxOffsetX = (canvasWidth - padding) - safeCenterX - artworkWidthPx / 2;
-    const minOffsetX = padding - safeCenterX + artworkWidthPx / 2;
-    const maxOffsetY = (canvasHeight - padding) - safeCenterY - artworkHeightPx / 2;
-    const minOffsetY = padding - safeCenterY + artworkHeightPx / 2;
+    // Calculate bounds: artwork (including frame) can move across entire wall
+    const maxOffsetX = (canvasWidth - padding) - safeCenterX - totalWidthPx / 2;
+    const minOffsetX = padding - safeCenterX + totalWidthPx / 2;
+    const maxOffsetY = (canvasHeight - padding) - safeCenterY - totalHeightPx / 2;
+    const minOffsetY = padding - safeCenterY + totalHeightPx / 2;
     
     // Clamp current offsets if they're out of bounds
     const clampedX = Math.max(minOffsetX, Math.min(maxOffsetX, offsetX));
@@ -483,7 +509,7 @@ function Studio() {
       setOffsetX(clampedX);
       setOffsetY(clampedY);
     }
-  }, [artWidthPct, aspect, sceneId]);
+  }, [totalWidthPx, totalHeightPx, sceneId, frameStyle]);
 
   const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
@@ -504,19 +530,17 @@ function Studio() {
     // Measure actual canvas dimensions from DOM (responsive layout)
     const canvasWidth = canvasRef.current.clientWidth;
     const canvasHeight = canvasRef.current.clientHeight;
-    const artworkWidthPx = (artWidthPctRef.current / 100) * canvasWidth;
-    const artworkHeightPx = artworkWidthPx / aspectRef.current;
     
     // Use full canvas as bounding box with small padding (20px)
     const padding = 20;
     const safeCenterX = safeRef.current.x * canvasWidth;
     const safeCenterY = safeRef.current.y * canvasHeight;
     
-    // Calculate bounds: artwork can move across entire wall
-    const maxOffsetX = (canvasWidth - padding) - safeCenterX - artworkWidthPx / 2;
-    const minOffsetX = padding - safeCenterX + artworkWidthPx / 2;
-    const maxOffsetY = (canvasHeight - padding) - safeCenterY - artworkHeightPx / 2;
-    const minOffsetY = padding - safeCenterY + artworkHeightPx / 2;
+    // Calculate bounds: artwork (including frame) can move across entire wall
+    const maxOffsetX = (canvasWidth - padding) - safeCenterX - totalWidthPxRef.current / 2;
+    const minOffsetX = padding - safeCenterX + totalWidthPxRef.current / 2;
+    const maxOffsetY = (canvasHeight - padding) - safeCenterY - totalHeightPxRef.current / 2;
+    const minOffsetY = padding - safeCenterY + totalHeightPxRef.current / 2;
     
     const clampedX = Math.max(minOffsetX, Math.min(maxOffsetX, newOffsetX));
     const clampedY = Math.max(minOffsetY, Math.min(maxOffsetY, newOffsetY));
@@ -535,74 +559,6 @@ function Studio() {
     setOffsetY(0);
   };
 
-  const handleResizeStart = (e: React.MouseEvent | React.TouchEvent) => {
-    e.stopPropagation();
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    resizeStartRef.current = { 
-      x: clientX, 
-      y: clientY, 
-      startWidth: wVal, 
-      startHeight: hVal 
-    };
-    setIsResizing(true);
-  };
-
-  const handleResizeMove = (e: MouseEvent | TouchEvent) => {
-    if (!isResizing || !resizeStartRef.current || !canvasRef.current) return;
-    e.preventDefault();
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    
-    const deltaX = clientX - resizeStartRef.current.x;
-    const deltaY = clientY - resizeStartRef.current.y;
-    
-    // Project delta onto SE diagonal (45-degree resize handle)
-    // This ensures only diagonal movement affects size
-    const diagonalDelta = (deltaX + deltaY) / Math.sqrt(2);
-    
-    // Convert start dimensions to cm (resize always calculates in cm)
-    const startWidthCm = sizeUnit === "cm" ? resizeStartRef.current.startWidth : resizeStartRef.current.startWidth * 2.54;
-    const startHeightCm = sizeUnit === "cm" ? resizeStartRef.current.startHeight : resizeStartRef.current.startHeight * 2.54;
-    
-    // Calculate current artwork width in pixels to get accurate cm-to-pixel ratio
-    const canvasWidth = canvasRef.current.clientWidth;
-    const startArtWidthPct = Math.max(18, Math.min(safe.w * 100, 0.24 * startWidthCm + 12));
-    const startArtWidthPx = (startArtWidthPct / 100) * canvasWidth;
-    
-    // Convert pixel delta to cm based on actual artwork size
-    const pixelToCmRatio = startWidthCm / startArtWidthPx;
-    const deltaCm = diagonalDelta * pixelToCmRatio;
-    
-    let newWidthCm = startWidthCm + deltaCm;
-    let newHeightCm = startHeightCm;
-    
-    if (lockR) {
-      // Keep aspect ratio
-      const aspectRatio = startWidthCm / startHeightCm;
-      newHeightCm = newWidthCm / aspectRatio;
-    } else {
-      // Free resize (both dimensions change proportionally)
-      newHeightCm = startHeightCm + deltaCm / aspectRef.current;
-    }
-    
-    // Min/max constraints in cm
-    newWidthCm = Math.max(10, Math.min(300, newWidthCm));
-    newHeightCm = Math.max(10, Math.min(300, newHeightCm));
-    
-    // Convert back to current unit
-    const finalWidth = sizeUnit === "cm" ? newWidthCm : newWidthCm / 2.54;
-    const finalHeight = sizeUnit === "cm" ? newHeightCm : newHeightCm / 2.54;
-    
-    setWVal(+finalWidth.toFixed(1));
-    setHVal(+finalHeight.toFixed(1));
-  };
-
-  const handleResizeEnd = () => {
-    setIsResizing(false);
-    resizeStartRef.current = null;
-  };
-
   useEffect(() => {
     const options = { passive: false };
     window.addEventListener('mousemove', handleDragMove);
@@ -610,23 +566,13 @@ function Studio() {
     window.addEventListener('touchmove', handleDragMove, options);
     window.addEventListener('touchend', handleDragEnd);
     
-    window.addEventListener('mousemove', handleResizeMove);
-    window.addEventListener('mouseup', handleResizeEnd);
-    window.addEventListener('touchmove', handleResizeMove, options);
-    window.addEventListener('touchend', handleResizeEnd);
-    
     return () => {
       window.removeEventListener('mousemove', handleDragMove);
       window.removeEventListener('mouseup', handleDragEnd);
       window.removeEventListener('touchmove', handleDragMove, options as any);
       window.removeEventListener('touchend', handleDragEnd);
-      
-      window.removeEventListener('mousemove', handleResizeMove);
-      window.removeEventListener('mouseup', handleResizeEnd);
-      window.removeEventListener('touchmove', handleResizeMove, options as any);
-      window.removeEventListener('touchend', handleResizeEnd);
     };
-  }, [isResizing, lockR]);
+  }, []);
 
   return (
     <main>
@@ -707,49 +653,55 @@ function Studio() {
                   style={{ 
                     left: `calc(${safe.x * 100}% + ${offsetX}px)`, 
                     top: `calc(${safe.y * 100}% + ${offsetY}px)`, 
-                    width: `${artWidthPct}%`,
+                    width: `${totalWidthPx}px`,
+                    height: `${totalHeightPx}px`,
                     cursor: isDraggingRef.current ? 'grabbing' : 'grab'
                   }}
                   onMouseDown={handleDragStart}
                   onTouchStart={handleDragStart}
                 >
                   <div
-                    className="overflow-hidden rounded-md shadow-2xl relative"
+                    className="w-full h-full overflow-hidden rounded-md shadow-2xl"
                     style={{
-                      aspectRatio: `${aspect}/1`,
-                      background: "#f8fafc",
-                      border:
-                        frameStyle === "None"
-                          ? "none"
-                          : frameStyle === "Slim"
-                          ? "2px solid #1a1a1a"
-                          : "20px solid #2d2d2d",
+                      boxSizing: "content-box",
+                      borderStyle: frameStyle === "None" ? "none" : "solid",
+                      borderWidth: frameStyle === "None" ? 0 : `${frameThicknessPx}px`,
+                      borderColor: frameStyle === "Slim" ? "#1a1a1a" : "#2d2d2d",
                       boxShadow:
                         frameStyle === "Gallery"
                           ? "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
                           : "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
                     }}
                   >
-                    {art?.imageUrl || art?.overlayImageUrl ? (
-                      <img src={art.overlayImageUrl || art.imageUrl} alt={art.title} className="h-full w-full object-cover" draggable={false} />
-                    ) : (
-                      <div
-                        className="h-full w-full"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, color-mix(in_oklab,var(--accent),white_10%), color-mix(in_oklab,var(--accent),black_10%))",
-                        }}
-                      />
-                    )}
                     <div
-                      className="absolute bottom-0 right-0 w-6 h-6 bg-white border-2 border-slate-400 rounded-tl-md hover:bg-slate-100 hover:border-slate-600 transition-colors"
-                      style={{ cursor: 'se-resize' }}
-                      onMouseDown={handleResizeStart}
-                      onTouchStart={handleResizeStart}
+                      style={{
+                        width: `${artworkWidthPx}px`,
+                        height: `${artworkHeightPx}px`,
+                        background: "#f8fafc",
+                      }}
                     >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-full h-full text-slate-600">
-                        <path d="M9 15l6-6m0 4l-4 4" strokeWidth="2" strokeLinecap="round" />
-                      </svg>
+                      {art?.imageUrl || art?.overlayImageUrl ? (
+                        <img 
+                          src={art.overlayImageUrl || art.imageUrl} 
+                          alt={art.title} 
+                          style={{
+                            width: `${artworkWidthPx}px`,
+                            height: `${artworkHeightPx}px`,
+                            display: "block",
+                            objectFit: "cover"
+                          }} 
+                          draggable={false} 
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            width: `${artworkWidthPx}px`,
+                            height: `${artworkHeightPx}px`,
+                            background:
+                              "linear-gradient(135deg, color-mix(in_oklab,var(--accent),white_10%), color-mix(in_oklab,var(--accent),black_10%))",
+                          }}
+                        />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -775,79 +727,9 @@ function Studio() {
             </div>
             {art && art.widthCm && art.heightCm && (
               <div className="mt-2 text-xs text-slate-500">
-                {art.widthCm} × {art.heightCm} cm
+                Real size: {art.widthCm} × {art.heightCm} cm
               </div>
             )}
-
-            <div className="mt-6 text-sm font-semibold">Size</div>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <label className="text-xs text-slate-700">Width</label>
-              <input
-                type="number"
-                min={1}
-                className="w-24 rounded-md border border-slate-300 px-2 py-1 text-sm"
-                value={wVal}
-                onChange={(e) => {
-                  const v = Math.max(1, +e.target.value || 1);
-                  const currentWidthCm = sizeUnit === "cm" ? wVal : wVal * 2.54;
-                  const currentHeightCm = sizeUnit === "cm" ? hVal : hVal * 2.54;
-
-                  if (lockR) {
-                    const ratio = currentHeightCm / Math.max(1, currentWidthCm);
-                    const newWidth = v;
-                    const newHeight = +(newWidth * ratio).toFixed(1);
-                    setWVal(v);
-                    setHVal(newHeight);
-                  } else {
-                    setWVal(v);
-                  }
-                }}
-              />
-              <label className="text-xs text-slate-700 ml-2">Height</label>
-              <input
-                type="number"
-                min={1}
-                className="w-24 rounded-md border border-slate-300 px-2 py-1 text-sm"
-                value={hVal}
-                onChange={(e) => {
-                  const v = Math.max(1, +e.target.value || 1);
-                  const currentWidthCm = sizeUnit === "cm" ? wVal : wVal * 2.54;
-                  const currentHeightCm = sizeUnit === "cm" ? hVal : hVal * 2.54;
-
-                  if (lockR) {
-                    const ratio = currentWidthCm / Math.max(1, currentHeightCm);
-                    const newHeight = v;
-                    const newWidth = +(newHeight * ratio).toFixed(1);
-                    setHVal(v);
-                    setWVal(newWidth);
-                  } else {
-                    setHVal(v);
-                  }
-                }}
-              />
-              <select
-                className="ml-2 rounded-md border border-slate-300 px-2 py-1 text-sm"
-                value={sizeUnit}
-                onChange={(e) => {
-                  const val = e.target.value as "cm" | "in";
-                  if (val === "in" && sizeUnit === "cm") {
-                    setWVal(+(wVal / 2.54).toFixed(1));
-                    setHVal(+(hVal / 2.54).toFixed(1));
-                  } else if (val === "cm" && sizeUnit === "in") {
-                    setWVal(+(wVal * 2.54).toFixed(1));
-                    setHVal(+(hVal * 2.54).toFixed(1));
-                  }
-                  setSizeUnit(val);
-                }}
-              >
-                <option value="cm">cm</option>
-                <option value="in">in</option>
-              </select>
-              <label className="ml-2 inline-flex items-center gap-1 text-xs text-slate-700">
-                <input type="checkbox" checked={lockR} onChange={(e) => setLockR(e.target.checked)} />
-                Lock ratio
-              </label>
-            </div>
 
             <div className="mt-6 text-sm font-semibold">Frame</div>
             <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
