@@ -168,6 +168,8 @@ function Hero() {
               src="/roomvibe-hero-desktop.jpg"
               alt="RoomVibe – visualize art on your wall"
               className="w-full h-auto rounded-2xl shadow-xl"
+              loading="eager"
+              fetchpriority="high"
             />
           </div>
         </div>
