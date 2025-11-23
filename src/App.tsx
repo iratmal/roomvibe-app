@@ -151,8 +151,7 @@ function Hero() {
           <img
             src="/roomvibe-hero-desktop.jpg"
             alt="RoomVibe – visualize art on your walls"
-            className="block w-full h-auto object-cover"
-            style={{ maxHeight: '640px' }}
+            className="block w-full h-auto"
           />
         </picture>
         
