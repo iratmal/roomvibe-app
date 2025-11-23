@@ -164,11 +164,14 @@ function Hero() {
           
           {/* Right side: Hero image */}
           <div className="relative order-first md:order-last">
-            <img
-              src="/roomvibe-hero-desktop.jpg"
-              alt="RoomVibe – visualize art on your wall"
-              className="w-full h-auto rounded-2xl shadow-xl"
-            />
+            <picture>
+              <source srcSet="/roomvibe-hero-optimized.webp" type="image/webp" />
+              <img
+                src="/roomvibe-hero-optimized.jpg"
+                alt="RoomVibe – visualize art on your walls"
+                className="rounded-2xl shadow-xl w-full h-auto"
+              />
+            </picture>
           </div>
         </div>
       </div>
