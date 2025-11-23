@@ -1,0 +1,119 @@
+# Message for Replit Agent – Full Hero Layout Update
+
+Hi! I’d like to update the homepage hero section so that it matches the original full-width hero design (the one with the text and button overlayed directly on the room photo), instead of the current split two-column layout with a white background.
+
+Below are the exact instructions:
+
+---
+
+## 1. Use the full hero image as the background of the hero section
+
+The image has been uploaded to the `public/` folder:
+
+**`roomvibe-hero-desktop.jpg`**
+
+Please update the hero section so that it becomes **one full-width block** with this image as the background.
+
+**Example structure:**
+
+```
+<section className="hero">
+  <div className="hero-content">
+    {/* text + button */}
+  </div>
+</section>
+```
+
+**CSS example:**
+
+```
+.hero {
+  background-image: url("/roomvibe-hero-desktop.jpg");
+  background-size: cover;
+  background-position: center;
+  border-radius: 24px;
+  padding: 72px 64px;
+  margin-top: 32px;
+  position: relative;
+  overflow: hidden;
+}
+```
+
+---
+
+## 2. Place the text + button on top of the image (left side)
+
+Use the existing hero text:
+
+* Heading: **Visualize Art on Your Walls — Instantly.**
+* Subheading: **Preview real-size artwork on your wall or choose a preset room and start visualizing immediately.**
+* Button: **Start Visualizing →** linking to `/studio`
+
+Position them **over the background image**, aligned left.
+
+**Example:**
+
+```
+.hero-content {
+  max-width: 480px;
+  position: relative;
+  z-index: 1;
+  color: #ffffff; /* or keep navy if using overlay */
+}
+```
+
+### Optional readability overlay (recommended)
+
+If needed, add a soft left gradient so the text stands out:
+
+```
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.45),
+    rgba(0, 0, 0, 0.0)
+  );
+  border-radius: inherit;
+  z-index: 0;
+}
+```
+
+---
+
+## 3. Remove the separate right-hand card
+
+Please remove the image card (room-on-right) from the current two-column layout.
+
+The hero must be:
+
+* One full-width background image
+* Text + button overlayed on top (left side)
+* No additional image card
+
+---
+
+## 4. Mobile behavior
+
+On mobile screens:
+
+* The hero should remain a full-width background image.
+* Text + button stack nicely with comfortable padding.
+* Cropping is fine as long as the painting and sofa remain visible.
+
+---
+
+## 5. Keep all existing links
+
+* **Start Visualizing →** must link to `/studio`.
+* Lower CTA section (“Open Studio →”) remains unchanged.
+
+---
+
+## 6. Publish
+
+After making these changes, please **Publish** so I can review the updated homepage.
+
+Thanks so much!
