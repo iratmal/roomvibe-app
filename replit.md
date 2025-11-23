@@ -9,14 +9,16 @@ RoomVibe Studio is a comprehensive React/TypeScript web application designed to 
   - Removed all old sections: Showcase carousel, Live Demo, Pricing, FAQ, "Why Artists Love", "Perfect For"
   - New structure: Hero section → How It Works → CTA section
   - **Hero: Centered image with embedded design and clickable overlay**
-    - Displays complete `roomvibe-hero-desktop-optimized.webp` (164KB, 94% optimized from 2.6MB)
+    - Displays complete `desktop_optimized.webp` (147KB, 94% optimized from 2.6MB)
     - Uses `<picture>` element with WebP primary + JPEG fallback for browser compatibility
-    - Constrained to 1200px max-width, centered with horizontal padding (24px)
-    - Vertical padding (32px) for breathing room
+    - Constrained to 1100px max-width, centered with horizontal padding (24px)
+    - Vertical padding (24px) for breathing room
+    - **Desktop scaling**: CSS transform scale(0.82) to visually shrink logo, text, and button by 18% for elegant, balanced appearance
+    - **Mobile**: Full size display (no scaling) via separate responsive container
     - Natural aspect ratio (width: 100%, height: auto) - no cropping or zooming
     - Shows complete RoomVibe logo, artwork, and sofa without any cropping
     - Text and "Start Visualizing" button embedded in the hero image design
-    - **Clickable transparent overlay button** positioned over the graphic button (14% from bottom, 12% from left, 260×64px, z-index: 2)
+    - **Clickable transparent overlay button** positioned over the graphic button (15% from bottom, 12% from left, 260×64px, z-index: 2)
     - Single CTA - no duplicate buttons below hero
     - Mobile responsive with full-width display
   - How It Works: 3-column grid with icons (Pick a room, Select artwork, True-to-size)
