@@ -710,7 +710,7 @@ function Studio() {
                   <img src={scene.photo} alt={scene.name} className="absolute inset-0 h-full w-full object-cover" />
                 )}
                 <div
-                  className="overflow-hidden rounded-md shadow-2xl"
+                  className="rounded-md shadow-2xl"
                   style={{ 
                     position: "absolute",
                     left: `calc(${safe.x * 100}% + ${offsetX}px)`, 
@@ -727,39 +727,43 @@ function Studio() {
                       frameStyle === "Gallery"
                         ? "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
                         : "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+                    overflow: "visible", // Allow resize handle to be visible
                   }}
                   onMouseDown={handleDragStart}
                   onTouchStart={handleDragStart}
                 >
-                  {art?.imageUrl || art?.overlayImageUrl ? (
-                    <img 
-                      src={art.overlayImageUrl || art.imageUrl} 
-                      alt={art.title} 
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        display: "block",
-                        objectFit: "cover"
-                      }} 
-                      draggable={false} 
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        background:
-                          "linear-gradient(135deg, color-mix(in_oklab,var(--accent),white_10%), color-mix(in_oklab,var(--accent),black_10%))",
-                      }}
-                    />
-                  )}
+                  <div className="overflow-hidden rounded-md" style={{ width: "100%", height: "100%" }}>
+                    {art?.imageUrl || art?.overlayImageUrl ? (
+                      <img 
+                        src={art.overlayImageUrl || art.imageUrl} 
+                        alt={art.title} 
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          display: "block",
+                          objectFit: "cover"
+                        }} 
+                        draggable={false} 
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          background:
+                            "linear-gradient(135deg, color-mix(in_oklab,var(--accent),white_10%), color-mix(in_oklab,var(--accent),black_10%))",
+                        }}
+                      />
+                    )}
+                  </div>
                   
                   {/* Resize handle */}
                   <div
-                    className="absolute bottom-0 right-0 w-6 h-6 bg-white border-2 border-slate-400 rounded-tl-md hover:bg-slate-100 hover:border-slate-600 transition-colors"
+                    className="absolute w-6 h-6 bg-white border-2 border-slate-400 rounded-tl-md hover:bg-slate-100 hover:border-slate-600 transition-colors"
                     style={{ 
+                      bottom: `-${frameThicknessPx}px`,
+                      right: `-${frameThicknessPx}px`,
                       cursor: 'se-resize',
-                      transform: `translate(${frameThicknessPx}px, ${frameThicknessPx}px)` // Position outside frame
                     }}
                     onMouseDown={handleResizeStart}
                     onTouchStart={handleResizeStart}
