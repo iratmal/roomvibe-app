@@ -420,7 +420,6 @@ function Studio() {
   const artIdRef = useRef<string>(artId);
   const art = artworksState.find((a) => a.id === artId);
 
-  const [sizeUnit, setSizeUnit] = useState<"cm" | "in">("cm");
   const [frameStyle, setFrameStyle] = useState<"None" | "Slim" | "Gallery">("None");
   
   const [offsetX, setOffsetX] = useState<number>(0);
@@ -649,61 +648,47 @@ function Studio() {
                   <img src={scene.photo} alt={scene.name} className="absolute inset-0 h-full w-full object-cover" />
                 )}
                 <div
-                  className="absolute -translate-x-1/2 -translate-y-1/2"
+                  className="absolute -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-md shadow-2xl"
                   style={{ 
                     left: `calc(${safe.x * 100}% + ${offsetX}px)`, 
                     top: `calc(${safe.y * 100}% + ${offsetY}px)`, 
-                    width: `${totalWidthPx}px`,
-                    height: `${totalHeightPx}px`,
-                    cursor: isDraggingRef.current ? 'grabbing' : 'grab'
+                    width: `${artworkWidthPx}px`,
+                    height: `${artworkHeightPx}px`,
+                    borderStyle: frameStyle === "None" ? "none" : "solid",
+                    borderWidth: frameStyle === "None" ? 0 : `${frameThicknessPx}px`,
+                    borderColor: frameStyle === "Slim" ? "#1a1a1a" : "#2d2d2d",
+                    background: "#f8fafc",
+                    cursor: isDraggingRef.current ? 'grabbing' : 'grab',
+                    boxShadow:
+                      frameStyle === "Gallery"
+                        ? "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
+                        : "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
                   }}
                   onMouseDown={handleDragStart}
                   onTouchStart={handleDragStart}
                 >
-                  <div
-                    className="w-full h-full overflow-hidden rounded-md shadow-2xl"
-                    style={{
-                      boxSizing: "content-box",
-                      borderStyle: frameStyle === "None" ? "none" : "solid",
-                      borderWidth: frameStyle === "None" ? 0 : `${frameThicknessPx}px`,
-                      borderColor: frameStyle === "Slim" ? "#1a1a1a" : "#2d2d2d",
-                      boxShadow:
-                        frameStyle === "Gallery"
-                          ? "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
-                          : "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-                    }}
-                  >
+                  {art?.imageUrl || art?.overlayImageUrl ? (
+                    <img 
+                      src={art.overlayImageUrl || art.imageUrl} 
+                      alt={art.title} 
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        display: "block",
+                        objectFit: "cover"
+                      }} 
+                      draggable={false} 
+                    />
+                  ) : (
                     <div
                       style={{
-                        width: `${artworkWidthPx}px`,
-                        height: `${artworkHeightPx}px`,
-                        background: "#f8fafc",
+                        width: "100%",
+                        height: "100%",
+                        background:
+                          "linear-gradient(135deg, color-mix(in_oklab,var(--accent),white_10%), color-mix(in_oklab,var(--accent),black_10%))",
                       }}
-                    >
-                      {art?.imageUrl || art?.overlayImageUrl ? (
-                        <img 
-                          src={art.overlayImageUrl || art.imageUrl} 
-                          alt={art.title} 
-                          style={{
-                            width: `${artworkWidthPx}px`,
-                            height: `${artworkHeightPx}px`,
-                            display: "block",
-                            objectFit: "cover"
-                          }} 
-                          draggable={false} 
-                        />
-                      ) : (
-                        <div
-                          style={{
-                            width: `${artworkWidthPx}px`,
-                            height: `${artworkHeightPx}px`,
-                            background:
-                              "linear-gradient(135deg, color-mix(in_oklab,var(--accent),white_10%), color-mix(in_oklab,var(--accent),black_10%))",
-                          }}
-                        />
-                      )}
-                    </div>
-                  </div>
+                    />
+                  )}
                 </div>
               </div>
             </div>
