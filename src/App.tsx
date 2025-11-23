@@ -139,33 +139,37 @@ function HomePage() {
 /* ------------- Hero ------------- */
 
 function Hero() {
+  const navigate = (path: string) => {
+    window.location.hash = path;
+  };
+
   return (
-    <Container id="home">
-      <div className="mt-8 mb-8">
-        {/* Full-width hero image (no cropping, displays complete design with embedded text/button) */}
-        <div className="overflow-hidden rounded-3xl shadow-2xl">
-          <picture>
-            <source srcSet="/roomvibe-hero-desktop-optimized.webp" type="image/webp" />
-            <img
-              src="/roomvibe-hero-desktop.jpg"
-              alt="RoomVibe – visualize art on your walls"
-              className="block w-full h-auto"
-            />
-          </picture>
-        </div>
+    <section id="home" className="relative">
+      <div className="relative">
+        <picture>
+          <source srcSet="/roomvibe-hero-desktop-optimized.webp" type="image/webp" />
+          <img
+            src="/roomvibe-hero-desktop.jpg"
+            alt="RoomVibe – visualize art on your walls"
+            className="block w-full h-auto object-cover"
+            style={{ maxHeight: '640px' }}
+          />
+        </picture>
         
-        {/* CTA button below hero */}
-        <div className="mt-8 text-center">
-          <a
-            href="#/studio"
-            className="inline-flex items-center gap-2 rounded-xl px-8 py-3 text-lg font-medium text-black shadow-lg hover:opacity-90 transition-opacity"
-            style={{ background: "var(--accent)" }}
-          >
-            Start Visualizing →
-          </a>
-        </div>
+        {/* Clickable overlay button positioned over the graphic button in the hero image */}
+        <button
+          onClick={() => navigate('/studio')}
+          aria-label="Start Visualizing"
+          className="absolute cursor-pointer bg-transparent border-0 hover:bg-white/5 transition-colors"
+          style={{
+            bottom: '18%',
+            left: '12%',
+            width: '260px',
+            height: '64px',
+          }}
+        />
       </div>
-    </Container>
+    </section>
   );
 }
 
