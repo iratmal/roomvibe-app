@@ -144,11 +144,39 @@ function Hero() {
   };
 
   return (
-    <section id="home" className="py-8">
-      <div className="mx-auto px-6" style={{ maxWidth: '1200px' }}>
-        <div className="relative">
+    <section id="home" className="py-6">
+      <div className="mx-auto px-6" style={{ maxWidth: '1100px' }}>
+        <div className="hidden md:block" style={{ transform: 'scale(0.82)', transformOrigin: 'top center' }}>
+          <div className="relative">
+            <picture>
+              <source srcSet="/desktop_optimized.webp" type="image/webp" />
+              <img
+                src="/roomvibe-hero-desktop.jpg"
+                alt="RoomVibe – visualize art on your walls"
+                className="block w-full h-auto"
+              />
+            </picture>
+            
+            {/* Clickable overlay button positioned over the graphic button in the hero image */}
+            <button
+              onClick={() => navigate('/studio')}
+              aria-label="Start Visualizing"
+              className="absolute cursor-pointer bg-transparent border-0 hover:bg-white/5 transition-colors"
+              style={{
+                bottom: '15%',
+                left: '12%',
+                width: '260px',
+                height: '64px',
+                zIndex: 2,
+              }}
+            />
+          </div>
+        </div>
+        
+        {/* Mobile version (no scaling) */}
+        <div className="md:hidden relative">
           <picture>
-            <source srcSet="/roomvibe-hero-desktop-optimized.webp" type="image/webp" />
+            <source srcSet="/desktop_optimized.webp" type="image/webp" />
             <img
               src="/roomvibe-hero-desktop.jpg"
               alt="RoomVibe – visualize art on your walls"
@@ -156,13 +184,12 @@ function Hero() {
             />
           </picture>
           
-          {/* Clickable overlay button positioned over the graphic button in the hero image */}
           <button
             onClick={() => navigate('/studio')}
             aria-label="Start Visualizing"
             className="absolute cursor-pointer bg-transparent border-0 hover:bg-white/5 transition-colors"
             style={{
-              bottom: '14%',
+              bottom: '15%',
               left: '12%',
               width: '260px',
               height: '64px',
