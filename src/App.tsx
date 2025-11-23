@@ -758,9 +758,9 @@ function Studio() {
           </section>
 
           {/* Right: Controls */}
-          <aside className="col-span-12 lg:col-span-3 rounded-2xl border border-slate-200 bg-white p-3 lg:p-4 h-auto lg:h-[78vh] overflow-auto">
+          <aside className="col-span-12 lg:col-span-3 rounded-2xl border border-slate-200 bg-white p-4 lg:p-5 h-auto lg:h-[78vh] overflow-auto">
             <div className="text-sm font-semibold">Artwork</div>
-            <div className="mt-2 flex items-center gap-2">
+            <div className="mt-3 flex items-center gap-2">
               <select
                 className="w-full rounded-md border border-slate-300 px-2 py-1 text-sm"
                 value={artId}
@@ -773,9 +773,14 @@ function Studio() {
                 ))}
               </select>
             </div>
+            {art && art.widthCm && art.heightCm && (
+              <div className="mt-2 text-xs text-slate-500">
+                {art.widthCm} × {art.heightCm} cm
+              </div>
+            )}
 
-            <div className="mt-4 text-sm font-semibold">Size</div>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
+            <div className="mt-6 text-sm font-semibold">Size</div>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
               <label className="text-xs text-slate-700">Width</label>
               <input
                 type="number"
@@ -844,8 +849,8 @@ function Studio() {
               </label>
             </div>
 
-            <div className="mt-6 text-sm font-semibold">Frame (Pro)</div>
-            <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
+            <div className="mt-6 text-sm font-semibold">Frame</div>
+            <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
               {(["None", "Slim", "Gallery"] as const).map((o) => (
                 <button
                   key={o}
@@ -861,7 +866,7 @@ function Studio() {
               ))}
             </div>
 
-            <div className="mt-4">
+            <div className="mt-5">
               <button
                 onClick={resetPosition}
                 className="text-xs text-slate-600 hover:text-slate-900 underline"
@@ -875,7 +880,7 @@ function Studio() {
                 href={(art as any).buyUrl || (art as any).onlineStoreUrl || "#"}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-900 shadow-sm hover:bg-slate-50"
+                className="mt-6 inline-flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 shadow-sm hover:bg-slate-50"
               >
                 View &amp; Buy
               </a>
