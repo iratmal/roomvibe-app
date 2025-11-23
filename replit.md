@@ -12,8 +12,8 @@ RoomVibe Studio is a comprehensive React/TypeScript web application designed to 
     - Displays complete `roomvibe-hero-desktop-optimized.webp` (164KB, 94% optimized from 2.6MB)
     - Uses `<picture>` element with WebP primary + JPEG fallback for browser compatibility
     - Full-width display (no rounded corners, no card styling, no shadows)
-    - Height-constrained to 640px max with object-fit: cover for optimal proportions
-    - Shows complete RoomVibe logo, artwork, and sofa without cropping
+    - Natural aspect ratio (width: 100%, height: auto) - no cropping or zooming
+    - Shows complete RoomVibe logo, artwork, and sofa without any cropping
     - Text and "Start Visualizing" button embedded in the hero image design
     - **Clickable transparent overlay button** positioned over the graphic button (18% from bottom, 12% from left, 260×64px)
     - Single CTA - no duplicate buttons below hero
