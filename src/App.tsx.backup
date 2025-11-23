@@ -753,7 +753,6 @@ function Studio() {
   );
 }
 
-
 /* ------------- How it works ------------- */
 
 function HowItWorks() {
@@ -813,7 +812,6 @@ function CTASection() {
     </Container>
   );
 }
-
 
 /* ------------- Docs page (kodovi) ------------- */
 

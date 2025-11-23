@@ -753,6 +753,282 @@ function Studio() {
   );
 }
 
+/* ------------- Live demo on homepage ------------- */
+
+function LiveDemoMock() {
+  const [room, setRoom] = useState<"Living" | "Hallway" | "Bedroom">("Living");
+  const [wall, setWall] = useState("#f2f4f7");
+  const [sizeUnit, setSizeUnit] = useState<"cm" | "in">("cm");
+  const [widthVal, setWidthVal] = useState<number>(100);
+  const [heightVal, setHeightVal] = useState<number>(70);
+  const [lockRatio, setLockRatio] = useState<boolean>(true);
+  const [userPhoto, setUserPhoto] = useState<string | null>(null);
+  const [showSizingInfo, setShowSizingInfo] = useState(false);
+  const artworks = localArtworks as any[];
+  const [selectedArtId, setSelectedArtId] = useState<string>(localArtworks[0]?.id || "");
+  const fileRef = useRef<HTMLInputElement | null>(null);
+
+  const selectedArtwork = artworks.find((a) => a.id === selectedArtId);
+
+  const widthCm = sizeUnit === "cm" ? widthVal : widthVal * 2.54;
+  const heightCm = sizeUnit === "cm" ? heightVal : heightVal * 2.54;
+
+  const artWidthPct = Math.max(18, Math.min(60, 0.24 * widthCm + 12));
+  const artAspect = Math.max(0.2, Math.min(5, widthCm / Math.max(1, heightCm)));
+
+  return (
+    <Container id="demo">
+      <div className="grid items-center gap-8 lg:grid-cols-2">
+        <div className="order-2 lg:order-1">
+          <h2 className="text-2xl font-semibold">Live demo (preview)</h2>
+          <p className="mt-2 text-slate-600">
+            Change room, pick an artwork, set size, or upload your wall photo – exactly what your visitors will do.
+          </p>
+          <div className="mt-6 grid gap-5">
+            <fieldset>
+              <legend className="mb-2 text-sm font-medium text-slate-700">Artwork</legend>
+              <div className="flex flex-wrap items-center gap-2">
+                <select
+                  className="rounded-md border border-slate-300 px-2 py-1 text-sm"
+                  value={selectedArtId}
+                  onChange={(e) => setSelectedArtId(e.target.value)}
+                >
+                  {artworks.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend className="mb-2 text-sm font-medium text-slate-700">Room preset</legend>
+              <div className="flex flex-wrap gap-2">
+                {["Living", "Hallway", "Bedroom"].map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => setRoom(r as any)}
+                    className={`rounded-lg border px-3 py-1.5 text-sm shadow-sm ${
+                      room === r ? "text-white" : "border-slate-200 bg-white hover:bg-slate-50"
+                    }`}
+                    style={room === r ? { background: "var(--accent)" } : {}}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend className="mb-2 text-sm font-medium text-slate-700">Your wall</legend>
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm shadow-sm hover:bg-slate-50"
+                  onClick={() => fileRef.current?.click()}
+                >
+                  <UploadIcon className="h-4 w-4" /> Upload your wall photo
+                </button>
+                {userPhoto && (
+                  <button className="text-xs underline text-slate-700" onClick={() => setUserPhoto(null)}>
+                    Remove photo
+                  </button>
+                )}
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const url = URL.createObjectURL(file);
+                      setUserPhoto(url);
+                    }
+                  }}
+                />
+                <span className="text-xs text-slate-500">Images stay local in your browser — not uploaded.</span>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend className="mb-2 text-sm font-medium text-slate-700">Artwork size</legend>
+              <div className="flex flex-wrap items-center gap-2">
+                <label className="text-xs text-slate-700">Width</label>
+                <input
+                  type="number"
+                  min={1}
+                  className="w-24 rounded-md border border-slate-300 px-2 py-1 text-sm"
+                  value={widthVal}
+                  onChange={(e) => {
+                    const v = Math.max(1, +e.target.value || 1);
+                    const currentWidthCm = sizeUnit === "cm" ? widthVal : widthVal * 2.54;
+                    const currentHeightCm = sizeUnit === "cm" ? heightVal : heightVal * 2.54;
+
+                    if (lockRatio) {
+                      const ratio = currentHeightCm / Math.max(1, currentWidthCm);
+                      const newWidth = v;
+                      const newHeight = +(newWidth * ratio).toFixed(1);
+                      setWidthVal(v);
+                      setHeightVal(newHeight);
+                    } else {
+                      setWidthVal(v);
+                    }
+                  }}
+                />
+                <label className="text-xs text-slate-700 ml-2">Height</label>
+                <input
+                  type="number"
+                  min={1}
+                  className="w-24 rounded-md border border-slate-300 px-2 py-1 text-sm"
+                  value={heightVal}
+                  onChange={(e) => {
+                    const v = Math.max(1, +e.target.value || 1);
+                    const currentWidthCm = sizeUnit === "cm" ? widthVal : widthVal * 2.54;
+                    const currentHeightCm = sizeUnit === "cm" ? heightVal : heightVal * 2.54;
+
+                    if (lockRatio) {
+                      const ratio = currentWidthCm / Math.max(1, currentHeightCm);
+                      const newHeight = v;
+                      const newWidth = +(newHeight * ratio).toFixed(1);
+                      setHeightVal(v);
+                      setWidthVal(newWidth);
+                    } else {
+                      setHeightVal(v);
+                    }
+                  }}
+                />
+                <select
+                  className="ml-2 rounded-md border border-slate-300 px-2 py-1 text-sm"
+                  value={sizeUnit}
+                  onChange={(e) => {
+                    const val = e.target.value as "cm" | "in";
+                    if (val === "in" && sizeUnit === "cm") {
+                      setWidthVal(+(widthVal / 2.54).toFixed(1));
+                      setHeightVal(+(heightVal / 2.54).toFixed(1));
+                    } else if (val === "cm" && sizeUnit === "in") {
+                      setWidthVal(+(widthVal * 2.54).toFixed(1));
+                      setHeightVal(+(heightVal * 2.54).toFixed(1));
+                    }
+                    setSizeUnit(val);
+                  }}
+                >
+                  <option value="cm">cm</option>
+                  <option value="in">in</option>
+                </select>
+                <label className="ml-2 inline-flex items-center gap-1 text-xs text-slate-700">
+                  <input type="checkbox" checked={lockRatio} onChange={(e) => setLockRatio(e.target.checked)} />
+                  Lock ratio
+                </label>
+              </div>
+              <div className="mt-2">
+                <button
+                  className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs shadow-sm hover:bg-slate-50"
+                  onClick={() => setShowSizingInfo(true)}
+                  title="How true-to-size works"
+                >
+                  <InfoIcon className="h-3.5 w-3.5" /> How true-to-size works
+                </button>
+              </div>
+            </fieldset>
+          </div>
+        </div>
+
+        <div className="order-1 lg:order-2">
+          <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 text-sm">
+              <div className="flex items-center gap-2 text-slate-600">
+                <RoomIcon className="h-4 w-4" /> {room} room
+              </div>
+              <div className="text-slate-500">
+                {userPhoto ? (
+                  <span>Custom wall photo</span>
+                ) : (
+                  <>
+                    Wall: <span className="font-mono text-xs">{wall.toUpperCase()}</span>
+                  </>
+                )}
+              </div>
+            </div>
+            <div className="relative h-80 w-full">
+              {userPhoto ? (
+                <img src={userPhoto} alt="Your wall" className="absolute inset-0 h-full w-full object-cover" />
+              ) : (
+                <div className="absolute inset-0" style={{ background: wall }} />
+              )}
+              <div className="absolute bottom-0 left-0 right-0 h-12 bg-[linear-gradient(180deg,rgba(0,0,0,0.04),rgba(0,0,0,0.08))]" />
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                <div
+                  className="overflow-hidden rounded-md border-8 border-white shadow-xl"
+                  style={{ width: `${artWidthPct}%`, aspectRatio: `${artAspect}/1`, background: "#f8fafc" }}
+                >
+                  {selectedArtwork?.imageUrl || selectedArtwork?.overlayImageUrl ? (
+                    <img src={selectedArtwork.overlayImageUrl || selectedArtwork.imageUrl} alt={selectedArtwork.title} className="h-full w-full object-cover" draggable={false} />
+                  ) : (
+                    <div
+                      className="h-full w-full"
+                      style={{
+                        background:
+                          "linear-gradient(135deg, color-mix(in_oklab,var(--accent),white_10%), color-mix(in_oklab,var(--accent),black_10%))",
+                      }}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 px-4 py-2 text-xs text-slate-500">
+              <div>
+                Preview only · Size: {widthVal}×{heightVal} {sizeUnit}
+              </div>
+              <div className="flex items-center gap-3">
+                <span>Powered by RoomVibe</span>
+                {selectedArtwork && (
+                  <a
+                    href={(selectedArtwork as any).onlineStoreUrl || "#"}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center rounded-md border border-slate-300 bg-white px-2 py-1 text-[11px] font-medium text-slate-900 hover:bg-slate-50"
+                  >
+                    View &amp; Buy
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {showSizingInfo && (
+        <Modal onClose={() => setShowSizingInfo(false)}>
+          <div className="text-sm text-slate-700">
+            <h3 className="text-lg font-semibold">How true-to-size works</h3>
+            <p className="mt-2">For accurate scale, we’ll add a quick one-time calibration in the full app:</p>
+            <ol className="mt-3 list-decimal space-y-2 pl-5">
+              <li>
+                <b>Reference object:</b> Place a standard A4 paper (210 × 297 mm) or a credit card on the wall and take a photo.
+              </li>
+              <li>
+                <b>Calibrate:</b> Mark the reference corners in the photo. We compute the pixel-to-cm ratio and perspective.
+              </li>
+              <li>
+                <b>Verify:</b> Enter the artwork size (e.g., 100 × 70 cm). The mockup snaps to the exact scale on your wall photo.
+              </li>
+            </ol>
+            <p className="mt-3">Your photo stays local in the browser during preview. For embeds, merchants can opt-in to store a copy with consent.</p>
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => setShowSizingInfo(false)}
+                className="inline-flex items-center rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs hover:bg-slate-50"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+    </Container>
+  );
+}
 
 /* ------------- How it works ------------- */
 
@@ -814,6 +1090,230 @@ function CTASection() {
   );
 }
 
+/* ------------- Why artists love RoomVibe ------------- */
+
+function WhyArtistsLove() {
+  const items = [
+    {
+      title: "Instant mockups",
+      text: "Create beautiful room previews in seconds — no Photoshop, no manual cropping.",
+    },
+    {
+      title: "Sell more originals",
+      text: "Buyers see your art on their own wall, true-to-size, which increases confidence and conversions.",
+    },
+    {
+      title: "Designer-friendly",
+      text: "Interior designers can plan placements for clients and share interactive previews.",
+    },
+  ];
+
+  return (
+    <Container>
+      <div className="grid gap-10 lg:grid-cols-2 items-center">
+        <div>
+          <h2 className="text-2xl font-semibold">Why artists love RoomVibe</h2>
+          <p className="mt-2 text-slate-600">
+            RoomVibe turns your artwork into a visual experience. Show collectors exactly how a piece will feel in their space — before you ship it.
+          </p>
+          <div className="mt-6 space-y-4">
+            {items.map((item) => (
+              <div key={item.title} className="flex gap-3">
+                <div
+                  className="mt-1 inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full"
+                  style={{ background: "var(--accent-soft)" }}
+                >
+                  <CheckIcon className="h-4 w-4" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold">{item.title}</div>
+                  <div className="text-sm text-slate-600">{item.text}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="text-xs font-medium text-slate-500 uppercase tracking-wide">For collectors</div>
+          <h3 className="mt-3 text-lg font-semibold">“I can finally see if a piece truly fits my home.”</h3>
+          <p className="mt-2 text-sm text-slate-600">
+            Buyers can upload a photo of their living room, hallway or bedroom and instantly see how your work looks on their wall. No guessing, no
+            measuring tape drama — just clarity.
+          </p>
+          <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 text-xs text-slate-600">
+            Perfect for:
+            <ul className="mt-1 list-disc pl-4 space-y-1">
+              <li>Large statement pieces that are hard to imagine in a room</li>
+              <li>High-end collectors who want to be sure before investing</li>
+              <li>Designers presenting options to their clients</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </Container>
+  );
+}
+
+/* ------------- Perfect for... ------------- */
+
+function PerfectFor() {
+  const cards = [
+    {
+      title: "Artists & galleries",
+      text: "Showcase originals and prints in real interiors, embed the Studio on your site and let buyers try art on their walls.",
+    },
+    {
+      title: "Interior designers",
+      text: "Plan art placement in client homes or projects and export reference screenshots for presentations.",
+    },
+    {
+      title: "Online art buyers",
+      text: "Upload a wall photo, test different pieces and sizes, and buy directly from the artist with confidence.",
+    },
+  ];
+
+  return (
+    <Container>
+      <div className="mx-auto max-w-3xl text-center">
+        <h2 className="text-2xl font-semibold">Perfect for artists, galleries &amp; designers</h2>
+        <p className="mt-2 text-slate-600">
+          One tool that works for original art, limited prints and high-end interior projects.
+        </p>
+      </div>
+      <div className="mt-8 grid gap-6 md:grid-cols-3">
+        {cards.map((c) => (
+          <div key={c.title} className="rounded-2xl border border-slate-200 bg-white p-5 text-sm shadow-sm">
+            <div className="text-sm font-semibold">{c.title}</div>
+            <p className="mt-2 text-slate-600">{c.text}</p>
+          </div>
+        ))}
+      </div>
+    </Container>
+  );
+}
+
+/* ------------- Pricing ------------- */
+
+function Pricing() {
+  const tiers = [
+    {
+      name: "Free",
+      price: "€0 / mo",
+      highlight: false,
+      features: ["1 room preset (Living)", "Up to 5 artworks", "Up to 2 sizes per artwork", "Color picker (no upload)", "Designer Mode: —"],
+      cta: "Start Free",
+    },
+    {
+      name: "Basic",
+      price: "€9 / mo",
+      highlight: true,
+      features: [
+        "10 room presets",
+        "Up to 50 artworks",
+        "Up to 5 sizes per artwork",
+        "Swatches + color picker",
+        "Designer Mode enabled (width input)",
+      ],
+      cta: "Choose Basic",
+    },
+    {
+      name: "Designer Pro",
+      price: "€29 / mo",
+      highlight: false,
+      features: [
+        "Unlimited room presets",
+        "Unlimited artworks",
+        "Unlimited sizes per artwork",
+        "Unlimited palettes",
+        "Designer Mode advanced (ruler + cm/in)",
+      ],
+      cta: "Go Pro",
+    },
+  ];
+  return (
+    <Container id="pricing">
+      <div className="mx-auto max-w-3xl text-center">
+        <h2 className="text-2xl font-semibold">Pricing</h2>
+        <p className="mt-2 text-slate-600">Simple plans that scale with your gallery.</p>
+      </div>
+      <div className="mt-8 grid gap-6 md:grid-cols-3">
+        {tiers.map((t) => (
+          <div
+            key={t.name}
+            className={`relative rounded-2xl border p-6 shadow-sm ${
+              t.highlight ? "border-slate-900 bg-gradient-to-b from-white to-slate-50" : "border-slate-200 bg-white"
+            }`}
+          >
+            {t.highlight && (
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium shadow-sm">
+                Recommended
+              </div>
+            )}
+            <div className="text-sm text-slate-500">{t.name}</div>
+            <div className="mt-1 text-3xl font-semibold">{t.price}</div>
+            <ul className="mt-4 grid gap-2 text-sm text-slate-700">
+              {t.features.map((f) => (
+                <li key={f} className="flex items-start gap-2">
+                  <CheckIcon className="mt-0.5 h-4 w-4" />
+                  <span>{f}</span>
+                </li>
+              ))}
+            </ul>
+            <a
+              href="#/studio"
+              className="mt-6 inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-black hover:opacity-90"
+              style={{ background: "var(--accent)" }}
+            >
+              {t.cta}
+            </a>
+          </div>
+        ))}
+      </div>
+    </Container>
+  );
+}
+
+/* ------------- FAQ (kraća verzija) ------------- */
+
+function FAQ() {
+  const faqs = [
+    {
+      q: "How do I add RoomVibe to my website?",
+      a: "Use the Docs page to copy a small script tag or React component. Paste it into your site template, connect your artworks, and you’re live.",
+    },
+    {
+      q: "How does true-to-size sizing work?",
+      a: "In the full app we’ll add a calibration step with A4 paper or a credit card. We then compute pixel-to-centimeter ratio so artwork snaps to exact size.",
+    },
+    {
+      q: "Do you store photos of my walls?",
+      a: "In the demo, photos stay only in your browser. In Pro, merchants can choose to store photos with visitor consent, for reuse across products.",
+    },
+    {
+      q: "Can I sell my art through RoomVibe?",
+      a: "Yes. RoomVibe connects to Shopify or your existing checkout. Buyers preview art in the widget and finish payment in your store.",
+    },
+  ];
+  return (
+    <Container id="faq">
+      <div className="mx-auto max-w-3xl text-center">
+        <h2 className="text-2xl font-semibold">FAQ</h2>
+        <p className="mt-2 text-slate-600">Quick answers to the most common questions.</p>
+      </div>
+      <div className="mx-auto mt-6 max-w-3xl divide-y divide-slate-200 rounded-2xl border border-slate-200 bg-white">
+        {faqs.map((f, i) => (
+          <details key={i} className="group open:rounded-2xl">
+            <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-4">
+              <span className="text-sm font-medium text-slate-900">{f.q}</span>
+              <ChevronDown className="h-4 w-4 text-slate-500 transition group-open:rotate-180" />
+            </summary>
+            <div className="px-5 pb-4 text-sm text-slate-600">{f.a}</div>
+          </details>
+        ))}
+      </div>
+    </Container>
+  );
+}
 
 /* ------------- Docs page (kodovi) ------------- */
 
