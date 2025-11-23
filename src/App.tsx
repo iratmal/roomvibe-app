@@ -162,11 +162,13 @@ function Hero() {
             </div>
           </div>
           
-          {/* Right side: Hero image placeholder */}
-          <div className="relative">
-            <div className="aspect-[4/3] w-full rounded-2xl bg-slate-200 flex items-center justify-center shadow-xl">
-              <span className="text-slate-500 font-medium">Hero image placeholder</span>
-            </div>
+          {/* Right side: Hero image */}
+          <div className="relative order-first md:order-last">
+            <img
+              src="/roomvibe-hero-desktop.jpg"
+              alt="RoomVibe – visualize art on your wall"
+              className="w-full h-auto rounded-2xl shadow-xl"
+            />
           </div>
         </div>
       </div>
