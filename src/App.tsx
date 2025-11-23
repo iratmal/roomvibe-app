@@ -416,7 +416,7 @@ function Studio() {
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
 
   const [artworksState, setArtworksState] = useState<any[]>(localArtworks as any);
-  const [artId, setArtId] = useState<string>(localArtworks[0]?.id || "");
+  const [artId, setArtId] = useState<string>("light-my-fire-140-70-cm-roomvibe");
   const artIdRef = useRef<string>(artId);
   const art = artworksState.find((a) => a.id === artId);
 
@@ -429,9 +429,14 @@ function Studio() {
   const canvasRef = useRef<HTMLDivElement>(null);
   
   const [pxPerCm, setPxPerCm] = useState<number>(2); // pixels per centimeter ratio
+  const [scale, setScale] = useState<number>(1.0); // artwork scale multiplier (1.0 = 100%)
+  const [isResizing, setIsResizing] = useState<boolean>(false);
+  const resizeStartRef = useRef<{ x: number; y: number; startScale: number } | null>(null);
 
   useEffect(() => {
     artIdRef.current = artId;
+    // Reset scale to 100% when artwork changes
+    setScale(1.0);
   }, [artId]);
 
   // Calculate px/cm ratio based on canvas height and room wall height
@@ -454,15 +459,17 @@ function Studio() {
   const scene: any = (presets as any).find((p: any) => p.id === sceneId) || (presets as any)[0];
   const safe = scene?.safeArea || { x: 0.5, y: 0.4, w: 0.6, h: 0.5 };
 
-  // Real-scale artwork dimensions in pixels
+  // Real-scale artwork dimensions in pixels (with scale multiplier)
   const artworkWidthCm = art?.widthCm || 100;
   const artworkHeightCm = art?.heightCm || 70;
-  const artworkWidthPx = artworkWidthCm * pxPerCm;
-  const artworkHeightPx = artworkHeightCm * pxPerCm;
+  const baseArtworkWidthPx = artworkWidthCm * pxPerCm;
+  const baseArtworkHeightPx = artworkHeightCm * pxPerCm;
+  const artworkWidthPx = baseArtworkWidthPx * scale;
+  const artworkHeightPx = baseArtworkHeightPx * scale;
 
-  // Frame thickness in pixels (added OUTSIDE the artwork)
+  // Frame thickness in pixels (added OUTSIDE the artwork at fixed physical size)
   const frameThicknessCm = FRAME_THICKNESS_CM[frameStyle] || 0;
-  const frameThicknessPx = frameThicknessCm * pxPerCm;
+  const frameThicknessPx = frameThicknessCm * pxPerCm; // Fixed physical size (NOT scaled)
 
   // Total dimensions including frame
   const totalWidthPx = artworkWidthPx + frameThicknessPx * 2;
@@ -558,6 +565,51 @@ function Studio() {
     setOffsetY(0);
   };
 
+  const handleResizeStart = (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    resizeStartRef.current = { 
+      x: clientX, 
+      y: clientY, 
+      startScale: scale 
+    };
+    setIsResizing(true);
+  };
+
+  const handleResizeMove = (e: MouseEvent | TouchEvent) => {
+    if (!isResizing || !resizeStartRef.current || !canvasRef.current) return;
+    e.preventDefault();
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    
+    const deltaX = clientX - resizeStartRef.current.x;
+    const deltaY = clientY - resizeStartRef.current.y;
+    
+    // Project delta onto SE diagonal (45-degree resize handle)
+    const diagonalDelta = (deltaX + deltaY) / Math.sqrt(2);
+    
+    // Convert pixel delta to scale change (sensitivity: 1px = 0.002 scale)
+    const scaleChange = diagonalDelta * 0.002;
+    let newScale = resizeStartRef.current.startScale + scaleChange;
+    
+    // Apply smart limits based on room type
+    if (userPhoto) {
+      // User-uploaded room: allow wider range (30% - 300%)
+      newScale = Math.max(0.3, Math.min(3.0, newScale));
+    } else {
+      // Mockup rooms (room01-room10): limited range (70% - 130%)
+      newScale = Math.max(0.7, Math.min(1.3, newScale));
+    }
+    
+    setScale(newScale);
+  };
+
+  const handleResizeEnd = () => {
+    setIsResizing(false);
+    resizeStartRef.current = null;
+  };
+
   useEffect(() => {
     const options = { passive: false };
     window.addEventListener('mousemove', handleDragMove);
@@ -565,13 +617,23 @@ function Studio() {
     window.addEventListener('touchmove', handleDragMove, options);
     window.addEventListener('touchend', handleDragEnd);
     
+    window.addEventListener('mousemove', handleResizeMove);
+    window.addEventListener('mouseup', handleResizeEnd);
+    window.addEventListener('touchmove', handleResizeMove, options);
+    window.addEventListener('touchend', handleResizeEnd);
+    
     return () => {
       window.removeEventListener('mousemove', handleDragMove);
       window.removeEventListener('mouseup', handleDragEnd);
       window.removeEventListener('touchmove', handleDragMove, options as any);
       window.removeEventListener('touchend', handleDragEnd);
+      
+      window.removeEventListener('mousemove', handleResizeMove);
+      window.removeEventListener('mouseup', handleResizeEnd);
+      window.removeEventListener('touchmove', handleResizeMove, options as any);
+      window.removeEventListener('touchend', handleResizeEnd);
     };
-  }, []);
+  }, [isResizing]);
 
   return (
     <main>
@@ -648,10 +710,12 @@ function Studio() {
                   <img src={scene.photo} alt={scene.name} className="absolute inset-0 h-full w-full object-cover" />
                 )}
                 <div
-                  className="absolute -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-md shadow-2xl"
+                  className="overflow-hidden rounded-md shadow-2xl"
                   style={{ 
+                    position: "absolute",
                     left: `calc(${safe.x * 100}% + ${offsetX}px)`, 
                     top: `calc(${safe.y * 100}% + ${offsetY}px)`, 
+                    transform: "translate(-50%, -50%)",
                     width: `${artworkWidthPx}px`,
                     height: `${artworkHeightPx}px`,
                     borderStyle: frameStyle === "None" ? "none" : "solid",
@@ -689,6 +753,21 @@ function Studio() {
                       }}
                     />
                   )}
+                  
+                  {/* Resize handle */}
+                  <div
+                    className="absolute bottom-0 right-0 w-6 h-6 bg-white border-2 border-slate-400 rounded-tl-md hover:bg-slate-100 hover:border-slate-600 transition-colors"
+                    style={{ 
+                      cursor: 'se-resize',
+                      transform: `translate(${frameThicknessPx}px, ${frameThicknessPx}px)` // Position outside frame
+                    }}
+                    onMouseDown={handleResizeStart}
+                    onTouchStart={handleResizeStart}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-full h-full text-slate-600">
+                      <path d="M9 15l6-6m0 4l-4 4" strokeWidth="2" strokeLinecap="round" />
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>
