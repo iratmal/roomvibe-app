@@ -144,29 +144,32 @@ function Hero() {
   };
 
   return (
-    <section id="home" className="relative">
-      <div className="relative">
-        <picture>
-          <source srcSet="/roomvibe-hero-desktop-optimized.webp" type="image/webp" />
-          <img
-            src="/roomvibe-hero-desktop.jpg"
-            alt="RoomVibe – visualize art on your walls"
-            className="block w-full h-auto"
+    <section id="home" className="py-8">
+      <div className="mx-auto px-6" style={{ maxWidth: '1200px' }}>
+        <div className="relative">
+          <picture>
+            <source srcSet="/roomvibe-hero-desktop-optimized.webp" type="image/webp" />
+            <img
+              src="/roomvibe-hero-desktop.jpg"
+              alt="RoomVibe – visualize art on your walls"
+              className="block w-full h-auto"
+            />
+          </picture>
+          
+          {/* Clickable overlay button positioned over the graphic button in the hero image */}
+          <button
+            onClick={() => navigate('/studio')}
+            aria-label="Start Visualizing"
+            className="absolute cursor-pointer bg-transparent border-0 hover:bg-white/5 transition-colors"
+            style={{
+              bottom: '14%',
+              left: '12%',
+              width: '260px',
+              height: '64px',
+              zIndex: 2,
+            }}
           />
-        </picture>
-        
-        {/* Clickable overlay button positioned over the graphic button in the hero image */}
-        <button
-          onClick={() => navigate('/studio')}
-          aria-label="Start Visualizing"
-          className="absolute cursor-pointer bg-transparent border-0 hover:bg-white/5 transition-colors"
-          style={{
-            bottom: '18%',
-            left: '12%',
-            width: '260px',
-            height: '64px',
-          }}
-        />
+        </div>
       </div>
     </section>
   );
