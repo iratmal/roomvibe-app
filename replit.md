@@ -4,21 +4,26 @@
 RoomVibe Studio is a comprehensive React/TypeScript web application designed to visualize artwork in various room environments using a Canvy-style three-panel editor. Its core purpose is to allow users to see how artworks would look on their walls, featuring functionalities like true-to-scale sizing and the potential for wall recoloring. The application aims to provide a modern, user-friendly art visualization experience, ready for integration with e-commerce platforms like Shopify.
 
 ## Recent Changes (November 23, 2025)
-**HOMEPAGE REDESIGN & FULL-WIDTH HERO:**
+**HOMEPAGE REDESIGN & OPTIMIZED FULL-WIDTH HERO:**
 - **Complete homepage redesign** with clean, modern layout:
   - Removed all old sections: Showcase carousel, Live Demo, Pricing, FAQ, "Why Artists Love", "Perfect For"
   - New structure: Hero section → How It Works → CTA section
-  - **Hero: Full-width background image** with overlayed text and CTA button
-    - Background: `roomvibe-hero-desktop.jpg` showing artwork in living room
-    - Gradient overlay for text readability (dark left to transparent right)
-    - White text positioned on left side (max-width: 540px)
+  - **Hero: Full-width image with embedded design** (no cropping, no duplicate overlays)
+    - Displays complete `roomvibe-hero-desktop-optimized.webp` (164KB, 94% optimized from 2.6MB)
+    - Uses `<picture>` element with WebP primary + JPEG fallback for browser compatibility
+    - Full aspect ratio preserved - shows complete RoomVibe logo, artwork, and sofa
+    - Text and "Start Visualizing" button embedded in the hero image design
+    - Single clean CTA button centered below hero, links to `/studio`
     - Rounded corners (24px) with dramatic shadow
-    - Minimum height: 500px
-    - Mobile responsive with comfortable padding
+    - Mobile responsive with full-width display
   - How It Works: 3-column grid with icons (Pick a room, Select artwork, True-to-size)
   - CTA: Centered "Ready to try it?" with "Open Studio" button
   - Simplified navigation: How it works, Studio, Try Studio button
   - Minimal footer: Studio, Privacy links only
+- **Performance optimization:**
+  - Hero image: 164KB WebP (94% reduction from original 2.6MB)
+  - Dramatically improved Largest Contentful Paint (LCP)
+  - Fast loading on mobile and slow connections
 
 **UX IMPROVEMENTS - RESIZE & FRAME FIXES:**
 - **Resize functionality restored** with smart scaling limits:
