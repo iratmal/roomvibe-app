@@ -4,6 +4,21 @@
 RoomVibe Studio is a comprehensive React/TypeScript web application designed to visualize artwork in various room environments using a Canvy-style three-panel editor. Its core purpose is to allow users to see how artworks would look on their walls, featuring functionalities like true-to-scale sizing and the potential for wall recoloring. The application aims to provide a modern, user-friendly art visualization experience, ready for integration with e-commerce platforms like Shopify.
 
 ## Recent Changes (November 24, 2025)
+**MVP: EMAIL CONFIRMATION DISABLED (Auto-Login):**
+- **Temporarily disabled email confirmation** to unblock users for MVP:
+  - New users auto-verified on registration (`email_confirmed = true`)
+  - Registration automatically logs users in (JWT cookie set immediately)
+  - Redirect to dashboard after 1.5 seconds
+  - Login endpoint no longer blocks unverified users
+- **Auto-login flow**:
+  - Register → Backend sets HttpOnly cookie → Frontend updates auth state → Redirect to dashboard
+  - Seamless user experience: register once, immediately use the app
+  - No manual login step required after registration
+- **Future extensibility**:
+  - Email confirmation infrastructure preserved (confirmation_token still generated)
+  - Can re-enable by changing one boolean and adding email provider
+  - No architectural changes needed for future email implementation
+
 **AUTHENTICATION BUGFIX - Production JSON.parse Error:**
 - **Fixed critical JSON.parse error** on production registration:
   - Added content-type validation before parsing JSON responses (prevents crashes on HTML error pages)
