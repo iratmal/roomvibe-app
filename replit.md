@@ -3,6 +3,58 @@
 ## Overview
 RoomVibe Studio is a comprehensive React/TypeScript web application designed to visualize artwork in various room environments using a Canvy-style three-panel editor. Its core purpose is to allow users to see how artworks would look on their walls, featuring functionalities like true-to-scale sizing and the potential for wall recoloring. The application aims to provide a modern, user-friendly art visualization experience, ready for integration with e-commerce platforms like Shopify. It includes a full-stack authentication system with role-based access control and robust security features.
 
+## Recent Changes (November 24, 2025)
+**ROLE-BASED DASHBOARDS:**
+- **Implemented complete role-based dashboard system**:
+  - Three professional dashboards: Artist, Designer, Gallery (plus User and Admin)
+  - Role-specific routing with access control:
+    - `#/dashboard` → Auto-routes based on user role
+    - `#/dashboard/artist` → Artist Dashboard (artist role only)
+    - `#/dashboard/designer` → Designer Dashboard (designer role only)
+    - `#/dashboard/gallery` → Gallery Dashboard (gallery role only)
+  - Unauthorized access prevented: Wrong role redirects to correct dashboard
+  - Each dashboard includes Change Password feature
+- **Artist Dashboard placeholders**:
+  - Upload Artwork, My Artworks, Analytics
+  - Purple-themed account section
+- **Designer Dashboard placeholders**:
+  - My Projects, Upload Project, PDF/Moodboard Export
+  - Indigo-themed account section
+- **Gallery Dashboard placeholders**:
+  - Upload Collection, My Collection, Online Exhibition Builder
+  - Green-themed account section
+- **Security implementation**:
+  - Role-based access control (RBAC) on all dashboard routes
+  - Unauthenticated users redirected to login
+  - Users cannot access dashboards for other roles
+  - Clean separation of concerns for future admin features
+
+**PASSWORD CHANGE FEATURE:**
+- **Added "Change Password" functionality inside all dashboards**:
+  - Secure password update form with current password verification
+  - Validation: Current password check, new password length (≥6 chars), password match confirmation
+  - Real-time error/success messaging with color-coded UI
+  - Auto-clears form fields after successful password change
+  - Backend endpoint: POST /api/auth/change-password (JWT protected)
+  - Password hashing with bcrypt before database update
+  - Comprehensive error handling for authentication failures and validation errors
+- **Available on all dashboards**: User, Artist, Designer, Gallery, Admin
+
+**MVP: EMAIL CONFIRMATION DISABLED (Auto-Login):**
+- **Temporarily disabled email confirmation** to unblock users for MVP:
+  - New users auto-verified on registration (`email_confirmed = true`)
+  - Registration automatically logs users in (JWT cookie set immediately)
+  - Redirect to dashboard after 1.5 seconds
+  - Login endpoint no longer blocks unverified users
+- **Auto-login flow**:
+  - Register → Backend sets HttpOnly cookie → Frontend updates auth state → Redirect to dashboard
+  - Seamless user experience: register once, immediately use the app
+  - No manual login step required after registration
+- **Future extensibility**:
+  - Email confirmation infrastructure preserved (confirmation_token still generated)
+  - Can re-enable by changing one boolean and adding email provider
+  - No architectural changes needed for future email implementation
+
 ## User Preferences
 I prefer simple language in explanations. I like functional programming paradigms where applicable. I want iterative development, with small, testable changes. Ask before making major architectural changes or introducing new dependencies. I prefer detailed explanations for complex logic. Do not make changes to files in the `public/presets` folder. Do not make changes to the `server.js` file.
 
