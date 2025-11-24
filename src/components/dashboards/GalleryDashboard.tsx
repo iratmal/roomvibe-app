@@ -1,12 +1,14 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ChangePassword } from '../ChangePassword';
+import { ImpersonationBanner } from '../ImpersonationBanner';
 
 export function GalleryDashboard() {
   const { user, logout } = useAuth();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+      <ImpersonationBanner />
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>

@@ -51,6 +51,11 @@ export function AuthProvider({ children }: { children: React.ReactNode}) {
           const data = await response.json();
           setUser(data.user);
           setToken('authenticated');
+          
+          if (data.user?.role !== 'admin') {
+            sessionStorage.removeItem('impersonatedRole');
+            setImpersonatedRole(null);
+          }
         } else {
           console.error('Expected JSON response but got:', contentType);
           setUser(null);
@@ -97,6 +102,10 @@ export function AuthProvider({ children }: { children: React.ReactNode}) {
 
       setToken('authenticated');
       setUser(data.user);
+      
+      if (data.user?.role !== 'admin') {
+        clearImpersonation();
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Login failed';
       setError(errorMessage);
@@ -134,6 +143,10 @@ export function AuthProvider({ children }: { children: React.ReactNode}) {
 
       setToken('authenticated');
       setUser(data.user);
+      
+      if (data.user?.role !== 'admin') {
+        clearImpersonation();
+      }
 
       return data;
     } catch (err) {
@@ -181,7 +194,9 @@ export function AuthProvider({ children }: { children: React.ReactNode}) {
     setImpersonatedRole(null);
   };
 
-  const effectiveRole = impersonatedRole || user?.role || 'user';
+  const effectiveRole = (user?.role === 'admin' && impersonatedRole) 
+    ? impersonatedRole 
+    : (user?.role || 'user');
 
   return (
     <AuthContext.Provider value={{ 

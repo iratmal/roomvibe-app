@@ -106,7 +106,7 @@ function AuthPage({ mode }: { mode: 'login' | 'register' }) {
 }
 
 function DashboardRouter() {
-  const { user, loading } = useAuth();
+  const { user, loading, effectiveRole } = useAuth();
 
   if (loading) {
     return (
@@ -124,7 +124,7 @@ function DashboardRouter() {
     return null;
   }
 
-  switch (user.role) {
+  switch (effectiveRole) {
     case 'admin':
       return <AdminDashboard />;
     case 'artist':
@@ -140,7 +140,7 @@ function DashboardRouter() {
 }
 
 function RoleDashboardRouter({ requiredRole }: { requiredRole: string }) {
-  const { user, loading } = useAuth();
+  const { user, loading, impersonatedRole } = useAuth();
 
   if (loading) {
     return (
@@ -158,7 +158,10 @@ function RoleDashboardRouter({ requiredRole }: { requiredRole: string }) {
     return null;
   }
 
-  if (user.role !== requiredRole) {
+  const isAdmin = user.role === 'admin';
+  const hasAccess = user.role === requiredRole || (isAdmin && impersonatedRole === requiredRole);
+
+  if (!hasAccess) {
     window.location.hash = '#/dashboard';
     return null;
   }

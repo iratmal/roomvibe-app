@@ -2,7 +2,18 @@ import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 
 export function AdminDashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout, setImpersonation } = useAuth();
+
+  const handleImpersonate = (role: 'user' | 'artist' | 'designer' | 'gallery') => {
+    setImpersonation(role);
+    const routes = {
+      user: '#/dashboard',
+      artist: '#/dashboard/artist',
+      designer: '#/dashboard/designer',
+      gallery: '#/dashboard/gallery',
+    };
+    window.location.hash = routes[role];
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
@@ -18,6 +29,39 @@ export function AdminDashboard() {
           >
             Logout
           </button>
+        </div>
+
+        <div className="mb-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
+          <h2 className="text-xl font-semibold mb-4">🎭 Role Impersonation (View As)</h2>
+          <p className="text-slate-600 mb-4 text-sm">
+            Test different dashboard views without logging in/out. Your admin role remains unchanged.
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <button
+              onClick={() => handleImpersonate('user')}
+              className="px-4 py-3 bg-white border-2 border-blue-300 text-blue-700 rounded-lg hover:bg-blue-50 font-medium transition-colors"
+            >
+              View as User
+            </button>
+            <button
+              onClick={() => handleImpersonate('artist')}
+              className="px-4 py-3 bg-white border-2 border-purple-300 text-purple-700 rounded-lg hover:bg-purple-50 font-medium transition-colors"
+            >
+              View as Artist
+            </button>
+            <button
+              onClick={() => handleImpersonate('designer')}
+              className="px-4 py-3 bg-white border-2 border-indigo-300 text-indigo-700 rounded-lg hover:bg-indigo-50 font-medium transition-colors"
+            >
+              View as Designer
+            </button>
+            <button
+              onClick={() => handleImpersonate('gallery')}
+              className="px-4 py-3 bg-white border-2 border-green-300 text-green-700 rounded-lg hover:bg-green-50 font-medium transition-colors"
+            >
+              View as Gallery
+            </button>
+          </div>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
