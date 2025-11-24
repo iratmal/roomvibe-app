@@ -1,0 +1,87 @@
+Message for Replit Agent — Combined Task: Room 4 Scaling Fix + Studio Polish Pack
+
+Hi! This file includes TWO tasks in one combined package:
+
+1) Room 4 – Real-Size Scaling Fix  
+2) Studio Polish Pack (final UX/UI refinements)
+
+------------------------------------------------------------
+TASK 1 — FIX WALL SCALING FOR ROOM 4 (Incorrect Real Size)
+------------------------------------------------------------
+Room 4 currently displays artworks far too large compared to the furniture.  
+Rooms 1–3 are correct, only Room 4 has incorrect wall dimensions.
+
+Please correct the real wall dimensions for Room 4 using the following calibrated values:
+
+Correct wall dimensions:
+- wallWidthCm: 370
+- wallHeightCm: 250
+
+These values produce true-to-life proportions relative to the sofa, chairs, sideboard, and match the scale consistency with Rooms 1–3.
+
+EXPECTED RESULT AFTER FIX:
+- A 100×150 cm artwork should appear proportionally accurate in Room 4.
+- No more oversized look.
+- Real-size scaling remains correct.
+- Frames and drag/resize behavior must still work normally.
+
+------------------------------------------------------------
+TASK 2 — STUDIO POLISH PACK (Final UX Enhancement)
+------------------------------------------------------------
+This task focuses on final polish and improving the professional feel of the Studio.
+
+PLEASE IMPLEMENT THE FOLLOWING:
+
+1) Artwork Selection Improvements
+- When artwork is selected: show subtle outline + corner handles.
+- When clicked away: deselect and hide handles.
+- Ensure selection state is smooth and flicker-free.
+
+2) Resize Handle Styling
+- Make handles visually consistent across all frames.
+- Use modern minimal styling (e.g., small circles or squares).
+- Ensure handles stay visible even when frames are applied.
+
+3) Floating Frame & Mat Depth Simulation (LIGHT)
+- Add subtle inner shadows or very light outlines to floating frame and mat to improve realism.
+- Keep performance high and avoid heavy box shadows.
+
+4) Smooth Transitions Between Frames
+- When switching frames, avoid sudden jumps.
+- Apply small fade or scale transition (100–150ms).
+- Keep position and current size stable.
+
+5) Cleanup & Consistency
+- Remove any leftover white edges or gaps.
+- Ensure all frames from the 12-frame library follow unified spacing logic.
+- Make sure mat + frame combinations are visually clean.
+
+6) Fine-Tune Mobile Controls
+- Make pinch-zoom smoother.
+- Ensure drag and pinch do not conflict.
+- Add small dead zone to avoid accidental drags when tapping frame buttons.
+
+7) Performance Optimizations
+- Use CSS transforms for movement and scale.
+- Reduce unnecessary React re-renders.
+- Ensure Studio runs smoothly on mid-range phones.
+
+------------------------------------------------------------
+FINAL ACCEPTANCE CRITERIA
+------------------------------------------------------------
+After completing both tasks:
+
+Room 4:
+- Artwork appears proportional and consistent with real-world sizes.
+- Real-size scaling perfectly matches furniture.
+
+Studio Polish:
+- Artwork selection feels natural.
+- All resize handles function correctly.
+- All frame styles render cleanly.
+- Switching frames looks smooth and professional.
+- No white edges anywhere.
+- Pinch-zoom and drag work flawlessly on mobile.
+- Entire Studio feels premium and production-ready.
+
+Thank you!

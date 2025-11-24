@@ -548,7 +548,7 @@ const ROOM_WALL_HEIGHTS_CM: Record<string, number> = {
   room01: 270,
   room02: 270,
   room03: 270,
-  room04: 270,
+  room04: 250, // Corrected for true-to-scale proportions with furniture
   room05: 270,
   room06: 270,
   room07: 270,
