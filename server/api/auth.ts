@@ -48,23 +48,35 @@ router.post('/register', async (req: Request, res: Response) => {
       `INSERT INTO users (email, password_hash, role, confirmation_token, email_confirmed)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING id, email, role, email_confirmed`,
-      [email.toLowerCase(), passwordHash, role, confirmationToken, false]
+      [email.toLowerCase(), passwordHash, role, confirmationToken, true]
     );
 
     const user = result.rows[0];
 
     console.log(`✅ User registered successfully: ${email} (role: ${role})`);
-    console.log(`📧 Email confirmation link: /api/auth/confirm/${confirmationToken}`);
+    console.log(`📧 [MVP] Email confirmation disabled - user auto-verified`);
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
 
     res.status(201).json({
-      message: 'Registration successful. Please check your email to confirm your account.',
+      message: 'Registration successful! You are now logged in.',
       user: {
         id: user.id,
         email: user.email,
         role: user.role,
         emailConfirmed: user.email_confirmed
-      },
-      confirmationLink: `/api/auth/confirm/${confirmationToken}`
+      }
     });
   } catch (error) {
     console.error('❌ Registration error:', error);
@@ -94,13 +106,6 @@ router.post('/login', async (req: Request, res: Response) => {
     const validPassword = await bcrypt.compare(password, user.password_hash);
     if (!validPassword) {
       return res.status(401).json({ error: 'Invalid email or password' });
-    }
-
-    if (!user.email_confirmed) {
-      return res.status(403).json({ 
-        error: 'Please confirm your email before logging in',
-        emailConfirmed: false
-      });
     }
 
     const token = jwt.sign(

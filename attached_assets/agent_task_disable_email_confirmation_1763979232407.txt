@@ -1,0 +1,36 @@
+Message for Replit Agent — TEMPORARILY DISABLE EMAIL CONFIRMATION
+
+Hi! Registration is now working and I get the success message:
+
+"Successfully registered, please check your email to confirm your account."
+
+However, no confirmation email is arriving in my inbox (or spam), so right now this step is blocking me from using the app properly.
+
+For the MVP, I would like you to **temporarily disable mandatory email confirmation** and auto‑verify new users on registration.
+
+**What I’d like you to do now (MVP version):**
+
+1. After successful registration:
+   - Mark the user as verified (e.g. `emailVerified = true` or remove that check entirely for now).
+   - Automatically log the user in.
+   - Redirect them to the correct dashboard based on their selected role (user / artist / designer / gallery).
+
+2. Make sure the login flow:
+   - Does NOT block unverified users.
+   - Does NOT show any “please confirm your email” error.
+   - Works immediately after registration with the same email/password.
+
+3. Keep the code structure so that later we can:
+   - Plug in a real email provider,
+   - Re‑enable proper email verification with tokens/links,
+   - But for now it must not be required.
+
+**Goal for now:**
+- Register → immediately be able to log in and use the app (no real email confirmation needed yet).
+
+Once this is done, please test on production with a fresh email and confirm that:
+- Registration succeeds,
+- I can log in right after,
+- I land on the appropriate dashboard for my role.
+
+Thank you!
