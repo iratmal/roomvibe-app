@@ -543,18 +543,42 @@ function StudioHeader() {
 
 /* ------------- Studio (Canvy-style editor) ------------- */
 
-// Real wall height in centimeters for each room preset
+// Real wall dimensions in centimeters for each room preset
+// These represent the actual physical wall dimensions visible in each room's photo
 const ROOM_WALL_HEIGHTS_CM: Record<string, number> = {
   room01: 270,
   room02: 270,
   room03: 270,
-  room04: 250, // Corrected for true-to-scale proportions with furniture
+  room04: 250, // Calibrated to Room 4's actual wall height for furniture proportions
   room05: 270,
   room06: 270,
   room07: 270,
   room08: 270,
   room09: 270,
   room10: 270,
+};
+
+const ROOM_WALL_WIDTHS_CM: Record<string, number> = {
+  room01: 360, // Default aspect ratio ~4:3
+  room02: 360,
+  room03: 360,
+  room04: 370, // Calibrated to Room 4's actual wall width for furniture proportions
+  room05: 360,
+  room06: 360,
+  room07: 360,
+  room08: 360,
+  room09: 360,
+  room10: 360,
+};
+
+// Precomputed px/cm ratios for rooms with specific calibration requirements
+// Derived from: (intrinsic image height × safeArea.h) / real wall height
+// Room 4: room04.png is 1920×1080px, safeArea.h = 0.48
+//         Wall height in image = 1080 × 0.48 = 518.4px
+//         Real wall height = 250cm
+//         px/cm = 518.4 / 250 = 2.0736 ≈ 2.07
+const ROOM_PX_PER_CM_OVERRIDE: Record<string, number> = {
+  room04: 2.07, // Calibrated from room04.png intrinsic dimensions for furniture proportions
 };
 
 // Frame configuration system with 12 professional frame styles
@@ -705,18 +729,31 @@ function Studio() {
     }
   }, [artId, art]);
 
-  // Calculate px/cm ratio based on canvas height and room wall height
+  // Calculate px/cm ratio based on canvas height and room wall height (viewport-independent)
+  // Uses precomputed ratios for rooms with specific calibration requirements (e.g., Room 4)
   useEffect(() => {
     if (!canvasRef.current) return;
     
+    // Check for precomputed override first (for rooms with specific furniture calibration)
+    if (ROOM_PX_PER_CM_OVERRIDE[sceneId]) {
+      const ratio = ROOM_PX_PER_CM_OVERRIDE[sceneId];
+      setPxPerCm(ratio);
+      
+      if (import.meta.env.DEV) {
+        console.log(`[Real-Scale] Room ${sceneId}: Using precomputed ratio = ${ratio.toFixed(2)} px/cm (calibrated for furniture proportions)`);
+      }
+      return;
+    }
+    
+    // Default: Calculate from canvas height and wall height
     const wallHeightCm = ROOM_WALL_HEIGHTS_CM[sceneId] || 270;
-    const wallPxHeight = canvasRef.current.clientHeight;
-    const ratio = wallPxHeight / wallHeightCm;
+    const canvasHeightPx = canvasRef.current.clientHeight;
+    const ratio = canvasHeightPx / wallHeightCm;
     
     setPxPerCm(ratio);
     
     if (import.meta.env.DEV) {
-      console.log(`[Real-Scale] Room ${sceneId}: ${wallHeightCm}cm wall = ${wallPxHeight}px, ratio = ${ratio.toFixed(2)} px/cm`);
+      console.log(`[Real-Scale] Room ${sceneId}: ${wallHeightCm}cm wall height = ${canvasHeightPx}px, ratio = ${ratio.toFixed(2)} px/cm`);
     }
   }, [sceneId, canvasRef.current?.clientHeight]);
 
@@ -1119,7 +1156,7 @@ function Studio() {
                     overflow: "visible",
                     outline: isArtworkSelected ? '3px solid rgba(40, 53, 147, 0.6)' : 'none',
                     outlineOffset: '4px',
-                    transition: 'outline 0.15s ease-in-out, width 0.12s ease-out, height 0.12s ease-out',
+                    transition: 'outline 0.15s ease-in-out',
                   }}
                   onMouseDown={handleDragStart}
                   onTouchStart={(e) => {
