@@ -18,7 +18,7 @@ const PORT = parseInt(process.env.PORT || '3001', 10);
 
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? false 
+    ? true 
     : ['http://localhost:5000', 'http://127.0.0.1:5000'],
   credentials: true
 }));
@@ -31,6 +31,21 @@ app.use('/api/dashboard', dashboardRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'RoomVibe API server running' });
+});
+
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('Unhandled error:', err);
+  
+  if (res.headersSent) {
+    return next(err);
+  }
+  
+  res.status(err.status || 500).json({
+    error: process.env.NODE_ENV === 'production' 
+      ? 'An internal server error occurred'
+      : err.message || 'Internal server error',
+    ...(process.env.NODE_ENV !== 'production' && { stack: err.stack })
+  });
 });
 
 if (process.env.NODE_ENV === 'production') {

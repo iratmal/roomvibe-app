@@ -11,18 +11,23 @@ const SALT_ROUNDS = 10;
 
 router.post('/register', async (req: Request, res: Response) => {
   try {
+    console.log('📝 Registration attempt:', { email: req.body?.email, role: req.body?.role });
+    
     const { email, password, role = 'user' } = req.body;
 
     if (!email || !password) {
+      console.log('❌ Registration failed: Missing email or password');
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
     if (password.length < 6) {
+      console.log('❌ Registration failed: Password too short');
       return res.status(400).json({ error: 'Password must be at least 6 characters' });
     }
 
     const validRoles = ['user', 'artist', 'designer', 'gallery', 'admin'];
     if (!validRoles.includes(role)) {
+      console.log('❌ Registration failed: Invalid role:', role);
       return res.status(400).json({ error: 'Invalid role' });
     }
 
@@ -32,6 +37,7 @@ router.post('/register', async (req: Request, res: Response) => {
     );
 
     if (existingUser.rows.length > 0) {
+      console.log('❌ Registration failed: Email already exists:', email);
       return res.status(409).json({ error: 'Email already registered' });
     }
 
@@ -47,8 +53,8 @@ router.post('/register', async (req: Request, res: Response) => {
 
     const user = result.rows[0];
 
-    console.log(`📧 Email confirmation link (basic implementation):`);
-    console.log(`   http://localhost:5000/api/auth/confirm/${confirmationToken}`);
+    console.log(`✅ User registered successfully: ${email} (role: ${role})`);
+    console.log(`📧 Email confirmation link: /api/auth/confirm/${confirmationToken}`);
 
     res.status(201).json({
       message: 'Registration successful. Please check your email to confirm your account.',
@@ -61,8 +67,8 @@ router.post('/register', async (req: Request, res: Response) => {
       confirmationLink: `/api/auth/confirm/${confirmationToken}`
     });
   } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({ error: 'Registration failed' });
+    console.error('❌ Registration error:', error);
+    res.status(500).json({ error: 'Registration failed. Please try again.' });
   }
 });
 
