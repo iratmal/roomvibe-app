@@ -1,0 +1,93 @@
+Message for Replit Agent — Task: Artist Website Widget (Embed Code in Artist Dashboard)
+
+Hi! Here is a new task for the Artist role.
+
+Now that the Artist Dashboard and artwork uploads are working, I’d like to add a simple Website Widget section so artists can copy a small embed code and paste it on their own website.
+
+-----------------------------------
+🎯 GOAL
+-----------------------------------
+On the Artist Dashboard (/dashboard/artist), add a new section called “Website Integration / Widget” where the artist can:
+
+- see a short explanation of what the widget does
+- copy a small embed code snippet
+- (optionally) get a per-artwork widget code later
+
+This is still MVP, so we don’t need full configuration UI – just a clear, working snippet for now.
+
+-----------------------------------
+1) LOCATION IN UI
+-----------------------------------
+On /dashboard/artist:
+
+Under “My Artworks” and the Artist Account section, add a new block:
+
+Title: Website Integration
+Subtitle: Add RoomVibe widget to your website so visitors can view your artwork in their own room.
+
+-----------------------------------
+2) GLOBAL WIDGET EMBED (MVP)
+-----------------------------------
+For now, we can keep it simple and generate a global widget code for the artist.
+
+UI:
+
+- Textarea (read-only) with the code snippet
+- Button: “Copy Code” (copies full code to clipboard)
+
+Example embed snippet (please adjust to match actual widget implementation):
+
+<!-- RoomVibe – View in Room Widget -->
+<script
+  src="https://app.roomvibe.app/widget.js"
+  data-artist-id="ARTIST_ID_PLACEHOLDER">
+</script>
+
+Requirements:
+
+1. Replace ARTIST_ID_PLACEHOLDER dynamically with the logged-in artist’s ID or slug.
+2. The widget script (e.g. /widget.js) should:
+   - Render a button like “View in Room” or “See in Your Space” on the artist’s site.
+   - On click, open RoomVibe Studio (or a modal) with the correct artist context.
+3. For now, it’s OK if the widget just opens the generic Studio; later we will extend it to pass specific artwork IDs.
+
+If widget.js is not implemented yet, you can still provide the snippet with a TODO comment so the structure is ready.
+
+-----------------------------------
+3) (OPTIONAL – NICE TO HAVE) PER-ARTWORK WIDGET
+-----------------------------------
+If it’s not too much extra work, please also:
+
+- On each artwork card in “My Artworks”, add a small button: “Get widget code”.
+- Clicking it opens a modal with a snippet like:
+
+<!-- RoomVibe – View this artwork in Room -->
+<script
+  src="https://app.roomvibe.app/widget.js"
+  data-artist-id="ARTIST_ID"
+  data-artwork-id="ARTWORK_ID">
+</script>
+
+- Again, ARTIST_ID and ARTWORK_ID should be filled automatically.
+
+If this is too big for now, we can keep it as a follow-up task. The minimum for this task is the global artist widget in the “Website Integration” section.
+
+-----------------------------------
+4) COPY UX
+-----------------------------------
+- The “Copy Code” button should:
+  - copy the full snippet to the clipboard
+  - show a small confirmation (toast or text): “Code copied!”
+
+-----------------------------------
+✅ GOAL FOR THIS TASK
+-----------------------------------
+After this task, when I view /dashboard/artist as an Artist (or Admin impersonating Artist), I should see:
+
+- A Website Integration section
+- A textarea with a working embed snippet that includes my artist ID
+- A Copy Code button that copies the snippet
+
+This will allow me to paste the widget code into my own website (Shopify, WordPress, etc.) so visitors can click “View in Room”.
+
+Thank you!

@@ -43,6 +43,8 @@ export function ArtistDashboard() {
   const [success, setSuccess] = useState('');
   const [editingArtwork, setEditingArtwork] = useState<Artwork | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
+  const [showWidgetModal, setShowWidgetModal] = useState<Artwork | null>(null);
+  const [copySuccess, setCopySuccess] = useState('');
 
   const [formData, setFormData] = useState({
     title: '',
@@ -238,6 +240,34 @@ export function ArtistDashboard() {
       console.error('Error deleting artwork:', err);
       setError(err.message);
     }
+  };
+
+  const copyToClipboard = async (text: string, type: string = 'global') => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopySuccess(type);
+      setTimeout(() => setCopySuccess(''), 3000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+      setError('Failed to copy code to clipboard');
+    }
+  };
+
+  const getGlobalWidgetCode = () => {
+    return `<!-- RoomVibe - View in Room Widget -->
+<script
+  src="${window.location.origin}/widget.js"
+  data-artist-id="${user?.id}">
+</script>`;
+  };
+
+  const getArtworkWidgetCode = (artwork: Artwork) => {
+    return `<!-- RoomVibe - View this artwork in Room -->
+<script
+  src="${window.location.origin}/widget.js"
+  data-artist-id="${user?.id}"
+  data-artwork-id="${artwork.id}">
+</script>`;
   };
 
   return (
@@ -464,6 +494,16 @@ export function ArtistDashboard() {
                       </button>
                     </div>
 
+                    <button
+                      onClick={() => setShowWidgetModal(artwork)}
+                      className="w-full mt-2 px-4 py-2 text-sm border-2 border-rv-primary text-rv-primary rounded-rvMd hover:bg-rv-primary hover:text-white transition-colors font-semibold flex items-center justify-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                      </svg>
+                      Get Widget Code
+                    </button>
+
                     {showDeleteConfirm === artwork.id && (
                       <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-rvMd">
                         <p className="text-sm text-red-700 mb-2 font-semibold">
@@ -492,6 +532,37 @@ export function ArtistDashboard() {
           )}
         </div>
 
+        <div className="mb-10 p-6 bg-blue-50 rounded-rvLg border border-blue-200">
+          <h2 className="text-2xl font-bold mb-2 text-rv-primary">Website Integration</h2>
+          <p className="text-sm text-rv-textMuted mb-6">
+            Add the RoomVibe widget to your website so visitors can view your artwork in their own room.
+          </p>
+
+          <div className="bg-white p-4 rounded-rvMd border border-rv-neutral">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-sm font-bold text-rv-text">Global Widget Code</h3>
+              <button
+                onClick={() => copyToClipboard(getGlobalWidgetCode(), 'global')}
+                className="px-4 py-2 text-sm bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-colors font-semibold flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                {copySuccess === 'global' ? 'Copied!' : 'Copy Code'}
+              </button>
+            </div>
+            <textarea
+              readOnly
+              value={getGlobalWidgetCode()}
+              className="w-full h-24 px-3 py-2 border border-rv-neutral rounded-rvMd bg-rv-surface font-mono text-xs text-rv-text resize-none focus:outline-none"
+              onClick={(e) => e.currentTarget.select()}
+            />
+            <p className="text-xs text-rv-textMuted mt-2">
+              Paste this code into your website's HTML to display a "View in Room" button for all your artworks.
+            </p>
+          </div>
+        </div>
+
         <div className="grid gap-6 md:grid-cols-2">
           <div className="p-6 bg-purple-50 rounded-rvLg border border-purple-200">
             <h3 className="text-lg font-bold mb-3 text-purple-700">Artist Account</h3>
@@ -505,6 +576,74 @@ export function ArtistDashboard() {
 
           <ChangePassword />
         </div>
+
+        {showWidgetModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-rvLg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-xl font-bold text-rv-primary">Widget Code for "{showWidgetModal.title}"</h3>
+                  <p className="text-sm text-rv-textMuted mt-1">
+                    Embed this code to show a "View in Room" button for this specific artwork.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowWidgetModal(null)}
+                  className="text-rv-textMuted hover:text-rv-text transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="bg-rv-surface p-4 rounded-rvMd border border-rv-neutral mb-4">
+                <div className="aspect-square max-h-48 mx-auto mb-3 bg-white rounded-rvMd overflow-hidden">
+                  <img
+                    src={`${API_URL}${showWidgetModal.image_url}`}
+                    alt={showWidgetModal.title}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <p className="text-sm text-center text-rv-textMuted">
+                  {showWidgetModal.width} × {showWidgetModal.height} {showWidgetModal.dimension_unit}
+                  {showWidgetModal.price_amount && ` • ${formatPrice(showWidgetModal.price_amount, showWidgetModal.price_currency)}`}
+                </p>
+              </div>
+
+              <div className="bg-white p-4 rounded-rvMd border border-rv-neutral">
+                <div className="flex justify-between items-center mb-3">
+                  <h4 className="text-sm font-bold text-rv-text">Artwork Widget Code</h4>
+                  <button
+                    onClick={() => copyToClipboard(getArtworkWidgetCode(showWidgetModal), `artwork-${showWidgetModal.id}`)}
+                    className="px-4 py-2 text-sm bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-colors font-semibold flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    {copySuccess === `artwork-${showWidgetModal.id}` ? 'Copied!' : 'Copy Code'}
+                  </button>
+                </div>
+                <textarea
+                  readOnly
+                  value={getArtworkWidgetCode(showWidgetModal)}
+                  className="w-full h-32 px-3 py-2 border border-rv-neutral rounded-rvMd bg-rv-surface font-mono text-xs text-rv-text resize-none focus:outline-none"
+                  onClick={(e) => e.currentTarget.select()}
+                />
+                <p className="text-xs text-rv-textMuted mt-2">
+                  Paste this code on the product page for "{showWidgetModal.title}" to show a "View in Room" button.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setShowWidgetModal(null)}
+                className="w-full mt-4 px-6 py-3 border-2 border-rv-neutral rounded-rvMd hover:bg-rv-surface transition-colors font-semibold text-rv-text"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
