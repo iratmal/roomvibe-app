@@ -213,6 +213,8 @@ export default function CollectionDetail() {
       setSelectedFile(null);
       setUploadPreview(null);
       fetchArtworks();
+      
+      window.dispatchEvent(new CustomEvent('gallery-collection-updated'));
 
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
@@ -241,6 +243,8 @@ export default function CollectionDetail() {
       setSuccess(data.message || 'Artwork deleted successfully!');
       setShowDeleteConfirm(null);
       fetchArtworks();
+      
+      window.dispatchEvent(new CustomEvent('gallery-collection-updated'));
 
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
@@ -274,6 +278,8 @@ export default function CollectionDetail() {
       
       setCollection(data.collection);
       setStatusUpdate(data.collection.status);
+      
+      window.dispatchEvent(new CustomEvent('gallery-collection-updated'));
 
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {

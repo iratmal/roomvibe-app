@@ -39,10 +39,16 @@ export function GalleryDashboard() {
       fetchCollections();
     };
     
+    const handleCollectionUpdated = () => {
+      fetchCollections();
+    };
+    
     window.addEventListener('hashchange', handleHashChange);
+    window.addEventListener('gallery-collection-updated', handleCollectionUpdated);
     
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('gallery-collection-updated', handleCollectionUpdated);
     };
   }, []);
 
