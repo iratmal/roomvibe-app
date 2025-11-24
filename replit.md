@@ -21,8 +21,14 @@ RoomVibe Studio is a comprehensive React/TypeScript web application designed to 
   - Non-admin users have impersonation cleared on login, register, and page load
   - SessionStorage used (clears on browser close, prevents cross-tab tampering)
   - Database role never changes (impersonation is session-only)
+- **Admin Access**:
+  - Admin has unconditional access to ALL role dashboards (User, Artist, Designer, Gallery)
+  - Can manually navigate to `#/dashboard/artist`, `#/dashboard/designer`, `#/dashboard/gallery`
+  - Hash normalization handles trailing slashes and query parameters
+  - Auto-impersonation triggers when admin visits role-specific routes (shows banner)
 - **User flow**:
   - Admin clicks "View as Artist" → Redirects to Artist Dashboard with banner
+  - Admin manually types `#/dashboard/artist` → Same result (auto-impersonation + banner)
   - Can navigate, test features, see role-specific UI
   - Clicks "Return to Admin Mode" → Back to Admin Dashboard
   - Seamless testing without logging out/in
