@@ -39,7 +39,10 @@ RoomVibe Studio is a comprehensive React/TypeScript web application designed to 
   - `src/context/CookieConsentContext.tsx`: Global consent state management
   - `src/components/CookieConsentBanner.tsx`: Sticky bottom banner component
   - `src/components/legal/`: PrivacyPolicy, TermsOfService, UploadConsent components
+  - `src/utils/analytics.ts`: GA4 initialization with `resetGA4()` for consent toggle flows
+  - `src/utils/hotjar.ts`: Hotjar initialization with `resetHotjar()` for consent toggle flows
   - `.env.example` created with all required environment variables
+  - **Consent Toggle Flow**: Decline → Cookie Settings → Accept properly reinitializes analytics (no stale flags)
 
 **COMPLETE ROOMVIBE BRANDING (PRIMARY COLOR: #283593 INDIGO DEEP NAVY):**
 - **Landing Page**: 100% rebranded with rv-* tokens, Playfair Display on premium headings
