@@ -557,11 +557,104 @@ const ROOM_WALL_HEIGHTS_CM: Record<string, number> = {
   room10: 270,
 };
 
-// Frame thickness in centimeters (added OUTSIDE the artwork)
-const FRAME_THICKNESS_CM: Record<string, number> = {
-  None: 0,
-  Slim: 3,
-  Gallery: 8,
+// Frame configuration system with 12 professional frame styles
+type FrameConfig = {
+  id: string;
+  label: string;
+  borderWidth: number;      // Frame border thickness in cm
+  borderColor: string;       // Frame border color
+  matWidth?: number;         // Optional mat width in cm (for mat frames)
+  matColor?: string;         // Optional mat color
+  gapWidth?: number;         // Optional gap width in cm (for floating frames)
+  gapColor?: string;         // Optional gap/shadow color
+  isFloating?: boolean;      // Special flag for floating frame style
+  hasMat?: boolean;          // Special flag for mat frame style
+};
+
+const FRAME_STYLES: FrameConfig[] = [
+  {
+    id: "none",
+    label: "None",
+    borderWidth: 0,
+    borderColor: "transparent",
+  },
+  {
+    id: "slim-black",
+    label: "Slim Black",
+    borderWidth: 1.5,
+    borderColor: "#1a1a1a",
+  },
+  {
+    id: "gallery-white",
+    label: "Gallery White",
+    borderWidth: 2.5,
+    borderColor: "#f8f9fa",
+  },
+  {
+    id: "warm-oak",
+    label: "Warm Oak",
+    borderWidth: 3,
+    borderColor: "#b8956a",
+  },
+  {
+    id: "dark-walnut",
+    label: "Dark Walnut",
+    borderWidth: 3.5,
+    borderColor: "#4a3528",
+  },
+  {
+    id: "birch-thin",
+    label: "Natural Birch Thin",
+    borderWidth: 1.2,
+    borderColor: "#e8dcc8",
+  },
+  {
+    id: "bold-black",
+    label: "Bold Black",
+    borderWidth: 4,
+    borderColor: "#0a0a0a",
+  },
+  {
+    id: "soft-white",
+    label: "Soft White",
+    borderWidth: 2,
+    borderColor: "#fefefe",
+  },
+  {
+    id: "brushed-silver",
+    label: "Brushed Silver",
+    borderWidth: 2.5,
+    borderColor: "#b8bdc4",
+  },
+  {
+    id: "champagne-gold",
+    label: "Champagne Gold",
+    borderWidth: 2.5,
+    borderColor: "#d4af6a",
+  },
+  {
+    id: "floating-wood",
+    label: "Floating Wood",
+    borderWidth: 2.5,
+    borderColor: "#a5845f",
+    gapWidth: 0.5,
+    gapColor: "#f8f9fa",
+    isFloating: true,
+  },
+  {
+    id: "black-with-white-mat",
+    label: "Black Frame + White Mat",
+    borderWidth: 1.5,
+    borderColor: "#1a1a1a",
+    matWidth: 5,
+    matColor: "#ffffff",
+    hasMat: true,
+  },
+];
+
+// Helper to get frame config by ID
+const getFrameConfig = (frameId: string): FrameConfig => {
+  return FRAME_STYLES.find(f => f.id === frameId) || FRAME_STYLES[0];
 };
 
 function Studio() {
@@ -575,7 +668,7 @@ function Studio() {
   const artIdRef = useRef<string>(artId);
   const art = artworksState.find((a) => a.id === artId);
 
-  const [frameStyle, setFrameStyle] = useState<"None" | "Slim" | "Gallery">("None");
+  const [frameStyle, setFrameStyle] = useState<string>("none");
   
   const [offsetX, setOffsetX] = useState<number>(0);
   const [offsetY, setOffsetY] = useState<number>(0);
@@ -640,13 +733,42 @@ function Studio() {
   const artworkWidthPx = baseArtworkWidthPx * scale;
   const artworkHeightPx = baseArtworkHeightPx * scale;
 
-  // Frame thickness in pixels (added OUTSIDE the artwork at fixed physical size)
-  const frameThicknessCm = FRAME_THICKNESS_CM[frameStyle] || 0;
-  const frameThicknessPx = frameThicknessCm * pxPerCm; // Fixed physical size (NOT scaled)
-
-  // Total dimensions including frame
-  const totalWidthPx = artworkWidthPx + frameThicknessPx * 2;
-  const totalHeightPx = artworkHeightPx + frameThicknessPx * 2;
+  // Get frame configuration
+  const frameConfig = getFrameConfig(frameStyle);
+  
+  // Calculate frame, mat, and gap dimensions in pixels
+  const frameBorderPx = frameConfig.borderWidth * pxPerCm;
+  const matWidthPx = (frameConfig.matWidth || 0) * pxPerCm;
+  const gapWidthPx = (frameConfig.gapWidth || 0) * pxPerCm;
+  
+  // For mat frames: mat is an additional layer OUTSIDE the artwork (not a reduction)
+  // For floating frames: gap is BETWEEN artwork and border
+  // For basic frames: just the border
+  
+  // Total dimensions calculation:
+  // - Basic frame: artwork + border * 2
+  // - Floating frame: artwork + gap * 2 + border * 2
+  // - Mat frame: artwork + mat * 2 + border * 2
+  let totalWidthPx: number;
+  let totalHeightPx: number;
+  let totalFrameThicknessPx: number;
+  
+  if (frameConfig.hasMat) {
+    // Mat frame: border + mat around artwork at full size
+    totalFrameThicknessPx = frameBorderPx + matWidthPx;
+    totalWidthPx = artworkWidthPx + totalFrameThicknessPx * 2;
+    totalHeightPx = artworkHeightPx + totalFrameThicknessPx * 2;
+  } else if (frameConfig.isFloating) {
+    // Floating frame: border + gap around artwork
+    totalFrameThicknessPx = frameBorderPx + gapWidthPx;
+    totalWidthPx = artworkWidthPx + totalFrameThicknessPx * 2;
+    totalHeightPx = artworkHeightPx + totalFrameThicknessPx * 2;
+  } else {
+    // Basic frame: just border
+    totalFrameThicknessPx = frameBorderPx;
+    totalWidthPx = artworkWidthPx + totalFrameThicknessPx * 2;
+    totalHeightPx = artworkHeightPx + totalFrameThicknessPx * 2;
+  }
 
   // Store latest values in refs for drag handlers
   const artworkWidthPxRef = useRef(artworkWidthPx);
@@ -977,8 +1099,9 @@ function Studio() {
                 ) : (
                   <img src={scene.photo} alt={scene.name} className="absolute inset-0 h-full w-full object-cover" style={{ pointerEvents: 'none' }} />
                 )}
+                {/* Frame container */}
                 <div
-                  className={frameStyle === "None" ? "rounded-md shadow-2xl" : "shadow-2xl"}
+                  className={frameConfig.id === "none" ? "rounded-md shadow-2xl" : "shadow-2xl"}
                   style={{ 
                     position: "absolute",
                     left: `calc(${safe.x * 100}% + ${offsetX}px)`, 
@@ -986,16 +1109,11 @@ function Studio() {
                     transform: "translate(-50%, -50%)",
                     width: `${totalWidthPx}px`,
                     height: `${totalHeightPx}px`,
-                    borderStyle: frameStyle === "None" ? "none" : "solid",
-                    borderWidth: frameStyle === "None" ? 0 : `${frameThicknessPx}px`,
-                    borderColor: frameStyle === "Slim" ? "#1a1a1a" : "#2d2d2d",
-                    background: "#f8fafc",
                     cursor: isDraggingRef.current ? 'grabbing' : 'grab',
                     boxSizing: "border-box",
-                    boxShadow:
-                      frameStyle === "Gallery"
-                        ? "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
-                        : "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+                    boxShadow: frameConfig.borderWidth >= 3 
+                      ? "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
+                      : "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
                     overflow: "visible",
                     outline: isArtworkSelected ? '2px solid #283593' : 'none',
                     outlineOffset: '2px',
@@ -1009,30 +1127,148 @@ function Studio() {
                   }}
                   onClick={handleArtworkClick}
                 >
-                  <div className={frameStyle === "None" ? "overflow-hidden rounded-md" : "overflow-hidden"} style={{ width: `${artworkWidthPx}px`, height: `${artworkHeightPx}px` }}>
-                    {art?.imageUrl || art?.overlayImageUrl ? (
-                      <img 
-                        src={art.overlayImageUrl || art.imageUrl} 
-                        alt={art.title} 
-                        style={{
-                          width: `${artworkWidthPx}px`,
-                          height: `${artworkHeightPx}px`,
-                          display: "block",
-                          objectFit: "cover"
-                        }} 
-                        draggable={false} 
-                      />
-                    ) : (
+                  {/* Floating frame outer border */}
+                  {frameConfig.isFloating && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        borderWidth: `${frameBorderPx}px`,
+                        borderStyle: "solid",
+                        borderColor: frameConfig.borderColor,
+                        boxSizing: "border-box",
+                      }}
+                    />
+                  )}
+                  
+                  {/* Mat frame structure */}
+                  {frameConfig.hasMat ? (
+                    <>
+                      {/* Outer frame border */}
                       <div
                         style={{
-                          width: `${artworkWidthPx}px`,
-                          height: `${artworkHeightPx}px`,
-                          background:
-                            "linear-gradient(135deg, color-mix(in_oklab,var(--accent),white_10%), color-mix(in_oklab,var(--accent),black_10%))",
+                          position: "absolute",
+                          inset: 0,
+                          borderWidth: `${frameBorderPx}px`,
+                          borderStyle: "solid",
+                          borderColor: frameConfig.borderColor,
+                          boxSizing: "border-box",
                         }}
                       />
-                    )}
-                  </div>
+                      {/* Mat layer */}
+                      <div
+                        style={{
+                          position: "absolute",
+                          inset: `${frameBorderPx}px`,
+                          backgroundColor: frameConfig.matColor,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        {/* Artwork at actual size */}
+                        <div className="overflow-hidden" style={{ width: `${artworkWidthPx}px`, height: `${artworkHeightPx}px` }}>
+                          {art?.imageUrl || art?.overlayImageUrl ? (
+                            <img 
+                              src={art.overlayImageUrl || art.imageUrl} 
+                              alt={art.title} 
+                              style={{
+                                width: `${artworkWidthPx}px`,
+                                height: `${artworkHeightPx}px`,
+                                display: "block",
+                                objectFit: "cover"
+                              }} 
+                              draggable={false} 
+                            />
+                          ) : (
+                            <div
+                              style={{
+                                width: `${artworkWidthPx}px`,
+                                height: `${artworkHeightPx}px`,
+                                background: "linear-gradient(135deg, color-mix(in_oklab,var(--accent),white_10%), color-mix(in_oklab,var(--accent),black_10%))",
+                              }}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  ) : frameConfig.isFloating ? (
+                    /* Floating frame: gap + artwork */
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: `${frameBorderPx}px`,
+                        backgroundColor: frameConfig.gapColor,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <div className="overflow-hidden" style={{ width: `${artworkWidthPx}px`, height: `${artworkHeightPx}px`, margin: `${gapWidthPx}px` }}>
+                        {art?.imageUrl || art?.overlayImageUrl ? (
+                          <img 
+                            src={art.overlayImageUrl || art.imageUrl} 
+                            alt={art.title} 
+                            style={{
+                              width: `${artworkWidthPx}px`,
+                              height: `${artworkHeightPx}px`,
+                              display: "block",
+                              objectFit: "cover"
+                            }} 
+                            draggable={false} 
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              width: `${artworkWidthPx}px`,
+                              height: `${artworkHeightPx}px`,
+                              background: "linear-gradient(135deg, color-mix(in_oklab,var(--accent),white_10%), color-mix(in_oklab,var(--accent),black_10%))",
+                            }}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    /* Basic frame: border + artwork */
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        borderWidth: frameConfig.id === "none" ? 0 : `${frameBorderPx}px`,
+                        borderStyle: frameConfig.id === "none" ? "none" : "solid",
+                        borderColor: frameConfig.borderColor,
+                        backgroundColor: "#f8fafc",
+                        boxSizing: "border-box",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <div className={frameConfig.id === "none" ? "overflow-hidden rounded-md" : "overflow-hidden"} style={{ width: `${artworkWidthPx}px`, height: `${artworkHeightPx}px` }}>
+                        {art?.imageUrl || art?.overlayImageUrl ? (
+                          <img 
+                            src={art.overlayImageUrl || art.imageUrl} 
+                            alt={art.title} 
+                            style={{
+                              width: `${artworkWidthPx}px`,
+                              height: `${artworkHeightPx}px`,
+                              display: "block",
+                              objectFit: "cover"
+                            }} 
+                            draggable={false} 
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              width: `${artworkWidthPx}px`,
+                              height: `${artworkHeightPx}px`,
+                              background: "linear-gradient(135deg, color-mix(in_oklab,var(--accent),white_10%), color-mix(in_oklab,var(--accent),black_10%))",
+                            }}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  )}
                   
                   {/* Resize handles - visible only when selected */}
                   {isArtworkSelected && (
@@ -1041,8 +1277,8 @@ function Studio() {
                       <div
                         className="absolute w-6 h-6 bg-white border-2 border-rv-primary rounded-br-md hover:bg-rv-primary/10 hover:border-rv-primaryHover transition-colors shadow-sm"
                         style={{ 
-                          top: `-${frameThicknessPx}px`,
-                          left: `-${frameThicknessPx}px`,
+                          top: `-${totalFrameThicknessPx}px`,
+                          left: `-${totalFrameThicknessPx}px`,
                           cursor: 'nw-resize',
                         }}
                         onMouseDown={(e) => handleResizeStart(e, 'nw')}
@@ -1057,8 +1293,8 @@ function Studio() {
                       <div
                         className="absolute w-6 h-6 bg-white border-2 border-rv-primary rounded-bl-md hover:bg-rv-primary/10 hover:border-rv-primaryHover transition-colors shadow-sm"
                         style={{ 
-                          top: `-${frameThicknessPx}px`,
-                          right: `-${frameThicknessPx}px`,
+                          top: `-${totalFrameThicknessPx}px`,
+                          right: `-${totalFrameThicknessPx}px`,
                           cursor: 'ne-resize',
                         }}
                         onMouseDown={(e) => handleResizeStart(e, 'ne')}
@@ -1073,8 +1309,8 @@ function Studio() {
                       <div
                         className="absolute w-6 h-6 bg-white border-2 border-rv-primary rounded-tr-md hover:bg-rv-primary/10 hover:border-rv-primaryHover transition-colors shadow-sm"
                         style={{ 
-                          bottom: `-${frameThicknessPx}px`,
-                          left: `-${frameThicknessPx}px`,
+                          bottom: `-${totalFrameThicknessPx}px`,
+                          left: `-${totalFrameThicknessPx}px`,
                           cursor: 'sw-resize',
                         }}
                         onMouseDown={(e) => handleResizeStart(e, 'sw')}
@@ -1089,8 +1325,8 @@ function Studio() {
                       <div
                         className="absolute w-6 h-6 bg-white border-2 border-rv-primary rounded-tl-md hover:bg-rv-primary/10 hover:border-rv-primaryHover transition-colors shadow-sm"
                         style={{ 
-                          bottom: `-${frameThicknessPx}px`,
-                          right: `-${frameThicknessPx}px`,
+                          bottom: `-${totalFrameThicknessPx}px`,
+                          right: `-${totalFrameThicknessPx}px`,
                           cursor: 'se-resize',
                         }}
                         onMouseDown={(e) => handleResizeStart(e, 'se')}
@@ -1135,18 +1371,18 @@ function Studio() {
             )}
 
             <div className="mt-6 text-sm font-bold text-rv-primary">Frame</div>
-            <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
-              {(["None", "Slim", "Gallery"] as const).map((o) => (
+            <div className="mt-3 grid grid-cols-2 gap-2 text-xs max-h-[280px] overflow-y-auto pr-1">
+              {FRAME_STYLES.map((frame) => (
                 <button
-                  key={o}
-                  onClick={() => setFrameStyle(o)}
-                  className={`rounded-rvMd border-2 px-3 py-2 font-semibold transition-all ${
-                    frameStyle === o
+                  key={frame.id}
+                  onClick={() => setFrameStyle(frame.id)}
+                  className={`rounded-rvMd border-2 px-2 py-2 font-semibold transition-all text-left ${
+                    frameStyle === frame.id
                       ? "border-rv-primary bg-rv-primary text-white shadow-sm"
                       : "border-rv-neutral bg-white text-rv-text hover:bg-rv-surface"
                   }`}
                 >
-                  {o}
+                  {frame.label}
                 </button>
               ))}
             </div>

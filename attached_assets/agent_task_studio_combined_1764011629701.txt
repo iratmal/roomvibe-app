@@ -1,0 +1,188 @@
+Message for Replit Agent — Combined Studio Tasks (Real Size, Frame Fix, Frame Library 12)
+
+-----------------------------------
+This file includes:
+1) Real-size scaling system
+2) Frame interaction fixes (resize + white edges)
+3) Full 12-frame library expansion
+-----------------------------------
+
+===== TASK 4: Real Size + Frame Fix =====
+
+
+
+-----------------------------------
+
+===== TASK 5: Frame Library (12 Frames) =====
+
+Message for Replit Agent — Task 5: Studio Frame Library (12 Frame Styles)
+
+Hi again! This task is to expand the Studio “Frame” options from the current simple set (None / Slim / Gallery) into a small but high‑quality frame library.
+
+This must work together with the previous tasks:
+- real-size scaling
+- frame white-edge fix
+- resize with frames enabled
+- dynamic current size readout
+
+All behaviors that apply to Slim/Gallery should apply to ALL new frame styles as well.
+
+-----------------------------------
+🎯 GOAL
+-----------------------------------
+Provide approximately 12 distinct, realistic frame styles that artists and galleries can use in the Studio. These should cover:
+
+- basic modern black/white frames
+- warm and dark wood options
+- subtle metallics
+- a floating frame style
+- one “mat + frame” combo
+
+We are not trying to simulate hyper-realistic 3D, but the styles should be visually different enough and look clean and professional.
+
+-----------------------------------
+1) FRAME OPTIONS – PROPOSED SET
+-----------------------------------
+Please implement the following frames in the Frame selector.
+
+IMPORTANT:
+- Keep “None” as the first option.
+- Keep the existing “Slim” and “Gallery” but adapt them to match the descriptions below (in name and style).
+- Add the remaining options after them.
+
+For each frame, we list:
+- internalId (for code)
+- label (what the user sees)
+- notes (style, approximate thickness, color/mat info)
+
+You can adjust exact pixel thickness values and hex colors to fit current design, but keep the spirit of each style.
+
+1) internalId: "none"
+   label: "None"
+   notes: No frame at all. Just the artwork.
+
+2) internalId: "slim-black"
+   label: "Slim Black"
+   notes: Very thin, modern black frame. Clean 1–2 cm look in real-world scale.
+
+3) internalId: "gallery-white"
+   label: "Gallery White"
+   notes: Classic gallery-style white frame, slightly thicker (2–3 cm) with no mat.
+
+4) internalId: "warm-oak"
+   label: "Warm Oak"
+   notes: Medium-thickness warm oak wood, natural light-brown tone. Good for Scandinavian / cozy interiors.
+
+5) internalId: "dark-walnut"
+   label: "Dark Walnut"
+   notes: Rich dark brown wood, slightly thicker profile. Elegant, more “serious” gallery feel.
+
+6) internalId: "birch-thin"
+   label: "Natural Birch Thin"
+   notes: Very thin, pale wood frame. Minimal visual weight, good for modern abstractions.
+
+7) internalId: "bold-black"
+   label: "Bold Black"
+   notes: Thicker black frame than Slim Black. Strong contrast, works well with colorful abstracts and photography.
+
+8) internalId: "soft-white"
+   label: "Soft White"
+   notes: Thin to medium white frame, less dominant than Gallery White. Versatile for bright, airy interiors.
+
+9) internalId: "brushed-silver"
+   label: "Brushed Silver"
+   notes: Matte silver/grey metallic look (not shiny chrome). Modern and neutral.
+
+10) internalId: "champagne-gold"
+    label: "Champagne Gold"
+    notes: Soft warm gold tone, not too yellow. Slightly more “luxury” but still tasteful.
+
+11) internalId: "floating-wood"
+    label: "Floating Wood"
+    notes: Simulate a floating frame: a thin gap between the artwork and a wooden outer frame.
+          - Small visible gap (0.3–0.8 cm equivalent)
+          - Frame color similar to Warm Oak or a neutral mid-tone wood.
+          - The artwork appears as if it is “floating” inside the frame box.
+
+12) internalId: "black-with-white-mat"
+    label: "Black Frame + White Mat"
+    notes: Combination:
+          - White “mat” area around the artwork
+          - Thin black frame on the outside.
+          - Mat should be visibly wider than the frame (e.g. mat 4–6 cm, frame 1–2 cm equivalent).
+          - Artwork image is slightly reduced inside the mat window.
+
+-----------------------------------
+2) UI & INTERACTION
+-----------------------------------
+- Show these options as buttons or chips in the Frame section (similar to current None / Slim / Gallery).
+- Only ONE frame can be active at a time.
+- When a new frame is selected:
+  - Apply that frame style to the artwork immediately.
+  - Keep artwork position and current size unchanged (no jumping if possible).
+
+- All frames must:
+  - respect the white-edge fix (no background gaps)
+  - scale correctly when the artwork is resized or when real-size is applied
+  - be compatible with drag & resize interactions.
+
+-----------------------------------
+3) TECHNICAL IMPLEMENTATION SUGGESTIONS
+-----------------------------------
+Depending on the current codebase, you can:
+
+- Use a frameStyle config object with:
+  - borderWidth
+  - borderColor
+  - matWidth (if any)
+  - gapWidth (for floating)
+  - backgroundColor (for mat)
+  - optional special flags (e.g. isFloating = true)
+
+- Render the frame as:
+  - one or more nested divs around the artwork image
+  - using CSS border and padding to simulate frame/mat/gap
+
+Important:
+- Keep performance good and avoid excessive re-renders.
+- Ensure mobile and desktop behave consistently.
+
+-----------------------------------
+4) COMPATIBILITY WITH PREVIOUS TASKS
+-----------------------------------
+This frame library must remain compatible with:
+
+- Real-size scaling
+- Dynamic “Current size” readout
+- Resizing from 4 corners
+- Pinch-zoom on mobile
+- White-edges fix
+- Ability to resize even when a frame is active
+
+If any of the previous behaviors break, please adjust the implementation so that:
+- All frames behave like Slim/Gallery do after the previous tasks are completed.
+
+-----------------------------------
+✅ FINAL EXPECTATION
+-----------------------------------
+After this task:
+
+- The Frame section in Studio offers:
+  - None
+  - Slim Black
+  - Gallery White
+  - Warm Oak
+  - Dark Walnut
+  - Natural Birch Thin
+  - Bold Black
+  - Soft White
+  - Brushed Silver
+  - Champagne Gold
+  - Floating Wood
+  - Black Frame + White Mat
+
+- Users can switch between these styles easily.
+- Frames look visually distinct and professional.
+- Frames work seamlessly with drag, resize, real-size scaling, and “View & Buy”.
+
+Thank you!
