@@ -37,6 +37,8 @@ router.get('/artworks', authenticateToken, async (req: any, res) => {
       return res.status(403).json({ error: 'Only artists and admins can access artworks' });
     }
 
+    console.log('Fetching artworks for user:', { userId: req.user.id, role: req.user.role });
+
     let queryText;
     let queryParams;
 
@@ -55,10 +57,16 @@ router.get('/artworks', authenticateToken, async (req: any, res) => {
     }
 
     const result = await query(queryText, queryParams);
+    console.log(`Found ${result.rows.length} artworks`);
     res.json({ artworks: result.rows });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching artworks:', error);
-    res.status(500).json({ error: 'Failed to fetch artworks' });
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      detail: error.detail
+    });
+    res.status(500).json({ error: 'Failed to fetch artworks', details: error.message });
   }
 });
 
@@ -70,11 +78,15 @@ router.post('/artworks', authenticateToken, upload.single('image'), async (req: 
 
     const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, artistId } = req.body;
 
+    console.log('Creating artwork with data:', { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, hasFile: !!req.file });
+
     if (!title || !width || !height || !buyUrl) {
+      console.error('Missing required fields:', { title: !!title, width: !!width, height: !!height, buyUrl: !!buyUrl });
       return res.status(400).json({ error: 'Missing required fields: title, width, height, buyUrl' });
     }
 
     if (!req.file) {
+      console.error('No image file uploaded');
       return res.status(400).json({ error: 'Image file is required' });
     }
 
@@ -84,6 +96,7 @@ router.post('/artworks', authenticateToken, upload.single('image'), async (req: 
     const currency = priceCurrency || 'EUR';
     const unit = dimensionUnit || 'cm';
 
+    console.log('Inserting artwork into database...');
     const result = await query(
       `INSERT INTO artworks (artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, updated_at)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP)
@@ -91,10 +104,17 @@ router.post('/artworks', authenticateToken, upload.single('image'), async (req: 
       [targetArtistId, title, imageUrl, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl]
     );
 
+    console.log('Artwork created successfully:', result.rows[0].id);
     res.status(201).json({ artwork: result.rows[0], message: 'Artwork created successfully' });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating artwork:', error);
-    res.status(500).json({ error: 'Failed to create artwork' });
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      detail: error.detail,
+      stack: error.stack
+    });
+    res.status(500).json({ error: 'Failed to create artwork', details: error.message });
   }
 });
 

@@ -1,0 +1,77 @@
+Message for Replit Agent — Bug: Server error 500 on Artist Dashboard (Upload & Fetch Artworks)
+
+Hi! I tested the Artist Dashboard again and I’m now getting a server error.
+
+-----------------------------------
+WHAT I SEE IN THE UI
+-----------------------------------
+On /dashboard/artist (viewing as Artist, admin impersonation):
+
+- I fill in the form:
+  • Title: (any value)
+  • Dimensions: e.g. 90 x 90 (cm)
+  • Price: e.g. 450
+  • Currency: EUR
+  • Image: selected .jpg file
+  • Buy URL: product URL (sometimes full https URL, sometimes relative URL)
+
+- When I click **Upload Artwork**, at the top of the page I get:
+
+  **"Server error: 500"**
+  and/or
+  **"Unable to fetch artworks."**
+
+- The dashboard stays visible, but:
+  • The new artwork does NOT appear in “My Artworks”.
+  • The error message remains on the page.
+
+So it looks like the backend is throwing a 500 when creating or fetching artworks.
+
+-----------------------------------
+WHAT I NEED YOU TO CHECK
+-----------------------------------
+
+1) API endpoint for creating artworks
+   - Check the route that handles artwork creation (POST).
+   - Confirm that:
+     • The request body matches what the frontend sends (title, dimensions, price, currency, image, buyUrl, etc.).
+     • Any required DB fields are being set correctly.
+     • Image upload handling is correct (file storage / URL generation).
+   - If something fails, return a clean JSON error (4xx/5xx) instead of an unhandled exception.
+
+2) API endpoint for listing artworks
+   - The error “Unable to fetch artworks” suggests that the GET endpoint is also failing or returning an unexpected response.
+   - Please:
+     • Check the GET route for the current artist.
+     • Make sure it always returns valid JSON, even when there are 0 artworks.
+       Example:
+       `{ "success": true, "artworks": [] }`
+
+3) Logs
+   - Please check server logs / console output when I submit the form.
+   - The 500 error should have a stack trace or message indicating exactly what is breaking (e.g. missing column, null value, file upload error, etc.).
+
+4) URL validation (optional but helpful)
+   - It might help to:
+     • Automatically add `https://` if the user enters a URL without protocol, OR
+     • Validate that Buy URL starts with `http://` or `https://` and show a user-friendly validation error if not.
+   - Right now I sometimes paste a relative URL (e.g. `/collections/...`), so make sure this doesn’t break the server.
+
+-----------------------------------
+EXPECTED BEHAVIOR
+-----------------------------------
+
+After this is fixed:
+
+- When I click **Upload Artwork** with valid data:
+  • No 500 error appears.
+  • The new artwork is saved in the database.
+  • The artwork shows up in the “My Artworks” list.
+  • A success message is shown (e.g. “Artwork uploaded successfully.”).
+
+- When the page loads:
+  • “My Artworks” should call the GET endpoint and show either:
+      - a list of artworks, or
+      - “No artworks yet” — but never a 500 error.
+
+Thank you!
