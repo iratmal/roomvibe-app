@@ -1,0 +1,157 @@
+from pathlib import Path
+
+text = """Message for Replit Agent — Task: Designer Dashboard MVP (Projects + Room Uploads)
+
+Hi! Here is the next major role task for the RoomVibe application.
+
+We want to implement the Designer Dashboard MVP, allowing interior designers to create projects and upload room images for their clients.
+
+-----------------------------------
+🎯 GOAL
+-----------------------------------
+On /dashboard/designer, designers should be able to:
+• Create interior design projects
+• View a list of all their projects
+• Open a project
+• Upload room images for that project
+• View/delete images
+• Delete projects
+
+This is the MVP stage — simple and functional. “Open in Studio” and “Share with client” will be added later.
+
+-----------------------------------
+1) ROUTING
+-----------------------------------
+- /dashboard/designer → Designer Dashboard
+- /dashboard/designer/project/:id → Project Detail View
+
+Access control:
+- Only users with role = designer
+- Admin impersonation should work normally
+
+-----------------------------------
+2) DATA MODEL
+-----------------------------------
+
+Project:
+- id
+- designerId
+- title
+- clientName (optional)
+- roomType (string)
+- notes (optional text)
+- createdAt
+- updatedAt
+
+RoomImage:
+- id
+- projectId
+- imageUrl
+- label (optional)
+- createdAt
+
+-----------------------------------
+3) DESIGNER DASHBOARD UI
+-----------------------------------
+
+A) Header
+“Designer Dashboard”
+“Create projects and upload room visuals for your clients.”
+
+B) Create New Project (form)
+Fields:
+- Project Title (required)
+- Client Name (optional)
+- Room Type (optional)
+- Notes (optional)
+
+Button:
+Create Project
+
+After submit:
+- Save project
+- Clear form
+- Insert into project list
+- Show success toast (“Project created successfully!”)
+
+C) My Projects (list)
+Each project card shows:
+- Title
+- Client
+- Room Type
+- Image count
+- Created date
+
+Buttons:
+- View Project
+- Delete (with confirmation)
+
+-----------------------------------
+4) PROJECT DETAIL VIEW
+-----------------------------------
+
+Route: /dashboard/designer/project/:id
+
+A) Project header
+- Title
+- Client
+- Room Type
+- Notes
+
+B) Upload Room Image
+Fields:
+- image file (jpg/png)
+- label (optional)
+
+Button:
+Upload Room Image
+
+After upload:
+- Add image to list
+- Show success toast
+- Stay on same page
+
+C) Room Images list
+Each image card shows:
+- Thumbnail
+- Label
+- Delete button
+
+-----------------------------------
+5) BACKEND / API
+-----------------------------------
+
+Projects:
+- GET /api/designer/projects
+- POST /api/designer/projects
+- DELETE /api/designer/projects/:id
+
+Room Images:
+- GET /api/designer/projects/:id/rooms
+- POST /api/designer/projects/:id/rooms
+- DELETE /api/designer/rooms/:id
+
+All endpoints must be scoped to the logged-in designer (or admin impersonation).
+
+-----------------------------------
+✅ FINAL GOAL
+-----------------------------------
+After this task, when I log in as Designer (or Admin impersonating Designer), I should be able to:
+
+✔ Create a project  
+✔ See projects  
+✔ Open a project  
+✔ Upload room images  
+✔ See them in a list  
+✔ Delete projects and images  
+✔ Stay inside Designer Dashboard for all actions
+
+This completes the Designer Dashboard MVP.
+
+Thank you!
+"""
+
+path = Path("/mnt/data/agent_task_designer_dashboard.txt")
+path.write_text(text, encoding="utf-8")
+
+path
