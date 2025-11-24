@@ -1115,8 +1115,9 @@ function Studio() {
                       ? "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
                       : "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
                     overflow: "visible",
-                    outline: isArtworkSelected ? '2px solid #283593' : 'none',
-                    outlineOffset: '2px',
+                    outline: isArtworkSelected ? '3px solid rgba(40, 53, 147, 0.6)' : 'none',
+                    outlineOffset: '4px',
+                    transition: 'outline 0.15s ease-in-out, width 0.12s ease-out, height 0.12s ease-out',
                   }}
                   onMouseDown={handleDragStart}
                   onTouchStart={(e) => {
@@ -1137,6 +1138,7 @@ function Studio() {
                         borderStyle: "solid",
                         borderColor: frameConfig.borderColor,
                         boxSizing: "border-box",
+                        boxShadow: 'inset 0 0 8px rgba(0, 0, 0, 0.15)', // Subtle depth
                       }}
                     />
                   )}
@@ -1164,6 +1166,7 @@ function Studio() {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
+                          boxShadow: 'inset 0 0 12px rgba(0, 0, 0, 0.08)', // Subtle mat depth
                         }}
                       >
                         {/* Artwork at actual size */}
@@ -1275,65 +1278,61 @@ function Studio() {
                     <>
                       {/* Top-left corner */}
                       <div
-                        className="absolute w-6 h-6 bg-white border-2 border-rv-primary rounded-br-md hover:bg-rv-primary/10 hover:border-rv-primaryHover transition-colors shadow-sm"
+                        className="absolute w-7 h-7 bg-white border-3 border-rv-primary rounded-full hover:bg-rv-primary hover:scale-110 transition-all shadow-md cursor-nw-resize flex items-center justify-center"
                         style={{ 
-                          top: `-${totalFrameThicknessPx}px`,
-                          left: `-${totalFrameThicknessPx}px`,
-                          cursor: 'nw-resize',
+                          top: `-${totalFrameThicknessPx + 10}px`,
+                          left: `-${totalFrameThicknessPx + 10}px`,
                         }}
                         onMouseDown={(e) => handleResizeStart(e, 'nw')}
                         onTouchStart={(e) => handleResizeStart(e, 'nw')}
                       >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-full h-full text-rv-primary">
-                          <path d="M15 9l-6 6m0-4l4-4" strokeWidth="2" strokeLinecap="round" />
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4 text-rv-primary hover:text-white transition-colors">
+                          <path d="M15 9l-6 6m0-4l4-4" strokeWidth="2.5" strokeLinecap="round" />
                         </svg>
                       </div>
                       
                       {/* Top-right corner */}
                       <div
-                        className="absolute w-6 h-6 bg-white border-2 border-rv-primary rounded-bl-md hover:bg-rv-primary/10 hover:border-rv-primaryHover transition-colors shadow-sm"
+                        className="absolute w-7 h-7 bg-white border-3 border-rv-primary rounded-full hover:bg-rv-primary hover:scale-110 transition-all shadow-md cursor-ne-resize flex items-center justify-center"
                         style={{ 
-                          top: `-${totalFrameThicknessPx}px`,
-                          right: `-${totalFrameThicknessPx}px`,
-                          cursor: 'ne-resize',
+                          top: `-${totalFrameThicknessPx + 10}px`,
+                          right: `-${totalFrameThicknessPx + 10}px`,
                         }}
                         onMouseDown={(e) => handleResizeStart(e, 'ne')}
                         onTouchStart={(e) => handleResizeStart(e, 'ne')}
                       >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-full h-full text-rv-primary">
-                          <path d="M9 9l6 6m-4 0l4-4" strokeWidth="2" strokeLinecap="round" />
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4 text-rv-primary hover:text-white transition-colors">
+                          <path d="M9 9l6 6m-4 0l4-4" strokeWidth="2.5" strokeLinecap="round" />
                         </svg>
                       </div>
                       
                       {/* Bottom-left corner */}
                       <div
-                        className="absolute w-6 h-6 bg-white border-2 border-rv-primary rounded-tr-md hover:bg-rv-primary/10 hover:border-rv-primaryHover transition-colors shadow-sm"
+                        className="absolute w-7 h-7 bg-white border-3 border-rv-primary rounded-full hover:bg-rv-primary hover:scale-110 transition-all shadow-md cursor-sw-resize flex items-center justify-center"
                         style={{ 
-                          bottom: `-${totalFrameThicknessPx}px`,
-                          left: `-${totalFrameThicknessPx}px`,
-                          cursor: 'sw-resize',
+                          bottom: `-${totalFrameThicknessPx + 10}px`,
+                          left: `-${totalFrameThicknessPx + 10}px`,
                         }}
                         onMouseDown={(e) => handleResizeStart(e, 'sw')}
                         onTouchStart={(e) => handleResizeStart(e, 'sw')}
                       >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-full h-full text-rv-primary">
-                          <path d="M15 15l-6-6m4 0l-4 4" strokeWidth="2" strokeLinecap="round" />
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4 text-rv-primary hover:text-white transition-colors">
+                          <path d="M15 15l-6-6m4 0l-4 4" strokeWidth="2.5" strokeLinecap="round" />
                         </svg>
                       </div>
                       
                       {/* Bottom-right corner */}
                       <div
-                        className="absolute w-6 h-6 bg-white border-2 border-rv-primary rounded-tl-md hover:bg-rv-primary/10 hover:border-rv-primaryHover transition-colors shadow-sm"
+                        className="absolute w-7 h-7 bg-white border-3 border-rv-primary rounded-full hover:bg-rv-primary hover:scale-110 transition-all shadow-md cursor-se-resize flex items-center justify-center"
                         style={{ 
-                          bottom: `-${totalFrameThicknessPx}px`,
-                          right: `-${totalFrameThicknessPx}px`,
-                          cursor: 'se-resize',
+                          bottom: `-${totalFrameThicknessPx + 10}px`,
+                          right: `-${totalFrameThicknessPx + 10}px`,
                         }}
                         onMouseDown={(e) => handleResizeStart(e, 'se')}
                         onTouchStart={(e) => handleResizeStart(e, 'se')}
                       >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-full h-full text-rv-primary">
-                          <path d="M9 15l6-6m0 4l-4 4" strokeWidth="2" strokeLinecap="round" />
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4 text-rv-primary hover:text-white transition-colors">
+                          <path d="M9 15l6-6m0 4l-4 4" strokeWidth="2.5" strokeLinecap="round" />
                         </svg>
                       </div>
                     </>
