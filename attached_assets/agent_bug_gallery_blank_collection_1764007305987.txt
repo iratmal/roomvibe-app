@@ -1,0 +1,96 @@
+Message for Replit Agent — Critical Bug: Gallery “View Collection” opens a blank screen
+
+Hi! The Gallery Dashboard still has a critical issue.
+
+-----------------------------------
+🔴 Problem
+-----------------------------------
+When I am logged in as Gallery (or using Admin → View as Gallery):
+
+1. I go to /dashboard/gallery
+2. I create a new collection — this part works
+3. I click “View Collection” on the created collection
+4. The app navigates to:
+
+   /dashboard/gallery/collection/1   (or similar ID)
+
+…but the entire page is blank white.
+
+No header, no content, no error component, nothing.
+
+This happens every time, even without adding any artwork. So the component breaks immediately on mount.
+
+-----------------------------------
+🔍 What this likely means technically
+-----------------------------------
+This is almost certainly caused by one of:
+
+- an unhandled exception in the CollectionDetail component on initial render
+- a failing fetch (API returns unexpected structure → JS error → React crash)
+- a missing import (component used but not defined)
+- a crash inside routing (e.g. undefined “collection” object)
+- or wrong path resolution for the role-based dashboards
+
+Because the blank screen is full white, this means React is failing at top level inside the component, not inside the form.
+
+-----------------------------------
+🧪 Please check:
+-----------------------------------
+
+1) Frontend console
+
+- Open the browser console while reproducing the “blank screen”.
+- Check what exact React error appears (stack trace and message).
+
+Typical issues:
+- “Cannot read property X of undefined”
+- “… is not a function”
+- “Failed to fetch …”
+- “Module not found: …”
+
+2) API for GET collection
+
+Check the endpoint, e.g.:
+
+  GET /api/gallery/collections/:id
+
+Ensure it returns a stable structure, for example:
+
+  { success: true, collection: { ... } }
+
+If it returns:
+- empty object
+- undefined
+- an error
+
+…the component may be trying to access fields that don’t exist and crash.
+
+3) Component imports
+
+Make sure the collection detail view uses correct imports for:
+- any Layout / Card / shared components
+- no leftover imports from Artist/Designer dashboards that don’t exist for Gallery
+
+4) Defensive rendering
+
+Even if the collection is not found or the artworks array is empty, the page should still render a friendly message, not crash.
+
+-----------------------------------
+✔️ Expected result
+-----------------------------------
+When I click “View Collection”, the following must happen:
+
+- Page loads normally
+- Collection header is displayed
+- Upload artwork form is displayed
+- Artworks list is displayed (empty at first)
+- No blank screen under any circumstances
+
+This must work even when:
+- the collection has 0 artworks
+- some optional fields are empty
+- the server returns an empty artworks array
+
+Please fix this render crash for the Gallery collection detail view and let me know when it’s resolved so I can re-test.
+
+Thank you!

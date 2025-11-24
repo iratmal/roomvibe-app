@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ImpersonationBanner } from '../ImpersonationBanner';
 
@@ -63,6 +63,51 @@ export default function CollectionDetail() {
 
   const [statusUpdate, setStatusUpdate] = useState<'draft' | 'published'>('draft');
 
+  const fetchCollection = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/gallery/collections`, {
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch collection');
+      }
+
+      const data = await response.json();
+      const foundCollection = data.collections.find((c: Collection) => c.id === parseInt(collectionId!));
+      
+      if (foundCollection) {
+        setCollection(foundCollection);
+        setStatusUpdate(foundCollection.status);
+      } else {
+        setError('Collection not found');
+      }
+    } catch (err: any) {
+      console.error('Error fetching collection:', err);
+      setError(err.message);
+    } finally {
+      setInitialLoading(false);
+    }
+  }, [collectionId]);
+
+  const fetchArtworks = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/gallery/collections/${collectionId}/artworks`, {
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch artworks');
+      }
+
+      const data = await response.json();
+      setArtworks(data.artworks || []);
+    } catch (err: any) {
+      console.error('Error fetching artworks:', err);
+      setError(err.message);
+    }
+  }, [collectionId]);
+
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash;
@@ -93,52 +138,7 @@ export default function CollectionDetail() {
       fetchCollection();
       fetchArtworks();
     }
-  }, [collectionId]);
-
-  const fetchCollection = async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/gallery/collections`, {
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch collection');
-      }
-
-      const data = await response.json();
-      const foundCollection = data.collections.find((c: Collection) => c.id === parseInt(collectionId!));
-      
-      if (foundCollection) {
-        setCollection(foundCollection);
-        setStatusUpdate(foundCollection.status);
-      } else {
-        setError('Collection not found');
-      }
-    } catch (err: any) {
-      console.error('Error fetching collection:', err);
-      setError(err.message);
-    } finally {
-      setInitialLoading(false);
-    }
-  };
-
-  const fetchArtworks = async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/gallery/collections/${collectionId}/artworks`, {
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch artworks');
-      }
-
-      const data = await response.json();
-      setArtworks(data.artworks || []);
-    } catch (err: any) {
-      console.error('Error fetching artworks:', err);
-      setError(err.message);
-    }
-  };
+  }, [collectionId, fetchCollection, fetchArtworks]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({
