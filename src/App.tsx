@@ -46,10 +46,11 @@ export default function App() {
 
 function AppContent() {
   const hash = useHashRoute();
+  const isDashboardRoute = hash.startsWith("#/dashboard");
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white text-slate-900">
-      {hash !== "#/studio" && hash !== "#/simple" && hash !== "#/dashboard" && hash !== "#/login" && hash !== "#/register" && <TopNav />}
+      {hash !== "#/studio" && hash !== "#/simple" && !isDashboardRoute && hash !== "#/login" && hash !== "#/register" && <TopNav />}
       {hash === "#/privacy" ? (
         <PrivacyPage />
       ) : hash === "#/studio" ? (
@@ -62,12 +63,18 @@ function AppContent() {
         <AuthPage mode="login" />
       ) : hash === "#/register" ? (
         <AuthPage mode="register" />
+      ) : hash === "#/dashboard/artist" ? (
+        <RoleDashboardRouter requiredRole="artist" />
+      ) : hash === "#/dashboard/designer" ? (
+        <RoleDashboardRouter requiredRole="designer" />
+      ) : hash === "#/dashboard/gallery" ? (
+        <RoleDashboardRouter requiredRole="gallery" />
       ) : hash === "#/dashboard" ? (
         <DashboardRouter />
       ) : (
         <HomePage />
       )}
-      {hash !== "#/studio" && hash !== "#/simple" && hash !== "#/dashboard" && hash !== "#/login" && hash !== "#/register" && <SiteFooter />}
+      {hash !== "#/studio" && hash !== "#/simple" && !isDashboardRoute && hash !== "#/login" && hash !== "#/register" && <SiteFooter />}
     </div>
   );
 }
@@ -129,6 +136,43 @@ function DashboardRouter() {
     case 'user':
     default:
       return <UserDashboard />;
+  }
+}
+
+function RoleDashboardRouter({ requiredRole }: { requiredRole: string }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    window.location.hash = '#/login';
+    return null;
+  }
+
+  if (user.role !== requiredRole) {
+    window.location.hash = '#/dashboard';
+    return null;
+  }
+
+  switch (requiredRole) {
+    case 'artist':
+      return <ArtistDashboard />;
+    case 'designer':
+      return <DesignerDashboard />;
+    case 'gallery':
+      return <GalleryDashboard />;
+    default:
+      window.location.hash = '#/dashboard';
+      return null;
   }
 }
 

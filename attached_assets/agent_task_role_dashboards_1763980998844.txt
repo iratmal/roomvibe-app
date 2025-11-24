@@ -1,0 +1,52 @@
+Message for Replit Agent — Task: Implement Basic Role-Based Dashboards (Artist / Designer / Gallery)
+
+Hi! Here is the second task for today.
+
+TASK: Create basic dashboard placeholders for the three main professional roles:
+- Artist
+- Designer
+- Gallery
+
+These dashboards do not need full functionality yet — just the structure and routing.
+
+Requirements:
+
+1. Routing:
+   - /dashboard → automatically load correct dashboard based on user.role
+   - /dashboard/artist
+   - /dashboard/designer
+   - /dashboard/gallery
+
+2. Each dashboard should have:
+   - Header: “Artist Dashboard” / “Designer Dashboard” / “Gallery Dashboard”
+   - Welcome message (with user email shown)
+   - Placeholder cards/buttons for future features:
+        Artist:
+          - Upload Artwork
+          - My Artworks
+          - Analytics
+        Designer:
+          - My Projects
+          - Upload Project
+          - PDF/Moodboard Export (placeholder)
+        Gallery:
+          - Upload Collection
+          - My Collection
+          - Online Exhibition Builder (placeholder)
+   - Logout button
+   - Clean layout consistent with the User dashboard
+
+3. Role-based access:
+   - user.role === "artist" → show Artist Dashboard
+   - user.role === "designer" → show Designer Dashboard
+   - user.role === "gallery" → show Gallery Dashboard
+   - user.role === "user" → standard User Dashboard
+   - No unauthorized access (e.g., a user cannot open /dashboard/artist).
+
+4. Admin override (later):
+   - Keep structure clean so we can add an Admin panel next week.
+
+Goal:
+Have four separate dashboards (User, Artist, Designer, Gallery), each accessible only by the correct role, so we can continue implementing features logically.
+
+Thank you!
