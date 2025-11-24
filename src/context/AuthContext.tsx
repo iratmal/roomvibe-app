@@ -39,9 +39,16 @@ export function AuthProvider({ children }: { children: React.ReactNode}) {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        setUser(data.user);
-        setToken('authenticated');
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          const data = await response.json();
+          setUser(data.user);
+          setToken('authenticated');
+        } else {
+          console.error('Expected JSON response but got:', contentType);
+          setUser(null);
+          setToken(null);
+        }
       } else {
         setUser(null);
         setToken(null);
@@ -65,6 +72,15 @@ export function AuthProvider({ children }: { children: React.ReactNode}) {
         body: JSON.stringify({ email, password }),
         credentials: 'include',
       });
+
+      const contentType = response.headers.get('content-type');
+      
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Expected JSON but got:', contentType);
+        console.error('Response body:', text);
+        throw new Error('Server returned an invalid response. Please try again or contact support.');
+      }
 
       const data = await response.json();
 
@@ -93,6 +109,15 @@ export function AuthProvider({ children }: { children: React.ReactNode}) {
         body: JSON.stringify({ email, password, role }),
         credentials: 'include',
       });
+
+      const contentType = response.headers.get('content-type');
+      
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Expected JSON but got:', contentType);
+        console.error('Response body:', text.substring(0, 500));
+        throw new Error('Server returned an invalid response. Please try again or contact support.');
+      }
 
       const data = await response.json();
 

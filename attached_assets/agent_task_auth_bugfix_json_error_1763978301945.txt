@@ -1,0 +1,62 @@
+Message for Replit Agent — Auth Bugfix (JSON.parse error on Create Account)
+
+Hi! I tested the new membership system on production (app.roomvibe.app) and got an error as soon as I clicked **Create Account** on the "Create Account" screen.
+
+**Error shown in UI:**
+`JSON.parse: unexpected character at line 1 column 1 of the JSON data`
+
+**What I did:**
+- Opened app.roomvibe.app
+- Went to the Create Account screen
+- Entered:
+  - Email: (valid email)
+  - Password: (valid password, > 6 chars)
+  - Account Type: "User – Browse and visualize artwork"
+- Clicked **Create Account**
+- Instead of successful registration, I get the JSON.parse error at the top of the form.
+
+This usually means:
+- The frontend is trying to parse the response as JSON,
+- But the backend is returning either:
+  - HTML (error page),
+  - plain text,
+  - or empty response,
+- So `JSON.parse()` / `res.json()` fails on line 1, column 1.
+
+**What I need you to do:**
+
+1. **Check the register endpoint**
+   - Inspect the route that handles registration (e.g. `/api/auth/register` or similar).
+   - Make sure it ALWAYS returns valid JSON with `Content-Type: application/json`.
+   - Example:
+     - On success: `res.status(200).json({ success: true, user })`
+     - On validation error: `res.status(400).json({ success: false, message: "..." })`
+     - On server error: `res.status(500).json({ success: false, message: "Server error" })`
+
+2. **Check what the endpoint is actually returning right now**
+   - Use logs or dev tools to see the raw response body.
+   - If it’s HTML (Replit error page, stack trace, etc.) or plain text, please fix the handler to send JSON instead.
+
+3. **Frontend: make the fetch more robust**
+   - In the registration submit handler:
+     - Check `response.ok` and `response.headers.get("content-type")`.
+     - Only call `response.json()` if content-type is JSON.
+     - If not JSON or not ok, show a readable error message instead of throwing JSON.parse.
+   - Also log the response body to console for easier debugging if something goes wrong again.
+
+4. **Test scenario**
+   - Try registering a completely new email on production build (same as I did).
+   - Confirm:
+     - No JSON.parse error appears.
+     - On success, the user is either auto-logged-in and redirected to the correct dashboard, or sees a clear success message.
+     - On failure (e.g. email already exists), a friendly validation message is shown on the form.
+
+5. **DB check**
+   - Please also check whether my attempted registration created any partial/invalid user records in the database. If yes, feel free to clean them up.
+
+Goal:
+When I click **Create Account**, I should either:
+- be successfully registered and redirected, OR
+- see a clear validation/server error message – but never a raw JSON.parse error.
+
+Thank you!
