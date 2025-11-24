@@ -12,6 +12,7 @@ import { ArtistDashboard } from "./components/dashboards/ArtistDashboard";
 import { DesignerDashboard } from "./components/dashboards/DesignerDashboard";
 import { GalleryDashboard } from "./components/dashboards/GalleryDashboard";
 import { AdminDashboard } from "./components/dashboards/AdminDashboard";
+import ProjectDetail from "./components/dashboards/ProjectDetail";
 import PrivacyPolicy from "./components/legal/PrivacyPolicy";
 import TermsOfService from "./components/legal/TermsOfService";
 import UploadConsent from "./components/legal/UploadConsent";
@@ -99,6 +100,8 @@ function AppContent() {
         <AuthPage mode="login" />
       ) : normalizedHash === "#/register" ? (
         <AuthPage mode="register" />
+      ) : normalizedHash.startsWith("#/dashboard/designer/project/") ? (
+        <ProjectDetail />
       ) : normalizedHash === "#/dashboard/artist" ? (
         <RoleDashboardRouter requiredRole="artist" />
       ) : normalizedHash === "#/dashboard/designer" ? (
