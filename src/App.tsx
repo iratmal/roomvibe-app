@@ -114,7 +114,7 @@ function DashboardRouter() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-600">Loading dashboard...</p>
+          <p className="text-rv-textMuted">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -165,7 +165,7 @@ function RoleDashboardRouter({ requiredRole }: { requiredRole: string }) {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-600">Loading dashboard...</p>
+          <p className="text-rv-textMuted">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -478,18 +478,18 @@ function SimpleVisualizer() {
 
 function StudioHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-rv-neutral bg-white/80 backdrop-blur">
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
         <div className="flex h-14 items-center justify-between">
-          <a href="#/" className="flex items-center gap-2 text-lg font-semibold text-slate-900">
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[var(--rv-navy)] text-white text-xs">
+          <a href="#/" className="flex items-center gap-2 text-lg font-bold text-rv-primary">
+            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-rv-primary text-white text-xs font-bold">
               RV
             </div>
             <span>RoomVibe</span>
           </a>
           <a
             href="#/"
-            className="text-sm font-medium text-slate-600 hover:text-slate-900 transition"
+            className="text-sm font-semibold text-rv-text hover:text-rv-primary transition-colors"
           >
             ← Back to Home
           </a>
@@ -752,15 +752,15 @@ function Studio() {
     <main>
       {!isInIframe && <StudioHeader />}
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-4 text-sm text-slate-600">
-          <span className="font-medium">RoomVibe Studio</span> · Upload a wall photo, pick a room preset, and see your art true-to-size.
+        <div className="mb-4 text-sm text-rv-textMuted">
+          <span className="font-semibold text-rv-primary">RoomVibe Studio</span> · Upload a wall photo, pick a room preset, and see your art true-to-size.
         </div>
         <div className="grid grid-cols-12 gap-4 lg:gap-6">
           {/* Left: Scenes gallery */}
-          <aside className="col-span-12 lg:col-span-3 rounded-2xl border border-slate-200 bg-white/70 backdrop-blur p-3 lg:p-4 h-auto lg:h-[78vh] overflow-auto">
+          <aside className="col-span-12 lg:col-span-3 rounded-rvLg border border-rv-neutral bg-white shadow-rvSoft p-3 lg:p-4 h-auto lg:h-[78vh] overflow-auto">
             <div className="mb-3 flex items-center justify-between">
-              <div className="text-sm font-semibold">Scenes</div>
-              <a href="#home" className="text-xs underline">
+              <div className="text-sm font-bold text-rv-primary">Scenes</div>
+              <a href="#home" className="text-xs font-semibold text-rv-primary hover:text-rv-primaryHover underline">
                 Home
               </a>
             </div>
@@ -769,13 +769,13 @@ function Studio() {
                 <button
                   key={p.id}
                   onClick={() => setSceneId(p.id)}
-                  className={`group relative overflow-hidden rounded-xl border ${
-                    sceneId === p.id ? "border-slate-900" : "border-slate-200"
-                  } bg-white`}
+                  className={`group relative overflow-hidden rounded-rvMd border-2 ${
+                    sceneId === p.id ? "border-rv-primary" : "border-rv-neutral"
+                  } bg-white shadow-sm hover:shadow-rvSoft transition-all`}
                 >
                   <img src={p.photo} alt={p.name} className="h-24 w-full object-cover" />
-                  <div className="absolute inset-0 ring-0 group-hover:ring-2 group-hover:ring-[var(--accent)] rounded-xl transition" />
-                  <div className="absolute bottom-0 left-0 right-0 bg-black/40 px-2 py-1 text-[10px] text-white">{p.name}</div>
+                  <div className="absolute inset-0 ring-0 group-hover:ring-2 group-hover:ring-rv-primary rounded-rvMd transition-all" />
+                  <div className="absolute bottom-0 left-0 right-0 bg-rv-primary/80 px-2 py-1 text-[10px] text-white font-semibold">{p.name}</div>
                 </button>
               ))}
             </div>
@@ -783,20 +783,20 @@ function Studio() {
 
           {/* Center: Canvas */}
           <section className="col-span-12 lg:col-span-6">
-            <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-              <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 text-sm">
-                <div className="flex items-center gap-2 text-slate-600">
+            <div className="rounded-rvLg border border-rv-neutral bg-white shadow-rvSoft">
+              <div className="flex items-center justify-between border-b border-rv-neutral px-4 py-3 text-sm">
+                <div className="flex items-center gap-2 text-rv-primary font-semibold">
                   <RoomIcon className="h-4 w-4" /> {scene?.name}
                 </div>
-                <div className="flex items-center gap-3 text-slate-500">
+                <div className="flex items-center gap-3 text-rv-textMuted">
                   <button
-                    className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs hover:bg-slate-50"
+                    className="rounded-rvMd border-2 border-rv-neutral bg-white px-3 py-1.5 text-xs font-semibold text-rv-text hover:bg-rv-surface transition-colors"
                     onClick={() => fileRef.current?.click()}
                   >
                     Upload wall photo
                   </button>
                   {userPhoto && (
-                    <button className="text-xs underline" onClick={() => setUserPhoto(null)}>
+                    <button className="text-xs font-semibold text-rv-primary hover:text-rv-primaryHover underline transition-colors" onClick={() => setUserPhoto(null)}>
                       Remove photo
                     </button>
                   )}
@@ -816,7 +816,7 @@ function Studio() {
                 </div>
               </div>
 
-              <div ref={canvasRef} className="relative h-[560px] w-full overflow-hidden rounded-b-2xl">
+              <div ref={canvasRef} className="relative h-[560px] w-full overflow-hidden rounded-b-rvLg">
                 {userPhoto ? (
                   <img src={userPhoto} alt="Your wall" className="absolute inset-0 h-full w-full object-cover" />
                 ) : (
@@ -873,7 +873,7 @@ function Studio() {
                   
                   {/* Resize handle */}
                   <div
-                    className="absolute w-6 h-6 bg-white border-2 border-slate-400 rounded-tl-md hover:bg-slate-100 hover:border-slate-600 transition-colors"
+                    className="absolute w-6 h-6 bg-white border-2 border-rv-primary rounded-tl-md hover:bg-rv-primary/10 hover:border-rv-primaryHover transition-colors shadow-sm"
                     style={{ 
                       bottom: `-${frameThicknessPx}px`,
                       right: `-${frameThicknessPx}px`,
@@ -882,7 +882,7 @@ function Studio() {
                     onMouseDown={handleResizeStart}
                     onTouchStart={handleResizeStart}
                   >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-full h-full text-slate-600">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-full h-full text-rv-primary">
                       <path d="M9 15l6-6m0 4l-4 4" strokeWidth="2" strokeLinecap="round" />
                     </svg>
                   </div>
@@ -892,11 +892,11 @@ function Studio() {
           </section>
 
           {/* Right: Controls */}
-          <aside className="col-span-12 lg:col-span-3 rounded-2xl border border-slate-200 bg-white p-4 lg:p-5 h-auto lg:h-[78vh] overflow-auto">
-            <div className="text-sm font-semibold">Artwork</div>
+          <aside className="col-span-12 lg:col-span-3 rounded-rvLg border border-rv-neutral bg-white shadow-rvSoft p-4 lg:p-5 h-auto lg:h-[78vh] overflow-auto">
+            <div className="text-sm font-bold text-rv-primary">Artwork</div>
             <div className="mt-3 flex items-center gap-2">
               <select
-                className="w-full rounded-md border border-slate-300 px-2 py-1 text-sm"
+                className="w-full rounded-rvMd border-2 border-rv-neutral px-3 py-2 text-sm font-medium text-rv-text focus:outline-none focus:ring-2 focus:ring-rv-primary transition-all"
                 value={artId}
                 onChange={(e) => setArtId(e.target.value)}
               >
@@ -908,21 +908,21 @@ function Studio() {
               </select>
             </div>
             {art && art.widthCm && art.heightCm && (
-              <div className="mt-2 text-xs text-slate-500">
+              <div className="mt-2 text-xs text-rv-textMuted font-medium">
                 Real size: {art.widthCm} × {art.heightCm} cm
               </div>
             )}
 
-            <div className="mt-6 text-sm font-semibold">Frame</div>
+            <div className="mt-6 text-sm font-bold text-rv-primary">Frame</div>
             <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
               {(["None", "Slim", "Gallery"] as const).map((o) => (
                 <button
                   key={o}
                   onClick={() => setFrameStyle(o)}
-                  className={`rounded-md border px-2 py-1 transition ${
+                  className={`rounded-rvMd border-2 px-3 py-2 font-semibold transition-all ${
                     frameStyle === o
-                      ? "border-[var(--accent)] bg-[var(--accent)] text-white"
-                      : "border-slate-200 bg-white hover:bg-slate-50"
+                      ? "border-rv-primary bg-rv-primary text-white shadow-sm"
+                      : "border-rv-neutral bg-white text-rv-text hover:bg-rv-surface"
                   }`}
                 >
                   {o}
@@ -933,7 +933,7 @@ function Studio() {
             <div className="mt-5">
               <button
                 onClick={resetPosition}
-                className="text-xs text-slate-600 hover:text-slate-900 underline"
+                className="text-xs font-semibold text-rv-primary hover:text-rv-primaryHover underline transition-colors"
               >
                 Reset position
               </button>
@@ -944,7 +944,7 @@ function Studio() {
                 href={(art as any).buyUrl || (art as any).onlineStoreUrl || "#"}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-6 inline-flex w-full items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-900 shadow-sm hover:bg-slate-50"
+                className="mt-6 inline-flex w-full items-center justify-center rounded-rvLg bg-rv-primary px-4 py-3 text-sm font-bold text-white shadow-rvSoft hover:bg-rv-primaryHover hover:shadow-rvElevated transition-all"
               >
                 View &amp; Buy
               </a>
@@ -980,7 +980,7 @@ function HowItWorks() {
   return (
     <Container id="how">
       <div className="py-20">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-rv-primary">How it works</h2>
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-rv-primary font-display">How it works</h2>
         <div className="grid gap-10 md:grid-cols-3">
           {steps.map((s, i) => (
             <div key={i} className="text-center space-y-4">
@@ -1003,7 +1003,7 @@ function CTASection() {
   return (
     <Container>
       <div className="py-20 text-center space-y-8">
-        <h2 className="text-3xl font-bold md:text-4xl text-rv-primary">Ready to try it?</h2>
+        <h2 className="text-3xl font-bold md:text-4xl text-rv-primary font-display">Ready to try it?</h2>
         <p className="text-lg text-rv-textMuted max-w-2xl mx-auto">Experience the future of art visualization with true-to-scale rendering.</p>
         <div>
           <a
