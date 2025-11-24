@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { ChangePassword } from '../ChangePassword';
 
 export function UserDashboard() {
   const { user, logout } = useAuth();
@@ -56,20 +57,24 @@ export function UserDashboard() {
           </div>
         </div>
 
-        <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
-          <h3 className="text-lg font-semibold mb-2">Account Information</h3>
-          <div className="space-y-2 text-sm">
-            <p><span className="font-medium">Email:</span> {user?.email}</p>
-            <p><span className="font-medium">Account Type:</span> {user?.role}</p>
-            <p>
-              <span className="font-medium">Email Confirmed:</span>{' '}
-              {user?.emailConfirmed ? (
-                <span className="text-green-600">✓ Verified</span>
-              ) : (
-                <span className="text-amber-600">⚠ Pending</span>
-              )}
-            </p>
+        <div className="mt-8 grid gap-6 md:grid-cols-2">
+          <div className="p-6 bg-blue-50 rounded-lg border border-blue-200">
+            <h3 className="text-lg font-semibold mb-2">Account Information</h3>
+            <div className="space-y-2 text-sm">
+              <p><span className="font-medium">Email:</span> {user?.email}</p>
+              <p><span className="font-medium">Account Type:</span> {user?.role}</p>
+              <p>
+                <span className="font-medium">Email Confirmed:</span>{' '}
+                {user?.emailConfirmed ? (
+                  <span className="text-green-600">✓ Verified</span>
+                ) : (
+                  <span className="text-amber-600">⚠ Pending</span>
+                )}
+              </p>
+            </div>
           </div>
+
+          <ChangePassword />
         </div>
       </div>
     </div>
