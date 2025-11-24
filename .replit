@@ -54,6 +54,10 @@ externalPort = 3001
 localPort = 5000
 externalPort = 80
 
+[[ports]]
+localPort = 38349
+externalPort = 3000
+
 [deployment]
 deploymentTarget = "autoscale"
 build = ["npm", "run", "build"]
@@ -67,3 +71,6 @@ packages = ["unzip"]
 
 [userenv.development]
 JWT_SECRET = "dev-secret-key-change-in-production-please"
+
+[userenv.shared]
+VITE_GA4_MEASUREMENT_ID = "G-F4PMGBJX09"
