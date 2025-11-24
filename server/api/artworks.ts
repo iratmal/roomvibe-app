@@ -33,22 +33,28 @@ const upload = multer({
 
 router.get('/artworks', authenticateToken, async (req: any, res) => {
   try {
-    const effectiveRole = req.user.role === 'admin' && req.user.impersonating
-      ? req.user.impersonating
-      : req.user.role;
-
-    if (effectiveRole !== 'artist') {
-      return res.status(403).json({ error: 'Only artists can access artworks' });
+    if (req.user.role !== 'artist' && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Only artists and admins can access artworks' });
     }
 
-    const result = await query(
-      `SELECT id, artist_id, title, image_url, width, height, price, buy_url, created_at, updated_at
-       FROM artworks 
-       WHERE artist_id = $1 
-       ORDER BY created_at DESC`,
-      [req.user.id]
-    );
+    let queryText;
+    let queryParams;
 
+    if (req.user.role === 'admin') {
+      queryText = `SELECT a.id, a.artist_id, a.title, a.image_url, a.width, a.height, a.price, a.buy_url, a.created_at, a.updated_at, u.email as artist_email
+                   FROM artworks a
+                   LEFT JOIN users u ON a.artist_id = u.id
+                   ORDER BY a.created_at DESC`;
+      queryParams = [];
+    } else {
+      queryText = `SELECT id, artist_id, title, image_url, width, height, price, buy_url, created_at, updated_at
+                   FROM artworks 
+                   WHERE artist_id = $1 
+                   ORDER BY created_at DESC`;
+      queryParams = [req.user.id];
+    }
+
+    const result = await query(queryText, queryParams);
     res.json({ artworks: result.rows });
   } catch (error) {
     console.error('Error fetching artworks:', error);
@@ -58,15 +64,11 @@ router.get('/artworks', authenticateToken, async (req: any, res) => {
 
 router.post('/artworks', authenticateToken, upload.single('image'), async (req: any, res) => {
   try {
-    const effectiveRole = req.user.role === 'admin' && req.user.impersonating
-      ? req.user.impersonating
-      : req.user.role;
-
-    if (effectiveRole !== 'artist') {
-      return res.status(403).json({ error: 'Only artists can create artworks' });
+    if (req.user.role !== 'artist' && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Only artists and admins can create artworks' });
     }
 
-    const { title, width, height, price, buyUrl } = req.body;
+    const { title, width, height, price, buyUrl, artistId } = req.body;
 
     if (!title || !width || !height || !buyUrl) {
       return res.status(400).json({ error: 'Missing required fields: title, width, height, buyUrl' });
@@ -77,12 +79,14 @@ router.post('/artworks', authenticateToken, upload.single('image'), async (req: 
     }
 
     const imageUrl = `/uploads/artworks/${req.file.filename}`;
+    
+    const targetArtistId = req.user.role === 'admin' && artistId ? parseInt(artistId) : req.user.id;
 
     const result = await query(
       `INSERT INTO artworks (artist_id, title, image_url, width, height, price, buy_url, updated_at)
        VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP)
        RETURNING id, artist_id, title, image_url, width, height, price, buy_url, created_at, updated_at`,
-      [req.user.id, title, imageUrl, parseFloat(width), parseFloat(height), price ? parseFloat(price) : null, buyUrl]
+      [targetArtistId, title, imageUrl, parseFloat(width), parseFloat(height), price ? parseFloat(price) : null, buyUrl]
     );
 
     res.status(201).json({ artwork: result.rows[0], message: 'Artwork created successfully' });
@@ -94,21 +98,19 @@ router.post('/artworks', authenticateToken, upload.single('image'), async (req: 
 
 router.put('/artworks/:id', authenticateToken, upload.single('image'), async (req: any, res) => {
   try {
-    const effectiveRole = req.user.role === 'admin' && req.user.impersonating
-      ? req.user.impersonating
-      : req.user.role;
-
-    if (effectiveRole !== 'artist') {
-      return res.status(403).json({ error: 'Only artists can update artworks' });
+    if (req.user.role !== 'artist' && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Only artists and admins can update artworks' });
     }
 
     const artworkId = parseInt(req.params.id);
     const { title, width, height, price, buyUrl } = req.body;
 
-    const existingArtwork = await query(
-      'SELECT * FROM artworks WHERE id = $1 AND artist_id = $2',
-      [artworkId, req.user.id]
-    );
+    let existingArtwork;
+    if (req.user.role === 'admin') {
+      existingArtwork = await query('SELECT * FROM artworks WHERE id = $1', [artworkId]);
+    } else {
+      existingArtwork = await query('SELECT * FROM artworks WHERE id = $1 AND artist_id = $2', [artworkId, req.user.id]);
+    }
 
     if (existingArtwork.rows.length === 0) {
       return res.status(404).json({ error: 'Artwork not found or you do not have permission to edit it' });
@@ -122,9 +124,9 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
     const result = await query(
       `UPDATE artworks 
        SET title = $1, image_url = $2, width = $3, height = $4, price = $5, buy_url = $6, updated_at = CURRENT_TIMESTAMP
-       WHERE id = $7 AND artist_id = $8
+       WHERE id = $7
        RETURNING id, artist_id, title, image_url, width, height, price, buy_url, created_at, updated_at`,
-      [title, imageUrl, parseFloat(width), parseFloat(height), price ? parseFloat(price) : null, buyUrl, artworkId, req.user.id]
+      [title, imageUrl, parseFloat(width), parseFloat(height), price ? parseFloat(price) : null, buyUrl, artworkId]
     );
 
     res.json({ artwork: result.rows[0], message: 'Artwork updated successfully' });
@@ -136,20 +138,18 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
 
 router.delete('/artworks/:id', authenticateToken, async (req: any, res) => {
   try {
-    const effectiveRole = req.user.role === 'admin' && req.user.impersonating
-      ? req.user.impersonating
-      : req.user.role;
-
-    if (effectiveRole !== 'artist') {
-      return res.status(403).json({ error: 'Only artists can delete artworks' });
+    if (req.user.role !== 'artist' && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Only artists and admins can delete artworks' });
     }
 
     const artworkId = parseInt(req.params.id);
 
-    const result = await query(
-      'DELETE FROM artworks WHERE id = $1 AND artist_id = $2 RETURNING id',
-      [artworkId, req.user.id]
-    );
+    let result;
+    if (req.user.role === 'admin') {
+      result = await query('DELETE FROM artworks WHERE id = $1 RETURNING id', [artworkId]);
+    } else {
+      result = await query('DELETE FROM artworks WHERE id = $1 AND artist_id = $2 RETURNING id', [artworkId, req.user.id]);
+    }
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Artwork not found or you do not have permission to delete it' });
