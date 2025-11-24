@@ -1,0 +1,97 @@
+Message for Replit Agent — Task: Studio Improvements – Show Dimensions + Fix Frame White Edges (Week 4 – Task 2)
+
+Hi! Great work on the Studio so far. The drag and resize feel good. There are now two important UX/visual issues we’d like to address.
+
+-----------------------------------
+🎯 GOAL
+-----------------------------------
+1) Show the **current artwork size in cm** after resize/scale.  
+2) Fix the **white edges that appear around the artwork when a frame is applied** (Slim / Gallery).
+
+These changes are about clarity and visual polish.
+
+-----------------------------------
+1) SHOW CURRENT ARTWORK SIZE (DYNAMIC DIMENSIONS)
+-----------------------------------
+Right now, when the user resizes the artwork in the Studio, there is no indication of the new dimensions.
+
+We need a dynamic “Current size” display.
+
+UX suggestion (you can choose the cleanest implementation):
+
+Location:
+- Either in the right-hand Artwork panel
+  e.g. under the artwork dropdown:
+  “Real size: 100 × 80 cm”
+  and below it:
+  “Current size: 78 × 62 cm”
+
+Behavior:
+- “Real size” remains the original artwork dimensions from metadata (e.g. 100 × 80 cm).
+- “Current size” updates live whenever the artwork is resized or scaled in the Studio.
+
+Technical notes:
+- Use the same scale factor that is currently used for resizing the artwork.
+- Compute currentWidthCm and currentHeightCm from:
+  - originalWidthCm, originalHeightCm and
+  - current scale factor (or equivalent logic).
+- Round values sensibly (e.g. to nearest cm or one decimal place).
+
+Goal:
+- The user always knows approximately how big the artwork is in the current visualization.
+
+-----------------------------------
+2) FIX WHITE EDGES WHEN FRAME IS APPLIED
+-----------------------------------
+Issue:
+When Slim or Gallery frame is applied, we can see thin white edges around the artwork. This happens because the image has rounded corners, while the frame has sharp corners, revealing the background.
+
+We need the artwork + frame to look visually clean and unified.
+
+Expected behavior:
+- When a frame is applied (Slim or Gallery), the artwork should:
+  - NOT show any white gaps around the edges.
+  - Have corners that visually match the frame shape.
+
+Possible implementation options (you pick the best within current code structure):
+
+Option A – Remove border-radius from artwork when frame is ON
+- If a frame is active:
+  - artwork image uses rectangular corners (no border-radius)
+  - frame fully surrounds the image, no white space.
+- If NO frame:
+  - you may keep the subtle rounded corners if desired.
+
+Option B – Use a wrapper with overflow: hidden
+- Wrap the artwork in a container that:
+  - has no white background
+  - uses overflow: hidden
+  - aligns exactly with the frame borders
+- Ensure the image never extends beyond that container visually.
+
+Important:
+- After the fix, when switching between:
+  - None / Slim / Gallery
+  there must be no visible white “halo” or gaps around the artwork.
+
+-----------------------------------
+3) DO NOT BREAK EXISTING STUDIO BEHAVIOR
+-----------------------------------
+- Keep drag and resize behavior as it is now.
+- Keep existing frame logic (Slim / Gallery) – only visual clean-up.
+- Keep existing “Reset position” and “View & Buy” functionality.
+
+-----------------------------------
+✅ FINAL EXPECTATION
+-----------------------------------
+After this task:
+
+1) In the Studio, the right panel shows:
+   - Original (real) artwork size
+   - Current size in cm, updated whenever the image is resized.
+
+2) When Slim or Gallery frame is applied:
+   - No white edges/gaps around the artwork.
+   - Corners look visually clean and professional.
+
+Thank you!

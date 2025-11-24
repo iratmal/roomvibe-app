@@ -978,7 +978,7 @@ function Studio() {
                   <img src={scene.photo} alt={scene.name} className="absolute inset-0 h-full w-full object-cover" style={{ pointerEvents: 'none' }} />
                 )}
                 <div
-                  className="rounded-md shadow-2xl"
+                  className={frameStyle === "None" ? "rounded-md shadow-2xl" : "shadow-2xl"}
                   style={{ 
                     position: "absolute",
                     left: `calc(${safe.x * 100}% + ${offsetX}px)`, 
@@ -1009,7 +1009,7 @@ function Studio() {
                   }}
                   onClick={handleArtworkClick}
                 >
-                  <div className="overflow-hidden rounded-md" style={{ width: `${artworkWidthPx}px`, height: `${artworkHeightPx}px` }}>
+                  <div className={frameStyle === "None" ? "overflow-hidden rounded-md" : "overflow-hidden"} style={{ width: `${artworkWidthPx}px`, height: `${artworkHeightPx}px` }}>
                     {art?.imageUrl || art?.overlayImageUrl ? (
                       <img 
                         src={art.overlayImageUrl || art.imageUrl} 
@@ -1124,9 +1124,14 @@ function Studio() {
               </select>
             </div>
             {art && art.widthCm && art.heightCm && (
-              <div className="mt-2 text-xs text-rv-textMuted font-medium">
-                Real size: {art.widthCm} × {art.heightCm} cm
-              </div>
+              <>
+                <div className="mt-2 text-xs text-rv-textMuted font-medium">
+                  Real size: {art.widthCm} × {art.heightCm} cm
+                </div>
+                <div className="mt-1 text-xs text-rv-primary font-semibold">
+                  Current size: {Math.round(art.widthCm * scale)} × {Math.round(art.heightCm * scale)} cm
+                </div>
+              </>
             )}
 
             <div className="mt-6 text-sm font-bold text-rv-primary">Frame</div>
