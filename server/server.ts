@@ -14,12 +14,24 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = parseInt(process.env.PORT || '3001', 10);
+const PORT = parseInt(
+  process.env.PORT || 
+  (process.env.NODE_ENV === 'production' ? '5000' : '3001'), 
+  10
+);
+
+const allowedOrigins = process.env.NODE_ENV === 'production'
+  ? [process.env.FRONTEND_URL || 'https://app.roomvibe.app'].filter(Boolean)
+  : ['http://localhost:5000', 'http://127.0.0.1:5000'];
 
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? true 
-    : ['http://localhost:5000', 'http://127.0.0.1:5000'],
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 
