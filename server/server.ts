@@ -8,6 +8,7 @@ import authRoutes from './api/auth.js';
 import dashboardRoutes from './api/dashboard.js';
 import artworksRoutes from './api/artworks.js';
 import projectsRoutes from './api/projects.js';
+import galleryRoutes from './api/gallery.js';
 import { initializeDatabase } from './db/init.js';
 
 dotenv.config();
@@ -46,6 +47,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/artist', artworksRoutes);
 app.use('/api/designer', projectsRoutes);
+app.use('/api/gallery', galleryRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'RoomVibe API server running' });

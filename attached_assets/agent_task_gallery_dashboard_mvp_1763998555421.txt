@@ -1,0 +1,177 @@
+Message for Replit Agent — Task: Gallery Dashboard MVP (Collections & Exhibitions)
+
+Hi! Now that the Artist and Designer dashboards are in place, we’d like to implement the Gallery Dashboard MVP.
+
+The gallery role is meant for art galleries that want to present their collection and exhibitions digitally and, later, connect to RoomVibe visualizations.
+
+-----------------------------------
+🎯 GOAL
+-----------------------------------
+On /dashboard/gallery, a gallery user should be able to:
+
+• Create and manage “Collections / Exhibitions”
+• Upload artworks into a collection
+• See a list of collections and artworks
+• Control basic visibility (Published / Draft)
+• Delete collections and artworks
+
+This is MVP – simple structure, no public gallery pages yet.
+
+-----------------------------------
+1) ROUTING
+-----------------------------------
+- /dashboard/gallery → Gallery Dashboard
+- /dashboard/gallery/collection/:id → Collection Detail View
+
+Access:
+- Only users with role = gallery (and admin impersonation).
+
+-----------------------------------
+2) DATA MODEL
+-----------------------------------
+
+GalleryCollection:
+- id
+- galleryId (FK to user)
+- title
+- subtitle (optional)
+- description (optional)
+- status ("draft" | "published")
+- createdAt
+- updatedAt
+
+GalleryArtwork:
+- id
+- collectionId (FK to GalleryCollection)
+- title
+- artistName
+- imageUrl
+- widthValue (number)
+- heightValue (number)
+- dimensionUnit ("cm" | "in")  // same approach as Artist
+- priceAmount (optional)
+- priceCurrency (optional, default "EUR")
+- buyUrl (optional)
+- createdAt
+
+-----------------------------------
+3) GALLERY DASHBOARD UI
+-----------------------------------
+
+Route: /dashboard/gallery
+
+A) Header
+“Gallery Dashboard”
+“Create digital collections and exhibitions for your gallery.”
+
+B) Create New Collection (form)
+Fields:
+- Title (required)
+- Subtitle (optional)
+- Description (optional textarea)
+- Status (select: Draft / Published)
+
+Button: Create Collection
+
+After submit:
+- Save collection
+- Clear form
+- Add to list
+- Show success toast
+
+C) My Collections (list)
+Each collection card shows:
+- Title
+- Subtitle
+- Status (Draft/Published)
+- Number of artworks
+- Created date
+
+Buttons:
+- View Collection
+- Delete (with confirmation)
+
+-----------------------------------
+4) COLLECTION DETAIL VIEW
+-----------------------------------
+
+Route: /dashboard/gallery/collection/:id
+
+A) Collection header
+Display:
+- Title
+- Subtitle
+- Status (with a small badge)
+- Description
+- Created/Updated timestamps
+
+Add a small inline control to change Status:
+- Dropdown or toggle: Draft / Published
+- Save button
+
+B) Add Artwork to Collection (form)
+Fields:
+- Title (required)
+- Artist Name (required)
+- Artwork Image (file upload, jpg/png)
+- Width (number)
+- Height (number)
+- Unit select: cm / in (default cm)
+- Price (optional)
+- Currency select (EUR [default], USD, GBP)
+- Buy URL (optional, full URL for external sales page)
+
+Button:
+- Add Artwork
+
+After submit:
+- Save artwork
+- Clear form
+- Add artwork to list
+- Show success toast
+
+C) Artworks in this Collection (list/grid)
+For each artwork show:
+- Thumbnail
+- Title
+- Artist name
+- Dimensions + unit (e.g. 70 × 100 cm)
+- Optional price + currency
+- Optional “View & Buy” button if buyUrl exists (opens in new tab)
+
+Action:
+- Delete Artwork (with confirmation)
+
+-----------------------------------
+5) BACKEND / API
+-----------------------------------
+
+Collections:
+- GET /api/gallery/collections
+- POST /api/gallery/collections
+- PUT /api/gallery/collections/:id   // for updating status, title, etc.
+- DELETE /api/gallery/collections/:id
+
+Artworks:
+- GET /api/gallery/collections/:id/artworks
+- POST /api/gallery/collections/:id/artworks
+- DELETE /api/gallery/artworks/:id
+
+All endpoints must be scoped to the logged-in gallery user (and admin impersonation).
+
+-----------------------------------
+✅ FINAL GOAL
+-----------------------------------
+After this task, when I log in as a Gallery (or Admin impersonating Gallery), I should be able to:
+
+✔ Create a collection/exhibition
+✔ See all my collections on /dashboard/gallery
+✔ Open a collection detail page
+✔ Upload artworks into a collection
+✔ See artworks listed with image, basic info, and optional price/buy link
+✔ Change collection status Draft/Published
+✔ Delete artworks and collections
+
+This completes the Gallery Dashboard MVP and aligns it with the Artist and Designer roles.
+
+Thank you!

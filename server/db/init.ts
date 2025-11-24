@@ -114,6 +114,45 @@ export async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_room_images_project_id ON room_images(project_id);
     `);
 
+    await query(`
+      CREATE TABLE IF NOT EXISTS gallery_collections (
+        id SERIAL PRIMARY KEY,
+        gallery_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        subtitle VARCHAR(255),
+        description TEXT,
+        status VARCHAR(20) DEFAULT 'draft',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS idx_gallery_collections_gallery_id ON gallery_collections(gallery_id);
+    `);
+
+    await query(`
+      CREATE TABLE IF NOT EXISTS gallery_artworks (
+        id SERIAL PRIMARY KEY,
+        collection_id INTEGER NOT NULL REFERENCES gallery_collections(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        artist_name VARCHAR(255) NOT NULL,
+        image_url TEXT NOT NULL,
+        width_value DECIMAL(10, 2) NOT NULL,
+        height_value DECIMAL(10, 2) NOT NULL,
+        dimension_unit VARCHAR(2) DEFAULT 'cm',
+        price_amount DECIMAL(10, 2),
+        price_currency VARCHAR(3) DEFAULT 'EUR',
+        buy_url TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS idx_gallery_artworks_collection_id ON gallery_artworks(collection_id);
+    `);
+
     console.log('✅ Database schema initialized successfully');
     return true;
   } catch (error) {
