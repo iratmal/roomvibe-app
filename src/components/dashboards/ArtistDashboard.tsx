@@ -12,10 +12,26 @@ interface Artwork {
   image_url: string;
   width: number;
   height: number;
-  price: number | null;
+  price_amount: number | string | null;
+  price_currency: string;
   buy_url: string;
   created_at: string;
   updated_at: string;
+  artist_email?: string;
+}
+
+function formatPrice(priceAmount: number | string | null | undefined, currency: string): string | null {
+  if (priceAmount === null || priceAmount === undefined || priceAmount === '') {
+    return null;
+  }
+  
+  const numericPrice = typeof priceAmount === 'number' ? priceAmount : parseFloat(priceAmount);
+  
+  if (!isFinite(numericPrice)) {
+    return null;
+  }
+  
+  return `${numericPrice.toFixed(2)} ${currency}`;
 }
 
 export function ArtistDashboard() {
@@ -31,7 +47,8 @@ export function ArtistDashboard() {
     title: '',
     width: '',
     height: '',
-    price: '',
+    priceAmount: '',
+    priceCurrency: 'EUR',
     buyUrl: '',
     image: null as File | null
   });
@@ -58,7 +75,7 @@ export function ArtistDashboard() {
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -84,6 +101,11 @@ export function ArtistDashboard() {
       return;
     }
 
+    if (!formData.buyUrl.startsWith('http://') && !formData.buyUrl.startsWith('https://')) {
+      setError('Buy URL must start with http:// or https://');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -92,8 +114,9 @@ export function ArtistDashboard() {
       formDataObj.append('width', formData.width);
       formDataObj.append('height', formData.height);
       formDataObj.append('buyUrl', formData.buyUrl);
-      if (formData.price) {
-        formDataObj.append('price', formData.price);
+      formDataObj.append('priceCurrency', formData.priceCurrency);
+      if (formData.priceAmount) {
+        formDataObj.append('priceAmount', formData.priceAmount);
       }
       if (formData.image) {
         formDataObj.append('image', formData.image);
@@ -112,29 +135,41 @@ export function ArtistDashboard() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save artwork');
+        let errorMessage = 'Failed to save artwork';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (parseError) {
+          errorMessage = `Server error: ${response.status} ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
-      setSuccess(data.message || 'Artwork saved successfully!');
+      setSuccess(data.message || (editingArtwork ? 'Artwork updated successfully!' : 'Artwork uploaded successfully!'));
       
       setFormData({
         title: '',
         width: '',
         height: '',
-        price: '',
+        priceAmount: '',
+        priceCurrency: 'EUR',
         buyUrl: '',
         image: null
       });
       setEditingArtwork(null);
+      
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      if (fileInput) {
+        fileInput.value = '';
+      }
       
       await fetchArtworks();
 
       setTimeout(() => setSuccess(''), 5000);
     } catch (err: any) {
       console.error('Error saving artwork:', err);
-      setError(err.message);
+      setError(err.message || 'An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -142,11 +177,18 @@ export function ArtistDashboard() {
 
   const handleEdit = (artwork: Artwork) => {
     setEditingArtwork(artwork);
+    
+    let priceAmountStr = '';
+    if (artwork.price_amount !== null && artwork.price_amount !== undefined && artwork.price_amount !== '') {
+      priceAmountStr = artwork.price_amount.toString();
+    }
+    
     setFormData({
       title: artwork.title,
       width: artwork.width.toString(),
       height: artwork.height.toString(),
-      price: artwork.price ? artwork.price.toString() : '',
+      priceAmount: priceAmountStr,
+      priceCurrency: artwork.price_currency || 'EUR',
       buyUrl: artwork.buy_url,
       image: null
     });
@@ -161,7 +203,8 @@ export function ArtistDashboard() {
       title: '',
       width: '',
       height: '',
-      price: '',
+      priceAmount: '',
+      priceCurrency: 'EUR',
       buyUrl: '',
       image: null
     });
@@ -294,16 +337,28 @@ export function ArtistDashboard() {
                 <label className="block text-sm font-semibold mb-2 text-rv-text">
                   Price (optional)
                 </label>
-                <input
-                  type="number"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleInputChange}
-                  step="0.01"
-                  min="0"
-                  className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
-                  placeholder="e.g. 299.99"
-                />
+                <div className="flex gap-3">
+                  <input
+                    type="number"
+                    name="priceAmount"
+                    value={formData.priceAmount}
+                    onChange={handleInputChange}
+                    step="0.01"
+                    min="0"
+                    className="flex-1 px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                    placeholder="e.g. 299.99"
+                  />
+                  <select
+                    name="priceCurrency"
+                    value={formData.priceCurrency}
+                    onChange={handleInputChange}
+                    className="px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary bg-white"
+                  >
+                    <option value="EUR">EUR</option>
+                    <option value="USD">USD</option>
+                    <option value="GBP">GBP</option>
+                  </select>
+                </div>
               </div>
 
               <div>
@@ -367,9 +422,9 @@ export function ArtistDashboard() {
                     <p className="text-sm text-rv-textMuted mb-1">
                       {artwork.width} × {artwork.height} cm
                     </p>
-                    {artwork.price && (
+                    {formatPrice(artwork.price_amount, artwork.price_currency) && (
                       <p className="text-sm font-semibold text-rv-accent mb-3">
-                        ${artwork.price.toFixed(2)}
+                        {formatPrice(artwork.price_amount, artwork.price_currency)}
                       </p>
                     )}
                     <a

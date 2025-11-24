@@ -41,13 +41,13 @@ router.get('/artworks', authenticateToken, async (req: any, res) => {
     let queryParams;
 
     if (req.user.role === 'admin') {
-      queryText = `SELECT a.id, a.artist_id, a.title, a.image_url, a.width, a.height, a.price, a.buy_url, a.created_at, a.updated_at, u.email as artist_email
+      queryText = `SELECT a.id, a.artist_id, a.title, a.image_url, a.width, a.height, a.price_amount, a.price_currency, a.buy_url, a.created_at, a.updated_at, u.email as artist_email
                    FROM artworks a
                    LEFT JOIN users u ON a.artist_id = u.id
                    ORDER BY a.created_at DESC`;
       queryParams = [];
     } else {
-      queryText = `SELECT id, artist_id, title, image_url, width, height, price, buy_url, created_at, updated_at
+      queryText = `SELECT id, artist_id, title, image_url, width, height, price_amount, price_currency, buy_url, created_at, updated_at
                    FROM artworks 
                    WHERE artist_id = $1 
                    ORDER BY created_at DESC`;
@@ -68,7 +68,7 @@ router.post('/artworks', authenticateToken, upload.single('image'), async (req: 
       return res.status(403).json({ error: 'Only artists and admins can create artworks' });
     }
 
-    const { title, width, height, price, buyUrl, artistId } = req.body;
+    const { title, width, height, priceAmount, priceCurrency, buyUrl, artistId } = req.body;
 
     if (!title || !width || !height || !buyUrl) {
       return res.status(400).json({ error: 'Missing required fields: title, width, height, buyUrl' });
@@ -81,12 +81,13 @@ router.post('/artworks', authenticateToken, upload.single('image'), async (req: 
     const imageUrl = `/uploads/artworks/${req.file.filename}`;
     
     const targetArtistId = req.user.role === 'admin' && artistId ? parseInt(artistId) : req.user.id;
+    const currency = priceCurrency || 'EUR';
 
     const result = await query(
-      `INSERT INTO artworks (artist_id, title, image_url, width, height, price, buy_url, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP)
-       RETURNING id, artist_id, title, image_url, width, height, price, buy_url, created_at, updated_at`,
-      [targetArtistId, title, imageUrl, parseFloat(width), parseFloat(height), price ? parseFloat(price) : null, buyUrl]
+      `INSERT INTO artworks (artist_id, title, image_url, width, height, price_amount, price_currency, buy_url, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, CURRENT_TIMESTAMP)
+       RETURNING id, artist_id, title, image_url, width, height, price_amount, price_currency, buy_url, created_at, updated_at`,
+      [targetArtistId, title, imageUrl, parseFloat(width), parseFloat(height), priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl]
     );
 
     res.status(201).json({ artwork: result.rows[0], message: 'Artwork created successfully' });
@@ -103,7 +104,7 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
     }
 
     const artworkId = parseInt(req.params.id);
-    const { title, width, height, price, buyUrl } = req.body;
+    const { title, width, height, priceAmount, priceCurrency, buyUrl } = req.body;
 
     let existingArtwork;
     if (req.user.role === 'admin') {
@@ -121,12 +122,14 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
       imageUrl = `/uploads/artworks/${req.file.filename}`;
     }
 
+    const currency = priceCurrency || existingArtwork.rows[0].price_currency || 'EUR';
+
     const result = await query(
       `UPDATE artworks 
-       SET title = $1, image_url = $2, width = $3, height = $4, price = $5, buy_url = $6, updated_at = CURRENT_TIMESTAMP
-       WHERE id = $7
-       RETURNING id, artist_id, title, image_url, width, height, price, buy_url, created_at, updated_at`,
-      [title, imageUrl, parseFloat(width), parseFloat(height), price ? parseFloat(price) : null, buyUrl, artworkId]
+       SET title = $1, image_url = $2, width = $3, height = $4, price_amount = $5, price_currency = $6, buy_url = $7, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $8
+       RETURNING id, artist_id, title, image_url, width, height, price_amount, price_currency, buy_url, created_at, updated_at`,
+      [title, imageUrl, parseFloat(width), parseFloat(height), priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, artworkId]
     );
 
     res.json({ artwork: result.rows[0], message: 'Artwork updated successfully' });

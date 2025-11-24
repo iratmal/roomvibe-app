@@ -44,6 +44,33 @@ export async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_artworks_artist_id ON artworks(artist_id);
     `);
 
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'artworks' AND column_name = 'price_currency'
+        ) THEN
+          ALTER TABLE artworks ADD COLUMN price_currency VARCHAR(3) DEFAULT 'EUR';
+        END IF;
+      END $$;
+    `);
+
+    await query(`
+      DO $$ 
+      BEGIN
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'artworks' AND column_name = 'price'
+        ) AND NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'artworks' AND column_name = 'price_amount'
+        ) THEN
+          ALTER TABLE artworks RENAME COLUMN price TO price_amount;
+        END IF;
+      END $$;
+    `);
+
     console.log('✅ Database schema initialized successfully');
     return true;
   } catch (error) {
