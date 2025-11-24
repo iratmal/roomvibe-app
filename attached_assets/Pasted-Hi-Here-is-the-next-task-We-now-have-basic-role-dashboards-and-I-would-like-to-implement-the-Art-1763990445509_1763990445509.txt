@@ -1,0 +1,165 @@
+Hi! Here is the next task.
+
+We now have basic role dashboards, and I would like to implement the Artist Dashboard MVP so artists can actually upload and manage their artworks.
+
+🎯 GOAL
+
+Create a functional Artist Dashboard where an artist can:
+
+upload artworks (image + basic data)
+
+see the list of their artworks
+
+edit or delete an artwork
+
+have a “View & Buy” URL for each artwork that links to an external shop (Shopify / other)
+
+and use these artworks inside the Studio later (for now, just prepare the structure).
+
+This is still MVP – design can stay simple, but UX should be clear.
+
+1) ROUTING / ACCESS
+
+Route: /dashboard/artist
+
+Only users with role = "artist" (or admin in impersonation mode) can access it.
+
+2) DATA MODEL (MVP LEVEL)
+
+Please create a simple data model for Artwork (table/collection), e.g.:
+
+id
+
+artistId (references the user)
+
+title
+
+imageUrl
+
+width (cm)
+
+height (cm)
+
+price (optional for now)
+
+buyUrl (external link to Shopify / other)
+
+createdAt
+
+updatedAt
+
+For now, this can be as simple as needed – we just need a stable structure.
+
+3) ARTIST DASHBOARD UI – SECTIONS
+
+On /dashboard/artist please include:
+
+A) Header
+
+Title: “Artist Dashboard”
+
+Subtitle: “Upload and manage your artworks.”
+
+B) “Add New Artwork” form
+
+Fields:
+
+Title (text)
+
+Image upload (file)
+
+Width in cm (number)
+
+Height in cm (number)
+
+Price (optional, text or number)
+
+Buy URL (text input for full URL, e.g. Shopify product page)
+
+Buttons:
+
+Save / Upload Artwork
+
+Basic validation (required: title, image, width, height, buyUrl)
+
+After submit:
+
+Upload image
+
+Save artwork record
+
+Show success message
+
+Clear the form.
+
+C) “My Artworks” list
+
+Show a list/table/grid of all artworks for that artist:
+
+For each artwork show:
+
+Thumbnail of the image
+
+Title
+
+Dimensions (e.g. “80 × 100 cm”)
+
+Optional price
+
+The Buy URL (shortened or with a “View & Buy” button)
+
+Actions for each artwork:
+
+Edit (open edit form on the same page or in a modal)
+
+Delete (with a confirmation step)
+
+For the Edit form, allow updating:
+
+Title
+
+Width / Height
+
+Price
+
+Buy URL
+
+(Image upload can be optional – only if user changes it)
+
+4) BACKEND / API
+
+Please add API endpoints for:
+
+GET /api/artist/artworks → list current artist’s artworks
+
+POST /api/artist/artworks → create new artwork
+
+PUT /api/artist/artworks/:id → update artwork
+
+DELETE /api/artist/artworks/:id → delete artwork
+
+These should always be scoped to the logged-in artist (and admin, if impersonating).
+
+5) FUTURE CONNECTION TO STUDIO (for later)
+
+For now, just make sure that:
+
+Artworks can be fetched easily by the system
+
+Data model is clean so later we can plug these artworks into the Studio visualizer.
+
+We don’t need full Studio integration in this task yet, just the management part.
+
+✅ GOAL FOR THIS TASK
+
+After this task, when I log in as an Artist (or as Admin in “view as Artist” mode), I should be able to:
+
+open /dashboard/artist
+
+upload new artworks with images + basic info + Buy URL
+
+see them listed
+
+edit and delete them
+
+Thank you!
