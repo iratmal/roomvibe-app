@@ -4,6 +4,23 @@
 RoomVibe Studio is a comprehensive React/TypeScript web application designed to visualize artwork in various room environments using a Canvy-style three-panel editor. Its core purpose is to allow users to see how artworks would look on their walls, featuring functionalities like true-to-scale sizing and the potential for wall recoloring. The application aims to provide a modern, user-friendly art visualization experience, ready for integration with e-commerce platforms like Shopify.
 
 ## Recent Changes (November 24, 2025)
+**AUTHENTICATION BUGFIX - Production JSON.parse Error:**
+- **Fixed critical JSON.parse error** on production registration:
+  - Added content-type validation before parsing JSON responses (prevents crashes on HTML error pages)
+  - Implemented global error handler that always returns JSON (no more HTML stack traces)
+  - Fixed CORS configuration: Explicit origin whitelist instead of permissive wildcard (CSRF protection)
+  - Updated production deployment to run full backend API server (`tsx server/server.ts` instead of static-only `server.js`)
+  - Enhanced logging for debugging registration/login issues
+  - Port configuration defaults to 5000 in production
+- **Security improvements**:
+  - CORS restricted to allowed origins only: `https://app.roomvibe.app` (or FRONTEND_URL env var)
+  - Same-origin requests allowed (no Origin header)
+  - Prevents CSRF attacks by rejecting unauthorized cross-origin authenticated requests
+- **User-facing improvements**:
+  - Clear error messages when server returns non-JSON responses
+  - Console logging for debugging server errors
+  - Graceful error handling instead of crashes
+
 **COMPLETE MEMBERSHIP SYSTEM IMPLEMENTATION:**
 - **Full-stack authentication system** with PostgreSQL backend:
   - **User Registration**: Email + password with role selection (user, artist, designer, gallery, admin)
