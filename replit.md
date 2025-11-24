@@ -4,6 +4,29 @@
 RoomVibe Studio is a comprehensive React/TypeScript web application designed to visualize artwork in various room environments using a Canvy-style three-panel editor. Its core purpose is to allow users to see how artworks would look on their walls, featuring functionalities like true-to-scale sizing and the potential for wall recoloring. The application aims to provide a modern, user-friendly art visualization experience, ready for integration with e-commerce platforms like Shopify. It includes a full-stack authentication system with role-based access control and robust security features.
 
 ## Recent Changes (November 24, 2025)
+**ADMIN IMPERSONATION FEATURE:**
+- **Implemented secure role impersonation for admin testing**:
+  - Admin Dashboard includes "Role Impersonation (View As)" section
+  - Four impersonation buttons: View as User, Artist, Designer, Gallery
+  - Color-coded buttons matching each role's theme (blue/purple/indigo/green)
+  - Admin account: `irena.ratkovicmalbasa@gmail.com` (role: admin)
+- **Impersonation Banner**:
+  - Displays at top of all dashboards when admin is viewing as another role
+  - Shows: "You are viewing as: [Role] (Admin Impersonation)"
+  - "Return to Admin Mode" button to exit impersonation
+  - Sticky positioning with color-coded styling matching impersonated role
+- **Security implementation**:
+  - Multiple layers of defense against privilege escalation
+  - effectiveRole only honors impersonation when user.role === 'admin'
+  - Non-admin users have impersonation cleared on login, register, and page load
+  - SessionStorage used (clears on browser close, prevents cross-tab tampering)
+  - Database role never changes (impersonation is session-only)
+- **User flow**:
+  - Admin clicks "View as Artist" → Redirects to Artist Dashboard with banner
+  - Can navigate, test features, see role-specific UI
+  - Clicks "Return to Admin Mode" → Back to Admin Dashboard
+  - Seamless testing without logging out/in
+
 **ROLE-BASED DASHBOARDS:**
 - **Implemented complete role-based dashboard system**:
   - Three professional dashboards: Artist, Designer, Gallery (plus User and Admin)
