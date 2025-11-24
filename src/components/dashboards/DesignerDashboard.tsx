@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import ImpersonationBanner from './ImpersonationBanner';
-import ChangePassword from './ChangePassword';
+import { ImpersonationBanner } from '../ImpersonationBanner';
+import { ChangePassword } from '../ChangePassword';
 
 const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
 

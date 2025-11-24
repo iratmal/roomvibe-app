@@ -1,0 +1,44 @@
+Message for Replit Agent — Bugfix: Designer Dashboard Import Errors (ImpersonationBanner / ChangePassword)
+
+Hi! After adding the Designer Dashboard, the deployment is failing with TypeScript errors:
+
+Errors shown:
+
+- TypeScript cannot find modules './ImpersonationBanner' and './ChangePassword' in:
+    src/components/dashboards/DesignerDashboard.tsx
+
+- TypeScript cannot find module './ImpersonationBanner' in:
+    src/components/dashboards/ProjectDetail.tsx
+
+- Build fails during the TypeScript compilation step (tsc -b) due to incorrect import paths.
+
+This looks like a copy/paste issue from another dashboard (Admin/User), where these components exist in a different folder, or they were never created for the designer views.
+
+What I need you to do:
+
+1) Check where these components actually live in the codebase:
+   - ImpersonationBanner
+   - ChangePassword
+
+2) Fix the imports in:
+   - src/components/dashboards/DesignerDashboard.tsx
+   - src/components/dashboards/ProjectDetail.tsx
+
+   so that they point to the correct existing paths, e.g. something like:
+   - ../../common/ImpersonationBanner
+   - ../../account/ChangePassword
+   (Exact paths depend on how you structured the project.)
+
+3) If these components are NOT needed on DesignerDashboard / ProjectDetail:
+   - Remove the imports
+   - Remove the JSX usage of those components from these files.
+
+4) Make sure that after the fix:
+   - `tsc -b` passes without errors
+   - The app builds and deploys successfully
+   - /dashboard/designer and /dashboard/designer/project/:id load correctly in the browser.
+
+Goal:
+The Designer Dashboard and Project Detail should compile cleanly without missing module errors, and the deployment should succeed.
+
+Thank you!
