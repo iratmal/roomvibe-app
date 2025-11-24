@@ -39,24 +39,25 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
   ];
 
   return (
-    <div className="w-full max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-semibold mb-6 text-center">Create Account</h2>
+    <div className="w-full max-w-md mx-auto p-8 bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral">
+      <h2 className="text-3xl font-bold mb-2 text-center text-rv-primary">Create Account</h2>
+      <p className="text-center text-rv-textMuted mb-8">Join RoomVibe today</p>
       
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="p-4 bg-red-50 border border-red-200 rounded-rvMd text-red-700 text-sm">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+          <div className="p-4 bg-green-50 border border-green-200 rounded-rvMd text-green-700 text-sm">
             {success}
           </div>
         )}
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium mb-1">
+          <label htmlFor="email" className="block text-sm font-semibold mb-2 text-rv-text">
             Email
           </label>
           <input
@@ -65,13 +66,13 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary focus:border-transparent transition-all"
             placeholder="you@example.com"
           />
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium mb-1">
+          <label htmlFor="password" className="block text-sm font-semibold mb-2 text-rv-text">
             Password
           </label>
           <input
@@ -81,21 +82,21 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={6}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary focus:border-transparent transition-all"
             placeholder="At least 6 characters"
           />
-          <p className="mt-1 text-xs text-slate-500">Minimum 6 characters</p>
+          <p className="mt-2 text-xs text-rv-textMuted">Minimum 6 characters</p>
         </div>
 
         <div>
-          <label htmlFor="role" className="block text-sm font-medium mb-1">
+          <label htmlFor="role" className="block text-sm font-semibold mb-2 text-rv-text">
             Account Type
           </label>
           <select
             id="role"
             value={role}
             onChange={(e) => setRole(e.target.value)}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary focus:border-transparent transition-all bg-white"
           >
             {roles.map((r) => (
               <option key={r.value} value={r.value}>
@@ -108,19 +109,18 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2 px-4 rounded-lg text-white font-medium disabled:opacity-50"
-          style={{ background: 'var(--accent)' }}
+          className="w-full py-3 px-4 rounded-rvMd text-white font-semibold bg-rv-primary hover:bg-rv-primaryHover disabled:opacity-50 disabled:cursor-not-allowed shadow-rvSoft hover:shadow-rvElevated transition-all"
         >
           {loading ? 'Creating account...' : 'Create Account'}
         </button>
       </form>
 
       {onSwitchToLogin && (
-        <p className="mt-4 text-center text-sm text-slate-600">
+        <p className="mt-6 text-center text-sm text-rv-textMuted">
           Already have an account?{' '}
           <button
             onClick={onSwitchToLogin}
-            className="text-blue-600 hover:underline font-medium"
+            className="text-rv-primary hover:text-rv-primaryHover font-semibold transition-colors"
           >
             Login
           </button>

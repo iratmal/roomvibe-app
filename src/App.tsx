@@ -50,7 +50,7 @@ function AppContent() {
   const isDashboardRoute = normalizedHash.startsWith("#/dashboard");
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white text-slate-900">
+    <div className="min-h-screen bg-white text-rv-text">
       {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/login" && normalizedHash !== "#/register" && <TopNav />}
       {normalizedHash === "#/privacy" ? (
         <PrivacyPage />
@@ -90,7 +90,7 @@ function AuthPage({ mode }: { mode: 'login' | 'register' }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 bg-gradient-to-b from-slate-50 to-white">
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 bg-white">
       {currentMode === 'login' ? (
         <LoginForm
           onSuccess={handleSuccess}
@@ -214,35 +214,34 @@ function TopNav() {
   const { user } = useAuth();
 
   return (
-    <header className="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/70 border-b border-slate-100">
+    <header className="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/80 border-b border-rv-neutral">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          <a href="#home" className="flex items-center gap-2 font-semibold">
-            <Logo className="h-6 w-6" /> <span>RoomVibe</span>
+          <a href="#home" className="flex items-center gap-2 font-bold text-rv-primary text-lg">
+            <Logo className="h-6 w-6 text-rv-primary" /> <span>RoomVibe</span>
           </a>
-          <nav className="hidden md:flex items-center gap-6 text-sm">
-            <a href="#how" className="hover:text-slate-700">
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+            <a href="#how" className="text-rv-text hover:text-rv-primary transition-colors">
               How it works
             </a>
-            <a href="#/studio" className="hover:text-slate-700">
+            <a href="#/studio" className="text-rv-text hover:text-rv-primary transition-colors">
               Studio
             </a>
             {user ? (
               <>
-                <a href="#/dashboard" className="hover:text-slate-700">
+                <a href="#/dashboard" className="text-rv-text hover:text-rv-primary transition-colors">
                   Dashboard
                 </a>
-                <span className="text-xs text-slate-500">({user.role})</span>
+                <span className="text-xs text-rv-textMuted">({user.role})</span>
               </>
             ) : (
               <>
-                <a href="#/login" className="hover:text-slate-700">
+                <a href="#/login" className="text-rv-text hover:text-rv-primary transition-colors">
                   Login
                 </a>
                 <a
                   href="#/register"
-                  className="inline-flex items-center rounded-full px-4 py-2 text-black shadow-sm hover:opacity-90"
-                  style={{ background: "var(--accent)" }}
+                  className="inline-flex items-center rounded-rvMd px-5 py-2.5 text-white font-semibold bg-rv-primary hover:bg-rv-primaryHover transition-all shadow-rvSoft hover:shadow-rvElevated"
                 >
                   Sign Up
                 </a>
@@ -251,7 +250,7 @@ function TopNav() {
           </nav>
           <button
             aria-label="Open menu"
-            className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200"
+            className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-rvSm border border-rv-neutral text-rv-primary hover:bg-rv-surface transition-colors"
             onClick={() => setOpen((v) => !v)}
           >
             <MenuIcon className="h-5 w-5" />
@@ -259,35 +258,34 @@ function TopNav() {
         </div>
       </div>
       {open && (
-        <div className="md:hidden border-t border-slate-100 bg-white">
-          <div className="mx-auto max-w-7xl px-4 py-3 text-sm">
+        <div className="md:hidden border-t border-rv-neutral bg-white">
+          <div className="mx-auto max-w-7xl px-4 py-4 text-sm">
             <div className="flex items-center justify-between">
-              <div className="flex flex-col gap-1">
-                <a onClick={() => setOpen(false)} href="#how" className="py-1">
+              <div className="flex flex-col gap-2 font-medium">
+                <a onClick={() => setOpen(false)} href="#how" className="py-2 text-rv-text hover:text-rv-primary transition-colors">
                   How it works
                 </a>
-                <a onClick={() => setOpen(false)} href="#/studio" className="py-1">
+                <a onClick={() => setOpen(false)} href="#/studio" className="py-2 text-rv-text hover:text-rv-primary transition-colors">
                   Studio
                 </a>
                 {user ? (
-                  <a onClick={() => setOpen(false)} href="#/dashboard" className="py-1">
+                  <a onClick={() => setOpen(false)} href="#/dashboard" className="py-2 text-rv-text hover:text-rv-primary transition-colors">
                     Dashboard
                   </a>
                 ) : (
-                  <a onClick={() => setOpen(false)} href="#/login" className="py-1">
+                  <a onClick={() => setOpen(false)} href="#/login" className="py-2 text-rv-text hover:text-rv-primary transition-colors">
                     Login
                   </a>
                 )}
               </div>
             </div>
             {user ? (
-              <div className="mt-3 text-xs text-slate-500">Logged in as {user.role}</div>
+              <div className="mt-3 text-xs text-rv-textMuted">Logged in as {user.role}</div>
             ) : (
               <a
                 href="#/register"
                 onClick={() => setOpen(false)}
-                className="mt-3 inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-black"
-                style={{ background: "var(--accent)" }}
+                className="mt-4 inline-flex w-full items-center justify-center rounded-rvMd px-5 py-2.5 text-white font-semibold bg-rv-primary hover:bg-rv-primaryHover transition-all"
               >
                 Sign Up
               </a>
@@ -381,8 +379,8 @@ function Hero() {
 
 function SectionDivider() {
   return (
-    <div className="mx-auto my-10 max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+    <div className="mx-auto my-12 max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-rv-neutral to-transparent" />
     </div>
   );
 }
@@ -981,15 +979,16 @@ function HowItWorks() {
   ];
   return (
     <Container id="how">
-      <div className="py-16">
-        <div className="grid gap-8 md:grid-cols-3">
+      <div className="py-20">
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-rv-primary">How it works</h2>
+        <div className="grid gap-10 md:grid-cols-3">
           {steps.map((s, i) => (
             <div key={i} className="text-center space-y-4">
-              <div className="inline-flex h-12 w-12 items-center justify-center text-[var(--accent)]">
+              <div className="inline-flex h-14 w-14 items-center justify-center rounded-rvLg bg-rv-primary/5 text-rv-primary">
                 {s.icon}
               </div>
-              <h3 className="text-xl font-semibold">{s.title}</h3>
-              <p className="text-slate-600">{s.desc}</p>
+              <h3 className="text-xl font-bold text-rv-primary">{s.title}</h3>
+              <p className="text-rv-textMuted leading-relaxed">{s.desc}</p>
             </div>
           ))}
         </div>
@@ -1003,13 +1002,13 @@ function HowItWorks() {
 function CTASection() {
   return (
     <Container>
-      <div className="py-16 text-center space-y-6">
-        <h2 className="text-3xl font-bold md:text-4xl">Ready to try it?</h2>
+      <div className="py-20 text-center space-y-8">
+        <h2 className="text-3xl font-bold md:text-4xl text-rv-primary">Ready to try it?</h2>
+        <p className="text-lg text-rv-textMuted max-w-2xl mx-auto">Experience the future of art visualization with true-to-scale rendering.</p>
         <div>
           <a
             href="#/studio"
-            className="inline-flex items-center gap-2 rounded-xl px-8 py-3 text-lg font-medium text-black shadow-md hover:opacity-90 transition-opacity"
-            style={{ background: "var(--accent)" }}
+            className="inline-flex items-center gap-3 rounded-rvLg px-8 py-3.5 text-lg font-semibold text-white bg-rv-primary hover:bg-rv-primaryHover shadow-rvSoft hover:shadow-rvElevated transition-all"
           >
             Open Studio →
           </a>
@@ -1190,17 +1189,17 @@ function CodeCard({ title, code }: { title: string; code: string }) {
 
 function SiteFooter() {
   return (
-    <footer className="mt-16 bg-[var(--footer-bg)] text-black">
+    <footer className="mt-20 border-t border-rv-neutral bg-white">
       <Container>
-        <div className="flex flex-col gap-4 py-8 md:flex-row md:items-center md:justify-between">
-          <div className="text-sm text-black/70">
+        <div className="flex flex-col gap-4 py-10 md:flex-row md:items-center md:justify-between">
+          <div className="text-sm text-rv-textMuted font-medium">
             © 2025 RoomVibe. All rights reserved.
           </div>
-          <div className="flex gap-6 text-sm">
-            <a href="#/studio" className="hover:underline underline-offset-2">
+          <div className="flex gap-8 text-sm font-medium">
+            <a href="#/studio" className="text-rv-text hover:text-rv-primary transition-colors">
               Studio
             </a>
-            <a href="#/privacy" className="hover:underline underline-offset-2">
+            <a href="#/privacy" className="text-rv-text hover:text-rv-primary transition-colors">
               Privacy
             </a>
           </div>

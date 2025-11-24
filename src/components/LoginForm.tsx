@@ -23,18 +23,19 @@ export function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormProps) {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-semibold mb-6 text-center">Login to RoomVibe</h2>
+    <div className="w-full max-w-md mx-auto p-8 bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral">
+      <h2 className="text-3xl font-bold mb-2 text-center text-rv-primary">Welcome back</h2>
+      <p className="text-center text-rv-textMuted mb-8">Login to your RoomVibe account</p>
       
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="p-4 bg-red-50 border border-red-200 rounded-rvMd text-red-700 text-sm">
             {error}
           </div>
         )}
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium mb-1">
+          <label htmlFor="email" className="block text-sm font-semibold mb-2 text-rv-text">
             Email
           </label>
           <input
@@ -43,13 +44,13 @@ export function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormProps) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary focus:border-transparent transition-all"
             placeholder="you@example.com"
           />
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium mb-1">
+          <label htmlFor="password" className="block text-sm font-semibold mb-2 text-rv-text">
             Password
           </label>
           <input
@@ -59,7 +60,7 @@ export function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormProps) {
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={6}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary focus:border-transparent transition-all"
             placeholder="••••••••"
           />
         </div>
@@ -67,19 +68,18 @@ export function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2 px-4 rounded-lg text-white font-medium disabled:opacity-50"
-          style={{ background: 'var(--accent)' }}
+          className="w-full py-3 px-4 rounded-rvMd text-white font-semibold bg-rv-primary hover:bg-rv-primaryHover disabled:opacity-50 disabled:cursor-not-allowed shadow-rvSoft hover:shadow-rvElevated transition-all"
         >
           {loading ? 'Logging in...' : 'Login'}
         </button>
       </form>
 
       {onSwitchToRegister && (
-        <p className="mt-4 text-center text-sm text-slate-600">
+        <p className="mt-6 text-center text-sm text-rv-textMuted">
           Don't have an account?{' '}
           <button
             onClick={onSwitchToRegister}
-            className="text-blue-600 hover:underline font-medium"
+            className="text-rv-primary hover:text-rv-primaryHover font-semibold transition-colors"
           >
             Sign up
           </button>

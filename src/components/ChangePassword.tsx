@@ -56,12 +56,12 @@ export function ChangePassword() {
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold mb-4">Change Password</h2>
+    <div className="p-6 bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral">
+      <h2 className="text-xl font-bold mb-5 text-rv-primary">Change Password</h2>
       
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="currentPassword" className="block text-sm font-medium text-slate-700 mb-1">
+          <label htmlFor="currentPassword" className="block text-sm font-semibold text-rv-text mb-2">
             Current Password
           </label>
           <input
@@ -70,13 +70,13 @@ export function ChangePassword() {
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary focus:border-transparent transition-all"
             disabled={isLoading}
           />
         </div>
 
         <div>
-          <label htmlFor="newPassword" className="block text-sm font-medium text-slate-700 mb-1">
+          <label htmlFor="newPassword" className="block text-sm font-semibold text-rv-text mb-2">
             New Password
           </label>
           <input
@@ -86,14 +86,14 @@ export function ChangePassword() {
             onChange={(e) => setNewPassword(e.target.value)}
             required
             minLength={6}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary focus:border-transparent transition-all"
             disabled={isLoading}
           />
-          <p className="text-xs text-slate-500 mt-1">Must be at least 6 characters</p>
+          <p className="text-xs text-rv-textMuted mt-2 font-medium">Must be at least 6 characters</p>
         </div>
 
         <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700 mb-1">
+          <label htmlFor="confirmPassword" className="block text-sm font-semibold text-rv-text mb-2">
             Confirm New Password
           </label>
           <input
@@ -103,14 +103,14 @@ export function ChangePassword() {
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
             minLength={6}
-            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary focus:border-transparent transition-all"
             disabled={isLoading}
           />
         </div>
 
         {message && (
           <div
-            className={`p-3 rounded-lg text-sm ${
+            className={`p-4 rounded-rvMd text-sm font-medium ${
               message.type === 'success'
                 ? 'bg-green-50 text-green-800 border border-green-200'
                 : 'bg-red-50 text-red-800 border border-red-200'
@@ -123,8 +123,7 @@ export function ChangePassword() {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full px-4 py-2 rounded-lg text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{ background: 'var(--accent)' }}
+          className="w-full px-4 py-3 rounded-rvMd text-white font-semibold bg-rv-primary hover:bg-rv-primaryHover disabled:opacity-50 disabled:cursor-not-allowed shadow-rvSoft hover:shadow-rvElevated transition-all"
         >
           {isLoading ? 'Updating...' : 'Update Password'}
         </button>
