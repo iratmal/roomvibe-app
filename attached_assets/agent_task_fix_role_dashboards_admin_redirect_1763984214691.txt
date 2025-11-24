@@ -1,0 +1,106 @@
+Message for Replit Agent — FIX: Role Dashboards & Admin Redirect (Artist/Designer/Gallery)
+
+Hi! I tested the new dashboards and here is the current behavior:
+
+- When I go to:
+    app.roomvibe.app/#/dashboard/artist
+    app.roomvibe.app/#/dashboard/designer
+    app.roomvibe.app/#/dashboard/gallery
+
+  I am ALWAYS redirected back to the Admin Dashboard at:
+    app.roomvibe.app/#/dashboard
+
+- I am logged in as the admin user (role = admin).
+
+This means I currently cannot see or test the Artist / Designer / Gallery dashboards at all.
+
+-----------------------------------
+WHAT I EXPECT INSTEAD
+-----------------------------------
+
+From the previous tasks, the intended behavior is:
+
+1. There are FOUR (plus admin) distinct dashboards:
+   - User Dashboard       → /dashboard         (for role = "user")
+   - Artist Dashboard     → /dashboard/artist
+   - Designer Dashboard   → /dashboard/designer
+   - Gallery Dashboard    → /dashboard/gallery
+   - Admin Dashboard      → /dashboard/admin   (for role = "admin")
+
+2. As ADMIN I should be able to:
+   - See my Admin Dashboard at /dashboard/admin
+   - Use an impersonation / “view as” mechanism to preview:
+       • Artist Dashboard
+       • Designer Dashboard
+       • Gallery Dashboard
+       • User Dashboard
+   - NOT be auto-redirected back to /dashboard (Admin) every time I manually open /dashboard/artist, /dashboard/designer or /dashboard/gallery.
+
+Right now route guards / redirects are too strict and always send me back to the admin dashboard.
+
+-----------------------------------
+WHAT NEEDS TO BE CHANGED
+-----------------------------------
+
+A) ROUTING & ROLE CHECKS
+
+1. Please make sure the routes exist as separate components:
+   - /dashboard            → UserDashboard
+   - /dashboard/artist     → ArtistDashboard
+   - /dashboard/designer   → DesignerDashboard
+   - /dashboard/gallery    → GalleryDashboard
+   - /dashboard/admin      → AdminDashboard
+
+2. Route guards:
+
+   - If logged-in user has:
+        role = "user"      → can access /dashboard      (UserDashboard)
+        role = "artist"    → can access /dashboard/artist
+        role = "designer"  → can access /dashboard/designer
+        role = "gallery"   → can access /dashboard/gallery
+        role = "admin"     → can access ALL of the above + /dashboard/admin
+
+   - Admin should NOT be forcibly redirected away from /dashboard/artist, /dashboard/designer or /dashboard/gallery.
+     Admin must be allowed to open and see those views for testing.
+
+B) ADMIN IMPERSONATION / VIEW AS
+
+If you have not yet implemented the “View as Role” buttons, please add a simple version now:
+
+1. In Admin Dashboard, inside the “Administrator Account” section, add buttons:
+   - “View as User”
+   - “View as Artist”
+   - “View as Designer”
+   - “View as Gallery”
+   - “Back to Admin”
+
+2. When admin clicks one of these:
+   - Set a temporary session/local state, e.g. impersonatedRole = "artist" (or user/designer/gallery)
+   - Redirect to the corresponding dashboard route.
+   - Show a small banner at the top:
+       “You are viewing as: [Role] (Admin impersonation)”
+       + a “Back to Admin” button.
+
+3. “Back to Admin”:
+   - clears impersonatedRole
+   - redirects to /dashboard/admin
+
+C) NO REDIRECT LOOP
+
+Please remove or adjust any global redirect that forces:
+   /dashboard/* → /dashboard   when role = admin.
+
+Admin must be able to open each dashboard route to see what normal users of that role will see.
+
+-----------------------------------
+GOAL
+-----------------------------------
+
+After this fix:
+
+- /dashboard/admin → Admin Dashboard (for admin role)
+- Admin can click buttons to preview User / Artist / Designer / Gallery dashboards.
+- Admin can ALSO manually open /dashboard/artist, /dashboard/designer, /dashboard/gallery without being pushed back to admin.
+- Normal users still see ONLY their own dashboard and are blocked from others.
+
+Thank you!

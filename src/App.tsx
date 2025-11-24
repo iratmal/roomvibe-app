@@ -46,35 +46,36 @@ export default function App() {
 
 function AppContent() {
   const hash = useHashRoute();
-  const isDashboardRoute = hash.startsWith("#/dashboard");
+  const normalizedHash = hash.split('?')[0].replace(/\/+$/, '');
+  const isDashboardRoute = normalizedHash.startsWith("#/dashboard");
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white text-slate-900">
-      {hash !== "#/studio" && hash !== "#/simple" && !isDashboardRoute && hash !== "#/login" && hash !== "#/register" && <TopNav />}
-      {hash === "#/privacy" ? (
+      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/login" && normalizedHash !== "#/register" && <TopNav />}
+      {normalizedHash === "#/privacy" ? (
         <PrivacyPage />
-      ) : hash === "#/studio" ? (
+      ) : normalizedHash === "#/studio" ? (
         <Studio />
-      ) : hash === "#/simple" ? (
+      ) : normalizedHash === "#/simple" ? (
         <SimpleVisualizer />
-      ) : hash === "#/docs" ? (
+      ) : normalizedHash === "#/docs" ? (
         <DocsPage />
-      ) : hash === "#/login" ? (
+      ) : normalizedHash === "#/login" ? (
         <AuthPage mode="login" />
-      ) : hash === "#/register" ? (
+      ) : normalizedHash === "#/register" ? (
         <AuthPage mode="register" />
-      ) : hash === "#/dashboard/artist" ? (
+      ) : normalizedHash === "#/dashboard/artist" ? (
         <RoleDashboardRouter requiredRole="artist" />
-      ) : hash === "#/dashboard/designer" ? (
+      ) : normalizedHash === "#/dashboard/designer" ? (
         <RoleDashboardRouter requiredRole="designer" />
-      ) : hash === "#/dashboard/gallery" ? (
+      ) : normalizedHash === "#/dashboard/gallery" ? (
         <RoleDashboardRouter requiredRole="gallery" />
-      ) : hash === "#/dashboard" ? (
+      ) : normalizedHash === "#/dashboard" ? (
         <DashboardRouter />
       ) : (
         <HomePage />
       )}
-      {hash !== "#/studio" && hash !== "#/simple" && !isDashboardRoute && hash !== "#/login" && hash !== "#/register" && <SiteFooter />}
+      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/login" && normalizedHash !== "#/register" && <SiteFooter />}
     </div>
   );
 }
@@ -140,7 +141,24 @@ function DashboardRouter() {
 }
 
 function RoleDashboardRouter({ requiredRole }: { requiredRole: string }) {
-  const { user, loading, impersonatedRole } = useAuth();
+  const { user, loading, impersonatedRole, setImpersonation } = useAuth();
+
+  useEffect(() => {
+    const normalizeHash = (hash: string) => {
+      return hash.split('?')[0].replace(/\/+$/, '');
+    };
+    
+    const currentHash = normalizeHash(window.location.hash);
+    const expectedHash = normalizeHash(`#/dashboard/${requiredRole}`);
+    
+    if (
+      user?.role === 'admin' && 
+      impersonatedRole !== requiredRole &&
+      currentHash === expectedHash
+    ) {
+      setImpersonation(requiredRole as 'user' | 'artist' | 'designer' | 'gallery');
+    }
+  }, [user, requiredRole, impersonatedRole, setImpersonation]);
 
   if (loading) {
     return (
@@ -159,7 +177,7 @@ function RoleDashboardRouter({ requiredRole }: { requiredRole: string }) {
   }
 
   const isAdmin = user.role === 'admin';
-  const hasAccess = user.role === requiredRole || (isAdmin && impersonatedRole === requiredRole);
+  const hasAccess = user.role === requiredRole || isAdmin;
 
   if (!hasAccess) {
     window.location.hash = '#/dashboard';
