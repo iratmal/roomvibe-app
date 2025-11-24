@@ -16,6 +16,10 @@ interface AuthContextType {
   loading: boolean;
   error: string | null;
   clearError: () => void;
+  impersonatedRole: string | null;
+  setImpersonation: (role: 'user' | 'artist' | 'designer' | 'gallery' | null) => void;
+  clearImpersonation: () => void;
+  effectiveRole: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,6 +31,9 @@ export function AuthProvider({ children }: { children: React.ReactNode}) {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [impersonatedRole, setImpersonatedRole] = useState<string | null>(() => {
+    return sessionStorage.getItem('impersonatedRole');
+  });
 
   useEffect(() => {
     fetchCurrentUser();
@@ -149,13 +156,48 @@ export function AuthProvider({ children }: { children: React.ReactNode}) {
     } finally {
       setUser(null);
       setToken(null);
+      clearImpersonation();
     }
   };
 
   const clearError = () => setError(null);
 
+  const setImpersonation = (role: 'user' | 'artist' | 'designer' | 'gallery' | null) => {
+    if (user?.role !== 'admin') {
+      console.warn('Only admin users can impersonate other roles');
+      return;
+    }
+    
+    if (role) {
+      sessionStorage.setItem('impersonatedRole', role);
+      setImpersonatedRole(role);
+    } else {
+      clearImpersonation();
+    }
+  };
+
+  const clearImpersonation = () => {
+    sessionStorage.removeItem('impersonatedRole');
+    setImpersonatedRole(null);
+  };
+
+  const effectiveRole = impersonatedRole || user?.role || 'user';
+
   return (
-    <AuthContext.Provider value={{ user, token, login, register, logout, loading, error, clearError }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      token, 
+      login, 
+      register, 
+      logout, 
+      loading, 
+      error, 
+      clearError,
+      impersonatedRole,
+      setImpersonation,
+      clearImpersonation,
+      effectiveRole
+    }}>
       {children}
     </AuthContext.Provider>
   );

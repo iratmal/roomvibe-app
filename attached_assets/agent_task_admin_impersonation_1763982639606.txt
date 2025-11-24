@@ -1,0 +1,73 @@
+Message for Replit Agent — Task: Admin Dashboard + Role Impersonation
+
+Hi! Here is the next task.
+
+TASK: Implement an Admin Dashboard + “View As Role” (impersonation) feature so the admin can switch between User, Artist, Designer, and Gallery dashboards without logging in/out repeatedly.
+
+This will allow the project owner to fully test all roles from one account.
+
+-----------------------------------
+ADMIN ACCOUNT SETUP
+-----------------------------------
+1. Please set the following account as **admin**:
+   Email: irena.ratkovicmalbasa@gmail.com
+   Role: admin
+
+2. When this admin logs in, they should automatically be redirected to:
+   /dashboard/admin
+
+-----------------------------------
+ADMIN DASHBOARD REQUIREMENTS
+-----------------------------------
+Create a simple Admin Dashboard with:
+- Header: “Admin Dashboard”
+- Display: admin email + role
+- Buttons for impersonation:
+    • View as User
+    • View as Artist
+    • View as Designer
+    • View as Gallery
+- Button: “Return to Admin Mode”
+
+-----------------------------------
+IMPERSONATION LOGIC (“VIEW AS”)
+-----------------------------------
+When admin clicks a “View as ___” button:
+
+1. DO NOT change the admin’s real role in the database.
+2. Instead create a temporary session value:
+   impersonatedRole = "user" / "artist" / "designer" / "gallery"
+
+3. Redirect to the corresponding dashboard:
+   • User → /dashboard
+   • Artist → /dashboard/artist
+   • Designer → /dashboard/designer
+   • Gallery → /dashboard/gallery
+
+4. UI should show a small banner or message:
+   “You are viewing as: [Role] (Admin Impersonation)”
+   + a “Return to Admin Mode” button.
+
+5. Clicking “Return to Admin Mode”:
+   - Clears impersonatedRole
+   - Redirects back to /dashboard/admin
+
+-----------------------------------
+ROUTE PROTECTION
+-----------------------------------
+- Admin can access ALL routes.
+- Impersonated routes are allowed only when impersonatedRole is set.
+- Normal users/different roles cannot use impersonated routes.
+
+-----------------------------------
+GOAL
+-----------------------------------
+Allow the admin to:
+- Log in once
+- Click buttons to preview User, Artist, Designer, Gallery dashboards
+- Easily return to Admin Dashboard
+- Test the full system without multiple accounts or logins
+
+-----------------------------------
+
+Thank you!
