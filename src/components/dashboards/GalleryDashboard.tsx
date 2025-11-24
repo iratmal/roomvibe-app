@@ -63,10 +63,19 @@ export function GalleryDashboard() {
       }
 
       const data = await response.json();
-      setCollections(data.collections || []);
+      
+      // Defensive: Ensure data exists and collections is an array
+      if (!data) {
+        console.error('Invalid API response:', data);
+        setCollections([]);
+        return;
+      }
+      
+      setCollections(Array.isArray(data.collections) ? data.collections : []);
     } catch (err: any) {
       console.error('Error fetching collections:', err);
-      setError(err.message);
+      setError(err.message || 'Failed to load collections');
+      setCollections([]);
     }
   };
 

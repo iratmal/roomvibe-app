@@ -74,6 +74,13 @@ export default function CollectionDetail() {
       }
 
       const data = await response.json();
+      
+      // Defensive: Ensure data.collections exists and is an array
+      if (!data || !Array.isArray(data.collections)) {
+        console.error('Invalid API response structure:', data);
+        throw new Error('Invalid response from server');
+      }
+      
       const foundCollection = data.collections.find((c: Collection) => c.id === parseInt(collectionId!));
       
       if (foundCollection) {
@@ -84,7 +91,7 @@ export default function CollectionDetail() {
       }
     } catch (err: any) {
       console.error('Error fetching collection:', err);
-      setError(err.message);
+      setError(err.message || 'Failed to load collection');
     } finally {
       setInitialLoading(false);
     }
@@ -101,10 +108,19 @@ export default function CollectionDetail() {
       }
 
       const data = await response.json();
-      setArtworks(data.artworks || []);
+      
+      // Defensive: Ensure data exists and artworks is an array
+      if (!data) {
+        console.error('Invalid API response:', data);
+        setArtworks([]);
+        return;
+      }
+      
+      setArtworks(Array.isArray(data.artworks) ? data.artworks : []);
     } catch (err: any) {
       console.error('Error fetching artworks:', err);
-      setError(err.message);
+      setError(err.message || 'Failed to load artworks');
+      setArtworks([]);
     }
   }, [collectionId]);
 
@@ -604,7 +620,11 @@ export default function CollectionDetail() {
                   </p>
                   {artwork.price_amount && (
                     <p className="text-sm font-semibold text-gray-900 mb-2">
-                      {artwork.price_currency} {artwork.price_amount.toFixed(2)}
+                      {artwork.price_currency} {
+                        isNaN(Number(artwork.price_amount)) 
+                          ? 'N/A' 
+                          : Number(artwork.price_amount).toFixed(2)
+                      }
                     </p>
                   )}
                   <div className="flex gap-2 mt-3">

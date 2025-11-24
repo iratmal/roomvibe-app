@@ -1,0 +1,102 @@
+Message for Replit Agent — CRITICAL FAILURE: Gallery routes crash after visiting “View Collection”
+
+Hi! The Gallery Dashboard still has a critical issue that now affects not only the collection view, but also the main Gallery dashboard route.
+
+This is no longer just a small bug — it is a route-level crash.
+
+-----------------------------------
+🟥 PROBLEM SUMMARY
+-----------------------------------
+When I am logged in as Gallery (or using Admin → View as Gallery):
+
+1. I go to /dashboard/gallery
+2. I create a new collection — this works, the collection appears in “My Collections”.
+3. I click “View Collection” on that collection.
+4. The app navigates to:
+
+   /dashboard/gallery/collection/1   (or similar ID)
+
+5. The entire page becomes **blank white** (no header, no UI, no error message).
+6. If I then try to go back to /dashboard/gallery, it ALSO shows a blank white screen.
+7. Only after a full browser refresh does /dashboard/gallery start working again.
+8. However, /dashboard/gallery/collection/:id still remains blank.
+
+This means the Gallery collection view is causing a React crash that breaks the whole Gallery route until a full refresh.
+
+-----------------------------------
+🔍 WHAT THIS MEANS TECHNICALLY
+-----------------------------------
+This is almost certainly an **uncaught runtime exception** inside the Gallery collection detail component, or the surrounding route/layout, for example:
+
+- access to undefined values (e.g. collection.title when collection is null)
+- assuming an array where the response is not an array
+- using a hook conditionally
+- incorrect imports (component is undefined but being rendered)
+- bad JSON parsing
+- infinite render loop or redirect loop
+
+Because:
+- The entire route goes blank,
+- And other parts of the app still work after a refresh,
+
+…it indicates a hard crash in the React tree for Gallery Dashboard / Collection, not just a backend error.
+
+-----------------------------------
+🧪 WHAT I NEED YOU TO DO
+-----------------------------------
+
+Please **reproduce the issue yourself** and debug with the browser dev tools:
+
+1) Open browser dev tools → Console tab.
+2) Log in as Gallery (or use Admin → View as Gallery).
+3) Go to /dashboard/gallery.
+4. Create a test collection.
+5. Click “View Collection”.
+6. Watch the console carefully for the **first red error message and stack trace**.
+
+This will show exactly which line/component is crashing.
+
+Typical patterns to look for:
+- “Cannot read properties of undefined (reading '...')”
+- “… is not a function”
+- “Cannot read property 'map' of undefined”
+- Failed to render component X, check your render method
+
+Please use that stack trace to locate the exact file and line causing the crash.
+
+-----------------------------------
+✅ EXPECTED BEHAVIOR (AFTER FIX)
+-----------------------------------
+After the fix:
+
+- /dashboard/gallery should always render normally.
+- /dashboard/gallery/collection/:id should:
+  • Show collection header (title, subtitle, etc.)
+  • Show the “Add Artwork” form
+  • Show an artworks list (even if empty)
+- Even if:
+  • there are 0 artworks
+  • some optional fields are empty
+  • the backend returns an empty array
+
+…there should be NO full white screen, and NO route-level crash.
+
+If the fetch fails or the collection is not found:
+- Show a friendly error message like “Collection not found” or “Unable to load this collection right now.”
+- Do NOT crash the UI.
+
+-----------------------------------
+📌 GOAL
+-----------------------------------
+Please:
+
+1) Reproduce the issue.
+2) Use the console stack trace to identify and fix the crashing code.
+3) Add defensive rendering (null checks, safe access, fallback UI).
+4) Ensure both routes work reliably:
+   - /dashboard/gallery
+   - /dashboard/gallery/collection/:id
+
+Let me know when this is fixed so I can re-test.
+
+Thank you!
