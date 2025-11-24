@@ -1,0 +1,147 @@
+Message for Replit Agent — Task: Designer Dashboard MVP (Projects + Room Uploads)
+
+Hi! Here is the next major role task.
+
+We want to implement the Designer Dashboard MVP so interior designers can create projects and upload room images for their clients.
+
+-----------------------------------
+🎯 GOAL
+-----------------------------------
+On `/dashboard/designer`, designers should be able to:
+
+• Create interior design projects  
+• Upload room images to each project  
+• View all projects  
+• View each project individually  
+• Delete projects or room images  
+
+This is an MVP – clean design, functional structure, not full moods/PDFs yet.
+
+-----------------------------------
+1) ROUTING
+-----------------------------------
+
+- `/dashboard/designer` → Designer Dashboard
+- `/dashboard/designer/project/:id` → Project Detail View
+
+Access:
+- Only `role = designer` (and admin impersonation) can access these pages.
+
+-----------------------------------
+2) DATA MODEL (MVP)
+-----------------------------------
+
+**Project**
+- id
+- designerId (FK to user)
+- title
+- clientName (optional)
+- roomType (string)
+- notes (optional, text)
+- createdAt
+- updatedAt
+
+**RoomImage**
+- id
+- projectId (FK to project)
+- imageUrl
+- label (optional)
+- createdAt
+
+-----------------------------------
+3) DESIGNER DASHBOARD UI
+-----------------------------------
+
+### A) Header
+Title: “Designer Dashboard”
+Subtitle: “Create projects and upload room visuals for your clients.”
+
+### B) Create New Project (form)
+Fields:
+• Project title (required)  
+• Client name (optional)  
+• Room type (text or dropdown)  
+• Notes (optional textarea)
+
+Button: Create Project
+
+After submit:
+• Save project  
+• Clear form  
+• Add it to project list  
+• Show success toast  
+
+### C) My Projects (list)
+Each project card shows:
+• Title  
+• Client  
+• Room type  
+• Image count  
+• Created date  
+
+Buttons:
+• “View Project”  
+• “Delete” (with confirmation)  
+
+-----------------------------------
+4) PROJECT DETAIL VIEW
+-----------------------------------
+Route: `/dashboard/designer/project/:id`
+
+Shows:
+
+### A) Project header
+• Title  
+• Client  
+• Room type  
+• Notes  
+
+### B) Upload Room Images
+Fields:
+• File upload (jpg/png)  
+• Label (optional)
+
+Button: Upload Room Image
+
+After upload:
+• Add image to room list  
+• Show success toast  
+
+### C) Room Images List
+Each image shows:
+• Thumbnail  
+• Label  
+• Delete button  
+
+-----------------------------------
+5) API ENDPOINTS
+-----------------------------------
+
+**Projects**
+• GET /api/designer/projects  
+• POST /api/designer/projects  
+• DELETE /api/designer/projects/:id  
+
+**Room Images**
+• GET /api/designer/projects/:id/rooms  
+• POST /api/designer/projects/:id/rooms  
+• DELETE /api/designer/rooms/:id  
+
+All must be scoped to logged-in designer (and admin impersonation).
+
+-----------------------------------
+✅ FINAL GOAL FOR THIS TASK
+-----------------------------------
+
+When I open `/dashboard/designer` as a Designer (or Admin impersonating Designer), I can:
+
+• Create a project  
+• See projects  
+• Open a project  
+• Upload room images  
+• Delete images  
+• Delete projects  
+
+This gives designers a clean, functional space to prepare rooms for future visualization and client presentations.
+
+Thank you!

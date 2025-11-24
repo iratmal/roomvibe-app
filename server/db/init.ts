@@ -83,6 +83,37 @@ export async function initializeDatabase() {
       END $$;
     `);
 
+    await query(`
+      CREATE TABLE IF NOT EXISTS projects (
+        id SERIAL PRIMARY KEY,
+        designer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        client_name VARCHAR(255),
+        room_type VARCHAR(100),
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS idx_projects_designer_id ON projects(designer_id);
+    `);
+
+    await query(`
+      CREATE TABLE IF NOT EXISTS room_images (
+        id SERIAL PRIMARY KEY,
+        project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+        image_url TEXT NOT NULL,
+        label VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS idx_room_images_project_id ON room_images(project_id);
+    `);
+
     console.log('✅ Database schema initialized successfully');
     return true;
   } catch (error) {
