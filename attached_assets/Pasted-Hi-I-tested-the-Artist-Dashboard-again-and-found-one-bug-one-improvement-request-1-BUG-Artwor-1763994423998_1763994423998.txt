@@ -1,0 +1,81 @@
+Hi! I tested the Artist Dashboard again and found one bug + one improvement request.
+
+1) BUG: Artwork dashboard auto-opens my Buy URL
+
+What happens now:
+
+I added an artwork with a valid Buy URL (link to my product page).
+
+The artwork card shows correctly in “My Artworks”.
+
+But when I refresh /dashboard/artist, the page keeps opening that Buy URL (my product page) automatically, as if something is redirecting or embedding it.
+
+This happens even in a private window, so it’s not cookies/cache.
+
+What I need instead:
+
+The Artist Dashboard should never auto-open the Buy URL on page load or refresh.
+
+The Buy URL should only be used:
+
+as the target of the “View & Buy →” button (open in a new tab target="_blank"),
+
+OR in a small icon/link on the card.
+
+The main dashboard view must always stay on /dashboard/artist unless I explicitly click “View & Buy”.
+
+Please remove any automatic redirect / navigation / iframe that uses the Buy URL on page load.
+
+If it helps:
+
+Check that no window.location = buyUrl or similar is triggered on mount.
+
+The card’s click handler should not redirect the entire page; only the explicit button should open the external link.
+
+2) FEATURE: Dimension units (cm / inches)
+
+Right now, the artwork dimensions are:
+
+Width (cm)
+
+Height (cm)
+
+For international artists and clients, we need support for inches as well.
+
+What I’d like:
+
+Add a Unit selector next to width & height, with options:
+
+cm (default)
+
+in (inches)
+
+Data model:
+
+Store:
+
+widthValue
+
+heightValue
+
+dimensionUnit (string, "cm" or "in")
+
+(If it’s easier for the Studio later, you can internally also store values in cm, but from the UI side I just need to choose and see the correct unit.)
+
+Display in “My Artworks”:
+
+Show dimensions with the chosen unit, for example:
+
+70.00 × 120.00 cm
+
+or 30 × 40 in
+
+This way artists can enter dimensions in the units they normally use.
+
+Goal
+
+The Artist Dashboard should not auto-open any Buy URL on refresh; it should stay on the dashboard and only open links when I click “View & Buy”.
+
+The dimensions section should support both cm and inches, with cm as default.
+
+Thank you!

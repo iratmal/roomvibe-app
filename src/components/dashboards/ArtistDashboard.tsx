@@ -12,6 +12,7 @@ interface Artwork {
   image_url: string;
   width: number;
   height: number;
+  dimension_unit: string;
   price_amount: number | string | null;
   price_currency: string;
   buy_url: string;
@@ -47,6 +48,7 @@ export function ArtistDashboard() {
     title: '',
     width: '',
     height: '',
+    dimensionUnit: 'cm',
     priceAmount: '',
     priceCurrency: 'EUR',
     buyUrl: '',
@@ -113,6 +115,7 @@ export function ArtistDashboard() {
       formDataObj.append('title', formData.title);
       formDataObj.append('width', formData.width);
       formDataObj.append('height', formData.height);
+      formDataObj.append('dimensionUnit', formData.dimensionUnit);
       formDataObj.append('buyUrl', formData.buyUrl);
       formDataObj.append('priceCurrency', formData.priceCurrency);
       if (formData.priceAmount) {
@@ -152,6 +155,7 @@ export function ArtistDashboard() {
         title: '',
         width: '',
         height: '',
+        dimensionUnit: 'cm',
         priceAmount: '',
         priceCurrency: 'EUR',
         buyUrl: '',
@@ -187,6 +191,7 @@ export function ArtistDashboard() {
       title: artwork.title,
       width: artwork.width.toString(),
       height: artwork.height.toString(),
+      dimensionUnit: artwork.dimension_unit || 'cm',
       priceAmount: priceAmountStr,
       priceCurrency: artwork.price_currency || 'EUR',
       buyUrl: artwork.buy_url,
@@ -203,6 +208,7 @@ export function ArtistDashboard() {
       title: '',
       width: '',
       height: '',
+      dimensionUnit: 'cm',
       priceAmount: '',
       priceCurrency: 'EUR',
       buyUrl: '',
@@ -299,38 +305,44 @@ export function ArtistDashboard() {
                 />
               </div>
 
-              <div>
+              <div className="md:col-span-2">
                 <label className="block text-sm font-semibold mb-2 text-rv-text">
-                  Width (cm) <span className="text-red-500">*</span>
+                  Dimensions <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="number"
-                  name="width"
-                  value={formData.width}
-                  onChange={handleInputChange}
-                  required
-                  step="0.01"
-                  min="0"
-                  className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
-                  placeholder="e.g. 80"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-2 text-rv-text">
-                  Height (cm) <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  name="height"
-                  value={formData.height}
-                  onChange={handleInputChange}
-                  required
-                  step="0.01"
-                  min="0"
-                  className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
-                  placeholder="e.g. 100"
-                />
+                <div className="flex gap-3">
+                  <input
+                    type="number"
+                    name="width"
+                    value={formData.width}
+                    onChange={handleInputChange}
+                    required
+                    step="0.01"
+                    min="0"
+                    className="flex-1 px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                    placeholder="Width"
+                  />
+                  <span className="flex items-center text-rv-textMuted font-bold">×</span>
+                  <input
+                    type="number"
+                    name="height"
+                    value={formData.height}
+                    onChange={handleInputChange}
+                    required
+                    step="0.01"
+                    min="0"
+                    className="flex-1 px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                    placeholder="Height"
+                  />
+                  <select
+                    name="dimensionUnit"
+                    value={formData.dimensionUnit}
+                    onChange={handleInputChange}
+                    className="px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary bg-white"
+                  >
+                    <option value="cm">cm</option>
+                    <option value="in">in</option>
+                  </select>
+                </div>
               </div>
 
               <div>
@@ -420,21 +432,22 @@ export function ArtistDashboard() {
                   <div className="p-4">
                     <h3 className="font-bold text-lg mb-2 text-rv-text">{artwork.title}</h3>
                     <p className="text-sm text-rv-textMuted mb-1">
-                      {artwork.width} × {artwork.height} cm
+                      {artwork.width} × {artwork.height} {artwork.dimension_unit || 'cm'}
                     </p>
                     {formatPrice(artwork.price_amount, artwork.price_currency) && (
                       <p className="text-sm font-semibold text-rv-accent mb-3">
                         {formatPrice(artwork.price_amount, artwork.price_currency)}
                       </p>
                     )}
-                    <a
-                      href={artwork.buy_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-block text-sm text-rv-primary hover:text-rv-primaryHover mb-3 underline"
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.open(artwork.buy_url, '_blank', 'noopener,noreferrer');
+                      }}
+                      className="inline-block text-sm text-rv-primary hover:text-rv-primaryHover mb-3 underline cursor-pointer bg-transparent border-none p-0 text-left"
                     >
                       View & Buy →
-                    </a>
+                    </button>
                     
                     <div className="flex gap-2 mt-4">
                       <button
