@@ -3,6 +3,39 @@
 ## Overview
 RoomVibe Studio is a comprehensive React/TypeScript web application designed to visualize artwork in various room environments using a Canvy-style three-panel editor. Its core purpose is to allow users to see how artworks would look on their walls, featuring functionalities like true-to-scale sizing and the potential for wall recoloring. The application aims to provide a modern, user-friendly art visualization experience, ready for integration with e-commerce platforms like Shopify.
 
+## Recent Changes (November 24, 2025)
+**COMPLETE MEMBERSHIP SYSTEM IMPLEMENTATION:**
+- **Full-stack authentication system** with PostgreSQL backend:
+  - **User Registration**: Email + password with role selection (user, artist, designer, gallery, admin)
+  - **Email Confirmation**: Basic implementation (confirmation links logged to console for development)
+  - **Secure Login**: Cookie-based JWT authentication with HttpOnly cookies
+  - **Session Persistence**: 7-day sessions with automatic token refresh
+  - **Role-Based Access Control (RBAC)**: Server-side and client-side role enforcement
+- **Backend API Server** (Express on port 3001):
+  - Authentication endpoints: `/api/auth/register`, `/api/auth/login`, `/api/auth/logout`, `/api/auth/verify-email`, `/api/auth/me`
+  - Protected dashboard endpoints: `/api/dashboard/user`, `/api/dashboard/artist`, `/api/dashboard/designer`, `/api/dashboard/gallery`, `/api/dashboard/admin`
+  - JWT middleware with cookie-only authentication (no Authorization headers)
+  - Automated database schema initialization on server startup
+- **Frontend Features**:
+  - `AuthContext` provider wrapping entire application
+  - Registration form with email, password, confirm password, role selection
+  - Login form with email + password authentication
+  - Protected routes requiring authentication
+  - 5 role-based dashboard components with unique features per role
+  - Automatic redirection for unauthenticated users
+- **Security Implementation**:
+  - HttpOnly cookies (XSS protection) - no localStorage token storage
+  - Password hashing with bcrypt (10 rounds)
+  - JWT tokens with 7-day expiration
+  - CORS configured for development/production
+  - Cookie-only authentication (removed Authorization header support)
+  - No token exposure in JSON responses
+- **Database**:
+  - PostgreSQL with automated schema creation (`server/db/init.ts`)
+  - Users table with id, email, password_hash, role, email_confirmed, confirmation_token, timestamps
+  - Indexes on email and confirmation_token for performance
+  - Connection pool managed via `server/db/database.ts`
+
 ## Recent Changes (November 23, 2025)
 **HOMEPAGE REDESIGN & OPTIMIZED FULL-WIDTH HERO:**
 - **Complete homepage redesign** with clean, modern layout:
@@ -66,7 +99,15 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 - **Artwork Interaction**: Drag-to-move with automatic bounds checking, diagonal resize handle with smart scaling limits (70-130% for mockups, 30-300% for user photos). Artwork starts at true physical scale (based on 270cm wall height) and can be adjusted. Frame selector applies borders outside the artwork without shrinking it, maintaining physical frame thickness regardless of scale.
 
 **Technical Implementations & Feature Specifications:**
-- **Routing**: Hash routing for landing page (`/`), editor (`#/studio`), and privacy policy (`#/privacy`).
+- **Routing**: Hash routing for landing page (`/`), editor (`#/studio`), authentication (`#/login`, `#/register`), dashboard (`#/dashboard`), and privacy policy (`#/privacy`).
+- **Authentication System**:
+    - **Backend API**: Express server on port 3001 with JWT authentication
+    - **Cookie-Based Auth**: HttpOnly cookies with 7-day expiration, no localStorage
+    - **User Roles**: user, artist, designer, gallery, admin (stored in PostgreSQL)
+    - **Protected Routes**: Client-side and server-side route protection with RBAC
+    - **Email Confirmation**: Basic implementation (links logged for development)
+    - **Database**: Automated schema initialization on server startup
+    - **Security**: bcrypt password hashing, JWT tokens, CORS protection
 - **Studio Mode**:
     - **Left Panel (Scene Browser)**: Grid of 10 room preset thumbnails.
     - **Center Panel (Canvas)**: Displays selected room photo, supports user photo upload.
@@ -89,11 +130,17 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 - **React**: UI library.
 - **React DOM**: React renderer.
 - **TypeScript**: For type safety.
-- **Vite**: Build tool and development server.
+- **Vite**: Build tool and development server (port 5000).
 - **Tailwind CSS**: Utility-first CSS framework.
 - **PostCSS & Autoprefixer**: CSS processing.
 - **@vitejs/plugin-react**: Vite plugin for React support.
 - **Shopify Storefront API**: Used for artwork data enrichment via `fetchProductByHandle()` (requires `VITE_SHOPIFY_DOMAIN`, `VITE_SHOPIFY_STOREFRONT_TOKEN` environment variables).
 - **Node.js**: Runtime environment.
 - **npm**: Package manager.
-- **Express**: Node.js web framework for serving the production build (`server.js`).
+- **Express**: Node.js web framework for API server (port 3001) and production build serving (`server.js`).
+- **PostgreSQL**: Database for user authentication and membership system.
+- **bcryptjs**: Password hashing for secure authentication.
+- **jsonwebtoken**: JWT token generation and verification.
+- **cookie-parser**: HTTP cookie parsing middleware.
+- **cors**: Cross-origin resource sharing middleware.
+- **dotenv**: Environment variable management.
