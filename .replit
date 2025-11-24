@@ -1,7 +1,7 @@
 run = "npm run dev"
 language = "nodejs"
 entrypoint = "api/server.js"
-modules = ["nodejs-20"]
+modules = ["nodejs-20", "postgresql-16"]
 
 [agent]
 expertMode = true
@@ -16,26 +16,46 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "RoomVibe Widget"
+args = "Frontend (Vite)"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Backend API"
 
 [[workflows.workflow]]
-name = "RoomVibe Widget"
+name = "Frontend (Vite)"
 author = "agent"
-
-[workflows.workflow.metadata]
-outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
 
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[workflows.workflow]]
+name = "Backend API"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run server"
+waitForPort = 3001
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[ports]]
+localPort = 3001
+externalPort = 3001
+
 [[ports]]
 localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 35731
+localPort = 42751
 externalPort = 3000
 
 [deployment]
@@ -46,3 +66,8 @@ run = ["npm", "start"]
 [nix]
 channel = "stable-25_05"
 packages = ["unzip"]
+
+[userenv]
+
+[userenv.development]
+JWT_SECRET = "dev-secret-key-change-in-production-please"

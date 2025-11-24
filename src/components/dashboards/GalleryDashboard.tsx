@@ -1,0 +1,96 @@
+import React from 'react';
+import { useAuth } from '../../context/AuthContext';
+
+export function GalleryDashboard() {
+  const { user, logout } = useAuth();
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-semibold mb-2">Gallery Dashboard</h1>
+            <p className="text-slate-600">Manage your gallery collections and exhibitions</p>
+          </div>
+          <button
+            onClick={logout}
+            className="px-4 py-2 text-sm border border-slate-300 rounded-lg hover:bg-slate-50"
+          >
+            Logout
+          </button>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="p-6 bg-white rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-2">Create Collection</h2>
+            <p className="text-slate-600 mb-4">
+              Curate a new artwork collection for your gallery.
+            </p>
+            <button className="px-4 py-2 rounded-lg text-white font-medium" style={{ background: 'var(--accent)' }}>
+              New Collection
+            </button>
+          </div>
+
+          <div className="p-6 bg-white rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-2">My Collections</h2>
+            <p className="text-slate-600 mb-4">
+              View and manage all gallery collections.
+            </p>
+            <button className="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50">
+              View All
+            </button>
+          </div>
+
+          <div className="p-6 bg-white rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-2">Artist Partnerships</h2>
+            <p className="text-slate-600 mb-4">
+              Manage relationships with artists you represent.
+            </p>
+            <button className="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50">
+              View Artists
+            </button>
+          </div>
+
+          <div className="p-6 bg-white rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-2">Virtual Exhibitions</h2>
+            <p className="text-slate-600 mb-4">
+              Create online exhibitions with room visualizations.
+            </p>
+            <button className="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50">
+              Create Exhibition
+            </button>
+          </div>
+
+          <div className="p-6 bg-white rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-2">Sales Analytics</h2>
+            <p className="text-slate-600 mb-4">
+              Track sales performance and visitor engagement.
+            </p>
+            <button className="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50">
+              View Analytics
+            </button>
+          </div>
+
+          <div className="p-6 bg-white rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-2">Visualization Studio</h2>
+            <p className="text-slate-600 mb-4">
+              Showcase artwork in realistic room settings.
+            </p>
+            <a href="#/studio" className="inline-block px-4 py-2 rounded-lg text-white font-medium" style={{ background: 'var(--accent)' }}>
+              Open Studio
+            </a>
+          </div>
+        </div>
+
+        <div className="mt-8 p-6 bg-green-50 rounded-lg border border-green-200">
+          <h3 className="text-lg font-semibold mb-2">Gallery Account</h3>
+          <div className="space-y-2 text-sm">
+            <p><span className="font-medium">Email:</span> {user?.email}</p>
+            <p><span className="font-medium">Role:</span> Gallery</p>
+            <p><span className="font-medium">Status:</span> {user?.emailConfirmed ? '✓ Verified' : '⚠ Pending'}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

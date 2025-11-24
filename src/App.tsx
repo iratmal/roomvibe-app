@@ -1,9 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
 import localArtworks from "./data/artworks.json";
 import presets from "./data/presets.json";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { LoginForm } from "./components/LoginForm";
+import { RegisterForm } from "./components/RegisterForm";
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { UserDashboard } from "./components/dashboards/UserDashboard";
+import { ArtistDashboard } from "./components/dashboards/ArtistDashboard";
+import { DesignerDashboard } from "./components/dashboards/DesignerDashboard";
+import { GalleryDashboard } from "./components/dashboards/GalleryDashboard";
+import { AdminDashboard } from "./components/dashboards/AdminDashboard";
 
 /**
- * RoomVibe — App + Landing + Studio
+ * RoomVibe — App + Landing + Studio + Authentication
  */
 
 function useHashRoute() {
@@ -28,11 +37,19 @@ function useIsInIframe() {
 }
 
 export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}
+
+function AppContent() {
   const hash = useHashRoute();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-white text-slate-900">
-      {hash !== "#/studio" && hash !== "#/simple" && <TopNav />}
+      {hash !== "#/studio" && hash !== "#/simple" && hash !== "#/dashboard" && hash !== "#/login" && hash !== "#/register" && <TopNav />}
       {hash === "#/privacy" ? (
         <PrivacyPage />
       ) : hash === "#/studio" ? (
@@ -41,12 +58,78 @@ export default function App() {
         <SimpleVisualizer />
       ) : hash === "#/docs" ? (
         <DocsPage />
+      ) : hash === "#/login" ? (
+        <AuthPage mode="login" />
+      ) : hash === "#/register" ? (
+        <AuthPage mode="register" />
+      ) : hash === "#/dashboard" ? (
+        <DashboardRouter />
       ) : (
         <HomePage />
       )}
-      {hash !== "#/studio" && hash !== "#/simple" && <SiteFooter />}
+      {hash !== "#/studio" && hash !== "#/simple" && hash !== "#/dashboard" && hash !== "#/login" && hash !== "#/register" && <SiteFooter />}
     </div>
   );
+}
+
+/* ------------- Auth & Dashboard Components ------------- */
+
+function AuthPage({ mode }: { mode: 'login' | 'register' }) {
+  const [currentMode, setCurrentMode] = useState(mode);
+
+  const handleSuccess = () => {
+    window.location.hash = '#/dashboard';
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center py-12 px-4 bg-gradient-to-b from-slate-50 to-white">
+      {currentMode === 'login' ? (
+        <LoginForm
+          onSuccess={handleSuccess}
+          onSwitchToRegister={() => setCurrentMode('register')}
+        />
+      ) : (
+        <RegisterForm
+          onSuccess={() => setCurrentMode('login')}
+          onSwitchToLogin={() => setCurrentMode('login')}
+        />
+      )}
+    </div>
+  );
+}
+
+function DashboardRouter() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    window.location.hash = '#/login';
+    return null;
+  }
+
+  switch (user.role) {
+    case 'admin':
+      return <AdminDashboard />;
+    case 'artist':
+      return <ArtistDashboard />;
+    case 'designer':
+      return <DesignerDashboard />;
+    case 'gallery':
+      return <GalleryDashboard />;
+    case 'user':
+    default:
+      return <UserDashboard />;
+  }
 }
 
 /* ------------- Layout helper ------------- */
@@ -63,6 +146,8 @@ function Container({ children, id }: { children: React.ReactNode; id?: string })
 
 function TopNav() {
   const [open, setOpen] = useState(false);
+  const { user } = useAuth();
+
   return (
     <header className="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/70 border-b border-slate-100">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -77,13 +162,27 @@ function TopNav() {
             <a href="#/studio" className="hover:text-slate-700">
               Studio
             </a>
-            <a
-              href="#/studio"
-              className="inline-flex items-center rounded-full px-4 py-2 text-black shadow-sm hover:opacity-90"
-              style={{ background: "var(--accent)" }}
-            >
-              Try Studio
-            </a>
+            {user ? (
+              <>
+                <a href="#/dashboard" className="hover:text-slate-700">
+                  Dashboard
+                </a>
+                <span className="text-xs text-slate-500">({user.role})</span>
+              </>
+            ) : (
+              <>
+                <a href="#/login" className="hover:text-slate-700">
+                  Login
+                </a>
+                <a
+                  href="#/register"
+                  className="inline-flex items-center rounded-full px-4 py-2 text-black shadow-sm hover:opacity-90"
+                  style={{ background: "var(--accent)" }}
+                >
+                  Sign Up
+                </a>
+              </>
+            )}
           </nav>
           <button
             aria-label="Open menu"
@@ -105,16 +204,29 @@ function TopNav() {
                 <a onClick={() => setOpen(false)} href="#/studio" className="py-1">
                   Studio
                 </a>
+                {user ? (
+                  <a onClick={() => setOpen(false)} href="#/dashboard" className="py-1">
+                    Dashboard
+                  </a>
+                ) : (
+                  <a onClick={() => setOpen(false)} href="#/login" className="py-1">
+                    Login
+                  </a>
+                )}
               </div>
             </div>
-            <a
-              href="#/studio"
-              onClick={() => setOpen(false)}
-              className="mt-3 inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-black"
-              style={{ background: "var(--accent)" }}
-            >
-              Try Studio
-            </a>
+            {user ? (
+              <div className="mt-3 text-xs text-slate-500">Logged in as {user.role}</div>
+            ) : (
+              <a
+                href="#/register"
+                onClick={() => setOpen(false)}
+                className="mt-3 inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-black"
+                style={{ background: "var(--accent)" }}
+              >
+                Sign Up
+              </a>
+            )}
           </div>
         </div>
       )}

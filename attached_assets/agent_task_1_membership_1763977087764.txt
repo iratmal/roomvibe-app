@@ -1,0 +1,24 @@
+Message for Replit Agent — Task #1 (Membership System)
+
+Hi! Here is Task #1 for today.
+
+TASK: Implement basic membership system (Register + Login + Roles)
+
+Requirements:
+1. Create user registration form (email + password)
+2. Create login form
+3. Add email confirmation (basic implementation)
+4. Add roles:
+   - user
+   - artist
+   - designer
+   - gallery
+   - admin
+5. After login, redirect user to basic dashboard screen depending on their role.
+6. Make sure authentication persists across sessions.
+7. Create protected routes based on role (only admin sees admin pages, etc.)
+
+Goal:
+Have a working system where users can create an account, log in, and be assigned a role. A simple placeholder dashboard for each role is enough for now.
+
+Thank you!
