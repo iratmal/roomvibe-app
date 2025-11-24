@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import localArtworks from "./data/artworks.json";
 import presets from "./data/presets.json";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { CookieConsentProvider, useCookieConsent } from "./context/CookieConsentContext";
+import CookieConsentBanner from "./components/CookieConsentBanner";
 import { LoginForm } from "./components/LoginForm";
 import { RegisterForm } from "./components/RegisterForm";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -10,6 +12,11 @@ import { ArtistDashboard } from "./components/dashboards/ArtistDashboard";
 import { DesignerDashboard } from "./components/dashboards/DesignerDashboard";
 import { GalleryDashboard } from "./components/dashboards/GalleryDashboard";
 import { AdminDashboard } from "./components/dashboards/AdminDashboard";
+import PrivacyPolicy from "./components/legal/PrivacyPolicy";
+import TermsOfService from "./components/legal/TermsOfService";
+import UploadConsent from "./components/legal/UploadConsent";
+import { initGA4, GA4Events } from "./utils/analytics";
+import { initHotjar } from "./utils/hotjar";
 
 /**
  * RoomVibe — App + Landing + Studio + Authentication
@@ -39,7 +46,9 @@ function useIsInIframe() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <CookieConsentProvider>
+        <AppContent />
+      </CookieConsentProvider>
     </AuthProvider>
   );
 }
@@ -48,12 +57,32 @@ function AppContent() {
   const hash = useHashRoute();
   const normalizedHash = hash.split('?')[0].replace(/\/+$/, '');
   const isDashboardRoute = normalizedHash.startsWith("#/dashboard");
+  const { consentStatus } = useCookieConsent();
+
+  useEffect(() => {
+    if (consentStatus === 'accepted') {
+      const ga4Id = import.meta.env.VITE_GA4_MEASUREMENT_ID;
+      const hotjarId = import.meta.env.VITE_HOTJAR_ID;
+      
+      if (ga4Id) {
+        initGA4(ga4Id);
+      }
+      
+      if (hotjarId) {
+        initHotjar(parseInt(hotjarId, 10));
+      }
+    }
+  }, [consentStatus]);
 
   return (
     <div className="min-h-screen bg-white text-rv-text">
-      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/login" && normalizedHash !== "#/register" && <TopNav />}
+      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/login" && normalizedHash !== "#/register" && normalizedHash !== "#/privacy" && normalizedHash !== "#/terms" && normalizedHash !== "#/upload-consent" && <TopNav />}
       {normalizedHash === "#/privacy" ? (
-        <PrivacyPage />
+        <PrivacyPolicy />
+      ) : normalizedHash === "#/terms" ? (
+        <TermsOfService />
+      ) : normalizedHash === "#/upload-consent" ? (
+        <UploadConsent />
       ) : normalizedHash === "#/studio" ? (
         <Studio />
       ) : normalizedHash === "#/simple" ? (
@@ -75,7 +104,8 @@ function AppContent() {
       ) : (
         <HomePage />
       )}
-      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/login" && normalizedHash !== "#/register" && <SiteFooter />}
+      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/login" && normalizedHash !== "#/register" && normalizedHash !== "#/privacy" && normalizedHash !== "#/terms" && normalizedHash !== "#/upload-consent" && <SiteFooter />}
+      <CookieConsentBanner />
     </div>
   );
 }
@@ -546,11 +576,21 @@ function Studio() {
   const [isResizing, setIsResizing] = useState<boolean>(false);
   const resizeStartRef = useRef<{ x: number; y: number; startScale: number } | null>(null);
 
+  // Track Studio visit on mount
+  useEffect(() => {
+    GA4Events.visitStudio();
+  }, []);
+
   useEffect(() => {
     artIdRef.current = artId;
     // Reset scale to 100% when artwork changes
     setScale(1.0);
-  }, [artId]);
+    
+    // Track artwork change
+    if (art) {
+      GA4Events.changeArtwork(art.id, art.title);
+    }
+  }, [artId, art]);
 
   // Calculate px/cm ratio based on canvas height and room wall height
   useEffect(() => {
@@ -810,6 +850,7 @@ function Studio() {
                       if (f) {
                         const url = URL.createObjectURL(f);
                         setUserPhoto(url);
+                        GA4Events.uploadWall();
                       }
                     }}
                   />
@@ -944,6 +985,7 @@ function Studio() {
                 href={(art as any).buyUrl || (art as any).onlineStoreUrl || "#"}
                 target="_blank"
                 rel="noreferrer"
+                onClick={() => GA4Events.buyClick(art.id, art.title, (art as any).buyUrl || (art as any).onlineStoreUrl || "#")}
                 className="mt-6 inline-flex w-full items-center justify-center rounded-rvLg bg-rv-primary px-4 py-3 text-sm font-bold text-white shadow-rvSoft hover:bg-rv-primaryHover hover:shadow-rvElevated transition-all"
               >
                 View &amp; Buy
@@ -1188,6 +1230,8 @@ function CodeCard({ title, code }: { title: string; code: string }) {
 }
 
 function SiteFooter() {
+  const { resetConsent } = useCookieConsent();
+
   return (
     <footer className="mt-20 border-t border-rv-neutral bg-white">
       <Container>
@@ -1195,13 +1239,25 @@ function SiteFooter() {
           <div className="text-sm text-rv-textMuted font-medium">
             © 2025 RoomVibe. All rights reserved.
           </div>
-          <div className="flex gap-8 text-sm font-medium">
+          <div className="flex flex-wrap gap-6 text-sm font-medium">
             <a href="#/studio" className="text-rv-text hover:text-rv-primary transition-colors">
               Studio
             </a>
             <a href="#/privacy" className="text-rv-text hover:text-rv-primary transition-colors">
               Privacy
             </a>
+            <a href="#/terms" className="text-rv-text hover:text-rv-primary transition-colors">
+              Terms
+            </a>
+            <a href="#/upload-consent" className="text-rv-text hover:text-rv-primary transition-colors">
+              Upload Consent
+            </a>
+            <button
+              onClick={resetConsent}
+              className="text-rv-primary hover:text-rv-primaryHover font-semibold underline transition-colors"
+            >
+              Cookie Settings
+            </button>
           </div>
         </div>
       </Container>

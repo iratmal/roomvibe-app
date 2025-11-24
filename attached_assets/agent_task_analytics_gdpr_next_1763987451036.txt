@@ -1,0 +1,61 @@
+Message for Replit Agent — Task: Analytics (GA4 + Hotjar) + Basic GDPR Layer
+
+Hi! Here is the next task.
+
+We are now in Week 3 of the MVP, and we want to implement:
+1) Google Analytics 4 (GA4) event tracking
+2) Hotjar
+3) Basic GDPR cookie consent + legal pages
+
+-----------------------------------
+PART 1 — GOOGLE ANALYTICS 4
+-----------------------------------
+Add GA4 using an environment variable for the Measurement ID.
+Load GA4 ONLY after user accepts cookies.
+
+Events to implement:
+- visit_studio (trigger when Studio loads)
+- upload_wall (trigger when upload succeeds)
+- change_artwork (trigger on artwork switch)
+- buy_click (trigger on View & Buy / Buy Now)
+
+-----------------------------------
+PART 2 — HOTJAR
+-----------------------------------
+Load Hotjar only if cookies accepted.
+Use env variables for Hotjar ID/settings.
+
+Track:
+- Homepage
+- Studio
+- Dashboards
+
+-----------------------------------
+PART 3 — GDPR COOKIE CONSENT
+-----------------------------------
+Cookie Banner with:
+- “Accept”
+- “Decline”
+
+Behavior:
+- Before Accept → NO GA4, NO Hotjar
+- After Accept → load GA4 + Hotjar and store consent
+- Decline → store declined, load nothing
+- Add “Cookie Settings” link in footer to reopen banner
+
+-----------------------------------
+PART 4 — LEGAL PAGES
+-----------------------------------
+Create simple placeholder pages:
+- /privacy
+- /terms
+- /upload-consent
+
+Add footer links to these pages.
+
+-----------------------------------
+GOAL
+-----------------------------------
+Full GA4 + Hotjar tracking activated only after user consent.
+Basic GDPR system implemented.
+Legal pages available with routing.
