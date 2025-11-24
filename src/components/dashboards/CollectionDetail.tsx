@@ -43,6 +43,7 @@ export default function CollectionDetail() {
   const [collection, setCollection] = useState<Collection | null>(null);
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
@@ -85,6 +86,7 @@ export default function CollectionDetail() {
 
   useEffect(() => {
     if (collectionId) {
+      setInitialLoading(true);
       setCollection(null);
       setArtworks([]);
       setError('');
@@ -115,6 +117,8 @@ export default function CollectionDetail() {
     } catch (err: any) {
       console.error('Error fetching collection:', err);
       setError(err.message);
+    } finally {
+      setInitialLoading(false);
     }
   };
 
@@ -194,8 +198,14 @@ export default function CollectionDetail() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to upload artwork');
+        let errorMessage = 'Failed to upload artwork';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          errorMessage = `Server error: ${response.status} ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -301,12 +311,43 @@ export default function CollectionDetail() {
     });
   };
 
-  if (!collection) {
+  if (initialLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading collection...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!collection) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+        <ImpersonationBanner />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <button
+            onClick={handleBackToCollections}
+            className="mb-6 flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+          >
+            <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Collections
+          </button>
+          
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          )}
+          
+          {!error && (
+            <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded">
+              Collection not found. It may have been deleted.
+            </div>
+          )}
         </div>
       </div>
     );
