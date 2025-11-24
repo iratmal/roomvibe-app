@@ -952,8 +952,10 @@ function Studio() {
       touch2.clientY - touch1.clientY
     );
     
+    // Add slight damping for smoother pinch-to-zoom
     const scaleChange = distance / pinchStartRef.current.distance;
-    let newScale = pinchStartRef.current.startScale * scaleChange;
+    const dampedScaleChange = 1 + (scaleChange - 1) * 0.85; // 15% damping
+    let newScale = pinchStartRef.current.startScale * dampedScaleChange;
     
     // Apply smart limits based on room type
     if (userPhoto) {
