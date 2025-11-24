@@ -549,7 +549,7 @@ const ROOM_WALL_HEIGHTS_CM: Record<string, number> = {
   room01: 270,
   room02: 270,
   room03: 270,
-  room04: 250, // Calibrated to Room 4's actual wall height for furniture proportions
+  room04: 300, // Increased to make artworks ~10% smaller relative to furniture (vs 270 in other rooms)
   room05: 270,
   room06: 270,
   room07: 270,
@@ -562,7 +562,7 @@ const ROOM_WALL_WIDTHS_CM: Record<string, number> = {
   room01: 360, // Default aspect ratio ~4:3
   room02: 360,
   room03: 360,
-  room04: 370, // Calibrated to Room 4's actual wall width for furniture proportions
+  room04: 435, // Adjusted to make artworks appear smaller relative to furniture
   room05: 360,
   room06: 360,
   room07: 360,
@@ -572,13 +572,10 @@ const ROOM_WALL_WIDTHS_CM: Record<string, number> = {
 };
 
 // Precomputed px/cm ratios for rooms with specific calibration requirements
-// Derived from: (intrinsic image height × safeArea.h) / real wall height
-// Room 4: room04.png is 1920×1080px, safeArea.h = 0.48
-//         Wall height in image = 1080 × 0.48 = 518.4px
-//         Real wall height = 250cm
-//         px/cm = 518.4 / 250 = 2.0736 ≈ 2.07
+// Currently empty - all rooms use dynamic calibration based on canvas height and wall height
+// Can add room-specific overrides here if needed for special cases
 const ROOM_PX_PER_CM_OVERRIDE: Record<string, number> = {
-  room04: 2.07, // Calibrated from room04.png intrinsic dimensions for furniture proportions
+  // Example: room04: 2.07
 };
 
 // Frame configuration system with 12 professional frame styles
@@ -1067,8 +1064,8 @@ function Studio() {
           <span className="font-semibold text-rv-primary">RoomVibe Studio</span> · Upload a wall photo, pick a room preset, and see your art true-to-size.
         </div>
         <div className="grid grid-cols-12 gap-4 lg:gap-6">
-          {/* Left: Scenes gallery */}
-          <aside className="col-span-12 lg:col-span-3 rounded-rvLg border border-rv-neutral bg-white shadow-rvSoft p-3 lg:p-4 h-auto lg:h-[78vh] overflow-auto">
+          {/* Left: Scenes gallery - Shown last on mobile (order-3), first on desktop (lg:order-1) */}
+          <aside className="order-3 lg:order-1 col-span-12 lg:col-span-3 rounded-rvLg border border-rv-neutral bg-white shadow-rvSoft p-3 lg:p-4 h-auto lg:h-[78vh] overflow-auto">
             <div className="mb-3 flex items-center justify-between">
               <div className="text-sm font-bold text-rv-primary">Scenes</div>
               <a href="#home" className="text-xs font-semibold text-rv-primary hover:text-rv-primaryHover underline">
@@ -1092,8 +1089,8 @@ function Studio() {
             </div>
           </aside>
 
-          {/* Center: Canvas */}
-          <section className="col-span-12 lg:col-span-6">
+          {/* Center: Canvas - Shown first on mobile (order-1), middle on desktop (lg:order-2) */}
+          <section className="order-1 lg:order-2 col-span-12 lg:col-span-6">
             <div className="rounded-rvLg border border-rv-neutral bg-white shadow-rvSoft">
               <div className="flex items-center justify-between border-b border-rv-neutral px-4 py-3 text-sm">
                 <div className="flex items-center gap-2 text-rv-primary font-semibold">
@@ -1381,8 +1378,8 @@ function Studio() {
             </div>
           </section>
 
-          {/* Right: Controls */}
-          <aside className="col-span-12 lg:col-span-3 rounded-rvLg border border-rv-neutral bg-white shadow-rvSoft p-4 lg:p-5 h-auto lg:h-[78vh] overflow-auto">
+          {/* Right: Controls - Shown second on mobile (order-2), last on desktop (lg:order-3) */}
+          <aside className="order-2 lg:order-3 col-span-12 lg:col-span-3 rounded-rvLg border border-rv-neutral bg-white shadow-rvSoft p-4 lg:p-5 h-auto lg:h-[78vh] overflow-auto">
             <div className="text-sm font-bold text-rv-primary">Artwork</div>
             <div className="mt-3 flex items-center gap-2">
               <select

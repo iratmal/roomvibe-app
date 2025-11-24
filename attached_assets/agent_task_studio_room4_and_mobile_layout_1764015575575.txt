@@ -1,0 +1,118 @@
+Message for Replit Agent — Studio Patch: Room 4 Real-Size Fix + Mobile Layout Update
+
+Hi! Great work so far — the Studio, frames and real-size behavior now look very good overall.
+
+There are only TWO remaining issues:
+
+1) Room 4 artwork is still too large compared to the room furniture  
+2) On mobile, the Studio layout shows the room list first and the main canvas is pushed below the fold
+
+This file describes both fixes.
+
+------------------------------------------------------------
+TASK 1 — ROOM 4 REAL-SIZE SCALING (FINAL ADJUSTMENT)
+------------------------------------------------------------
+
+Problem:
+- In Room 4, a 150 × 100 cm artwork still appears too large relative to the sofa and wall.
+- All other rooms (1–3, 5–10) look realistic. Only Room 4 feels oversized.
+
+Goal:
+- Make Room 4 consistent with the other rooms in terms of real-size perception.
+
+What to do:
+
+1) Re-check the Room 4 wall calibration:
+   - Identify the visible main wall area where the artwork hangs.
+   - Measure wall width in pixels (the part we are using for placing the artwork).
+   - Compare with a realistic real-world wall width.
+
+2) Adjust Room 4 config:
+   - Increase the wallWidthCm so that the artwork becomes smaller relative to the wall.
+   - Suggested starting point:
+       wallWidthCm: 420–450
+       wallHeightCm: 260–270
+     (You can fine-tune within this range based on your measurements.)
+
+3) Test with these artworks:
+   - Artwork A: 100 × 150 cm (portrait)
+   - Artwork B: 150 × 100 cm (landscape)
+
+   Expected visual behavior:
+   - 100 × 150 cm piece should be slightly taller than the sofa back, not reaching the ceiling.
+   - 150 × 100 cm piece should be clearly smaller than the wall width, with comfortable margins on left and right.
+   - Proportions should feel similar to the same artworks in Rooms 1–3.
+
+Acceptance criteria:
+- When switching between Room 2 and Room 4 with the same artwork and real-size active, the artwork should feel similar in real-world scale.
+- No room should make the piece look absurdly larger than the furniture.
+- Drag/resize/pinch and frames must continue to work without any changes.
+
+IMPORTANT:
+- Please only change the Room 4 wall dimensions and any related scale factor, not the global scaling logic that already works for other rooms.
+
+------------------------------------------------------------
+TASK 2 — MOBILE LAYOUT UPDATE (STUDIO FIRST, ROOMS BELOW)
+------------------------------------------------------------
+
+Problem:
+- On mobile, when the user opens the Studio:
+  - The first screen shows the list of Scenes (Room 1, Room 2, Room 3, etc.) taking up the whole viewport.
+  - The main Studio canvas (Upload wall photo + artwork on wall) is pushed below the fold.
+- This is confusing: users expect to immediately see their artwork on the wall, not just the room thumbnails.
+
+Goal:
+- On mobile devices, show the Studio canvas first, and move the room list below it.
+
+Desired behavior (mobile only):
+
+1) When opening /studio on mobile:
+   - The first thing visible above the fold should be:
+     - "RoomVibe Studio" header
+     - Upload Wall Photo button
+     - Main preview canvas with the current room + artwork
+
+2) The Scenes/Rooms list:
+   - Should be displayed BELOW the Studio canvas on mobile.
+   - Can be:
+       - a horizontal scrollable strip of room thumbnails, OR
+       - a vertical list under the canvas.
+   - Important: it must not push the entire canvas below the initial viewport.
+
+Implementation suggestion:
+
+- Use a breakpoint for mobile, e.g. max-width: 768px.
+- For desktop:
+   - Keep current 3-column layout (Rooms | Canvas | Right Panel).
+- For mobile:
+   - Switch to stacked layout:
+       1. Canvas section (including Upload wall photo)
+       2. Artwork/Frame controls (right panel content collapsed or as accordion)
+       3. Scenes list (room thumbnails) at the bottom
+
+Technical notes:
+- You can change flex-direction and ordering for the main layout container on mobile.
+- Ensure that:
+   - Upload Wall Photo button is easily accessible at the top of the canvas section.
+   - Scenes list remains fully functional (tap to change room).
+   - No horizontal scroll issues appear.
+
+Acceptance criteria:
+- On a phone-width viewport (or real phone), when opening Studio:
+   - User immediately sees the artwork on the wall (no scrolling required).
+   - Rooms list is visible only after scrolling down.
+- Desktop layout remains as it is now (no changes for large screens).
+
+------------------------------------------------------------
+FINAL EXPECTATION
+------------------------------------------------------------
+
+After these two fixes:
+
+- Room 4 will show correctly scaled artworks, consistent with other rooms.
+- Mobile Studio UX will be much clearer:
+  - Studio canvas first,
+  - Rooms/Scenes list below,
+  - Users can instantly see their art on the wall.
+
+Thank you!
