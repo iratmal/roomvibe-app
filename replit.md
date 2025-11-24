@@ -4,6 +4,37 @@
 RoomVibe Studio is a comprehensive React/TypeScript web application designed to visualize artwork in various room environments using a Canvy-style three-panel editor. Its core purpose is to allow users to see how artworks would look on their walls, featuring functionalities like true-to-scale sizing and the potential for wall recoloring. The application aims to provide a modern, user-friendly art visualization experience, ready for integration with e-commerce platforms like Shopify. It includes a full-stack authentication system with role-based access control and robust security features.
 
 ## Recent Changes (November 24, 2025)
+**ARTIST DASHBOARD MVP - ARTWORK MANAGEMENT SYSTEM:**
+- **Functional Artist Dashboard** (`#/dashboard/artist`):
+  - Complete CRUD operations for artwork management
+  - Artists can upload, list, edit, and delete their artworks
+  - Admin users can manage ALL artworks (full platform oversight)
+- **Database Schema**:
+  - `artworks` table with fields: id, artist_id, title, image_url, width, height, price, buy_url, created_at, updated_at
+  - Foreign key relationship to users table with CASCADE delete
+  - Index on artist_id for performance
+- **Backend API** (`server/api/artworks.ts`):
+  - GET `/api/artist/artworks` - List artworks (artist sees theirs, admin sees all with artist email)
+  - POST `/api/artist/artworks` - Create artwork with image upload (required)
+  - PUT `/api/artist/artworks/:id` - Update artwork with optional image
+  - DELETE `/api/artist/artworks/:id` - Delete artwork with confirmation
+  - File upload via Multer (images saved to `public/uploads/artworks/`)
+  - Validation: Image types (jpeg, jpg, png, gif, webp), size limit (10MB)
+  - Role-based access: Artists manage theirs, Admins manage all
+- **Frontend Features**:
+  - Add New Artwork form (title, image, width cm, height cm, price optional, buy URL)
+  - My Artworks grid with thumbnails and metadata
+  - Edit functionality (fills form, optional image update)
+  - Delete with confirmation dialog
+  - Success/error messaging and loading states
+  - Dynamic API_URL (dev: localhost:3001, prod: same origin)
+  - Displays artwork count in account section
+- **Image Validation Logic**:
+  - CREATE: Image required (cannot create artwork without image)
+  - UPDATE: Image optional (keeps existing if not changed)
+  - Frontend: `required={!editingArtwork}` on file input
+- **Future Integration**: Clean data structure ready for Studio integration (artworks can be fetched and displayed in visualization tool)
+
 **WEEK 3 MVP: ANALYTICS (GA4 + HOTJAR) + GDPR COOKIE CONSENT:**
 - **Google Analytics 4 (GA4) Integration**:
   - Conditional loading only after user accepts cookies
