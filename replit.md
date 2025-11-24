@@ -27,7 +27,7 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
     - **Left Panel (Scene Browser)**: Grid of room preset thumbnails.
     - **Center Panel (Canvas)**: Displays selected room photo, supports user photo upload. Features real-scale rendering with artwork overlay, smart scaling limits, drag-to-move with bounds checking, and frame rendering.
     - **Right Panel (Controls)**: Artwork selector, real-size display, frame selector, reset position button.
-- **Artist Dashboard**: Provides CRUD operations for artwork management (upload, list, edit, delete artworks). Includes image upload, currency selection, and secure API endpoints.
+- **Artist Dashboard**: Provides CRUD operations for artwork management (upload, list, edit, delete artworks). Includes image upload, currency selection (EUR/USD/GBP), dimension units (cm/inches), and secure API endpoints. Database stores dimension_unit, price_amount, and price_currency fields. Buy URL opens in new tab via button (prevents auto-navigation on page load).
 - **Role-Based Dashboards**: Implemented for Artist, Designer, Gallery, User, and Admin roles, with specific content and access controls. Admin users can impersonate other roles for testing.
 - **Analytics & GDPR**: Integrates Google Analytics 4 (GA4) and Hotjar, conditionally loaded based on GDPR cookie consent. A cookie consent banner and legal pages (Privacy Policy, Terms of Service, Upload Consent) are included.
 - **Artwork Enrichment**: Automated script fetches product details and dimensions from Shopify, populating local data.
