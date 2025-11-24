@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ImpersonationBanner from './ImpersonationBanner';
 
@@ -25,10 +24,15 @@ interface RoomImage {
 }
 
 export default function ProjectDetail() {
-  const { projectId } = useParams<{ projectId: string }>();
-  const navigate = useNavigate();
   const { user } = useAuth();
   
+  const getProjectIdFromHash = () => {
+    const hash = window.location.hash;
+    const match = hash.match(/#\/dashboard\/designer\/project\/(\d+)/);
+    return match ? match[1] : null;
+  };
+  
+  const [projectId, setProjectId] = useState<string | null>(getProjectIdFromHash);
   const [project, setProject] = useState<Project | null>(null);
   const [rooms, setRooms] = useState<RoomImage[]>([]);
   const [loading, setLoading] = useState(false);
@@ -41,7 +45,31 @@ export default function ProjectDetail() {
   const [uploadPreview, setUploadPreview] = useState<string | null>(null);
 
   useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      const match = hash.match(/#\/dashboard\/designer\/project\/(\d+)/);
+      const newProjectId = match ? match[1] : null;
+      setProjectId(newProjectId);
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!projectId) {
+      window.location.hash = '#/dashboard/designer';
+    }
+  }, [projectId]);
+
+  useEffect(() => {
     if (projectId) {
+      setProject(null);
+      setRooms([]);
+      setError('');
       fetchProject();
       fetchRooms();
     }
@@ -186,7 +214,7 @@ export default function ProjectDetail() {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <button
-          onClick={() => navigate('/dashboard/designer')}
+          onClick={() => window.location.hash = '#/dashboard/designer'}
           className="mb-6 flex items-center gap-2 text-rv-primary hover:text-rv-primaryHover transition-colors font-semibold"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import ImpersonationBanner from './ImpersonationBanner';
 import ChangePassword from './ChangePassword';
 
@@ -20,7 +19,6 @@ interface Project {
 
 export function DesignerDashboard() {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -131,7 +129,7 @@ export function DesignerDashboard() {
   };
 
   const viewProject = (projectId: number) => {
-    navigate(`/dashboard/designer/project/${projectId}`);
+    window.location.hash = `#/dashboard/designer/project/${projectId}`;
   };
 
   const formatDate = (dateString: string) => {
