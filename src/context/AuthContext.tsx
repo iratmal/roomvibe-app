@@ -125,6 +125,9 @@ export function AuthProvider({ children }: { children: React.ReactNode}) {
         throw new Error(data.error || 'Registration failed');
       }
 
+      setToken('authenticated');
+      setUser(data.user);
+
       return data;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Registration failed';

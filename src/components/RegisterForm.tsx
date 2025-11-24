@@ -19,12 +19,12 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
     setSuccess(null);
     try {
       const data = await register(email, password, role);
-      setSuccess(data.message || 'Registration successful! Please check your email to confirm your account.');
+      setSuccess(data.message || 'Registration successful! You are now logged in.');
       setEmail('');
       setPassword('');
       setTimeout(() => {
-        onSuccess?.();
-      }, 3000);
+        window.location.hash = '#/dashboard';
+      }, 1500);
     } catch (err) {
       // Error handled by context
     }
