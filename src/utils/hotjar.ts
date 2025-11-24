@@ -7,6 +7,10 @@ declare global {
 
 let isHotjarLoaded = false;
 
+export function resetHotjar() {
+  isHotjarLoaded = false;
+}
+
 export function initHotjar(hotjarId: number, hotjarSv: number = 6) {
   if (isHotjarLoaded || !hotjarId) {
     return;

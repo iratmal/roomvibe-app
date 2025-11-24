@@ -7,6 +7,10 @@ declare global {
 
 let isGA4Loaded = false;
 
+export function resetGA4() {
+  isGA4Loaded = false;
+}
+
 export function initGA4(measurementId: string) {
   if (isGA4Loaded || !measurementId) {
     return;

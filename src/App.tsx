@@ -15,8 +15,8 @@ import { AdminDashboard } from "./components/dashboards/AdminDashboard";
 import PrivacyPolicy from "./components/legal/PrivacyPolicy";
 import TermsOfService from "./components/legal/TermsOfService";
 import UploadConsent from "./components/legal/UploadConsent";
-import { initGA4, GA4Events } from "./utils/analytics";
-import { initHotjar } from "./utils/hotjar";
+import { initGA4, resetGA4, GA4Events } from "./utils/analytics";
+import { initHotjar, resetHotjar } from "./utils/hotjar";
 
 /**
  * RoomVibe — App + Landing + Studio + Authentication
@@ -63,14 +63,20 @@ function AppContent() {
     if (consentStatus === 'accepted') {
       const ga4Id = import.meta.env.VITE_GA4_MEASUREMENT_ID;
       const hotjarId = import.meta.env.VITE_HOTJAR_ID;
+      const hotjarSv = import.meta.env.VITE_HOTJAR_SV;
       
       if (ga4Id) {
         initGA4(ga4Id);
       }
       
       if (hotjarId) {
-        initHotjar(parseInt(hotjarId, 10));
+        const sv = hotjarSv ? parseInt(hotjarSv, 10) : 6;
+        initHotjar(parseInt(hotjarId, 10), sv);
       }
+    } else {
+      // Reset loaded flags when consent is declined or reset
+      resetGA4();
+      resetHotjar();
     }
   }, [consentStatus]);
 
