@@ -586,7 +586,15 @@ function Studio() {
   const [pxPerCm, setPxPerCm] = useState<number>(2); // pixels per centimeter ratio
   const [scale, setScale] = useState<number>(1.0); // artwork scale multiplier (1.0 = 100%)
   const [isResizing, setIsResizing] = useState<boolean>(false);
+  const [resizeCorner, setResizeCorner] = useState<'nw' | 'ne' | 'sw' | 'se' | null>(null);
   const resizeStartRef = useRef<{ x: number; y: number; startScale: number } | null>(null);
+  
+  // Selection state
+  const [isArtworkSelected, setIsArtworkSelected] = useState<boolean>(false);
+  
+  // Pinch-to-zoom state
+  const [isPinching, setIsPinching] = useState<boolean>(false);
+  const pinchStartRef = useRef<{ distance: number; startScale: number } | null>(null);
 
   // Track Studio visit on mount
   useEffect(() => {
@@ -730,7 +738,7 @@ function Studio() {
     setOffsetY(0);
   };
 
-  const handleResizeStart = (e: React.MouseEvent | React.TouchEvent) => {
+  const handleResizeStart = (e: React.MouseEvent | React.TouchEvent, corner: 'nw' | 'ne' | 'sw' | 'se') => {
     e.stopPropagation();
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
@@ -739,11 +747,12 @@ function Studio() {
       y: clientY, 
       startScale: scale 
     };
+    setResizeCorner(corner);
     setIsResizing(true);
   };
 
   const handleResizeMove = (e: MouseEvent | TouchEvent) => {
-    if (!isResizing || !resizeStartRef.current || !canvasRef.current) return;
+    if (!isResizing || !resizeStartRef.current || !resizeCorner || !canvasRef.current) return;
     e.preventDefault();
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
@@ -751,8 +760,23 @@ function Studio() {
     const deltaX = clientX - resizeStartRef.current.x;
     const deltaY = clientY - resizeStartRef.current.y;
     
-    // Project delta onto SE diagonal (45-degree resize handle)
-    const diagonalDelta = (deltaX + deltaY) / Math.sqrt(2);
+    // Calculate diagonal delta based on resize corner
+    let diagonalDelta = 0;
+    
+    switch (resizeCorner) {
+      case 'se': // Bottom-right: positive X and Y increase size
+        diagonalDelta = (deltaX + deltaY) / Math.sqrt(2);
+        break;
+      case 'sw': // Bottom-left: negative X and positive Y increase size
+        diagonalDelta = (-deltaX + deltaY) / Math.sqrt(2);
+        break;
+      case 'ne': // Top-right: positive X and negative Y increase size
+        diagonalDelta = (deltaX - deltaY) / Math.sqrt(2);
+        break;
+      case 'nw': // Top-left: negative X and negative Y increase size
+        diagonalDelta = (-deltaX - deltaY) / Math.sqrt(2);
+        break;
+    }
     
     // Convert pixel delta to scale change (sensitivity: 1px = 0.002 scale)
     const scaleChange = diagonalDelta * 0.002;
@@ -772,11 +796,78 @@ function Studio() {
 
   const handleResizeEnd = () => {
     setIsResizing(false);
+    setResizeCorner(null);
     resizeStartRef.current = null;
+  };
+
+  // Pinch-to-zoom handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      // Two-finger pinch detected
+      e.stopPropagation();
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+      const distance = Math.hypot(
+        touch2.clientX - touch1.clientX,
+        touch2.clientY - touch1.clientY
+      );
+      pinchStartRef.current = {
+        distance,
+        startScale: scale
+      };
+      setIsPinching(true);
+    }
+  };
+
+  const handlePinchMove = (e: TouchEvent) => {
+    if (!isPinching || !pinchStartRef.current || e.touches.length !== 2) return;
+    e.preventDefault();
+    
+    const touch1 = e.touches[0];
+    const touch2 = e.touches[1];
+    const distance = Math.hypot(
+      touch2.clientX - touch1.clientX,
+      touch2.clientY - touch1.clientY
+    );
+    
+    const scaleChange = distance / pinchStartRef.current.distance;
+    let newScale = pinchStartRef.current.startScale * scaleChange;
+    
+    // Apply smart limits based on room type
+    if (userPhoto) {
+      newScale = Math.max(0.3, Math.min(3.0, newScale));
+    } else {
+      newScale = Math.max(0.7, Math.min(1.3, newScale));
+    }
+    
+    setScale(newScale);
+  };
+
+  const handlePinchEnd = () => {
+    setIsPinching(false);
+    pinchStartRef.current = null;
+  };
+
+  // Click artwork to select
+  const handleArtworkClick = (e: React.MouseEvent | React.TouchEvent) => {
+    if ('touches' in e && e.touches.length === 2) {
+      // Don't select on pinch
+      return;
+    }
+    setIsArtworkSelected(true);
+  };
+
+  // Click outside to deselect
+  const handleCanvasClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      setIsArtworkSelected(false);
+    }
   };
 
   useEffect(() => {
     const options = { passive: false };
+    
+    // Drag and resize event listeners
     window.addEventListener('mousemove', handleDragMove);
     window.addEventListener('mouseup', handleDragEnd);
     window.addEventListener('touchmove', handleDragMove, options);
@@ -786,6 +877,10 @@ function Studio() {
     window.addEventListener('mouseup', handleResizeEnd);
     window.addEventListener('touchmove', handleResizeMove, options);
     window.addEventListener('touchend', handleResizeEnd);
+    
+    // Pinch-to-zoom event listeners
+    window.addEventListener('touchmove', handlePinchMove, options);
+    window.addEventListener('touchend', handlePinchEnd);
     
     return () => {
       window.removeEventListener('mousemove', handleDragMove);
@@ -797,8 +892,11 @@ function Studio() {
       window.removeEventListener('mouseup', handleResizeEnd);
       window.removeEventListener('touchmove', handleResizeMove, options as any);
       window.removeEventListener('touchend', handleResizeEnd);
+      
+      window.removeEventListener('touchmove', handlePinchMove, options as any);
+      window.removeEventListener('touchend', handlePinchEnd);
     };
-  }, [isResizing]);
+  }, [isResizing, isPinching]);
 
   return (
     <main>
@@ -869,11 +967,15 @@ function Studio() {
                 </div>
               </div>
 
-              <div ref={canvasRef} className="relative h-[560px] w-full overflow-hidden rounded-b-rvLg">
+              <div 
+                ref={canvasRef} 
+                className="relative h-[560px] w-full overflow-hidden rounded-b-rvLg"
+                onClick={handleCanvasClick}
+              >
                 {userPhoto ? (
-                  <img src={userPhoto} alt="Your wall" className="absolute inset-0 h-full w-full object-cover" />
+                  <img src={userPhoto} alt="Your wall" className="absolute inset-0 h-full w-full object-cover" style={{ pointerEvents: 'none' }} />
                 ) : (
-                  <img src={scene.photo} alt={scene.name} className="absolute inset-0 h-full w-full object-cover" />
+                  <img src={scene.photo} alt={scene.name} className="absolute inset-0 h-full w-full object-cover" style={{ pointerEvents: 'none' }} />
                 )}
                 <div
                   className="rounded-md shadow-2xl"
@@ -895,9 +997,17 @@ function Studio() {
                         ? "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
                         : "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
                     overflow: "visible",
+                    outline: isArtworkSelected ? '2px solid #283593' : 'none',
+                    outlineOffset: '2px',
                   }}
                   onMouseDown={handleDragStart}
-                  onTouchStart={handleDragStart}
+                  onTouchStart={(e) => {
+                    handleTouchStart(e);
+                    if (e.touches.length === 1) {
+                      handleDragStart(e);
+                    }
+                  }}
+                  onClick={handleArtworkClick}
                 >
                   <div className="overflow-hidden rounded-md" style={{ width: `${artworkWidthPx}px`, height: `${artworkHeightPx}px` }}>
                     {art?.imageUrl || art?.overlayImageUrl ? (
@@ -924,21 +1034,74 @@ function Studio() {
                     )}
                   </div>
                   
-                  {/* Resize handle */}
-                  <div
-                    className="absolute w-6 h-6 bg-white border-2 border-rv-primary rounded-tl-md hover:bg-rv-primary/10 hover:border-rv-primaryHover transition-colors shadow-sm"
-                    style={{ 
-                      bottom: `-${frameThicknessPx}px`,
-                      right: `-${frameThicknessPx}px`,
-                      cursor: 'se-resize',
-                    }}
-                    onMouseDown={handleResizeStart}
-                    onTouchStart={handleResizeStart}
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-full h-full text-rv-primary">
-                      <path d="M9 15l6-6m0 4l-4 4" strokeWidth="2" strokeLinecap="round" />
-                    </svg>
-                  </div>
+                  {/* Resize handles - visible only when selected */}
+                  {isArtworkSelected && (
+                    <>
+                      {/* Top-left corner */}
+                      <div
+                        className="absolute w-6 h-6 bg-white border-2 border-rv-primary rounded-br-md hover:bg-rv-primary/10 hover:border-rv-primaryHover transition-colors shadow-sm"
+                        style={{ 
+                          top: `-${frameThicknessPx}px`,
+                          left: `-${frameThicknessPx}px`,
+                          cursor: 'nw-resize',
+                        }}
+                        onMouseDown={(e) => handleResizeStart(e, 'nw')}
+                        onTouchStart={(e) => handleResizeStart(e, 'nw')}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-full h-full text-rv-primary">
+                          <path d="M15 9l-6 6m0-4l4-4" strokeWidth="2" strokeLinecap="round" />
+                        </svg>
+                      </div>
+                      
+                      {/* Top-right corner */}
+                      <div
+                        className="absolute w-6 h-6 bg-white border-2 border-rv-primary rounded-bl-md hover:bg-rv-primary/10 hover:border-rv-primaryHover transition-colors shadow-sm"
+                        style={{ 
+                          top: `-${frameThicknessPx}px`,
+                          right: `-${frameThicknessPx}px`,
+                          cursor: 'ne-resize',
+                        }}
+                        onMouseDown={(e) => handleResizeStart(e, 'ne')}
+                        onTouchStart={(e) => handleResizeStart(e, 'ne')}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-full h-full text-rv-primary">
+                          <path d="M9 9l6 6m-4 0l4-4" strokeWidth="2" strokeLinecap="round" />
+                        </svg>
+                      </div>
+                      
+                      {/* Bottom-left corner */}
+                      <div
+                        className="absolute w-6 h-6 bg-white border-2 border-rv-primary rounded-tr-md hover:bg-rv-primary/10 hover:border-rv-primaryHover transition-colors shadow-sm"
+                        style={{ 
+                          bottom: `-${frameThicknessPx}px`,
+                          left: `-${frameThicknessPx}px`,
+                          cursor: 'sw-resize',
+                        }}
+                        onMouseDown={(e) => handleResizeStart(e, 'sw')}
+                        onTouchStart={(e) => handleResizeStart(e, 'sw')}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-full h-full text-rv-primary">
+                          <path d="M15 15l-6-6m4 0l-4 4" strokeWidth="2" strokeLinecap="round" />
+                        </svg>
+                      </div>
+                      
+                      {/* Bottom-right corner */}
+                      <div
+                        className="absolute w-6 h-6 bg-white border-2 border-rv-primary rounded-tl-md hover:bg-rv-primary/10 hover:border-rv-primaryHover transition-colors shadow-sm"
+                        style={{ 
+                          bottom: `-${frameThicknessPx}px`,
+                          right: `-${frameThicknessPx}px`,
+                          cursor: 'se-resize',
+                        }}
+                        onMouseDown={(e) => handleResizeStart(e, 'se')}
+                        onTouchStart={(e) => handleResizeStart(e, 'se')}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-full h-full text-rv-primary">
+                          <path d="M9 15l6-6m0 4l-4 4" strokeWidth="2" strokeLinecap="round" />
+                        </svg>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

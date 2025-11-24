@@ -1,0 +1,86 @@
+Message for Replit Agent — Task: Studio Resize & Mobile Pinch Upgrade (Week 4 – Task 1)
+
+Hi! Here is the adjusted Studio improvement task based on the current functionality.
+
+The Studio already has:
+✔ Full drag movement
+✔ Resize from the bottom-right corner
+✔ Selection outline
+
+Now we just need to extend and improve the system to complete the UX.
+
+-----------------------------------
+🎯 GOAL
+-----------------------------------
+Upgrade the Studio so that:
+
+1) The artwork can be resized from **all four corners**  
+2) Mobile users can **pinch-to-zoom** the artwork  
+3) Selection UX is improved (resize handles appear only when selected)  
+
+Everything else (drag, existing resize, placement) already works and should not be changed.
+
+-----------------------------------
+1) RESIZE HANDLES ON ALL FOUR CORNERS
+-----------------------------------
+Add visible resize handles on:
+
+• top-left  
+• top-right  
+• bottom-left  
+• bottom-right  
+
+Behavior:
+- Dragging any corner resizes the artwork proportionally (keep aspect ratio).
+- Use the same logic as current bottom-right resize.
+- Minimum image size to avoid collapsing (optional but recommended).
+- Handles visible only when artwork is selected.
+
+-----------------------------------
+2) MOBILE PINCH-TO-ZOOM
+-----------------------------------
+Add 2‑finger pinch gesture support:
+
+- Pinch outward → scale up
+- Pinch inward → scale down
+- Maintain artwork center relative to gesture origin
+- Ensure drag (1‑finger) and pinch (2‑finger) gestures don’t conflict
+- Works on iOS + Android mobile browsers
+
+Important:
+- Use CSS transforms (`scale`, `translate3d`) for smooth performance.
+- Avoid large re-renders inside gesture events.
+
+-----------------------------------
+3) SELECTION UX IMPROVEMENT
+-----------------------------------
+When artwork is selected:
+- Show a thin border (same as current)
+- Show all 4 resize handles
+
+When clicking outside the artwork:
+- Deselect
+- Hide resize handles
+
+-----------------------------------
+4) DO NOT BREAK EXISTING FEATURES
+-----------------------------------
+- Existing drag functionality must remain unchanged
+- Existing bottom-right resize must still work
+- Existing outline on selection should remain
+- No breaking of Studio layout or upload logic
+
+-----------------------------------
+✅ FINAL EXPECTATION
+-----------------------------------
+After this task, the Studio should feel complete:
+
+✔ Drag works (already implemented)  
+✔ Resize from any corner  
+✔ Pinch zoom on mobile  
+✔ Smooth gestures  
+✔ Clean UX (handles visible only when selected)  
+
+This completes the core Studio interaction experience for Week 4.
+
+Thank you!
