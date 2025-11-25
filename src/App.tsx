@@ -359,51 +359,15 @@ function HomePage() {
 /* ------------- Hero ------------- */
 
 function Hero() {
-  const navigate = (path: string) => {
-    window.location.hash = path;
-  };
-
   return (
     <section id="home" className="w-full">
-      <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[500px] lg:min-h-[600px]">
-        {/* Left: Text content */}
-        <div className="order-2 lg:order-1 flex flex-col justify-center px-6 py-12 sm:px-12 lg:px-16 xl:px-24 bg-gradient-to-br from-slate-50 to-white text-center lg:text-left">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-slate-900 leading-tight mb-4">
-            Visualize<br />
-            Art on Your<br />
-            Walls
-          </h1>
-          
-          <p className="text-base text-slate-600 mb-8 max-w-md mx-auto lg:mx-0">
-            Upload a photo of your wall, discover perfect artworks, and see them in true-to-size mockups.
-          </p>
-          
-          <div className="flex justify-center lg:justify-start">
-            <button
-              onClick={() => navigate('/studio')}
-              className="inline-flex items-center gap-2.5 px-8 py-4 text-white font-semibold transition-all duration-200 hover:opacity-90 hover:scale-[1.02] active:scale-[0.98]"
-              style={{ backgroundColor: '#283593', borderRadius: '12px' }}
-            >
-              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2L9.19 8.63L2 9.24L7.46 13.97L5.82 21L12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.63L12 2Z" />
-              </svg>
-              Start Visualizing
-            </button>
-          </div>
-        </div>
-        
-        {/* Right: Hero image */}
-        <div className="order-1 lg:order-2 relative bg-slate-100">
-          <picture>
-            <source srcSet="/desktop_optimized.webp" type="image/webp" />
-            <img
-              src="/roomvibe-hero-desktop.jpg"
-              alt="RoomVibe – visualize art on your walls"
-              className="absolute inset-0 w-full h-full object-cover object-center"
-            />
-          </picture>
-        </div>
-      </div>
+      <a href="#/studio" className="block w-full cursor-pointer">
+        <img
+          src="/hero.png"
+          alt="RoomVibe – Visualize Art on Your Walls"
+          className="w-full h-auto"
+        />
+      </a>
     </section>
   );
 }
