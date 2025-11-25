@@ -364,18 +364,18 @@ function HomePage() {
 function Hero() {
   return (
     <section id="home" className="w-full bg-[#F5F3EF]">
-      <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-[120px] items-center pt-6 pb-3 md:pt-20 md:pb-10">
-          <div className="order-1 text-center md:text-left">
+      <div className="mx-auto max-w-[1280px] px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 items-center pt-6 pb-0 md:pt-20 md:pb-10" style={{ columnGap: '120px' }}>
+          <div className="text-center md:text-left">
             <h1 className="text-[28px] md:text-[42px] font-semibold text-rv-primary leading-[1.15] tracking-[-0.5px]">
               Visualize Art<br />on Your Walls
             </h1>
-            <p className="mt-4 md:mt-6 text-base md:text-lg text-rv-text leading-relaxed">
+            <p className="mt-4 md:mt-6 text-base md:text-[18px] text-rv-text leading-relaxed max-w-[420px] mx-auto md:mx-0">
               Upload a photo of your wall, discover perfect artworks, and see them in true-size mockups.
             </p>
             <a
               href="#/studio"
-              className="mt-6 md:mt-8 inline-flex items-center gap-2 rounded-rvSm bg-rv-primary px-6 py-3 text-base font-medium text-white hover:bg-rv-primaryHover transition-all"
+              className="mt-6 md:mt-8 inline-flex items-center gap-2 rounded-lg bg-rv-primary px-6 py-3 text-base font-medium text-white hover:bg-rv-primaryHover transition-all"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -383,10 +383,10 @@ function Hero() {
               Start Visualizing
             </a>
           </div>
-          <div className="order-2 flex justify-center md:justify-end">
+          <div className="flex justify-center md:justify-end items-center mt-6 md:mt-0 md:pr-0">
             <img
-              src="/hero.png"
-              alt="RoomVibe – Visualize Art on Your Walls"
+              src="/rooms/room04.png"
+              alt="Room with artwork visualization"
               className="w-[65%] md:w-full md:max-w-[520px] h-auto object-contain"
             />
           </div>

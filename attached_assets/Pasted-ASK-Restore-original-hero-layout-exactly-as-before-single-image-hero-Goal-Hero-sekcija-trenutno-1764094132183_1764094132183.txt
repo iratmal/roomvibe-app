@@ -1,0 +1,105 @@
+ASK: Restore original hero layout exactly as before (single-image hero)
+
+Goal:
+Hero sekcija trenutno izgleda krivo. Želimo vratiti prethodni, originalni hero, koji se sastojao od:
+
+jedne fotografije sobe preko cijele širine
+
+slika (painting) na zidu unutar te sobe
+
+teksta (“Visualize Art on Your Walls”) prikazanog LJEVO od slike unutar ISTE sobe
+
+CTA gumba ispod teksta
+
+sve u jednom jedinstvenom hero backgroundu
+
+BEZ dvostupčanog layouta (“tekst lijevo, slika desno”)
+
+BEZ dvije odvojene slike
+
+Reference images (LOCAL FILES):
+Koristi ova dva kao referencu:
+
+Desktop hero reference:
+/mnt/data/desktop.png
+
+Mobile hero reference:
+/mnt/data/mobilna.png
+
+Napravi identičan layout kao na tim slikama.
+
+✔ Scope — napravi TOČNO OVO:
+1. Ukloni dvostupčani layout hero sekcije
+
+makni grid / flex s dvije kolone
+
+ne treba poseban container s desnom slikom
+
+2. Vratiti single-image hero background
+
+background slika = ista kao referentna hero soba
+
+painting mora biti integriran u toj slici EXACTLY kao prije
+
+ništa ne miče, ne smanjuje, ne mijenja
+
+3. Tekst u hero sekciji
+
+“Visualize Art on Your Walls”
+
+Inter SemiBold
+
+Navy (#283593)
+
+veličina neka bude isto kao prije (ili minimalno manja uz Inter)
+
+4. CTA button
+
+“Start Visualizing”
+
+isti kao prije
+
+POD tekstom
+
+poravnan lijevo, kao na referentnoj slici
+
+5. Sizing + spacing
+
+Desktop:
+
+hero height ~540–600px
+
+tekst blok ljevo, ~max-width 420px
+
+gumb odmah ispod
+
+Mobile:
+
+slika preko cijele širine
+
+tekst centriran kako je bio u originalnoj mobilnoj verziji
+
+NEMA praznog prostora ispod hero-a
+
+6. Ne mijenjati ništa drugo na stranici
+7. Konačni rezultat
+
+Hero na desktopu i mobilnoj verziji mora izgleda IDENTIČNO screenshotovima /mnt/data/desktop.png i /mnt/data/mobilna.png.
+
+🛑 Ne raditi:
+
+ne raditi dvostupčani layout
+
+ne pomicati sliku u zaseban div
+
+ne smanjivati sliku
+
+ne dodavati nove elemente
+
+ne dirati “How it works” sekciju
+
+ne dirati Artists/Designers/Galleries sekciju
+
+✔ Stop condition:
+
+Kada hero izgleda točno kao original (desktop + mobile), stani i prikaži izmjene.
