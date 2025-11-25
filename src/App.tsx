@@ -378,7 +378,7 @@ function Hero() {
 
 function SectionDivider() {
   return (
-    <div className="mx-auto my-12 max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div className="mx-auto my-6 md:my-12 max-w-7xl px-4 sm:px-6 lg:px-8">
       <div className="h-px w-full bg-gradient-to-r from-transparent via-rv-neutral to-transparent" />
     </div>
   );
