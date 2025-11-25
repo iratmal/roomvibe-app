@@ -261,12 +261,12 @@ function TopNav() {
   return (
     <header className="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/80 border-b border-rv-neutral">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-28 md:h-32 items-center justify-between">
           <a href="#home" className="flex items-center">
             <img 
               src="/roomvibe-logo-transparent.png" 
               alt="RoomVibe" 
-              className="h-14 md:h-16 w-auto"
+              className="h-24 md:h-28 w-auto"
             />
           </a>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
@@ -479,12 +479,12 @@ function StudioHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-rv-neutral bg-white/80 backdrop-blur">
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-        <div className="flex h-14 items-center justify-between">
+        <div className="flex h-20 md:h-24 items-center justify-between">
           <a href="#/" className="flex items-center">
             <img 
               src="/roomvibe-logo-transparent.png" 
               alt="RoomVibe" 
-              className="h-10 md:h-12 w-auto"
+              className="h-16 md:h-20 w-auto"
             />
           </a>
           <a
