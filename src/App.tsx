@@ -364,58 +364,61 @@ function Hero() {
   };
 
   return (
-    <section id="home" className="py-6">
-      <div className="mx-auto px-6" style={{ maxWidth: '1100px' }}>
-        <div className="hidden md:block" style={{ transform: 'scale(0.82)', transformOrigin: 'top center' }}>
-          <div className="relative">
-            <picture>
-              <source srcSet="/desktop_optimized.webp" type="image/webp" />
-              <img
-                src="/roomvibe-hero-desktop.jpg"
-                alt="RoomVibe – visualize art on your walls"
-                className="block w-full h-auto"
-              />
-            </picture>
+    <section id="home" className="py-8 md:py-12">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100">
+          <div className="grid grid-cols-1 lg:grid-cols-2 items-center">
+            {/* Left: Text content */}
+            <div className="order-2 lg:order-1 p-8 md:p-12 lg:p-16 text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 mb-6">
+                <svg className="h-8 w-8 text-rv-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <path d="M3 9h18M9 21V9" />
+                </svg>
+                <span className="text-lg font-semibold text-rv-primary tracking-tight">RoomVibe</span>
+              </div>
+              
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-slate-900 leading-tight mb-4">
+                Visualize<br />
+                Art on Your<br />
+                Walls
+              </h1>
+              
+              <p className="text-base md:text-lg text-slate-600 mb-8 max-w-md mx-auto lg:mx-0">
+                Upload a photo of your wall, discover perfect artworks, and see them in true-to-size mockups.
+              </p>
+              
+              <button
+                onClick={() => navigate('/studio')}
+                className="inline-flex items-center gap-2 px-7 py-3.5 text-white font-semibold rounded-lg transition-all duration-200 hover:opacity-90 hover:scale-[1.02] active:scale-[0.98]"
+                style={{ backgroundColor: '#283593' }}
+              >
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 3l1.5 4.5H18l-3.5 2.5 1.5 4.5-4-3-4 3 1.5-4.5L6 7.5h4.5L12 3z" />
+                </svg>
+                Start Visualizing
+              </button>
+            </div>
             
-            {/* Clickable overlay button positioned over the graphic button in the hero image */}
-            <button
-              onClick={() => navigate('/studio')}
-              aria-label="Start Visualizing"
-              className="absolute cursor-pointer bg-transparent border-0 hover:bg-white/5 transition-colors"
-              style={{
-                bottom: '15%',
-                left: '12%',
-                width: '260px',
-                height: '64px',
-                zIndex: 2,
-              }}
-            />
+            {/* Right: Hero image */}
+            <div className="order-1 lg:order-2 relative">
+              <div className="relative aspect-[4/3] lg:aspect-square overflow-hidden">
+                <img
+                  src="/rooms/room01.png"
+                  alt="Modern living room with artwork"
+                  className="absolute inset-0 w-full h-full object-cover object-center"
+                />
+                {/* Decorative artwork frame overlay */}
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-[55%] w-[45%] aspect-[3/4] rounded-sm shadow-2xl overflow-hidden border-8 border-slate-800">
+                  <img
+                    src="/art/gv-2025-001.jpg"
+                    alt="Featured artwork"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-        
-        {/* Mobile version (no scaling) */}
-        <div className="md:hidden relative">
-          <picture>
-            <source srcSet="/desktop_optimized.webp" type="image/webp" />
-            <img
-              src="/roomvibe-hero-desktop.jpg"
-              alt="RoomVibe – visualize art on your walls"
-              className="block w-full h-auto"
-            />
-          </picture>
-          
-          <button
-            onClick={() => navigate('/studio')}
-            aria-label="Start Visualizing"
-            className="absolute cursor-pointer bg-transparent border-0 hover:bg-white/5 transition-colors"
-            style={{
-              bottom: '15%',
-              left: '12%',
-              width: '260px',
-              height: '64px',
-              zIndex: 2,
-            }}
-          />
         </div>
       </div>
     </section>
