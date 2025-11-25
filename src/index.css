@@ -7,7 +7,7 @@
   --rv-primary-hover: #1e2770;
   --rv-accent: #D8B46A;
   --rv-neutral: #DDE1E7;
-  --rv-text: #111827;
+  --rv-text: #1A1A1A;
   --rv-text-muted: #6B7280;
 }
 
@@ -29,13 +29,12 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-weight: 700;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-weight: 600;
   color: var(--rv-primary);
   margin: 0;
-}
-
-.font-display {
-  font-family: 'Playfair Display', Georgia, serif !important;
+  letter-spacing: -0.5px;
+  line-height: 1.15;
 }
 
 button {

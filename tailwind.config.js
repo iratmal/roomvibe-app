@@ -11,7 +11,7 @@ export default {
           neutral: "#DDE1E7",
           bg: "#FFFFFF",
           surface: "#F9FAFB",
-          text: "#111827",
+          text: "#1A1A1A",
           textMuted: "#6B7280",
           success: "#16A34A",
           warning: "#F97316",
@@ -20,7 +20,6 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Playfair Display', 'Georgia', 'serif'],
       },
       borderRadius: {
         rvSm: "8px",

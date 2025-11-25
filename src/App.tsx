@@ -352,9 +352,8 @@ function HomePage() {
   return (
     <main>
       <Hero />
-      <SectionDivider />
       <HowItWorks />
-      <SectionDivider />
+      <AudienceSection />
       <CTASection />
     </main>
   );
@@ -364,23 +363,128 @@ function HomePage() {
 
 function Hero() {
   return (
-    <section id="home" className="w-full">
-      <a href="#/studio" className="block w-full cursor-pointer">
-        <img
-          src="/hero.png"
-          alt="RoomVibe – Visualize Art on Your Walls"
-          className="w-full h-auto"
-        />
-      </a>
+    <section id="home" className="w-full bg-[#F5F3EF]">
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-[120px] items-center pt-6 pb-3 md:pt-20 md:pb-10">
+          <div className="order-1 text-center md:text-left">
+            <h1 className="text-[28px] md:text-[42px] font-semibold text-rv-primary leading-[1.15] tracking-[-0.5px]">
+              Visualize Art<br />on Your Walls
+            </h1>
+            <p className="mt-4 md:mt-6 text-base md:text-lg text-rv-text leading-relaxed">
+              Upload a photo of your wall, discover perfect artworks, and see them in true-size mockups.
+            </p>
+            <a
+              href="#/studio"
+              className="mt-6 md:mt-8 inline-flex items-center gap-2 rounded-rvSm bg-rv-primary px-6 py-3 text-base font-medium text-white hover:bg-rv-primaryHover transition-all"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+              Start Visualizing
+            </a>
+          </div>
+          <div className="order-2 flex justify-center md:justify-end">
+            <img
+              src="/hero.png"
+              alt="RoomVibe – Visualize Art on Your Walls"
+              className="w-[65%] md:w-full md:max-w-[520px] h-auto object-contain"
+            />
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
 
-function SectionDivider() {
+/* ------------- Audience Icons ------------- */
+
+function ArtistIcon() {
   return (
-    <div className="mx-auto my-6 md:my-12 max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-rv-neutral to-transparent" />
-    </div>
+    <svg className="w-10 h-10 md:w-12 md:h-12" viewBox="0 0 48 48" fill="none" stroke="#D8B46A" strokeWidth="1.5">
+      <circle cx="24" cy="24" r="18" />
+      <circle cx="18" cy="20" r="3" />
+      <circle cx="30" cy="20" r="3" />
+      <circle cx="24" cy="32" r="3" />
+      <circle cx="16" cy="28" r="2" />
+      <circle cx="32" cy="28" r="2" />
+    </svg>
+  );
+}
+
+function DesignerIcon() {
+  return (
+    <svg className="w-10 h-10 md:w-12 md:h-12" viewBox="0 0 48 48" fill="none" stroke="#D8B46A" strokeWidth="1.5">
+      <path d="M12 36L24 6L36 36" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M16 28H32" strokeLinecap="round" />
+      <path d="M24 6L32 24" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function GalleryIcon() {
+  return (
+    <svg className="w-10 h-10 md:w-12 md:h-12" viewBox="0 0 48 48" fill="none" stroke="#D8B46A" strokeWidth="1.5">
+      <rect x="8" y="12" width="32" height="24" rx="2" />
+      <path d="M8 32L16 24L22 30L32 20L40 28" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="18" cy="20" r="3" />
+    </svg>
+  );
+}
+
+/* ------------- Audience Section (Artists/Designers/Galleries) ------------- */
+
+function AudienceSection() {
+  const audiences = [
+    {
+      icon: <ArtistIcon />,
+      title: "Artists",
+      line1: "Bring your art to life with true-to-size previews and premium room mockups.",
+      line2: "Let customers see your art in their homes.",
+      pricing: "From €19/mo",
+    },
+    {
+      icon: <DesignerIcon />,
+      title: "Designers",
+      line1: "Add real artworks to client projects instantly and create elegant moodboards.",
+      line2: "Speed up approvals and impress with visuals.",
+      pricing: "From €29/mo",
+    },
+    {
+      icon: <GalleryIcon />,
+      title: "Galleries",
+      line1: "Show your collection in styled interior rooms and help buyers choose faster.",
+      line2: "Create digital exhibitions with zero logistics.",
+      pricing: "From €49/mo",
+    },
+  ];
+
+  return (
+    <section className="py-12 md:py-16 bg-white">
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-[140px]">
+          {audiences.map((a, i) => (
+            <div key={i} className="text-center">
+              <div className="flex justify-center mb-4">
+                {a.icon}
+              </div>
+              <h3 className="text-2xl font-semibold text-rv-primary tracking-[-0.5px]">{a.title}</h3>
+              <p className="mt-2 text-rv-text leading-relaxed text-sm md:text-base">
+                {a.line1}
+              </p>
+              <p className="mt-1 text-rv-text leading-relaxed text-sm md:text-base">
+                {a.line2}
+              </p>
+              <a
+                href="#/register"
+                className="mt-4 inline-block text-rv-primary font-medium hover:underline"
+              >
+                {a.pricing} · See Plans →
+              </a>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -1432,22 +1536,24 @@ function HowItWorks() {
     },
   ];
   return (
-    <Container id="how">
-      <div className="py-20">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-rv-primary font-display">How it works</h2>
-        <div className="grid gap-10 md:grid-cols-3">
+    <section id="how" className="py-12 md:py-16 bg-white">
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
+        <h2 className="text-2xl md:text-3xl font-semibold text-center mb-8 md:mb-12 text-rv-primary tracking-[-0.5px]">
+          How it works
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-20 max-w-[90%] md:max-w-none mx-auto">
           {steps.map((s, i) => (
-            <div key={i} className="text-center space-y-4">
-              <div className="inline-flex h-14 w-14 items-center justify-center rounded-rvLg bg-rv-primary/5 text-rv-primary">
+            <div key={i} className="text-center space-y-3">
+              <div className="inline-flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-rvLg bg-rv-primary/5 text-rv-primary">
                 {s.icon}
               </div>
-              <h3 className="text-xl font-bold text-rv-primary">{s.title}</h3>
-              <p className="text-rv-textMuted leading-relaxed">{s.desc}</p>
+              <h3 className="text-xl md:text-[22px] font-semibold text-rv-primary tracking-[-0.5px]">{s.title}</h3>
+              <p className="text-rv-textMuted leading-relaxed text-sm md:text-base">{s.desc}</p>
             </div>
           ))}
         </div>
       </div>
-    </Container>
+    </section>
   );
 }
 
@@ -1455,20 +1561,26 @@ function HowItWorks() {
 
 function CTASection() {
   return (
-    <Container>
-      <div className="py-20 text-center space-y-8">
-        <h2 className="text-3xl font-bold md:text-4xl text-rv-primary font-display">Ready to try it?</h2>
-        <p className="text-lg text-rv-textMuted max-w-2xl mx-auto">Experience the future of art visualization with true-to-scale rendering.</p>
-        <div>
-          <a
-            href="#/studio"
-            className="inline-flex items-center gap-3 rounded-rvLg px-8 py-3.5 text-lg font-semibold text-white bg-rv-primary hover:bg-rv-primaryHover shadow-rvSoft hover:shadow-rvElevated transition-all"
-          >
-            Open Studio →
-          </a>
+    <section className="py-12 md:py-16 bg-white">
+      <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
+        <div className="text-center space-y-6">
+          <h2 className="text-2xl md:text-3xl font-semibold text-rv-primary tracking-[-0.5px]">
+            Ready to try it?
+          </h2>
+          <p className="text-base md:text-lg text-rv-textMuted max-w-2xl mx-auto">
+            Experience the future of art visualization with true-to-scale rendering.
+          </p>
+          <div>
+            <a
+              href="#/studio"
+              className="inline-flex items-center gap-2 rounded-rvSm px-8 py-3 text-base font-medium text-white bg-rv-primary hover:bg-rv-primaryHover shadow-rvSoft hover:shadow-rvElevated transition-all"
+            >
+              Open Studio →
+            </a>
+          </div>
         </div>
       </div>
-    </Container>
+    </section>
   );
 }
 

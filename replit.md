@@ -10,11 +10,15 @@ I prefer simple language in explanations. I like functional programming paradigm
 The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 
 **UI/UX Decisions:**
-- **Color Scheme**: Primary color is Blue (#8BADE5) with black text, and a consistent RoomVibe branding palette (Primary #283593, Accent #D8B46A, Neutral #DDE1E7).
-- **Typography**: Inter (global default), Playfair Display (premium headings via .font-display).
-- **Background**: Canva-style mesh background with blurred shapes.
-- **Layout**: Three-panel Canvy-style editor (`#/studio`), responsive and mobile-first. TopNav and SiteFooter are hidden on `#/studio` for iframe embedding.
-- **Iconography**: Inline SVG components.
+- **Color Scheme**: RoomVibe branding palette (Primary #283593, Accent #D8B46A, Neutral #DDE1E7, Text #1A1A1A).
+- **Typography**: Inter font family only (SemiBold for headings, Regular for body, Medium for CTAs). Letter-spacing: -0.5px for headings, line-height: 1.15.
+- **Homepage Layout** (November 2025 Redesign):
+    - **Hero Section**: 2-column grid (text left, image right), max-width 1280px, column gap 120px. Desktop: H1 42px, subtitle 18px, pt-80 pb-40. Mobile: stacked, H1 28px, image max-w-65%, centered.
+    - **How It Works**: 3 horizontal steps (desktop), stacked (mobile), gap 80px desktop / 32px mobile.
+    - **Audience Section**: Artists/Designers/Galleries with gold outline icons (#D8B46A), 3 columns with 140px gap, pricing teasers (€19/€29/€49/mo).
+    - **CTA Section**: Centered call-to-action with navy button.
+- **Studio Layout**: Three-panel Canvy-style editor (`#/studio`), responsive and mobile-first. TopNav and SiteFooter are hidden on `#/studio` for iframe embedding.
+- **Iconography**: Inline SVG components with gold accent (#D8B46A) for audience icons.
 - **Artwork Interaction**: Drag-to-move with automatic bounds checking, diagonal resize handle with smart scaling limits. Artwork starts at true physical scale and can be adjusted. Frame selector applies borders outside the artwork.
 
 **Technical Implementations & Feature Specifications:**

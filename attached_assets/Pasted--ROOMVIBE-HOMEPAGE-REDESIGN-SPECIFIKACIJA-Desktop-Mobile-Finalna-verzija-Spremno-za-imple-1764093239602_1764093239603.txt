@@ -1,0 +1,212 @@
+✅ ROOMVIBE — HOMEPAGE REDESIGN SPECIFIKACIJA
+
+(Desktop + Mobile | Finalna verzija | Spremno za implementaciju)
+
+🎨 1. FONT SISTEM
+Naslovi (H1, H2, H3)
+
+Font: Inter SemiBold
+
+Boja: #283593 (Navy)
+
+Letter-spacing: -0.5px
+
+Line-height: 1.15
+
+Case: Sentence case (ne all caps)
+
+Body
+
+Font: Inter Regular
+
+Boja: #1A1A1A
+
+Line-height: 1.5
+
+CTA Button
+
+Font: Inter Medium
+
+Background: #283593
+
+Text: White
+
+Border-radius: 8px
+
+🟦 2. HERO SECTION
+Desktop
+
+Max container width: 1280px
+
+Grid: 2 columns (text left, image right)
+
+Column gap: 120px
+
+Padding-top: 80px
+
+Padding-bottom: 40px
+
+Hero H1 size: 42px (medium)
+
+Subtitle size: 18px
+
+Hero image:
+
+max-width: 520px
+
+object-fit: contain
+
+padding-right: 0
+
+alignment: center-right
+
+Mobile
+
+Stack direction: column
+
+Padding-top: 24px
+
+Padding-bottom: 12px
+
+Hero H1 font-size: 28px
+
+Image:
+
+max-width: 65%
+
+centered
+
+object-contain
+
+no overflow
+
+Section height: max 60vh
+
+NO white gap below hero section — margin-bottom: 0
+
+⭐ 3. HOW IT WORKS SECTION
+Desktop
+
+Top margin from hero: 48px
+
+3 steps horizontally
+
+Column gap: 80px
+
+Step title: Inter SemiBold, 22px
+
+Icon size (if used): 36px navy or gold
+
+Mobile
+
+Steps stacked vertically
+
+Gap between items: 32px
+
+Titles: 20px SemiBold
+
+Section max-width: 90%
+
+🔱 4. ARTISTS / DESIGNERS / GALLERIES SECTIONS
+Ikone
+
+Color: Soft Gold #D8B46A
+
+Style: Thin outline
+
+Size: 48px (desktop) / 40px (mobile)
+
+Layout — Desktop
+
+3 columns
+
+Column gap: +30% više nego sadašnji mockup
+(konačni gap: oko 140px)
+
+Vertical spacing within item:
+
+icon → text gap: 16px
+
+title → description gap: 8px
+
+description → pricing gap: 16px
+
+Titles
+
+Font: Inter SemiBold
+
+Size: 24px
+
+Color: #283593
+
+Text per item (2 linije MAX)
+
+✔ Artists
+“Bring your art to life with true-to-size previews and premium room mockups.
+Let customers see your art in their homes.”
+
+✔ Designers
+“Add real artworks to client projects instantly and create elegant moodboards.
+Speed up approvals and impress with visuals.”
+
+✔ Galleries
+“Show your collection in styled interior rooms and help buyers choose faster.
+Create digital exhibitions with zero logistics.”
+
+Mini Pricing Teaser
+
+Font: Inter Medium
+
+Color: #283593
+
+“From €19/mo — See Plans →” (or 29/49 depending on column)
+
+Hover: underline
+
+Mobile layout
+
+Stack:
+
+Artists
+
+Designers
+
+Galleries
+
+Gap between blocks: 48–60px
+
+Center-aligned
+
+Max-width: 90%
+
+⚪ 5. FOOTER
+
+Navy text (#283593)
+
+Light grey dividers (#DDE1E7)
+
+Padding: 32px top, 24px bottom
+
+🚀 6. GENERAL SPACING
+
+Section top margins: 64px desktop, 48px mobile
+
+Section bottom margins: 64px desktop, 48px mobile
+
+Global container width: 1200–1280px
+
+🧩 7. TEHNIČKE NAPOMENE ZA AGENTA
+
+Nemoj dirati desktop layout hero imagea, samo fino poravnaš.
+
+Na mobitelu OBAVEZNO maknuti bijeli prazan prostor ispod hero sekcije.
+
+Artists/Designers/Galleries stupce RAZMAKNUTI 20–30% više nego sada.
+
+Font Playfair potpuno maknuti — koristiti Inter svugdje.
+
+Ne dirati Studio stranicu.
+
+Ne dirati backend.
+
+Ne raditi refaktore.
