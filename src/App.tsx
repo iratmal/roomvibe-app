@@ -725,7 +725,7 @@ function Studio() {
     
     // Track artwork change
     if (art) {
-      GA4Events.changeArtwork(art.id, art.title);
+      GA4Events.changeArtwork(art.id);
     }
   }, [artId, art]);
 
@@ -1442,7 +1442,7 @@ function Studio() {
                 href={(art as any).buyUrl || (art as any).onlineStoreUrl || "#"}
                 target="_blank"
                 rel="noreferrer"
-                onClick={() => GA4Events.buyClick(art.id, art.title, (art as any).buyUrl || (art as any).onlineStoreUrl || "#")}
+                onClick={() => GA4Events.buyClick((art as any).buyUrl || (art as any).onlineStoreUrl || "#")}
                 className="mt-6 inline-flex w-full items-center justify-center rounded-rvLg bg-rv-primary px-4 py-3 text-sm font-bold text-white shadow-rvSoft hover:bg-rv-primaryHover hover:shadow-rvElevated transition-all"
               >
                 View &amp; Buy

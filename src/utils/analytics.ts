@@ -35,20 +35,24 @@ export function initGA4(measurementId: string) {
 }
 
 export function trackEvent(eventName: string, params?: Record<string, any>) {
-  if (!isGA4Loaded || !window.gtag) {
-    console.warn('[GA4] Event not tracked - GA4 not loaded:', eventName);
+  if (!window.gtag) {
+    if (import.meta.env.DEV) {
+      console.warn('[GA4] Event not tracked - gtag not available:', eventName);
+    }
     return;
   }
 
   window.gtag('event', eventName, params);
-  console.log('[GA4] Event tracked:', eventName, params);
+  if (import.meta.env.DEV) {
+    console.log('[GA4] Event tracked:', eventName, params);
+  }
 }
 
 export const GA4Events = {
   visitStudio: () => trackEvent('visit_studio'),
   uploadWall: () => trackEvent('upload_wall'),
-  changeArtwork: (artworkId: string, artworkTitle: string) =>
-    trackEvent('change_artwork', { artwork_id: artworkId, artwork_title: artworkTitle }),
-  buyClick: (artworkId: string, artworkTitle: string, url: string) =>
-    trackEvent('buy_click', { artwork_id: artworkId, artwork_title: artworkTitle, buy_url: url }),
+  changeArtwork: (artworkId?: string) =>
+    trackEvent('artwork_change', artworkId ? { artwork_id: artworkId } : undefined),
+  buyClick: (productUrl?: string) =>
+    trackEvent('click_buy', productUrl ? { product_url: productUrl } : undefined),
 };
