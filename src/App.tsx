@@ -262,8 +262,12 @@ function TopNav() {
     <header className="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/80 border-b border-rv-neutral">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
-          <a href="#home" className="flex items-center gap-2 font-bold text-rv-primary text-lg">
-            <Logo className="h-6 w-6 text-rv-primary" /> <span>RoomVibe</span>
+          <a href="#home" className="flex items-center">
+            <img 
+              src="/roomvibe-logo.png" 
+              alt="RoomVibe" 
+              className="h-10 w-auto"
+            />
           </a>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
             <a href="#how" className="text-rv-text hover:text-rv-primary transition-colors">
