@@ -638,6 +638,14 @@ export default function CollectionDetail() {
                         View & Buy
                       </a>
                     )}
+                    <button
+                      onClick={() => {
+                        window.location.hash = `#/dashboard/gallery/artwork/${artwork.id}/edit`;
+                      }}
+                      className="bg-blue-100 text-blue-700 py-2 px-3 rounded hover:bg-blue-200 transition-colors text-sm"
+                    >
+                      Edit
+                    </button>
                     {showDeleteConfirm === artwork.id ? (
                       <div className="flex gap-1 flex-1">
                         <button

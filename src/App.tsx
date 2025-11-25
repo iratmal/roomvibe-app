@@ -14,6 +14,7 @@ import { GalleryDashboard } from "./components/dashboards/GalleryDashboard";
 import { AdminDashboard } from "./components/dashboards/AdminDashboard";
 import ProjectDetail from "./components/dashboards/ProjectDetail";
 import CollectionDetail from "./components/dashboards/CollectionDetail";
+import ArtworkEdit from "./components/dashboards/ArtworkEdit";
 import PrivacyPolicy from "./components/legal/PrivacyPolicy";
 import TermsOfService from "./components/legal/TermsOfService";
 import UploadConsent from "./components/legal/UploadConsent";
@@ -103,6 +104,8 @@ function AppContent() {
         <AuthPage mode="register" />
       ) : normalizedHash.startsWith("#/dashboard/designer/project/") ? (
         <ProjectDetail />
+      ) : normalizedHash.match(/^#\/dashboard\/gallery\/artwork\/\d+\/edit/) ? (
+        <ArtworkEdit />
       ) : normalizedHash.startsWith("#/dashboard/gallery/collection/") ? (
         <CollectionDetail />
       ) : normalizedHash === "#/dashboard/artist" ? (

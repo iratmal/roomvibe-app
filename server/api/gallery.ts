@@ -283,6 +283,108 @@ router.post('/collections/:id/artworks', authenticateToken, upload.single('image
   }
 });
 
+router.get('/artworks/:id', authenticateToken, async (req: any, res) => {
+  try {
+    if (req.user.role !== 'gallery' && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Only galleries and admins can access artworks' });
+    }
+
+    const artworkId = req.params.id;
+    console.log('Fetching artwork:', artworkId);
+
+    const result = await query(
+      `SELECT a.*, c.gallery_id 
+       FROM gallery_artworks a
+       JOIN gallery_collections c ON a.collection_id = c.id
+       WHERE a.id = $1`,
+      [artworkId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Artwork not found' });
+    }
+
+    if (req.user.role !== 'admin' && result.rows[0].gallery_id !== req.user.id) {
+      return res.status(403).json({ error: 'You can only view artworks from your own collections' });
+    }
+
+    console.log('Artwork fetched successfully:', artworkId);
+    res.json({ artwork: result.rows[0] });
+  } catch (error: any) {
+    console.error('Error fetching artwork:', error);
+    res.status(500).json({ error: 'Failed to fetch artwork', details: error.message });
+  }
+});
+
+router.put('/artworks/:id', authenticateToken, async (req: any, res) => {
+  try {
+    if (req.user.role !== 'gallery' && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Only galleries and admins can update artworks' });
+    }
+
+    const artworkId = req.params.id;
+    const { title, artistName, widthValue, heightValue, dimensionUnit, priceAmount, priceCurrency, buyUrl } = req.body;
+
+    console.log('Updating artwork:', artworkId, 'with data:', { title, artistName, widthValue, heightValue });
+
+    const checkResult = await query(
+      `SELECT a.*, c.gallery_id 
+       FROM gallery_artworks a
+       JOIN gallery_collections c ON a.collection_id = c.id
+       WHERE a.id = $1`,
+      [artworkId]
+    );
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Artwork not found' });
+    }
+
+    if (req.user.role !== 'admin' && checkResult.rows[0].gallery_id !== req.user.id) {
+      return res.status(403).json({ error: 'You can only update artworks from your own collections' });
+    }
+
+    if (!title || !artistName || !widthValue || !heightValue) {
+      return res.status(400).json({ error: 'Title, artist name, width, and height are required' });
+    }
+
+    const validUnits = ['cm', 'in'];
+    const unit = dimensionUnit && validUnits.includes(dimensionUnit) ? dimensionUnit : 'cm';
+    const validCurrencies = ['EUR', 'USD', 'GBP'];
+    const currency = priceCurrency && validCurrencies.includes(priceCurrency) ? priceCurrency : 'EUR';
+
+    const result = await query(
+      `UPDATE gallery_artworks 
+       SET title = $1,
+           artist_name = $2,
+           width_value = $3,
+           height_value = $4,
+           dimension_unit = $5,
+           price_amount = $6,
+           price_currency = $7,
+           buy_url = $8
+       WHERE id = $9
+       RETURNING *`,
+      [
+        title,
+        artistName,
+        parseFloat(widthValue),
+        parseFloat(heightValue),
+        unit,
+        priceAmount ? parseFloat(priceAmount) : null,
+        currency,
+        buyUrl || null,
+        artworkId
+      ]
+    );
+
+    console.log('Artwork updated successfully:', artworkId);
+    res.json({ artwork: result.rows[0], message: 'Artwork updated successfully' });
+  } catch (error: any) {
+    console.error('Error updating artwork:', error);
+    res.status(500).json({ error: 'Failed to update artwork', details: error.message });
+  }
+});
+
 router.delete('/artworks/:id', authenticateToken, async (req: any, res) => {
   try {
     if (req.user.role !== 'gallery' && req.user.role !== 'admin') {
