@@ -1079,7 +1079,10 @@ function Studio() {
               {(presets as any).map((p: any) => (
                 <button
                   key={p.id}
-                  onClick={() => setSceneId(p.id)}
+                  onClick={() => {
+                    setUserPhoto(null);
+                    setSceneId(p.id);
+                  }}
                   className={`group relative overflow-hidden rounded-rvMd border-2 ${
                     sceneId === p.id ? "border-rv-primary" : "border-rv-neutral"
                   } bg-white shadow-sm hover:shadow-rvSoft transition-all`}
