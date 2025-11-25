@@ -417,46 +417,44 @@ function AudienceSection() {
     {
       icon: <ArtistIcon />,
       title: "Artists",
-      line1: "Bring your art to life with true-to-size previews and premium room mockups.",
-      line2: "Let customers see your art in their homes.",
+      line1: "Bring your art to life with true-to-size previews.",
+      line2: "Let customers see paintings directly on their walls.",
       pricing: "From €19/mo",
     },
     {
       icon: <DesignerIcon />,
       title: "Designers",
-      line1: "Add real artworks to client projects instantly and create elegant moodboards.",
-      line2: "Speed up approvals and impress with visuals.",
+      line1: "Quickly test artworks in real project layouts.",
+      line2: "Create visuals that win client approval fast.",
       pricing: "From €29/mo",
     },
     {
       icon: <GalleryIcon />,
       title: "Galleries",
-      line1: "Show your collection in styled interior rooms and help buyers choose faster.",
-      line2: "Create digital exhibitions with zero logistics.",
+      line1: "Show collections in styled interior scenes.",
+      line2: "Help collectors choose faster with realism.",
       pricing: "From €49/mo",
     },
   ];
-
   return (
-    <section className="py-12 md:py-16 bg-white">
-      <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-[140px]">
+    <section className="py-20 bg-[#F7F3EE]">
+      <div className="mx-auto max-w-[1280px] px-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-20 md:gap-32">
           {audiences.map((a, i) => (
             <div key={i} className="text-center">
-              <div className="flex justify-center mb-4">
+              <div className="flex justify-center mb-6 text-[#D8B46A]">
                 {a.icon}
               </div>
-              <h3 className="text-2xl font-semibold text-rv-primary tracking-[-0.5px]">{a.title}</h3>
-              <p className="mt-2 text-rv-text leading-relaxed text-sm md:text-base">
+              <h3 className="text-2xl font-semibold text-[#1A2240] tracking-tight">
+                {a.title}
+              </h3>
+              <p className="mt-3 text-[#333] leading-relaxed text-sm md:text-base">
                 {a.line1}
               </p>
-              <p className="mt-1 text-rv-text leading-relaxed text-sm md:text-base">
+              <p className="mt-1 text-[#333] leading-relaxed text-sm md:text-base">
                 {a.line2}
               </p>
-              <a
-                href="#/register"
-                className="mt-4 inline-block text-rv-primary font-medium hover:underline"
-              >
+              <a href="#/register" className="mt-5 inline-block text-[#1A2240] font-semibold hover:underline">
                 {a.pricing} · See Plans →
               </a>
             </div>
@@ -1498,36 +1496,28 @@ function Studio() {
 
 function HowItWorks() {
   const steps = [
-    {
-      icon: <RoomIcon />,
-      title: "Pick a room",
-      desc: "Choose from presets or upload your own wall.",
-    },
-    {
-      icon: <ArtIcon />,
-      title: "Select artwork",
-      desc: "Browse paintings and instantly preview them.",
-    },
-    {
-      icon: <RulerIcon />,
-      title: "True-to-size",
-      desc: "Artwork is scaled accurately to your wall.",
-    },
+    { icon: <RoomIcon />, title: "Pick a room", desc: "Choose from presets or upload your own wall." },
+    { icon: <ArtIcon />, title: "Select artwork", desc: "Browse paintings and instantly preview them." },
+    { icon: <RulerIcon />, title: "True-to-size", desc: "Artwork is scaled accurately to your wall." },
   ];
   return (
-    <section id="how" className="py-12 md:py-16 bg-white">
-      <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <h2 className="text-2xl md:text-3xl font-semibold text-center mb-8 md:mb-12 text-rv-primary tracking-[-0.5px]">
+    <section id="how" className="py-16 bg-white">
+      <div className="mx-auto max-w-[1280px] px-6">
+        <h2 className="text-3xl md:text-4xl font-semibold text-center mb-14 text-[#1A2240] tracking-tight">
           How it works
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-20 max-w-[90%] md:max-w-none mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-16 max-w-[1000px] mx-auto">
           {steps.map((s, i) => (
-            <div key={i} className="text-center space-y-3">
-              <div className="inline-flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-rvLg bg-rv-primary/5 text-rv-primary">
+            <div key={i} className="text-center space-y-4">
+              <div className="inline-flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-2xl bg-[#1A2240]/5 text-[#1A2240]">
                 {s.icon}
               </div>
-              <h3 className="text-xl md:text-[22px] font-semibold text-rv-primary tracking-[-0.5px]">{s.title}</h3>
-              <p className="text-rv-textMuted leading-relaxed text-sm md:text-base">{s.desc}</p>
+              <h3 className="text-xl md:text-2xl font-semibold text-[#1A2240] tracking-tight">
+                {s.title}
+              </h3>
+              <p className="text-[#666] leading-relaxed text-sm md:text-base">
+                {s.desc}
+              </p>
             </div>
           ))}
         </div>
@@ -1540,24 +1530,17 @@ function HowItWorks() {
 
 function CTASection() {
   return (
-    <section className="py-12 md:py-16 bg-white">
-      <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
-        <div className="text-center space-y-6">
-          <h2 className="text-2xl md:text-3xl font-semibold text-rv-primary tracking-[-0.5px]">
-            Ready to try it?
-          </h2>
-          <p className="text-base md:text-lg text-rv-textMuted max-w-2xl mx-auto">
-            Experience the future of art visualization with true-to-scale rendering.
-          </p>
-          <div>
-            <a
-              href="#/studio"
-              className="inline-flex items-center gap-2 rounded-rvSm px-8 py-3 text-base font-medium text-white bg-rv-primary hover:bg-rv-primaryHover shadow-rvSoft hover:shadow-rvElevated transition-all"
-            >
-              Open Studio →
-            </a>
-          </div>
-        </div>
+    <section className="py-20 bg-white">
+      <div className="mx-auto max-w-[1280px] px-6 text-center">
+        <h2 className="text-3xl md:text-4xl font-semibold text-[#1A2240] tracking-tight mb-4">
+          Ready to try it?
+        </h2>
+        <p className="text-base md:text-lg text-[#666] max-w-2xl mx-auto mb-8">
+          Experience the future of art visualization with true-to-scale rendering.
+        </p>
+        <a href="#/studio" className="inline-flex items-center gap-2 rounded-md px-10 py-4 text-base font-semibold text-white bg-[#1A2240] hover:bg-[#121832] shadow-md transition-all">
+          Open Studio →
+        </a>
       </div>
     </section>
   );
