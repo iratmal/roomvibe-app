@@ -34,6 +34,7 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
     - **Mobile Layout**: On mobile devices, canvas appears first (above the fold), controls second, and room list last (below the fold) using CSS order properties. Desktop layout maintains traditional 3-column structure.
     - **Room 4 Calibration**: Room 4 uses increased wall height (300cm vs 270cm for other rooms) to render artworks ~10% smaller, providing more realistic proportions relative to furniture. All other rooms use standard 270cm wall height.
 - **Artist Dashboard**: Provides CRUD operations for artwork management (upload, list, edit, delete artworks). Includes image upload, currency selection (EUR/USD/GBP), dimension units (cm/inches), and secure API endpoints. Database stores dimension_unit, price_amount, and price_currency fields. Buy URL opens in new tab via button (prevents auto-navigation on page load).
+    - **Image Storage**: Artwork images are stored using Replit's Object Storage (Google Cloud Storage) for persistence across deployments. Images are uploaded via `ObjectStorageService.uploadBuffer()` and served via `/objects/*path` route. Environment variable `PRIVATE_OBJECT_DIR` must be set to the storage bucket path.
     - **Website Integration**: Artists can embed RoomVibe widgets on their websites. Global widget code (artist-wide) and per-artwork widget codes available. Copy-to-clipboard functionality with 3-second confirmation toast. Widget script tags use dynamic artist ID and optional artwork ID for targeted embedding.
 - **Designer Dashboard**: Provides project management for client presentations. Designers can create projects with custom room image uploads (Multer, 10MB limit). Each project has title, client name, room image, and timestamps. CRUD operations via API endpoints with role-based access control. Hash-based navigation between project list and project detail views.
 - **Gallery Dashboard**: Provides collection management for online exhibitions. Galleries can create curated collections with title, subtitle, description, and publication status (draft/published). Each collection can contain multiple artworks with upload functionality (Multer, 10MB limit). Database schema includes gallery_collections and gallery_artworks tables with foreign keys and CASCADE deletes. API provides 9 endpoints (GET/POST/PUT/DELETE collections, GET/POST/PUT/DELETE artworks). Hash-based navigation between collection list (#/dashboard/gallery), collection detail (#/dashboard/gallery/collection/:id), and artwork edit (#/dashboard/gallery/artwork/:id/edit) views. Features include status toggling, full artwork CRUD (Create, Read, Update, Delete), pre-filled edit forms, buy URL buttons, delete confirmations, and automatic data refresh on navigation.
@@ -57,6 +58,7 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 - **cookie-parser**: HTTP cookie parsing middleware.
 - **cors**: Cross-origin resource sharing middleware.
 - **dotenv**: Environment variable management.
-- **Multer**: For handling file uploads (e.g., artwork images).
+- **Multer**: For handling file uploads (in-memory buffer processing).
+- **@google-cloud/storage**: For persistent file storage via Replit Object Storage.
 - **Google Analytics 4 (GA4)**: For website analytics.
 - **Hotjar**: For user behavior analytics.
