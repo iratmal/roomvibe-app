@@ -171,6 +171,44 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
   }
 });
 
+router.get('/artwork/:id', async (req: any, res) => {
+  try {
+    const artworkId = parseInt(req.params.id);
+    
+    if (isNaN(artworkId)) {
+      return res.status(400).json({ error: 'Invalid artwork ID' });
+    }
+
+    const result = await query(
+      `SELECT id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url
+       FROM artworks WHERE id = $1`,
+      [artworkId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Artwork not found' });
+    }
+
+    const artwork = result.rows[0];
+    res.json({
+      artwork: {
+        id: `db-${artwork.id}`,
+        title: artwork.title,
+        overlayImageUrl: artwork.image_url,
+        widthCm: parseFloat(artwork.width),
+        heightCm: parseFloat(artwork.height),
+        buyUrl: artwork.buy_url,
+        priceAmount: artwork.price_amount,
+        priceCurrency: artwork.price_currency || 'EUR',
+        dimensionUnit: artwork.dimension_unit || 'cm'
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching artwork:', error);
+    res.status(500).json({ error: 'Failed to fetch artwork' });
+  }
+});
+
 router.delete('/artworks/:id', authenticateToken, async (req: any, res) => {
   try {
     if (req.user.role !== 'artist' && req.user.role !== 'admin') {

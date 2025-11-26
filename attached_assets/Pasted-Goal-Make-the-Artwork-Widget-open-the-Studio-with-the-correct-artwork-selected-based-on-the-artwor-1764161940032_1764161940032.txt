@@ -1,0 +1,60 @@
+Goal:
+Make the Artwork Widget open the Studio with the correct artwork selected, based on the artwork that the widget belongs to, instead of always opening with the same default artwork (currently “Light My Fire”).
+
+Current problem:
+
+The widget now works on Shopify: I see a purple “See in your room” button and it opens the RoomVibe Studio.
+
+But no matter which product I embed it on, when I click the button, the Studio always opens with the same artwork (e.g. “Light My Fire”).
+
+This means the Studio is ignoring the artwork identifier from the widget and always using a fixed default.
+
+What you should do (scope):
+
+Verify how the widget currently passes the artwork reference
+
+Inspect the embed code we show in the admin/Artist dashboard as “Artwork Widget Code”.
+
+Check if it includes any artwork-specific identifier (e.g. artworkId or similar) in the HTML or in the Studio URL.
+
+If needed, add a proper artwork identifier to the widget embed:
+
+e.g. <div data-artwork-id="..."></div> + Studio URL with ?artworkId=..., or an equivalent approach.
+
+In the Studio front-end initialization, read the artwork identifier:
+
+Parse the query parameter (e.g. artworkId) from the URL on load,
+
+Use it to select the corresponding artwork from the artworks list/catalog.
+
+Make sure that:
+
+If a valid artworkId is provided → the Studio opens with that artwork preselected.
+
+If no artworkId is provided → fall back to the current default behavior (e.g. default artwork).
+
+Test end-to-end:
+
+In the RoomVibe admin, generate widget code for two different artworks.
+
+Put each embed on a different test product (or simple HTML test pages).
+
+When clicking “See in your room” on each product, verify that the Studio opens with the correct artwork selected (different for each product).
+
+Important constraints (DO NOT):
+
+Do not implement full multi-artist marketplace logic in this task. This is only about mapping the current artwork to its widget.
+
+Do not change Stripe, GA4, or other unrelated systems.
+
+Keep changes limited to:
+
+widget embed generation,
+
+widget behavior,
+
+Studio initialization logic.
+
+Stop condition:
+
+When each Artwork Widget, embedded on a product page, opens the Studio with the corresponding artwork selected, and different products with different widgets correctly open different artworks.

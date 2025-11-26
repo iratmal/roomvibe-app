@@ -717,6 +717,8 @@ const getFrameConfig = (frameId: string): FrameConfig => {
   return FRAME_STYLES.find(f => f.id === frameId) || FRAME_STYLES[0];
 };
 
+const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
+
 function Studio() {
   const isInIframe = useIsInIframe();
   const [sceneId, setSceneId] = useState<string>((presets as any)[0]?.id || "");
@@ -724,32 +726,61 @@ function Studio() {
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
 
   const [artworksState, setArtworksState] = useState<any[]>(localArtworks as any);
-  
-  const getInitialArtworkId = (): string => {
-    const defaultId = "light-my-fire-140-70-cm-roomvibe";
-    try {
-      const hash = window.location.hash;
-      const queryIndex = hash.indexOf('?');
-      if (queryIndex === -1) return defaultId;
-      
-      const queryString = hash.substring(queryIndex + 1);
-      const params = new URLSearchParams(queryString);
-      const artworkIdParam = params.get('artworkId');
-      
-      if (artworkIdParam) {
-        const artworkExists = (localArtworks as any[]).some((a: any) => a.id === artworkIdParam);
-        if (artworkExists) {
-          return artworkIdParam;
-        }
-      }
-    } catch (e) {
-      console.warn('[Studio] Error reading artworkId from URL:', e);
-    }
-    return defaultId;
-  };
-  
-  const [artId, setArtId] = useState<string>(getInitialArtworkId);
+  const [artId, setArtId] = useState<string>("light-my-fire-140-70-cm-roomvibe");
   const artIdRef = useRef<string>(artId);
+  const [isLoadingArtwork, setIsLoadingArtwork] = useState<boolean>(false);
+  
+  useEffect(() => {
+    const loadArtworkFromUrl = async () => {
+      try {
+        const hash = window.location.hash;
+        const queryIndex = hash.indexOf('?');
+        if (queryIndex === -1) return;
+        
+        const queryString = hash.substring(queryIndex + 1);
+        const params = new URLSearchParams(queryString);
+        const artworkIdParam = params.get('artworkId');
+        
+        if (!artworkIdParam) return;
+        
+        const existsInLocal = (localArtworks as any[]).some((a: any) => a.id === artworkIdParam);
+        if (existsInLocal) {
+          setArtId(artworkIdParam);
+          return;
+        }
+        
+        const numericId = parseInt(artworkIdParam);
+        if (!isNaN(numericId)) {
+          setIsLoadingArtwork(true);
+          try {
+            const response = await fetch(`${API_URL}/api/artist/artwork/${numericId}`);
+            if (response.ok) {
+              const data = await response.json();
+              if (data.artwork) {
+                const dbArtwork = {
+                  ...data.artwork,
+                  overlayImageUrl: data.artwork.overlayImageUrl.startsWith('http') 
+                    ? data.artwork.overlayImageUrl 
+                    : `${API_URL}${data.artwork.overlayImageUrl}`
+                };
+                setArtworksState(prev => [dbArtwork, ...prev]);
+                setArtId(dbArtwork.id);
+              }
+            }
+          } catch (err) {
+            console.warn('[Studio] Failed to fetch artwork from API:', err);
+          } finally {
+            setIsLoadingArtwork(false);
+          }
+        }
+      } catch (e) {
+        console.warn('[Studio] Error loading artwork from URL:', e);
+      }
+    };
+    
+    loadArtworkFromUrl();
+  }, []);
+  
   const art = artworksState.find((a) => a.id === artId);
 
   const [frameStyle, setFrameStyle] = useState<string>("none");
