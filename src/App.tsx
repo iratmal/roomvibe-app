@@ -724,7 +724,31 @@ function Studio() {
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
 
   const [artworksState, setArtworksState] = useState<any[]>(localArtworks as any);
-  const [artId, setArtId] = useState<string>("light-my-fire-140-70-cm-roomvibe");
+  
+  const getInitialArtworkId = (): string => {
+    const defaultId = "light-my-fire-140-70-cm-roomvibe";
+    try {
+      const hash = window.location.hash;
+      const queryIndex = hash.indexOf('?');
+      if (queryIndex === -1) return defaultId;
+      
+      const queryString = hash.substring(queryIndex + 1);
+      const params = new URLSearchParams(queryString);
+      const artworkIdParam = params.get('artworkId');
+      
+      if (artworkIdParam) {
+        const artworkExists = (localArtworks as any[]).some((a: any) => a.id === artworkIdParam);
+        if (artworkExists) {
+          return artworkIdParam;
+        }
+      }
+    } catch (e) {
+      console.warn('[Studio] Error reading artworkId from URL:', e);
+    }
+    return defaultId;
+  };
+  
+  const [artId, setArtId] = useState<string>(getInitialArtworkId);
   const artIdRef = useRef<string>(artId);
   const art = artworksState.find((a) => a.id === artId);
 

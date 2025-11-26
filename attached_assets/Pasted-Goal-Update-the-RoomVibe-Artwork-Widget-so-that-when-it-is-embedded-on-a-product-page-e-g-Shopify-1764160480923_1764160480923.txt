@@ -1,0 +1,96 @@
+Goal:
+Update the RoomVibe Artwork Widget so that when it is embedded on a product page (e.g. Shopify), the Studio opens with a specific artwork preselected, based on an artworkId (or similar identifier) passed from the widget.
+
+Context:
+
+Project: RoomVibe
+
+Current state:
+
+The Artwork Widget Code is now working: when I embed it into a Shopify product and click “See in your room”, it opens the RoomVibe Studio with my artworks.
+
+However, the Studio currently opens with the default artwork selection, not with the specific artwork that belongs to that product.
+
+Desired state for this phase:
+
+Each widget embed should be able to specify which artwork should be active when the Studio opens (e.g. via artworkId).
+
+This is for my own artworks only (we are not building the full multi-artist system yet).
+
+What you should do (scope):
+
+Extend the Artwork Widget embed code to include an artwork identifier.
+
+Locate the code that generates the Artwork Widget Code shown in the admin/artist dashboard.
+
+Add a way to include a unique identifier for the artwork, e.g.:
+
+a data-artwork-id="..." attribute on the container element, or
+
+a query parameter in the Studio URL.
+
+The embed code should still remain simple for the end user (copy → paste into Shopify/Etsy/WP).
+
+Pass the artwork identifier to the Studio URL when the widget is used.
+
+When the user clicks “See in your room” (or equivalent button), the Studio should be opened with a URL that contains the artwork identifier, e.g.:
+
+https://app.roomvibe.app/studio?artworkId=XXXX
+
+Choose a clean and consistent parameter name (artworkId or similar) and implement it end-to-end.
+
+Update the Studio front-end to preselect the artwork on load.
+
+On initial load of the Studio, read the artworkId (or chosen name) from the URL query params.
+
+If the parameter is present and matches an existing artwork in the current catalogue:
+
+set that artwork as the initially selected artwork in the Studio.
+
+If the parameter is missing or invalid:
+
+fall back to the current default behavior (default artwork as it works today).
+
+Maintain backwards compatibility.
+
+Existing widget embeds without an artworkId must continue to work exactly as they do now (open Studio with default artwork).
+
+The new behavior should only apply when an artworkId is provided.
+
+Test the full flow end-to-end.
+
+In the RoomVibe admin, generate an Artwork Widget Code for a specific artwork (with its unique identifier).
+
+Paste that code into a simple HTML test page and verify that:
+
+the widget renders,
+
+clicking the button opens the Studio with that exact artwork preselected.
+
+Then test again by embedding the same code into a Shopify product description (HTML mode) and confirm that:
+
+the widget appears on the product page,
+
+clicking “See in your room” opens the Studio,
+
+the correct artwork is preselected.
+
+Important constraints (DO NOT):
+
+Do not implement a full multi-artist marketplace or permissions system in this task.
+
+Do not change Stripe, GA4, authentication, or any unrelated modules.
+
+Do not refactor large parts of the codebase; keep changes limited to:
+
+widget embed generation,
+
+widget behavior,
+
+Studio initialization logic around reading the artworkId.
+
+Stop condition:
+
+When I generate an Artwork Widget Code for a specific artwork in the RoomVibe admin, embed it into a Shopify product page, and click “See in your room”, the Studio opens and that specific artwork is immediately selected as the active artwork.
+
+Existing embeds without an artworkId continue to work as before.
