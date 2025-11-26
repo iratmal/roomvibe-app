@@ -1,0 +1,58 @@
+Goal:
+Fix the Artist dashboard so that creating an artwork actually persists correctly and shows up with all its data (including image) after a page refresh.
+
+Current problem:
+
+I log in as an Artist and fill out all fields for a new artwork (title, image, etc.).
+
+When I click Upload Artwork, I no longer get a server error, but:
+
+after the page refreshes, the top form fields are empty again,
+
+in the list/grid below I only see an item like “My Artwork” (title), without image and without the rest of the data.
+
+If I manually refresh the Artist dashboard page, the artwork data is basically gone / incomplete.
+
+What you should do (scope):
+
+Find the backend endpoint and model used for creating/saving artworks for Artists.
+
+Search for routes/controllers related to: artist, artworks, uploadArtwork, etc.
+
+Confirm what is supposed to be stored in the database for an artwork (title, description, price, image URL/path, etc.).
+
+Fix the create/save logic so that:
+
+all form fields are correctly validated and saved,
+
+the image is stored (or its URL is stored) in the appropriate field,
+
+no data is lost after the request completes.
+
+Fix the Artist dashboard “list” fetch so that after a full page refresh:
+
+the Artist dashboard loads artworks from the database,
+
+each artwork entry shows the correct title, image, and metadata (not just “My Artwork” with no image).
+
+Test the full flow:
+
+create a new artwork from the Artist dashboard,
+
+confirm it is saved in the DB with all fields,
+
+refresh the page,
+
+confirm the artwork is still there and rendered correctly with its image.
+
+Important constraints (DO NOT):
+
+Do not change Stripe, GA4, membership, or any unrelated systems.
+
+Do not refactor unrelated parts of the dashboard.
+
+Just make sure that creating artworks for Artists persists correctly and renders correctly after refresh.
+
+Stop condition:
+
+When I can create an artwork in the Artist dashboard, refresh the page, and see that artwork (with its image and data) still present and correctly displayed in the artworks list.
