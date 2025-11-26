@@ -1,0 +1,117 @@
+# Task for Replit Agent — Add “Open in Studio” for Designer Room Images
+
+**IMPORTANT:**
+
+* Make **all changes ONLY** in the `roomvibe-dev` Repl.
+* **Do NOT modify** existing Artist upload, Artist widget, or widget → studio logic.
+  These are working perfectly and must remain untouched.
+
+---
+
+## Goal
+
+Enable designers to click **“Open in Studio”** on any uploaded room image in a Designer Project. This should open the RoomVibe Studio with THAT room image as the **background**, ready for artwork placement.
+
+This is essential for the Designer workflow.
+
+---
+
+## Current Behavior
+
+* Designers can create a project and upload room images successfully.
+* There is **no way** to open the Studio using that specific room image.
+* The Studio currently only accepts manual upload.
+
+---
+
+## Required Behavior
+
+### 1. Add a button: **“Open in Studio”**
+
+On each Room Image card inside a Designer project, add a button:
+
+```
+[ Open in Studio ]
+```
+
+Place it under or next to the existing "Delete Image" button.
+
+---
+
+### 2. Studio Launch Mechanism
+
+When the designer clicks **Open in Studio**, navigate to:
+
+```
+https://app.roomvibe.app/studio?roomImage=<IMAGE_URL>&entry=designer
+```
+
+Where:
+
+* `<IMAGE_URL>` = full public URL of the uploaded room image.
+* `entry=designer` = tells Studio to initialize in Designer mode.
+
+---
+
+### 3. Studio Initialization Logic
+
+When the Studio reads:
+
+* `roomImage=<url>` AND
+* `entry=designer`
+
+Studio should:
+
+1. **Automatically load the provided room image as the background**.
+2. Not select any preset room.
+3. Not show an empty canvas — the uploaded room image is the initial scene.
+4. Load the artwork picker normally.
+5. Allow the designer to immediately place artwork.
+
+---
+
+### 4. DO NOT CHANGE
+
+* Artwork widget logic.
+* Artist Studio behavior.
+* Artist upload pipeline.
+* Shopify widget → Studio flow.
+* Preset Room logic (Room 1, Room 2...).
+* Stripe, GA4, authentication.
+
+This task is **Designer-only**.
+
+---
+
+### 5. Testing — Must Pass
+
+#### As Designer
+
+* Create a project.
+* Upload a room image.
+* Click **Open in Studio**.
+* Studio opens with:
+
+  * the exact room photo as background,
+  * artwork picker available,
+  * NO preset room selected.
+* Artwork placement works normally.
+* Reloading the Studio preserves the background (as long as the URL contains parameters).
+
+#### As Artist
+
+* Artist Studio behaves exactly as before.
+* Widget → Studio behavior unchanged.
+* Artwork upload unchanged.
+
+---
+
+## Stop Condition
+
+Designer can:
+
+1. Upload a room photo.
+2. Click **Open in Studio**.
+3. See their room photo loaded instantly as background.
+4. Immediately place art.
+5. All Artist flows remain untouched.

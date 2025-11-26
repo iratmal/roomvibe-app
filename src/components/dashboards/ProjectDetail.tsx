@@ -356,12 +356,29 @@ export default function ProjectDetail() {
                     Uploaded: {formatDate(room.created_at)}
                   </p>
 
-                  <button
-                    onClick={() => setShowDeleteConfirm(room.id)}
-                    className="w-full px-4 py-2 text-sm bg-red-500 text-white rounded-rvMd hover:bg-red-600 transition-colors font-semibold"
-                  >
-                    Delete Image
-                  </button>
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={() => {
+                        const roomImageUrl = `${API_URL}${room.image_url}`;
+                        const studioUrl = `#/studio?roomImage=${encodeURIComponent(roomImageUrl)}&entry=designer`;
+                        window.location.hash = studioUrl;
+                      }}
+                      className="w-full px-4 py-2 text-sm bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-colors font-semibold flex items-center justify-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      Open in Studio
+                    </button>
+                    
+                    <button
+                      onClick={() => setShowDeleteConfirm(room.id)}
+                      className="w-full px-4 py-2 text-sm border border-red-300 text-red-500 rounded-rvMd hover:bg-red-50 transition-colors font-semibold"
+                    >
+                      Delete Image
+                    </button>
+                  </div>
 
                   {showDeleteConfirm === room.id && (
                     <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-rvMd">

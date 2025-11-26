@@ -721,28 +721,47 @@ const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
 
 function Studio() {
   const isInIframe = useIsInIframe();
-  // Check URL params for widget mode (upload mode = no preset room selected)
-  const getInitialSceneId = (): string => {
+  
+  // Check URL params for widget mode or designer mode
+  const getInitialState = (): { sceneId: string; isUploadMode: boolean; designerRoomImage: string | null } => {
     try {
       const hash = window.location.hash;
       const queryIndex = hash.indexOf('?');
       if (queryIndex !== -1) {
         const queryString = hash.substring(queryIndex + 1);
         const params = new URLSearchParams(queryString);
+        
+        // Designer mode: roomImage URL provided
+        const roomImage = params.get('roomImage');
+        const entry = params.get('entry');
+        if (roomImage && entry === 'designer') {
+          return { 
+            sceneId: '', 
+            isUploadMode: true, 
+            designerRoomImage: decodeURIComponent(roomImage) 
+          };
+        }
+        
+        // Widget upload mode
         if (params.get('mode') === 'upload') {
-          return ''; // Empty = no preset, user must upload their wall
+          return { sceneId: '', isUploadMode: true, designerRoomImage: null };
         }
       }
     } catch (e) {
-      console.warn('[Studio] Error reading mode param:', e);
+      console.warn('[Studio] Error reading URL params:', e);
     }
-    return (presets as any)[0]?.id || '';
+    return { 
+      sceneId: (presets as any)[0]?.id || '', 
+      isUploadMode: false, 
+      designerRoomImage: null 
+    };
   };
 
-  const [sceneId, setSceneId] = useState<string>(getInitialSceneId());
+  const initialState = getInitialState();
+  const [sceneId, setSceneId] = useState<string>(initialState.sceneId);
   const [wallColor, setWallColor] = useState<string>("#f2f4f7");
-  const [userPhoto, setUserPhoto] = useState<string | null>(null);
-  const [isUploadMode, setIsUploadMode] = useState<boolean>(getInitialSceneId() === '');
+  const [userPhoto, setUserPhoto] = useState<string | null>(initialState.designerRoomImage);
+  const [isUploadMode, setIsUploadMode] = useState<boolean>(initialState.isUploadMode);
 
   const [artworksState, setArtworksState] = useState<any[]>(localArtworks as any);
   const [artId, setArtId] = useState<string>("light-my-fire-140-70-cm-roomvibe");
