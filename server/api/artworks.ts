@@ -1,11 +1,39 @@
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
+import { randomUUID } from 'crypto';
 import { query } from '../db/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { ObjectStorageService, ObjectNotFoundError } from '../objectStorage.js';
 
 const router = express.Router();
+
+const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads', 'artworks');
+
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+
+async function uploadImage(buffer: Buffer, originalname: string, mimetype: string): Promise<string> {
+  try {
+    const objectStorage = new ObjectStorageService();
+    const imageUrl = await objectStorage.uploadBuffer(buffer, originalname, mimetype);
+    console.log('[Upload] Image uploaded to object storage:', imageUrl);
+    return imageUrl;
+  } catch (objectStorageError: any) {
+    console.log('[Upload] Object storage not available, falling back to local storage:', objectStorageError.message);
+    
+    const extension = originalname.includes('.') ? originalname.split('.').pop() : 'jpg';
+    const filename = `${randomUUID()}.${extension}`;
+    const filepath = path.join(UPLOADS_DIR, filename);
+    
+    fs.writeFileSync(filepath, buffer);
+    const localUrl = `/uploads/artworks/${filename}`;
+    console.log('[Upload] Image saved to local storage:', localUrl);
+    return localUrl;
+  }
+}
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -83,16 +111,10 @@ router.post('/artworks', authenticateToken, upload.single('image'), async (req: 
 
     let imageUrl: string;
     try {
-      const objectStorage = new ObjectStorageService();
-      imageUrl = await objectStorage.uploadBuffer(
-        req.file.buffer,
-        req.file.originalname,
-        req.file.mimetype
-      );
-      console.log('[Upload] Image uploaded to object storage:', imageUrl);
+      imageUrl = await uploadImage(req.file.buffer, req.file.originalname, req.file.mimetype);
     } catch (storageError: any) {
-      console.error('[Upload] Object storage error:', storageError.message);
-      return res.status(500).json({ error: 'Failed to upload image. Please ensure object storage is configured.', details: storageError.message });
+      console.error('[Upload] Storage error:', storageError.message);
+      return res.status(500).json({ error: 'Failed to upload image', details: storageError.message });
     }
     
     const targetArtistId = req.user.role === 'admin' && artistId ? parseInt(artistId) : req.user.id;
@@ -144,15 +166,10 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
     let imageUrl = existingArtwork.rows[0].image_url;
     if (req.file) {
       try {
-        const objectStorage = new ObjectStorageService();
-        imageUrl = await objectStorage.uploadBuffer(
-          req.file.buffer,
-          req.file.originalname,
-          req.file.mimetype
-        );
-        console.log('[Update] New image uploaded to object storage:', imageUrl);
+        imageUrl = await uploadImage(req.file.buffer, req.file.originalname, req.file.mimetype);
+        console.log('[Update] New image uploaded:', imageUrl);
       } catch (storageError: any) {
-        console.error('[Update] Object storage error:', storageError.message);
+        console.error('[Update] Storage error:', storageError.message);
         return res.status(500).json({ error: 'Failed to upload image', details: storageError.message });
       }
     }

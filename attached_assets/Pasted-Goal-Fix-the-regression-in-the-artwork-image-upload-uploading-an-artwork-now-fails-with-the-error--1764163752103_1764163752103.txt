@@ -1,0 +1,67 @@
+Goal:
+Fix the regression in the artwork image upload: uploading an artwork now fails with the error
+“Failed to upload image, please ensure object storage is configured.”
+For the current MVP we simply need image upload to work in the current Replit environment, whether using local storage or already-configured storage – without blocking on missing object storage.
+
+Current problem (from user perspective):
+
+Previously, I was able to upload artworks (even though there were some issues with the image display).
+
+After the recent changes related to image handling, when I try to upload a new artwork from the Artist dashboard, the upload fails with:
+“Failed to upload image, please ensure object storage is configured.”
+
+As a result, I cannot upload any artworks at all.
+
+What you should do (scope):
+
+Identify the recent changes that introduced the “object storage” requirement or this specific error message.
+
+Search for code paths mentioning object storage, Failed to upload image, or similar.
+
+Adjust the upload logic so that in the current environment (Replit) the artwork upload works even if external object storage is not configured:
+
+Either by using existing local file storage,
+
+or by making object storage optional with a sensible fallback.
+
+Ensure that:
+
+When I upload an artwork with an image, the request succeeds (no error message),
+
+The artwork record is saved (title, size, price, etc.),
+
+The image is stored somewhere that the app can read from,
+
+The image URL/path is saved in the artwork record.
+
+Keep the previous fixes intact:
+
+After a full page refresh, the artwork still appears in the Artist dashboard list with its image thumbnail,
+
+“View in your room” / Studio still opens and uses the correct artwork.
+
+Test end-to-end:
+
+Upload a new artwork with an image from the Artist dashboard,
+
+Confirm there is no “Failed to upload image” error,
+
+Refresh the page and verify the artwork (including image) is visible,
+
+Open the Studio / “See in your room” for that artwork and verify the image is displayed on the canvas.
+
+Important constraints (DO NOT):
+
+Do not require setting up external object storage just to make the MVP work. It must work in the current Replit setup.
+
+Do not change Stripe, GA4, auth, or other unrelated systems.
+
+Do not refactor large parts of the upload pipeline – focus on fixing this regression and making upload reliable.
+
+Stop condition:
+
+I can successfully upload a new artwork with an image from the Artist dashboard without any error,
+
+After refresh, the artwork with its image is visible in the dashboard,
+
+The same artwork’s image is correctly shown in the Studio / “View in your room”.
