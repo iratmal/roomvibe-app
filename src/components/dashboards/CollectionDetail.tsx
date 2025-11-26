@@ -75,7 +75,6 @@ export default function CollectionDetail() {
 
       const data = await response.json();
       
-      // Defensive: Ensure data.collections exists and is an array
       if (!data || !Array.isArray(data.collections)) {
         console.error('Invalid API response structure:', data);
         throw new Error('Invalid response from server');
@@ -109,7 +108,6 @@ export default function CollectionDetail() {
 
       const data = await response.json();
       
-      // Defensive: Ensure data exists and artworks is an array
       if (!data) {
         console.error('Invalid API response:', data);
         setArtworks([]);
@@ -242,7 +240,7 @@ export default function CollectionDetail() {
       
       window.dispatchEvent(new CustomEvent('gallery-collection-updated'));
 
-      setTimeout(() => setSuccess(''), 3000);
+      setTimeout(() => setSuccess(''), 5000);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -272,7 +270,7 @@ export default function CollectionDetail() {
       
       window.dispatchEvent(new CustomEvent('gallery-collection-updated'));
 
-      setTimeout(() => setSuccess(''), 3000);
+      setTimeout(() => setSuccess(''), 5000);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -307,7 +305,7 @@ export default function CollectionDetail() {
       
       window.dispatchEvent(new CustomEvent('gallery-collection-updated'));
 
-      setTimeout(() => setSuccess(''), 3000);
+      setTimeout(() => setSuccess(''), 5000);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -317,6 +315,15 @@ export default function CollectionDetail() {
 
   const handleBackToCollections = () => {
     window.location.hash = '#/dashboard/gallery';
+  };
+
+  const handlePreviewInStudio = (artworkId: number) => {
+    const baseUrl = window.location.origin + window.location.pathname;
+    window.open(`${baseUrl}#/studio?artworkId=${artworkId}&source=gallery`, '_blank');
+  };
+
+  const handleEditArtwork = (artworkId: number) => {
+    window.location.hash = `#/dashboard/gallery/artwork/${artworkId}/edit`;
   };
 
   const formatDate = (dateString: string) => {
@@ -329,10 +336,10 @@ export default function CollectionDetail() {
 
   if (initialLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#f7f8fa] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading collection...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#283593] mx-auto"></div>
+          <p className="mt-4 text-slate-500">Loading collection...</p>
         </div>
       </div>
     );
@@ -340,28 +347,28 @@ export default function CollectionDetail() {
 
   if (!collection) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      <div className="min-h-screen bg-[#f7f8fa]">
         <ImpersonationBanner />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <button
             onClick={handleBackToCollections}
-            className="mb-6 flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+            className="mb-6 flex items-center gap-2 text-[#283593] hover:text-[#1a237e] transition-colors font-semibold"
           >
-            <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             Back to Collections
           </button>
           
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              {error}
+            <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-xl">
+              <p className="text-red-700 font-semibold">{error}</p>
             </div>
           )}
           
           {!error && (
-            <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded">
-              Collection not found. It may have been deleted.
+            <div className="p-4 bg-amber-50 border-l-4 border-amber-500 rounded-xl">
+              <p className="text-amber-700 font-semibold">Collection not found. It may have been deleted.</p>
             </div>
           )}
         </div>
@@ -370,305 +377,383 @@ export default function CollectionDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+    <div className="min-h-screen bg-[#f7f8fa]">
       <ImpersonationBanner />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-16">
         <button
           onClick={handleBackToCollections}
-          className="mb-6 flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+          className="mb-6 flex items-center gap-2 text-[#283593] hover:text-[#1a237e] transition-colors font-semibold"
         >
-          <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
           Back to Collections
         </button>
 
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-            {error}
+          <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-xl">
+            <p className="text-red-700 font-semibold">{error}</p>
           </div>
         )}
 
         {success && (
-          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
-            {success}
+          <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-xl">
+            <p className="text-green-700 font-semibold">{success}</p>
           </div>
         )}
 
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">{collection.title}</h1>
-              {collection.subtitle && (
-                <p className="text-lg text-gray-600 mb-2">{collection.subtitle}</p>
-              )}
-              {collection.description && (
-                <p className="text-gray-600 mb-4">{collection.description}</p>
-              )}
-              <div className="text-sm text-gray-500 space-y-1">
-                <p>Created: {formatDate(collection.created_at)}</p>
-                <p>Updated: {formatDate(collection.updated_at)}</p>
-              </div>
-            </div>
-            <span className={`px-3 py-1 text-sm rounded ${
+        <div className="mb-10 p-8 bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100 relative">
+          <div className="absolute top-6 right-6">
+            <span className={`px-3 py-1.5 text-sm font-semibold rounded-full ${
               collection.status === 'published' 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-gray-100 text-gray-800'
+                ? 'bg-green-100 text-green-700' 
+                : 'bg-slate-100 text-slate-600'
             }`}>
               {collection.status === 'published' ? 'Published' : 'Draft'}
             </span>
           </div>
-
-          <div className="border-t pt-4 mt-4">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Change Status</h3>
-            <div className="flex items-center gap-3">
-              <select
-                value={statusUpdate}
-                onChange={(e) => setStatusUpdate(e.target.value as 'draft' | 'published')}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="draft">Draft</option>
-                <option value="published">Published</option>
-              </select>
-              <button
-                onClick={handleUpdateStatus}
-                disabled={loading || statusUpdate === collection.status}
-                className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-              >
-                Update Status
-              </button>
+          
+          <h1 className="text-3xl md:text-4xl font-semibold text-[#283593] mb-3 pr-28" style={{ fontFamily: 'Inter, sans-serif' }}>
+            {collection.title}
+          </h1>
+          
+          {collection.subtitle && (
+            <p className="text-lg text-slate-500 mb-3">{collection.subtitle}</p>
+          )}
+          
+          {collection.description && (
+            <p className="text-slate-600 mb-6 max-w-3xl">{collection.description}</p>
+          )}
+          
+          <div className="flex flex-wrap gap-4 text-sm text-slate-400 mb-6 pt-4 border-t border-slate-100">
+            <div className="flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>Created {formatDate(collection.created_at)}</span>
             </div>
+            <div className="flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Updated {formatDate(collection.updated_at)}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>{artworks.length} {artworks.length === 1 ? 'artwork' : 'artworks'}</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <select
+              value={statusUpdate}
+              onChange={(e) => setStatusUpdate(e.target.value as 'draft' | 'published')}
+              className="px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all text-sm"
+            >
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+            </select>
+            <button
+              onClick={handleUpdateStatus}
+              disabled={loading || statusUpdate === collection.status}
+              className="px-6 py-2.5 bg-[#283593] text-white rounded-xl hover:bg-[#1a237e] transition-all font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+            >
+              Update Status
+            </button>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Add Artwork to Collection</h2>
+        <div className="mb-10 p-8 bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100">
+          <h2 className="text-2xl font-semibold mb-2 text-[#283593]" style={{ fontFamily: 'Inter, sans-serif' }}>
+            Add Artwork to Collection
+          </h2>
+          <p className="text-sm text-slate-400 mb-8">Upload artworks to include in this exhibition</p>
           
-          <form onSubmit={handleUploadArtwork} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Title <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g., Sunset Over Mountains"
-                  required
-                />
+          <form onSubmit={handleUploadArtwork} className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Title <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all"
+                    placeholder="e.g., Sunset Over Mountains"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Artist Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="artistName"
+                    value={formData.artistName}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all"
+                    placeholder="e.g., Jane Doe"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      Width <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      name="widthValue"
+                      value={formData.widthValue}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all"
+                      placeholder="70"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
+                      Height <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      name="heightValue"
+                      value={formData.heightValue}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all"
+                      placeholder="100"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Unit</label>
+                    <select
+                      name="dimensionUnit"
+                      value={formData.dimensionUnit}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all appearance-none cursor-pointer"
+                    >
+                      <option value="cm">cm</option>
+                      <option value="in">in</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Price (optional)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      name="priceAmount"
+                      value={formData.priceAmount}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all"
+                      placeholder="1500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Currency</label>
+                    <select
+                      name="priceCurrency"
+                      value={formData.priceCurrency}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all appearance-none cursor-pointer"
+                    >
+                      <option value="EUR">EUR</option>
+                      <option value="USD">USD</option>
+                      <option value="GBP">GBP</option>
+                    </select>
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Artist Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="artistName"
-                  value={formData.artistName}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g., Jane Doe"
-                  required
-                />
-              </div>
-            </div>
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Artwork Image <span className="text-red-500">*</span>
+                  </label>
+                  <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center hover:border-[#283593]/50 transition-colors bg-slate-50">
+                    <input
+                      type="file"
+                      id="artwork-image"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="hidden"
+                      required
+                    />
+                    <label htmlFor="artwork-image" className="cursor-pointer">
+                      {uploadPreview ? (
+                        <img src={uploadPreview} alt="Preview" className="max-h-48 mx-auto rounded-lg" />
+                      ) : (
+                        <div className="py-4">
+                          <svg className="w-12 h-12 mx-auto text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <p className="text-slate-500 text-sm">Click to upload artwork image</p>
+                          <p className="text-slate-400 text-xs mt-1">JPG, PNG, WEBP up to 10MB</p>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+                </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Artwork Image <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-              {uploadPreview && (
-                <img src={uploadPreview} alt="Preview" className="mt-2 max-h-40 rounded" />
-              )}
-            </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Buy URL (optional)</label>
+                  <input
+                    type="url"
+                    name="buyUrl"
+                    value={formData.buyUrl}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all"
+                    placeholder="https://example.com/artwork/123"
+                  />
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Width <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  name="widthValue"
-                  value={formData.widthValue}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="70"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Height <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  name="heightValue"
-                  value={formData.heightValue}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="100"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
-                <select
-                  name="dimensionUnit"
-                  value={formData.dimensionUnit}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full px-6 py-3.5 bg-[#283593] text-white rounded-xl hover:bg-[#1a237e] transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#283593]/25"
+                  style={{ fontFamily: 'Inter, sans-serif' }}
                 >
-                  <option value="cm">cm</option>
-                  <option value="in">in</option>
-                </select>
+                  {loading ? 'Adding...' : 'Add Artwork to Collection'}
+                </button>
               </div>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Price (optional)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  name="priceAmount"
-                  value={formData.priceAmount}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="1500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
-                <select
-                  name="priceCurrency"
-                  value={formData.priceCurrency}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="EUR">EUR</option>
-                  <option value="USD">USD</option>
-                  <option value="GBP">GBP</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Buy URL (optional)</label>
-              <input
-                type="url"
-                name="buyUrl"
-                value={formData.buyUrl}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="https://example.com/artwork/123"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-            >
-              {loading ? 'Adding...' : 'Add Artwork'}
-            </button>
           </form>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+        <div>
+          <h2 className="text-2xl font-semibold mb-6 text-[#283593]" style={{ fontFamily: 'Inter, sans-serif' }}>
             Artworks in this Collection ({artworks.length})
           </h2>
 
           {artworks.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">
-              No artworks yet. Upload your first artwork above!
-            </p>
+            <div className="text-center py-16 px-8 bg-white rounded-2xl border border-slate-100 shadow-sm">
+              <div className="mb-6 mx-auto w-32 h-32 flex items-center justify-center">
+                <svg className="w-24 h-24 text-slate-200" fill="none" viewBox="0 0 96 96">
+                  <rect x="12" y="16" width="72" height="64" rx="4" stroke="currentColor" strokeWidth="2" fill="none"/>
+                  <rect x="20" y="24" width="28" height="20" rx="2" stroke="#D8B46A" strokeWidth="2" fill="none"/>
+                  <circle cx="30" cy="32" r="4" fill="currentColor"/>
+                  <path d="M20 40 L28 32 L36 40 L44 30 L48 36" stroke="currentColor" strokeWidth="2" fill="none"/>
+                  <rect x="56" y="24" width="20" height="4" rx="1" fill="currentColor"/>
+                  <rect x="56" y="32" width="16" height="3" rx="1" fill="currentColor"/>
+                  <rect x="56" y="38" width="12" height="3" rx="1" fill="currentColor"/>
+                  <rect x="20" y="52" width="56" height="20" rx="2" stroke="currentColor" strokeWidth="2" fill="none"/>
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-slate-700 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+                No artworks in this collection yet
+              </h3>
+              <p className="text-slate-400 max-w-md mx-auto" style={{ fontFamily: 'Inter, sans-serif' }}>
+                Upload your first artwork above to start building this exhibition.
+              </p>
+            </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {artworks.map((artwork) => (
                 <div
                   key={artwork.id}
-                  className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                  className="bg-white border border-slate-100 rounded-2xl hover:shadow-lg hover:shadow-slate-200/50 transition-all group overflow-hidden"
                 >
-                  <img
-                    src={artwork.image_url}
-                    alt={artwork.title}
-                    className="w-full h-48 object-cover rounded mb-3"
-                  />
-                  <h3 className="font-semibold text-gray-900 mb-1">{artwork.title}</h3>
-                  <p className="text-sm text-gray-600 mb-2">by {artwork.artist_name}</p>
-                  <p className="text-sm text-gray-500 mb-2">
-                    {artwork.width_value} × {artwork.height_value} {artwork.dimension_unit}
-                  </p>
-                  {artwork.price_amount && (
-                    <p className="text-sm font-semibold text-gray-900 mb-2">
-                      {artwork.price_currency} {
-                        isNaN(Number(artwork.price_amount)) 
-                          ? 'N/A' 
-                          : Number(artwork.price_amount).toFixed(2)
-                      }
-                    </p>
-                  )}
-                  <div className="flex gap-2 mt-3">
-                    {artwork.buy_url && (
-                      <a
-                        href={artwork.buy_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 bg-green-100 text-green-700 py-2 px-3 rounded hover:bg-green-200 transition-colors text-sm text-center"
+                  <div className="aspect-[4/3] bg-slate-100 overflow-hidden">
+                    <img
+                      src={artwork.image_url}
+                      alt={artwork.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                  
+                  <div className="p-5">
+                    <h3 className="text-lg font-semibold text-[#283593] mb-1 line-clamp-1" style={{ fontFamily: 'Inter, sans-serif' }}>
+                      {artwork.title}
+                    </h3>
+                    <p className="text-sm text-slate-500 mb-3">by {artwork.artist_name}</p>
+                    
+                    <div className="flex items-center justify-between text-sm mb-4">
+                      <span className="text-slate-500">
+                        {artwork.width_value} × {artwork.height_value} {artwork.dimension_unit}
+                      </span>
+                      {artwork.price_amount && (
+                        <span className="font-semibold text-[#283593]">
+                          {artwork.price_currency} {Number(artwork.price_amount).toFixed(2)}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => handlePreviewInStudio(artwork.id)}
+                        className="flex-1 px-3 py-2 text-sm bg-[#D8B46A] text-white rounded-lg hover:bg-[#c9a55b] transition-colors font-semibold flex items-center justify-center gap-1.5"
                       >
-                        View & Buy
-                      </a>
-                    )}
-                    <button
-                      onClick={() => {
-                        window.location.hash = `#/dashboard/gallery/artwork/${artwork.id}/edit`;
-                      }}
-                      className="bg-blue-100 text-blue-700 py-2 px-3 rounded hover:bg-blue-200 transition-colors text-sm"
-                    >
-                      Edit
-                    </button>
-                    {showDeleteConfirm === artwork.id ? (
-                      <div className="flex gap-1 flex-1">
-                        <button
-                          onClick={() => handleDeleteArtwork(artwork.id)}
-                          className="flex-1 bg-red-600 text-white py-2 px-2 rounded hover:bg-red-700 transition-colors text-sm"
-                          disabled={loading}
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        Preview
+                      </button>
+                      
+                      <button
+                        onClick={() => handleEditArtwork(artwork.id)}
+                        className="px-3 py-2 text-sm bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors font-semibold"
+                      >
+                        Edit
+                      </button>
+                      
+                      {artwork.buy_url && (
+                        <a
+                          href={artwork.buy_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-2 text-sm bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors font-semibold"
                         >
-                          Confirm
-                        </button>
-                        <button
-                          onClick={() => setShowDeleteConfirm(null)}
-                          className="flex-1 bg-gray-300 text-gray-700 py-2 px-2 rounded hover:bg-gray-400 transition-colors text-sm"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    ) : (
+                          Buy
+                        </a>
+                      )}
+                      
                       <button
                         onClick={() => setShowDeleteConfirm(artwork.id)}
-                        className="bg-red-100 text-red-700 py-2 px-3 rounded hover:bg-red-200 transition-colors text-sm"
+                        className="px-3 py-2 text-sm text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors font-semibold"
                       >
                         Delete
                       </button>
+                    </div>
+
+                    {showDeleteConfirm === artwork.id && (
+                      <div className="mt-4 p-4 bg-red-50 border border-red-100 rounded-xl">
+                        <p className="text-sm text-red-700 mb-3 font-medium">
+                          Delete this artwork?
+                        </p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleDeleteArtwork(artwork.id)}
+                            className="flex-1 px-3 py-2 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-semibold"
+                            disabled={loading}
+                          >
+                            Yes, Delete
+                          </button>
+                          <button
+                            onClick={() => setShowDeleteConfirm(null)}
+                            className="flex-1 px-3 py-2 text-sm border border-red-200 text-red-600 rounded-lg hover:bg-red-100 transition-colors font-semibold"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>

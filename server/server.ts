@@ -132,6 +132,45 @@ app.get('/api/room-image/:id', async (req: any, res) => {
   }
 });
 
+// Serve gallery artwork images from database (for Gallery uploads)
+app.get('/api/gallery-artwork-image/:id', async (req: any, res) => {
+  try {
+    const artworkId = parseInt(req.params.id);
+    
+    if (isNaN(artworkId)) {
+      return res.status(400).json({ error: 'Invalid gallery artwork ID' });
+    }
+
+    const result = await query('SELECT image_data FROM gallery_artworks WHERE id = $1', [artworkId]);
+
+    if (result.rows.length === 0 || !result.rows[0].image_data) {
+      return res.status(404).json({ error: 'Gallery artwork image not found' });
+    }
+
+    const imageData = result.rows[0].image_data;
+    const matches = imageData.match(/^data:([^;]+);base64,(.+)$/);
+    
+    if (!matches) {
+      return res.status(500).json({ error: 'Invalid image data format' });
+    }
+
+    const mimeType = matches[1];
+    const base64Data = matches[2];
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    res.set({
+      'Content-Type': mimeType,
+      'Content-Length': buffer.length,
+      'Cache-Control': 'public, max-age=31536000'
+    });
+    
+    res.send(buffer);
+  } catch (error) {
+    console.error('Error serving gallery artwork image:', error);
+    res.status(500).json({ error: 'Failed to serve gallery artwork image' });
+  }
+});
+
 app.get('/api/artwork/:id', async (req: any, res) => {
   try {
     const artworkId = parseInt(req.params.id);

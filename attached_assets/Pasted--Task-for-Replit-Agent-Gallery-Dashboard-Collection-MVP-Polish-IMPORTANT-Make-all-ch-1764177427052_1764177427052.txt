@@ -1,0 +1,195 @@
+# Task for Replit Agent — Gallery Dashboard & Collection MVP Polish
+
+**IMPORTANT:**
+
+* Make **all changes ONLY** in the `roomvibe-dev` Repl (dev environment).
+* **Do NOT modify** any existing Artist or Designer flows, including:
+
+  * Artist artwork upload
+  * Artist widget + Studio integration
+  * Designer projects, room uploads, or "Open in Studio" behavior.
+    These are production-stable and must remain untouched.
+
+---
+
+## Overall Goal
+
+Bring the **Gallery Dashboard + Collection view** to a clean MVP level that matches the quality of the Artist and Designer dashboards by:
+
+1. Fixing the **Edit artwork** bug in collections.
+2. Adding a clear **Artwork list/grid** for each collection (with thumbnails + actions).
+3. Adding an optional **“Preview in Studio” / “Open in Studio”** action for artworks.
+4. Applying UI polish so the gallery experience feels premium and consistent with RoomVibe brand.
+
+This is primarily a **front-end and routing** task. Only minimal backend changes are allowed where needed for the bug fix and preview action.
+
+---
+
+## 1) Fix "Edit" Button in Collection Artwork List
+
+**Current issue:**
+
+* In the collection view (Gallery Dashboard → View Collection → "Artworks in this collection" list), the **Edit** button either:
+
+  * leads to an incorrect URL, or
+  * does not load the correct artwork for editing.
+
+**What to do:**
+
+* Locate the code that renders each artwork row/card in a gallery collection and its **Edit** button.
+* Identify the correct **edit route** for a single artwork in a collection (follow existing patterns in the app).
+* Update the Edit button so that:
+
+  * It passes the correct artwork identifier (and collection identifier if needed).
+  * It opens the correct edit form for that artwork.
+* After saving edits, the user should be redirected back to the same collection view (where they can see updated data).
+
+**Stop condition:**
+Clicking **Edit** on any artwork in a collection reliably opens the **correct artwork edit form**, and changes are saved for that specific artwork.
+
+---
+
+## 2) Add Artwork List/Grid to Collection View (with thumbnails)
+
+**Current issue:**
+
+* The collection view focuses on the "Add Artwork" form, but there is no clear, visually appealing list of artworks already added to the collection (or it is very minimal).
+
+**Goal:**
+
+* Under the "Add Artwork to Collection" form, show a **grid/list of artworks** belonging to this collection as **cards**, similar in quality to the Artist dashboard and Designer room images.
+
+**Artwork card design (per artwork):**
+
+Each card should show:
+
+* **Thumbnail image** of the artwork.
+* **Title** of the artwork.
+* **Artist name**.
+* **Dimensions** (width x height + unit).
+* **Price** (if set) and currency.
+* Optional: small label if the piece is marked as featured (for future use).
+
+Each card should include action buttons:
+
+* **Edit** (uses the fixed logic from section 1).
+* **Delete**.
+* **Preview in Studio** / **Open in Studio** (see section 3).
+
+Use a clean, responsive layout:
+
+* 2 or 3 cards per row on desktop, 1 per row on mobile.
+* Rounded corners (`rounded-xl`/`rounded-2xl`), subtle shadow, padding, matching overall RoomVibe aesthetic.
+
+**Stop condition:**
+For any gallery collection, the user can clearly see all artworks in that collection as thumbnail cards with title, artist, size, price and actions.
+
+---
+
+## 3) Add "Preview in Studio" / "Open in Studio" for Gallery Artworks (Simple Version)
+
+**Goal:**
+Allow gallery admins to quickly preview an artwork in the RoomVibe Studio from the collection view.
+
+**Scope (simple MVP):**
+
+* On each artwork card, add a button:
+  `Preview in Studio`
+* Clicking this button should open the standard Studio view with that artwork **preselected**, using the same mechanism as the existing widget/Studio integration (artworkId in URL or similar).
+
+**Implementation hints:**
+
+* Reuse the existing logic that opens Studio with a specific `artworkId` (already used for widgets).
+* For example, navigate to:
+  `https://app.roomvibe.app/studio?artworkId=<ARTWORK_ID>`
+* Do NOT create a new Studio mode here; just preselect the artwork, like in the current widget flow.
+
+**Important:**
+
+* This is an internal gallery preview only (no need to embed on external sites).
+* Do **not** change widget logic or external embed code.
+
+**Stop condition:**
+From the collection view, clicking **Preview in Studio** on any artwork opens the RoomVibe Studio in a new tab/window with that artwork preselected.
+
+---
+
+## 4) UI Polish — Gallery Dashboard & Collection
+
+Bring Gallery views to the same visual level as Artist and Designer dashboards.
+
+### 4.1 Gallery Dashboard (main)
+
+* **Create New Collection** card:
+
+  * Use a premium card style: `bg-white`, `rounded-2xl`, `shadow-lg`, generous padding (e.g. `p-8`).
+  * Add a short subtitle under the main heading:
+    *"Create digital collections and exhibitions for your gallery."*
+  * Ensure form fields have consistent label styling and spacing.
+
+* **My Collections** section:
+
+  * Display collections in a **grid of cards**.
+  * Each card shows:
+
+    * Collection title.
+    * Subtitle.
+    * Number of artworks.
+    * Created date (already available).
+    * Status badge: `Draft` / `Published` with subtle color coding.
+  * Buttons: `View Collection` (primary), `Delete` (secondary/destructive).
+  * If a collection has at least one artwork, consider using the first artwork image as a **small cover thumbnail** in the card header.
+
+### 4.2 Single Collection View
+
+* **Collection header card:**
+
+  * Keep title, subtitle, description, created date, and status.
+  * Apply similar styling as Designer/Artist header cards (rounded, shadow, padding).
+  * Status should be shown as a badge pill in the top-right.
+
+* **Add Artwork to Collection form:**
+
+  * Convert into a compact two-column layout on desktop:
+
+    * Left: Title, Artist, dimensions, price, currency.
+    * Right: Artwork image upload + Buy URL + optional fields.
+  * Maintain full-width layout on mobile.
+
+* **Artwork list/grid:**
+
+  * Place it clearly under the Add Artwork form with a heading like:
+    `Artworks in this Collection`.
+  * Use consistent card styling with the rest of the app.
+
+**Design notes:**
+
+* Use the same color palette as the rest of RoomVibe (navy primary, soft greys).
+* Match font sizes and weights with Artist & Designer dashboards.
+* Maintain responsiveness.
+
+---
+
+## 5) Constraints (What NOT to change)
+
+* Do **not** change any Artist or Designer logic (upload, widgets, Studio modes).
+* Do **not** modify Shopify widget or external embed code.
+* Do **not** introduce new authentication or authorization logic.
+* Do **not** add complex new features like saving gallery-specific Studio layouts, public gallery pages, or ecommerce logic — these are out of scope for this MVP polish.
+
+---
+
+## 6) Final Stop Condition
+
+The task is complete when:
+
+1. In any gallery collection, I can:
+
+   * See all artworks as a clean grid of cards with thumbnails and details.
+   * Click **Edit** on an artwork and edit the correct item.
+   * Click **Delete** and remove an artwork.
+   * Click **Preview in Studio** and open Studio with that artwork preselected.
+
+2. The **Gallery Dashboard** and **Collection view** have a polished, premium UI consistent with the Artist and Designer dashboards.
+
+3. No existing Artist or Designer flows are broken or altered in behavior.

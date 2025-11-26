@@ -167,6 +167,19 @@ export async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_gallery_artworks_collection_id ON gallery_artworks(collection_id);
     `);
 
+    // Add image_data column to gallery_artworks if it doesn't exist (for base64 storage)
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'gallery_artworks' AND column_name = 'image_data'
+        ) THEN
+          ALTER TABLE gallery_artworks ADD COLUMN image_data TEXT;
+        END IF;
+      END $$;
+    `);
+
     console.log('✅ Database schema initialized successfully');
     return true;
   } catch (error) {

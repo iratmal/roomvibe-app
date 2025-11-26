@@ -182,10 +182,10 @@ export default function ArtworkEdit() {
 
   if (initialLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#f7f8fa] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading artwork...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#283593] mx-auto"></div>
+          <p className="mt-4 text-slate-500">Loading artwork...</p>
         </div>
       </div>
     );
@@ -193,28 +193,28 @@ export default function ArtworkEdit() {
 
   if (!artwork) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      <div className="min-h-screen bg-[#f7f8fa]">
         <ImpersonationBanner />
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <button
             onClick={handleCancel}
-            className="mb-6 flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+            className="mb-6 flex items-center gap-2 text-[#283593] hover:text-[#1a237e] transition-colors font-semibold"
           >
-            <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             Back
           </button>
           
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              {error}
+            <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-xl">
+              <p className="text-red-700 font-semibold">{error}</p>
             </div>
           )}
           
           {!error && (
-            <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded">
-              Artwork not found. It may have been deleted.
+            <div className="p-4 bg-amber-50 border-l-4 border-amber-500 rounded-xl">
+              <p className="text-amber-700 font-semibold">Artwork not found. It may have been deleted.</p>
             </div>
           )}
         </div>
@@ -223,50 +223,55 @@ export default function ArtworkEdit() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+    <div className="min-h-screen bg-[#f7f8fa]">
       <ImpersonationBanner />
       
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-16">
         <button
           onClick={handleCancel}
-          className="mb-6 flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+          className="mb-6 flex items-center gap-2 text-[#283593] hover:text-[#1a237e] transition-colors font-semibold"
         >
-          <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
           Back to Collection
         </button>
 
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-            {error}
+          <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-xl">
+            <p className="text-red-700 font-semibold">{error}</p>
           </div>
         )}
 
         {success && (
-          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
-            {success}
+          <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-xl">
+            <p className="text-green-700 font-semibold">{success}</p>
           </div>
         )}
 
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">Edit Artwork</h1>
+        <div className="p-8 bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100">
+          <h1 className="text-3xl font-semibold text-[#283593] mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+            Edit Artwork
+          </h1>
+          <p className="text-sm text-slate-400 mb-8">Update artwork details</p>
           
-          <div className="mb-6">
-            <img
-              src={artwork.image_url}
-              alt={artwork.title}
-              className="w-full max-w-md h-64 object-cover rounded-lg mx-auto"
-            />
-            <p className="text-sm text-gray-500 text-center mt-2">
+          <div className="mb-8">
+            <div className="aspect-[4/3] max-w-md mx-auto bg-slate-100 rounded-xl overflow-hidden">
+              <img
+                src={artwork.image_url}
+                alt={artwork.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <p className="text-sm text-slate-400 text-center mt-3">
               Image cannot be changed. Delete and re-upload if you need a different image.
             </p>
           </div>
           
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
                   Title <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -274,14 +279,14 @@ export default function ArtworkEdit() {
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all"
                   placeholder="e.g., Sunset Over Mountains"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
                   Artist Name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -289,16 +294,16 @@ export default function ArtworkEdit() {
                   name="artistName"
                   value={formData.artistName}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all"
                   placeholder="e.g., Jane Doe"
                   required
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
                   Width <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -307,14 +312,14 @@ export default function ArtworkEdit() {
                   name="widthValue"
                   value={formData.widthValue}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all"
                   placeholder="70"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
                   Height <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -323,19 +328,19 @@ export default function ArtworkEdit() {
                   name="heightValue"
                   value={formData.heightValue}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all"
                   placeholder="100"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Unit</label>
                 <select
                   name="dimensionUnit"
                   value={formData.dimensionUnit}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all appearance-none cursor-pointer"
                 >
                   <option value="cm">cm</option>
                   <option value="in">in</option>
@@ -343,27 +348,27 @@ export default function ArtworkEdit() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Price (optional)</label>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Price (optional)</label>
                 <input
                   type="number"
                   step="0.01"
                   name="priceAmount"
                   value={formData.priceAmount}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all"
                   placeholder="1500"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Currency</label>
                 <select
                   name="priceCurrency"
                   value={formData.priceCurrency}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all appearance-none cursor-pointer"
                 >
                   <option value="EUR">EUR</option>
                   <option value="USD">USD</option>
@@ -373,13 +378,13 @@ export default function ArtworkEdit() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Buy URL (optional)</label>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Buy URL (optional)</label>
               <input
                 type="url"
                 name="buyUrl"
                 value={formData.buyUrl}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all"
                 placeholder="https://example.com/artwork/123"
               />
             </div>
@@ -388,14 +393,16 @@ export default function ArtworkEdit() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 px-6 py-3.5 bg-[#283593] text-white rounded-xl hover:bg-[#1a237e] transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#283593]/25"
+                style={{ fontFamily: 'Inter, sans-serif' }}
               >
                 {loading ? 'Saving...' : 'Save Changes'}
               </button>
               <button
                 type="button"
                 onClick={handleCancel}
-                className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors"
+                className="flex-1 px-6 py-3.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-all font-semibold"
+                style={{ fontFamily: 'Inter, sans-serif' }}
               >
                 Cancel
               </button>

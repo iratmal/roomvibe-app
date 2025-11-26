@@ -1,29 +1,17 @@
 import express from 'express';
 import multer from 'multer';
-import path from 'path';
 import { query } from '../db/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'public/uploads/gallery/');
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'artwork-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
 const upload = multer({
-  storage: storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|webp/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = allowedTypes.test(file.mimetype);
-    if (mimetype && extname) {
+    if (mimetype) {
       return cb(null, true);
     } else {
       cb(new Error('Only image files (jpg, png, webp) are allowed!'));
@@ -249,7 +237,9 @@ router.post('/collections/:id/artworks', authenticateToken, upload.single('image
       return res.status(400).json({ error: 'Title, artist name, width, and height are required' });
     }
 
-    const imageUrl = `/uploads/gallery/${req.file.filename}`;
+    const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    const imageUrl = `/api/gallery-artwork-image/PLACEHOLDER`;
+    
     const validUnits = ['cm', 'in'];
     const unit = dimensionUnit && validUnits.includes(dimensionUnit) ? dimensionUnit : 'cm';
     const validCurrencies = ['EUR', 'USD', 'GBP'];
@@ -257,15 +247,16 @@ router.post('/collections/:id/artworks', authenticateToken, upload.single('image
 
     const result = await query(
       `INSERT INTO gallery_artworks 
-       (collection_id, title, artist_name, image_url, width_value, height_value, 
+       (collection_id, title, artist_name, image_url, image_data, width_value, height_value, 
         dimension_unit, price_amount, price_currency, buy_url)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
        RETURNING *`,
       [
         collectionId,
         title,
         artistName,
         imageUrl,
+        base64Image,
         parseFloat(widthValue),
         parseFloat(heightValue),
         unit,
@@ -275,7 +266,14 @@ router.post('/collections/:id/artworks', authenticateToken, upload.single('image
       ]
     );
 
-    console.log('Artwork added successfully:', result.rows[0].id);
+    const artworkId = result.rows[0].id;
+    await query(
+      `UPDATE gallery_artworks SET image_url = $1 WHERE id = $2`,
+      [`/api/gallery-artwork-image/${artworkId}`, artworkId]
+    );
+    result.rows[0].image_url = `/api/gallery-artwork-image/${artworkId}`;
+
+    console.log('Artwork added successfully:', artworkId);
     res.status(201).json({ artwork: result.rows[0], message: 'Artwork added successfully' });
   } catch (error: any) {
     console.error('Error adding artwork:', error);
