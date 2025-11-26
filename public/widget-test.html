@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RoomVibe Widget Test - External Site Simulation</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      background: #f5f5f5;
+      color: #333;
+    }
+    .product-card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 24px;
+    }
+    .product-image {
+      width: 100%;
+      height: 300px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+    .product-title {
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0 0 8px 0;
+    }
+    .product-price {
+      font-size: 20px;
+      color: #4F46E5;
+      font-weight: 600;
+      margin: 0 0 16px 0;
+    }
+    .product-description {
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .widget-section {
+      padding-top: 16px;
+      border-top: 1px solid #eee;
+    }
+    .widget-label {
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 8px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .test-info {
+      background: #EEF2FF;
+      border: 1px solid #C7D2FE;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+    .test-info strong {
+      color: #4F46E5;
+    }
+    code {
+      background: #f0f0f0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <h1>RoomVibe Widget Test Page</h1>
+  
+  <div class="test-info">
+    <strong>This page simulates an external website (like Shopify).</strong><br>
+    The RoomVibe widget should appear below each product as a "See in your room" button.
+    Click the button to open the RoomVibe Studio in a modal.
+  </div>
+
+  <!-- Product 1: With specific artwork ID -->
+  <div class="product-card">
+    <div class="product-image">Artwork Image</div>
+    <h2 class="product-title">Abstract Painting #1</h2>
+    <p class="product-price">€299.00</p>
+    <p class="product-description">
+      A beautiful abstract painting that would look amazing on any wall. 
+      Dimensions: 80 × 60 cm. Oil on canvas.
+    </p>
+    
+    <div class="widget-section">
+      <div class="widget-label">RoomVibe Widget (with artwork-id="1"):</div>
+      <!-- This is the embed code artists paste on their product pages -->
+      <script
+        src="/widget.js"
+        data-artist-id="1"
+        data-artwork-id="1">
+      </script>
+    </div>
+  </div>
+
+  <!-- Product 2: Global artist widget -->
+  <div class="product-card">
+    <div class="product-image">Another Artwork</div>
+    <h2 class="product-title">Landscape Scene #5</h2>
+    <p class="product-price">€450.00</p>
+    <p class="product-description">
+      A stunning landscape scene with mountains and a lake. 
+      Dimensions: 100 × 70 cm. Acrylic on canvas.
+    </p>
+    
+    <div class="widget-section">
+      <div class="widget-label">RoomVibe Widget (artist-only, no specific artwork):</div>
+      <!-- Global widget for the artist -->
+      <script
+        src="/widget.js"
+        data-artist-id="1">
+      </script>
+    </div>
+  </div>
+
+  <!-- Product 3: Custom button text -->
+  <div class="product-card">
+    <div class="product-image">Custom Art</div>
+    <h2 class="product-title">Modern Art Piece</h2>
+    <p class="product-price">€599.00</p>
+    <p class="product-description">
+      A modern art piece with custom button text.
+    </p>
+    
+    <div class="widget-section">
+      <div class="widget-label">RoomVibe Widget (with custom button text):</div>
+      <script
+        src="/widget.js"
+        data-artist-id="1"
+        data-artwork-id="2"
+        data-button-text="Preview on your wall">
+      </script>
+    </div>
+  </div>
+
+  <div class="test-info">
+    <strong>How the embed code works:</strong><br><br>
+    <code>&lt;script src="https://your-roomvibe-domain/widget.js" data-artist-id="1" data-artwork-id="123"&gt;&lt;/script&gt;</code>
+    <br><br>
+    The widget automatically:
+    <ul>
+      <li>Creates a styled "See in your room" button</li>
+      <li>Opens RoomVibe Studio in a modal when clicked</li>
+      <li>Pre-loads the specified artwork if <code>data-artwork-id</code> is provided</li>
+      <li>Works on any external website (Shopify, Squarespace, etc.)</li>
+    </ul>
+  </div>
+</body>
+</html>

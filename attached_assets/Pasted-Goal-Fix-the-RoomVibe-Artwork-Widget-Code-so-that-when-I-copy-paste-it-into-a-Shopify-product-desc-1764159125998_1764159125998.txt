@@ -1,0 +1,79 @@
+Goal:
+Fix the RoomVibe Artwork Widget Code so that, when I copy/paste it into a Shopify product description (HTML mode), the widget is actually rendered and visible on the product page (e.g. a “See in your room” button or embedded component).
+Right now, nothing is displayed on the Shopify product page.
+
+Context:
+
+Project: RoomVibe
+
+In the Artist / Admin interface there is an “Artwork Widget Code” for each artwork.
+
+I copied that embed code and pasted it into a Shopify product description (using the HTML editor <>).
+
+The product page loads, but no widget appears at all (no button, no iframe, no visible element).
+
+I don’t see any obvious error on the page, just “nothing happens”.
+
+What you should do (scope):
+
+Locate the code that generates the Artwork Widget embed snippet
+
+Search for things like: widget, embed code, Artwork Widget Code, see in your room, script src, etc.
+
+Identify the exact HTML/JS snippet we are giving to users for embedding on external sites (Shopify).
+
+Verify that the embed snippet works in a simple static HTML file
+
+Create a minimal HTML test page in the project (or locally in the Replit environment) that only contains the widget embed code.
+
+Open it and confirm that the widget actually renders (e.g. shows a button / UI to open the RoomVibe view for that artwork).
+
+If it does NOT render, fix the snippet and/or the widget initialization logic until it works in this simple static HTML scenario.
+
+Make the embed snippet robust for external sites like Shopify
+
+The snippet must work when pasted into a generic HTML container on another domain (like Shopify product description).
+
+Typically this means:
+
+loading a single <script src="..."> from RoomVibe (or similar)
+
+and a <div> container with data attributes (e.g. data-artwork-id=...)
+
+plus JavaScript that auto-initializes the widget when the script loads.
+
+Please avoid dependencies on frameworks that won’t exist on external sites (e.g. do not rely on internal React context or bundler-only globals).
+
+Error handling and fail-safe
+
+If the widget cannot load (e.g. network error), the embed should at least show a small fallback message or fail silently but must not break the rest of the page.
+
+Make sure no uncaught JS errors are thrown when the embed code runs on an external page.
+
+Update the Artwork Widget Code that is shown in the RoomVibe admin
+
+Ensure that the embed code we display to Artists is the final, working version (the one you have just tested).
+
+The instructions for the artist should remain simple: “Copy this code and paste it into the HTML of your product page”.
+
+Document how to use it (short)
+
+In the code or comments, briefly note:
+
+where the widget script is hosted
+
+how the embed snippet is structured
+
+how it should be used on external sites.
+
+Important constraints (DO NOT):
+
+Do not change Stripe, GA4, membership, or any unrelated systems.
+
+Do not refactor large parts of the app – only touch the widget embed + widget initialization logic.
+
+Do not build new features – the goal is just to make the existing Artwork Widget Code work reliably when embedded.
+
+Stop condition:
+
+When I copy the Artwork Widget Code from the RoomVibe admin, paste it into a Shopify product description (HTML mode), save the product, and view it on the storefront, the widget is clearly visible and functional (e.g. a “See in your room” button or block appears and works).
