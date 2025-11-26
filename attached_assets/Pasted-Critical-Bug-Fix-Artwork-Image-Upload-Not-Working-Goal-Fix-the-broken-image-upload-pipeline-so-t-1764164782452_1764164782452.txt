@@ -1,0 +1,60 @@
+Critical Bug Fix – Artwork Image Upload Not Working
+
+Goal:
+Fix the broken image upload pipeline so that uploading an artwork correctly stores the image file and returns a valid imageUrl. The image MUST display:
+
+in the Artist dashboard (thumbnail), and
+
+inside the Studio (“View in your room”).
+
+Current problem:
+
+Uploading an artwork returns “Artwork created successfully”, but the image does not appear anywhere.
+
+In the Artist dashboard, the artwork card shows no image (empty placeholder).
+
+In the Studio, the artwork loads but the image is missing, so the canvas is blank.
+
+This means the image file is either not saved or not returned in the artwork object.
+
+What you should do (scope):
+
+Locate the backend route/controller handling artwork image upload.
+
+Check multer / upload middleware.
+
+Check if the file is saved locally or in memory.
+
+Verify that the uploaded file is actually being written somewhere (local storage for MVP).
+
+Ensure that the server returns a correct and accessible imageUrl in the artwork object.
+
+Example: /uploads/<filename> or whatever existing structure is used.
+
+Ensure the artwork record in the database includes this imageUrl.
+
+Ensure the GET artworks list endpoint returns imageUrl so the Artist dashboard can show the thumbnail.
+
+Ensure the Studio reads the correct imageUrl and displays the image on canvas.
+
+Test cases (must pass):
+
+Upload a new artwork with an image → no errors.
+
+Refresh Artist dashboard → image thumbnail is visible.
+
+Click “View & Buy” → Studio opens and the artwork image is visible on the wall.
+
+Use widget on Shopify → Studio loads with the correct artwork AND its image.
+
+Important constraints (DO NOT):
+
+Do NOT require external object storage for this task. MVP must work with local storage only.
+
+Do NOT refactor unrelated code. Only fix the broken image upload + image URL return.
+
+Do NOT change auth, GA4, Stripe, widget logic (except reading correct imageUrl).
+
+Stop condition:
+
+After uploading an artwork and refreshing the page, the artwork card shows the image thumbnail AND the Studio displays the artwork image correctly.
