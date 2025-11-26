@@ -279,10 +279,21 @@ export default function CollectionDetail() {
   };
 
   const handleUpdateStatus = async () => {
-    if (!collection) return;
+    if (!collection) {
+      console.error('handleUpdateStatus: collection is null');
+      return;
+    }
+
+    console.log('handleUpdateStatus called:', { 
+      collectionId, 
+      currentStatus: collection.status, 
+      newStatus: statusUpdate,
+      apiUrl: `${API_URL}/api/gallery/collections/${collectionId}`
+    });
 
     setLoading(true);
     setError('');
+    setSuccess('');
 
     try {
       const response = await fetch(`${API_URL}/api/gallery/collections/${collectionId}`, {
@@ -292,14 +303,18 @@ export default function CollectionDetail() {
         body: JSON.stringify({ status: statusUpdate })
       });
 
+      console.log('Status update response:', { ok: response.ok, status: response.status });
+
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('Status update error:', errorData);
         throw new Error(errorData.error || 'Failed to update status');
       }
 
       const data = await response.json();
-      setSuccess(data.message || 'Status updated successfully!');
+      console.log('Status update success:', data);
       
+      setSuccess(data.message || 'Status updated successfully!');
       setCollection(data.collection);
       setStatusUpdate(data.collection.status);
       
@@ -307,7 +322,8 @@ export default function CollectionDetail() {
 
       setTimeout(() => setSuccess(''), 5000);
     } catch (err: any) {
-      setError(err.message);
+      console.error('Status update caught error:', err);
+      setError(err.message || 'Failed to update status');
     } finally {
       setLoading(false);
     }
@@ -461,7 +477,7 @@ export default function CollectionDetail() {
               disabled={loading || statusUpdate === collection.status}
               className="px-6 py-2.5 bg-[#283593] text-white rounded-xl hover:bg-[#1a237e] transition-all font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
             >
-              Update Status
+              {loading ? 'Updating...' : 'Update Status'}
             </button>
           </div>
         </div>

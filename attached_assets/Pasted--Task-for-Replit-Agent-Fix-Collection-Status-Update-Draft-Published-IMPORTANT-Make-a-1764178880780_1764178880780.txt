@@ -1,0 +1,75 @@
+# Task for Replit Agent — Fix Collection Status Update (Draft → Published)
+
+**IMPORTANT:**
+
+* Make all changes ONLY in the `roomvibe-dev` Repl (dev environment).
+* Do NOT modify: Artist flows, Designer flows, Studio logic, widget logic, or artwork upload logic.
+* This task is isolated to the **Gallery Collection Status** feature only.
+
+---
+
+## Goal
+
+Enable gallery admins to successfully change a collection's status from **Draft** to **Published** (and back), using the existing dropdown + "Update Status" button.
+
+Currently, clicking the "Update Status" button does not update the collection status and provides no confirmation.
+
+---
+
+## Required Fix
+
+### 1. Identify and repair the backend route responsible for updating a collection status
+
+* Locate the existing API route that should handle updating a gallery collection (likely PATCH or PUT endpoint).
+* Ensure it accepts the new status ("Draft" or "Published") and correctly saves it to the database.
+* Confirm that the collection model includes a `status` field and that it is writeable.
+
+### 2. Update the frontend to properly send the status update request
+
+* In the Gallery Collection view (`/dashboard/gallery/collection/:id`), the status dropdown + button should:
+
+  * Read the currently selected value in the dropdown.
+  * Send a valid API request to update the collection status.
+  * Update the UI to reflect the new status after success.
+
+### 3. Add a success notification
+
+After a successful update, display a simple banner or toast such as:
+
+```
+Status updated successfully
+```
+
+(Use existing notification pattern if already implemented.)
+
+### 4. Update the status badge in the header
+
+* After the update, the badge next to the collection title should show the new status (Draft / Published).
+* Ensure it refreshes without requiring a full page reload.
+
+---
+
+## Testing Requirements
+
+The following must work:
+
+### As Gallery Admin
+
+1. Open any collection.
+2. Change the status from Draft → Published.
+3. Click **Update Status**.
+4. Status updates immediately in:
+
+   * The badge in the collection header.
+   * The API (persisted after refresh).
+5. Switch back Published → Draft, same behavior.
+
+---
+
+## Stop Condition
+
+The Collection Status Update feature works fully:
+
+* Changing the dropdown value and clicking "Update Status" successfully updates the collection's status in the database and UI.
+* No impact on any existing Artist, Designer, Studio, or Widget functionality.
+* Works identically across all collections.

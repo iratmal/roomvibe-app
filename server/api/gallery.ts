@@ -91,7 +91,13 @@ router.post('/collections', authenticateToken, async (req: any, res) => {
 
 router.put('/collections/:id', authenticateToken, async (req: any, res) => {
   try {
+    console.log('=== Collection Update Request ===');
+    console.log('User:', { id: req.user?.id, role: req.user?.role });
+    console.log('Collection ID:', req.params.id);
+    console.log('Request body:', req.body);
+    
     if (req.user.role !== 'gallery' && req.user.role !== 'admin') {
+      console.log('Access denied: user role is', req.user.role);
       return res.status(403).json({ error: 'Only galleries and admins can update collections' });
     }
 
