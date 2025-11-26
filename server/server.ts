@@ -10,6 +10,7 @@ import artworksRoutes from './api/artworks.js';
 import projectsRoutes from './api/projects.js';
 import galleryRoutes from './api/gallery.js';
 import { initializeDatabase } from './db/init.js';
+import { ObjectStorageService, ObjectNotFoundError } from './objectStorage.js';
 
 dotenv.config();
 
@@ -51,6 +52,23 @@ app.use('/api/gallery', galleryRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'RoomVibe API server running' });
+});
+
+app.get('/objects/*path', async (req: any, res) => {
+  try {
+    const pathSegments = req.params.path;
+    const objectPath = '/objects/' + (Array.isArray(pathSegments) ? pathSegments.join('/') : pathSegments);
+    console.log('[ObjectStorage] Serving object:', objectPath);
+    const objectStorageService = new ObjectStorageService();
+    const objectFile = await objectStorageService.getObjectFile(objectPath);
+    objectStorageService.downloadObject(objectFile, res);
+  } catch (error) {
+    console.error('Error serving object:', error);
+    if (error instanceof ObjectNotFoundError) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

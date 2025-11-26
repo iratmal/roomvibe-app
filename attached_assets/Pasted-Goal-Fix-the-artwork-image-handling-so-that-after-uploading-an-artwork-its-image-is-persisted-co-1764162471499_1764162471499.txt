@@ -1,0 +1,64 @@
+Goal:
+Fix the artwork image handling so that:
+
+after uploading an artwork, its image is persisted correctly,
+
+the image is visible in the Artist dashboard card even after a full page refresh,
+
+and the image is correctly shown in the Studio / “View in your room” view for that artwork.
+
+Current problem (from user perspective):
+
+I upload an artwork as an Artist (via the Artist dashboard).
+
+Immediately after upload, everything seems ok.
+
+But after I refresh the page, the artwork card still shows the title, size and price, but the image area is blank (no thumbnail).
+
+Also, when I click “View in your room” (or open the Studio for that artwork), the Studio opens with the correct artwork selected, but the canvas is empty / no image is displayed.
+
+What you should do (scope):
+
+Locate the backend code that handles artwork image upload and storage (routes, controllers, models).
+
+Confirm where the image file or image URL is supposed to be stored (e.g. in the database field like imageUrl).
+
+Verify that, after uploading an artwork:
+
+the image path/URL is actually being saved to the database,
+
+and that the API response for listing artworks (used by the Artist dashboard) includes this image field.
+
+Fix the Artist dashboard card rendering so that:
+
+when the page loads and artworks are fetched from the backend,
+
+each artwork’s image is displayed correctly in the card (no blank placeholder if an image exists).
+
+Fix the Studio / “View in your room” image loading for that artwork:
+
+ensure that when an artwork is selected (either via the widget artworkId or selection in the Studio),
+
+the Studio loads and displays the correct artwork image on the canvas.
+
+No empty canvas when a valid artwork image exists.
+
+Test end-to-end:
+
+Upload a new artwork with an image.
+
+Refresh the Artist dashboard page → verify the image still appears on the card.
+
+Use “View in your room” / widget to open the Studio for that artwork → verify the image is visible and rendered correctly in the Studio.
+
+Important constraints (DO NOT):
+
+Do not change Stripe, GA4 or any payment/membership logic.
+
+Do not refactor unrelated parts of the app; keep changes focused on artwork image upload, storage and rendering.
+
+Do not change the existing text fields behavior (title, size, price are already working).
+
+Stop condition:
+
+After uploading an artwork with an image, refreshing the Artist dashboard still shows the image thumbnail on the artwork card, and the same image is correctly displayed in the Studio / “View in your room” view for that artwork.
