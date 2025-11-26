@@ -1,0 +1,81 @@
+IMPORTANT:
+👉 Do all changes ONLY in the roomvibe-dev Repl (dev version).
+👉 Do NOT change the existing Artist upload + widget behavior. Those are working perfectly now and must not be broken.
+
+Goal:
+Fix the image upload for Designers so that uploading a room image in the Designer dashboard no longer throws
+“An internal server error occurred”, and the image is properly saved and visible in the project.
+
+Current problem (from user perspective):
+
+I go to Designer Dashboard (/dashboard/designer).
+
+I create or open a project and try to upload a room image (the designer’s client room photo).
+
+When I confirm the upload, the server responds with:
+“An internal server error occurred”, and the image is not saved.
+
+The Artist side (artwork upload + widget) now works correctly – this error happens only in the Designer flow.
+
+What you should do (scope):
+
+Locate the backend endpoint and code that handles Designer project image uploads
+
+This is NOT the artist artwork upload; it’s the upload for designer room/client photos.
+
+Search for routes/controllers mentioning designer, project, room upload, etc.
+
+Reproduce the error in dev:
+
+Use the Designer dashboard UI, upload a room image, and confirm you see the same
+“Internal server error”.
+
+Check server logs / stack trace to identify the exact cause.
+
+Fix the upload logic for Designer room images so that:
+
+The file is actually stored (same approach as we now use for Artist artwork images — local storage is fine for MVP).
+
+A valid image path/URL is saved in the corresponding Designer project record.
+
+The API returns that image URL in the project data.
+
+Update the Designer dashboard front-end (if needed) so that:
+
+After a successful upload, the room image is visible in the project (thumbnail or preview).
+
+After a full page refresh, the project still shows the saved room image.
+
+Keep Artist upload & widget behavior intact:
+
+Do NOT modify the existing artwork upload pipeline used by Artists.
+
+Do NOT touch widget → Studio logic (artworkId, upload mode, etc.).
+
+The Designer upload should have its own, isolated fix.
+
+Test end-to-end:
+
+As Designer:
+
+Create a project.
+
+Upload a room image → no internal server error, upload succeeds.
+
+Refresh the page → the same room image is still shown in the project.
+
+Important constraints (DO NOT):
+
+Do not introduce any hard dependency on external object storage for this. MVP must work in the current Replit setup.
+
+Do not refactor unrelated code or change Artist upload/widget behavior.
+
+Do not touch Stripe, GA4, or authentication logic.
+
+Stop condition:
+
+From Designer Dashboard, I can upload a room image for a project without seeing “An internal server error occurred”.
+
+After refresh, the Designer project shows the room image correctly.
+
+Artist dashboard upload + Shopify widget + Studio continue to work exactly as they do now.

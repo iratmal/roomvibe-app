@@ -105,6 +105,7 @@ export async function initializeDatabase() {
         id SERIAL PRIMARY KEY,
         project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
         image_url TEXT NOT NULL,
+        image_data TEXT,
         label VARCHAR(255),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
@@ -112,6 +113,19 @@ export async function initializeDatabase() {
 
     await query(`
       CREATE INDEX IF NOT EXISTS idx_room_images_project_id ON room_images(project_id);
+    `);
+
+    // Add image_data column to room_images if it doesn't exist (for existing installations)
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'room_images' AND column_name = 'image_data'
+        ) THEN
+          ALTER TABLE room_images ADD COLUMN image_data TEXT;
+        END IF;
+      END $$;
     `);
 
     await query(`

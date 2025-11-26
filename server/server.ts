@@ -93,6 +93,45 @@ app.get('/api/artwork-image/:id', async (req: any, res) => {
   }
 });
 
+// Serve room images from database (for Designer uploads)
+app.get('/api/room-image/:id', async (req: any, res) => {
+  try {
+    const roomId = parseInt(req.params.id);
+    
+    if (isNaN(roomId)) {
+      return res.status(400).json({ error: 'Invalid room image ID' });
+    }
+
+    const result = await query('SELECT image_data FROM room_images WHERE id = $1', [roomId]);
+
+    if (result.rows.length === 0 || !result.rows[0].image_data) {
+      return res.status(404).json({ error: 'Room image not found' });
+    }
+
+    const imageData = result.rows[0].image_data;
+    const matches = imageData.match(/^data:([^;]+);base64,(.+)$/);
+    
+    if (!matches) {
+      return res.status(500).json({ error: 'Invalid image data format' });
+    }
+
+    const mimeType = matches[1];
+    const base64Data = matches[2];
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    res.set({
+      'Content-Type': mimeType,
+      'Content-Length': buffer.length,
+      'Cache-Control': 'public, max-age=31536000'
+    });
+    
+    res.send(buffer);
+  } catch (error) {
+    console.error('Error serving room image:', error);
+    res.status(500).json({ error: 'Failed to serve room image' });
+  }
+});
+
 app.get('/api/artwork/:id', async (req: any, res) => {
   try {
     const artworkId = parseInt(req.params.id);

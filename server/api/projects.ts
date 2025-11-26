@@ -6,19 +6,10 @@ import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'public/uploads/rooms/');
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'room-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
+// Use memory storage (like Artist uploads) to store image as base64 in database
 const upload = multer({
-  storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 },
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
   fileFilter: (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|webp/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
@@ -216,17 +207,30 @@ router.post('/projects/:id/rooms', authenticateToken, upload.single('image'), as
       return res.status(400).json({ error: 'Image file is required' });
     }
 
-    const imageUrl = `/uploads/rooms/${req.file.filename}`;
+    // Convert image to base64 (same approach as Artist uploads)
+    const imageData = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    console.log('[Designer Upload] Image converted to base64, size:', imageData.length);
 
+    // Store with a URL that will serve the image from the database
     const result = await query(
-      `INSERT INTO room_images (project_id, image_url, label)
-       VALUES ($1, $2, $3)
-       RETURNING *`,
-      [projectId, imageUrl, label || null]
+      `INSERT INTO room_images (project_id, image_url, image_data, label)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, project_id, image_url, label, created_at`,
+      [projectId, `/api/room-image/${Date.now()}`, imageData, label || null]
     );
 
-    console.log('Room image uploaded successfully:', result.rows[0].id);
-    res.status(201).json({ room: result.rows[0], message: 'Room image uploaded successfully' });
+    // Update the image_url to include the actual ID
+    const roomId = result.rows[0].id;
+    await query(
+      `UPDATE room_images SET image_url = $1 WHERE id = $2`,
+      [`/api/room-image/${roomId}`, roomId]
+    );
+
+    console.log('Room image uploaded successfully:', roomId);
+    res.status(201).json({ 
+      room: { ...result.rows[0], image_url: `/api/room-image/${roomId}` }, 
+      message: 'Room image uploaded successfully' 
+    });
   } catch (error: any) {
     console.error('Error uploading room image:', error);
     res.status(500).json({ error: 'Failed to upload room image', details: error.message });
