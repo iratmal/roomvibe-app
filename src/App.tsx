@@ -350,11 +350,19 @@ function TopNav() {
 
 function HomePage() {
   return (
-    <main>
-      <Hero />
-      <HowItWorks />
-      <AudienceSection />
-      <CTASection />
+    <main className="flex flex-col">
+      <div className="order-1">
+        <Hero />
+      </div>
+      <div className="order-3 md:order-2">
+        <HowItWorks />
+      </div>
+      <div className="order-2 md:order-3">
+        <AudienceSection />
+      </div>
+      <div className="order-4">
+        <CTASection />
+      </div>
     </main>
   );
 }
