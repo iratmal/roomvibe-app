@@ -870,7 +870,8 @@ function Studio() {
 
   const fileRef = useRef<HTMLInputElement | null>(null);
 
-  const scene: any = (presets as any).find((p: any) => p.id === sceneId) || (presets as any)[0];
+  // In upload mode (empty sceneId), don't fall back to first preset - show upload prompt instead
+  const scene: any = sceneId ? ((presets as any).find((p: any) => p.id === sceneId) || (presets as any)[0]) : null;
   const safe = scene?.safeArea || { x: 0.5, y: 0.4, w: 0.6, h: 0.5 };
 
   // Real-scale artwork dimensions in pixels (with scale multiplier)
@@ -1211,7 +1212,7 @@ function Studio() {
             <div className="rounded-rvLg border border-rv-neutral bg-white shadow-rvSoft">
               <div className="flex items-center justify-between border-b border-rv-neutral px-4 py-3 text-sm">
                 <div className="flex items-center gap-2 text-rv-primary font-semibold">
-                  <RoomIcon className="h-4 w-4" /> {scene?.name}
+                  <RoomIcon className="h-4 w-4" /> {userPhoto ? 'Your Wall' : scene?.name || 'Upload Your Wall'}
                 </div>
                 <div className="flex items-center gap-3 text-rv-textMuted">
                   <button
@@ -1249,10 +1250,38 @@ function Studio() {
               >
                 {userPhoto ? (
                   <img src={userPhoto} alt="Your wall" className="absolute inset-0 h-full w-full object-cover" style={{ pointerEvents: 'none' }} />
-                ) : (
+                ) : scene ? (
                   <img src={scene.photo} alt={scene.name} className="absolute inset-0 h-full w-full object-cover" style={{ pointerEvents: 'none' }} />
+                ) : (
+                  /* Upload mode: Show upload prompt when no room selected */
+                  <div 
+                    className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-rv-surface to-white cursor-pointer"
+                    onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}
+                  >
+                    <div className="text-center p-8">
+                      <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-rv-primary/10 flex items-center justify-center">
+                        <svg className="w-10 h-10 text-rv-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                        </svg>
+                      </div>
+                      <h3 className="text-xl font-semibold text-rv-text mb-2">Upload your wall photo</h3>
+                      <p className="text-rv-textMuted text-sm mb-6 max-w-xs mx-auto">
+                        Take a photo of your wall and see how this artwork looks in your space
+                      </p>
+                      <button
+                        className="px-6 py-3 bg-rv-primary text-white rounded-rvMd font-semibold hover:bg-rv-primaryHover transition-colors shadow-rvSoft"
+                        onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}
+                      >
+                        Choose Photo
+                      </button>
+                      <p className="text-rv-textMuted text-xs mt-4">
+                        Or select a preset room from the panel below
+                      </p>
+                    </div>
+                  </div>
                 )}
-                {/* Frame container */}
+                {/* Frame container - only show when there's a background (user photo or preset room) */}
+                {(userPhoto || scene) && (
                 <div
                   className={frameConfig.id === "none" ? "rounded-md shadow-2xl" : "shadow-2xl"}
                   style={{ 
@@ -1491,6 +1520,7 @@ function Studio() {
                     </>
                   )}
                 </div>
+                )}
               </div>
             </div>
           </section>
