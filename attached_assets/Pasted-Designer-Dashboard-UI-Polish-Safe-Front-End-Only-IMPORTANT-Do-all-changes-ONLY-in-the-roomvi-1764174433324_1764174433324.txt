@@ -1,0 +1,147 @@
+Designer Dashboard UI Polish (Safe, Front-End Only)
+
+IMPORTANT:
+👉 Do all changes ONLY in the roomvibe-dev Repl.
+👉 Do NOT modify the stable production Repl.
+(This is a UI-only task, no backend logic changes.)
+
+Goal
+
+Improve the visual design and UX layout of the Designer Dashboard to align with the RoomVibe brand and premium look.
+This is a front-end only task (React + Tailwind).
+Do NOT change any backend behavior.
+
+Scope — Implement ALL of the following UI improvements
+🔹 1. Top section (“Designer Dashboard”) visual improvement
+
+Increase spacing above/below the main header.
+
+Add a small descriptive subtitle under the header:
+“Create client projects and generate room visualizations.”
+
+Make the header font-size slightly larger and more prominent (Inter / semibold).
+
+Optional: add a very light warm-grey background behind the top section (e.g. #f7f8fa).
+
+🔹 2. “Create New Project” card
+
+Replace the current plain white block with a premium card design:
+
+Increase padding (e.g. p-8).
+
+Add rounded corners (rounded-2xl).
+
+Add a soft shadow (shadow-lg shadow-slate-200).
+
+Add subtle light background (e.g. bg-white).
+
+Add icons inside or beside input fields (optional, but desirable):
+
+Project Title → 📁
+
+Client Name → 👤
+
+Room Type → 🏡
+
+Notes → 📝
+
+On desktop: show Project Title and Client Name on the same row.
+
+Make Create Project button full-width on mobile and centered on desktop.
+
+Improve the layout so that the card visually feels like a “workspace tool”.
+
+🔹 3. Empty state for “My Projects”
+
+Current state is too empty.
+
+Replace with:
+
+A centered empty-state illustration (simple SVG placeholder).
+
+Text:
+“You don’t have any projects yet.”
+“Create your first project above to organize your client work.”
+
+Light grey background or soft padding to visually separate this part.
+
+This is only styling — do NOT add project features or logic.
+
+🔹 4. Designer Account section (bottom left)
+
+Improve the card visually:
+
+Make the card smaller and cleaner
+
+Change background to a lighter neutral (e.g. bg-slate-50)
+
+Add icon/avatar outline at the top left (optional)
+
+Title on top: “Account Details”
+
+Better spacing
+
+Rounded corners (rounded-xl)
+
+Use RoomVibe color palette for text (navy #283593)
+
+🔹 5. Change Password card (bottom right)
+
+Improve consistency:
+
+Increase padding
+
+Rounded corners (rounded-xl)
+
+Add lock icons to password fields (optional)
+
+Add small helper text under the card title:
+“Update your password to keep your account secure.”
+
+6. Brand Consistency
+
+Apply the following consistent styles (already used in the Artist dashboard):
+
+Inter font everywhere (matching brand identity)
+
+Consistent heading sizes (H1/H2/H3)
+
+Use RoomVibe primary color #283593 for buttons, headers, links
+
+Use soft-grey neutrals for backgrounds: #f7f8fa / #f5f6f8
+
+Ensure spacing and paddings match the Artist dashboard style
+
+7. NO changes to logic
+
+DO NOT modify:
+
+Project creation logic
+
+API calls
+
+Authentication
+
+Database
+
+Routing
+
+Anything involving backend
+
+This task is strictly UI polish.
+
+Stop condition
+
+The Designer Dashboard should visually match the premium style of the Artist dashboard:
+
+Modern, clean, minimal
+
+Better spacing
+
+Better card layouts
+
+Pleasant empty state
+
+Overall more professional designer-friendly look
+
+All functionality must remain identical.
