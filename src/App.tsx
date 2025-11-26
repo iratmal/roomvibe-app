@@ -775,6 +775,10 @@ function Studio() {
   const [artId, setArtId] = useState<string>("light-my-fire-140-70-cm-roomvibe");
   const artIdRef = useRef<string>(artId);
   const [isLoadingArtwork, setIsLoadingArtwork] = useState<boolean>(false);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   
   useEffect(() => {
     const loadArtworkFromUrl = async () => {
