@@ -1,0 +1,96 @@
+Goal:
+Fix the Shopify Artwork Widget so that when a customer clicks “View in your room” on a product page:
+
+the RoomVibe Studio opens with that specific artwork preselected (not always “Light My Fire”), and
+
+the Studio opens in “Upload your room” mode by default (no preset room selected; user is invited to upload their own wall).
+
+Current behavior (problem):
+
+I have an artwork (e.g. “Rose Gold”) in my Artist dashboard with a working Get Widget Code and Buy URL.
+
+I paste the widget code into a Shopify product.
+
+On the product page I see the purple button “See / View in your room” and it opens the Studio correctly.
+
+BUT:
+
+The Studio always opens with the same default artwork (“Light My Fire”) instead of the artwork that belongs to that widget/product.
+
+The Studio opens in Room 1 preset scene with the sofa, instead of focusing on uploading the customer’s wall photo.
+
+What you should do (scope):
+
+Artwork selection from widget
+
+Inspect the current Artwork Widget Code that is shown in the Artist dashboard (“Get Widget Code”).
+
+Ensure that the embed code includes a unique identifier for the specific artwork (e.g. artworkId).
+
+Ensure that when the widget opens the Studio (in an iframe/modal), the Studio URL includes that identifier, e.g.:
+
+...?artworkId=<id of that artwork>
+
+In the Studio front-end, on initial load:
+
+read the artworkId from the URL,
+
+find the matching artwork in the loaded catalogue,
+
+set it as the initially selected artwork.
+
+If artworkId is missing → keep the current default behavior.
+
+Default “Upload your room” mode for widget entry
+
+For Studio sessions that are opened from the external widget (Shopify), change the initial view so that:
+
+the main canvas is empty / neutral (no preset room image),
+
+the UI clearly highlights the “Upload wall photo” action (same effect as if the user manually clicked that button),
+
+preset Rooms (Room 1–10) can i dalje ostati dostupni sa strane, ali nijedan nije automatski aktivan.
+
+One simple way is to:
+
+add a query param like entry=widget or mode=upload,
+
+on Studio init, if mode=upload → skip selecting a preset scene and show the upload state instead.
+
+End-to-end testing
+
+In the Artist dashboard, create at least two different artworks and generate a widget code for each.
+
+Embed each widget into a different test product in Shopify.
+
+For each product:
+
+open the page, click “View in your room”,
+
+confirm that the Studio opens with that specific artwork preselected,
+
+confirm that the Studio opens in upload mode (no Room 1 background; user is prompted to upload their wall).
+
+Verify that existing behavior inside the Studio (changing rooms, frames, etc.) still works normally after the initial state.
+
+Important constraints (DO NOT):
+
+Do not implement a full multi-artist marketplace in this task – this is only about mapping an artwork to its widget and adjusting the initial Studio state.
+
+Do not change Stripe, GA4, auth, or other unrelated systems.
+
+Do not refactor large parts of the app; limit changes to:
+
+widget embed generation,
+
+widget → Studio URL parameters,
+
+Studio initialization logic for artwork selection + initial scene.
+
+Stop condition:
+
+On Shopify, when I click “View in your room” on a product tied to artwork X, the Studio opens:
+
+with artwork X already selected, and
+
+in “Upload your room” mode (blank canvas / upload focus), not with Room 1 preset background.

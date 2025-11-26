@@ -721,9 +721,28 @@ const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
 
 function Studio() {
   const isInIframe = useIsInIframe();
-  const [sceneId, setSceneId] = useState<string>((presets as any)[0]?.id || "");
+  // Check URL params for widget mode (upload mode = no preset room selected)
+  const getInitialSceneId = (): string => {
+    try {
+      const hash = window.location.hash;
+      const queryIndex = hash.indexOf('?');
+      if (queryIndex !== -1) {
+        const queryString = hash.substring(queryIndex + 1);
+        const params = new URLSearchParams(queryString);
+        if (params.get('mode') === 'upload') {
+          return ''; // Empty = no preset, user must upload their wall
+        }
+      }
+    } catch (e) {
+      console.warn('[Studio] Error reading mode param:', e);
+    }
+    return (presets as any)[0]?.id || '';
+  };
+
+  const [sceneId, setSceneId] = useState<string>(getInitialSceneId());
   const [wallColor, setWallColor] = useState<string>("#f2f4f7");
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
+  const [isUploadMode, setIsUploadMode] = useState<boolean>(getInitialSceneId() === '');
 
   const [artworksState, setArtworksState] = useState<any[]>(localArtworks as any);
   const [artId, setArtId] = useState<string>("light-my-fire-140-70-cm-roomvibe");
@@ -753,7 +772,8 @@ function Studio() {
         if (!isNaN(numericId)) {
           setIsLoadingArtwork(true);
           try {
-            const response = await fetch(`${API_URL}/api/artist/artwork/${numericId}`);
+            // Use public artwork endpoint (no auth required for widget)
+            const response = await fetch(`${API_URL}/api/artwork/${numericId}`);
             if (response.ok) {
               const data = await response.json();
               if (data.artwork) {

@@ -189,6 +189,8 @@
     var params = [];
     if (artistId) params.push('artistId=' + encodeURIComponent(artistId));
     if (artworkId) params.push('artworkId=' + encodeURIComponent(artworkId));
+    // When widget opens Studio, start in upload mode (no preset room)
+    params.push('mode=upload');
     if (params.length > 0) {
       studioUrl += '?' + params.join('&');
     }
