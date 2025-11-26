@@ -1,39 +1,10 @@
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
-import { randomUUID } from 'crypto';
 import { query } from '../db/database.js';
 import { authenticateToken } from '../middleware/auth.js';
-import { ObjectStorageService, ObjectNotFoundError } from '../objectStorage.js';
 
 const router = express.Router();
-
-const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads', 'artworks');
-
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-}
-
-async function uploadImage(buffer: Buffer, originalname: string, mimetype: string): Promise<string> {
-  try {
-    const objectStorage = new ObjectStorageService();
-    const imageUrl = await objectStorage.uploadBuffer(buffer, originalname, mimetype);
-    console.log('[Upload] Image uploaded to object storage:', imageUrl);
-    return imageUrl;
-  } catch (objectStorageError: any) {
-    console.log('[Upload] Object storage not available, falling back to local storage:', objectStorageError.message);
-    
-    const extension = originalname.includes('.') ? originalname.split('.').pop() : 'jpg';
-    const filename = `${randomUUID()}.${extension}`;
-    const filepath = path.join(UPLOADS_DIR, filename);
-    
-    fs.writeFileSync(filepath, buffer);
-    const localUrl = `/uploads/artworks/${filename}`;
-    console.log('[Upload] Image saved to local storage:', localUrl);
-    return localUrl;
-  }
-}
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -109,13 +80,8 @@ router.post('/artworks', authenticateToken, upload.single('image'), async (req: 
       return res.status(400).json({ error: 'Image file is required' });
     }
 
-    let imageUrl: string;
-    try {
-      imageUrl = await uploadImage(req.file.buffer, req.file.originalname, req.file.mimetype);
-    } catch (storageError: any) {
-      console.error('[Upload] Storage error:', storageError.message);
-      return res.status(500).json({ error: 'Failed to upload image', details: storageError.message });
-    }
+    const imageData = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    console.log('[Upload] Image converted to base64, size:', imageData.length);
     
     const targetArtistId = req.user.role === 'admin' && artistId ? parseInt(artistId) : req.user.id;
     const currency = priceCurrency || 'EUR';
@@ -123,13 +89,17 @@ router.post('/artworks', authenticateToken, upload.single('image'), async (req: 
 
     console.log('Inserting artwork into database...');
     const result = await query(
-      `INSERT INTO artworks (artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP)
+      `INSERT INTO artworks (artist_id, title, image_url, image_data, width, height, dimension_unit, price_amount, price_currency, buy_url, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CURRENT_TIMESTAMP)
        RETURNING id, artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, created_at, updated_at`,
-      [targetArtistId, title, imageUrl, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl]
+      [targetArtistId, title, `/api/artwork-image/${Date.now()}`, imageData, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl]
     );
 
-    console.log('Artwork created successfully:', result.rows[0].id);
+    const artworkId = result.rows[0].id;
+    await query(`UPDATE artworks SET image_url = $1 WHERE id = $2`, [`/api/artwork-image/${artworkId}`, artworkId]);
+    result.rows[0].image_url = `/api/artwork-image/${artworkId}`;
+
+    console.log('Artwork created successfully:', artworkId);
     res.status(201).json({ artwork: result.rows[0], message: 'Artwork created successfully' });
   } catch (error: any) {
     console.error('Error creating artwork:', error);
@@ -164,14 +134,12 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
     }
 
     let imageUrl = existingArtwork.rows[0].image_url;
+    let imageData = existingArtwork.rows[0].image_data;
+    
     if (req.file) {
-      try {
-        imageUrl = await uploadImage(req.file.buffer, req.file.originalname, req.file.mimetype);
-        console.log('[Update] New image uploaded:', imageUrl);
-      } catch (storageError: any) {
-        console.error('[Update] Storage error:', storageError.message);
-        return res.status(500).json({ error: 'Failed to upload image', details: storageError.message });
-      }
+      imageData = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+      imageUrl = `/api/artwork-image/${artworkId}`;
+      console.log('[Update] New image converted to base64, size:', imageData.length);
     }
 
     const currency = priceCurrency || existingArtwork.rows[0].price_currency || 'EUR';
@@ -179,16 +147,54 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
 
     const result = await query(
       `UPDATE artworks 
-       SET title = $1, image_url = $2, width = $3, height = $4, dimension_unit = $5, price_amount = $6, price_currency = $7, buy_url = $8, updated_at = CURRENT_TIMESTAMP
-       WHERE id = $9
+       SET title = $1, image_url = $2, image_data = $3, width = $4, height = $5, dimension_unit = $6, price_amount = $7, price_currency = $8, buy_url = $9, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $10
        RETURNING id, artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, created_at, updated_at`,
-      [title, imageUrl, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, artworkId]
+      [title, imageUrl, imageData, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, artworkId]
     );
 
     res.json({ artwork: result.rows[0], message: 'Artwork updated successfully' });
   } catch (error) {
     console.error('Error updating artwork:', error);
     res.status(500).json({ error: 'Failed to update artwork' });
+  }
+});
+
+router.get('/artwork-image/:id', async (req: any, res) => {
+  try {
+    const artworkId = parseInt(req.params.id);
+    
+    if (isNaN(artworkId)) {
+      return res.status(400).json({ error: 'Invalid artwork ID' });
+    }
+
+    const result = await query('SELECT image_data FROM artworks WHERE id = $1', [artworkId]);
+
+    if (result.rows.length === 0 || !result.rows[0].image_data) {
+      return res.status(404).json({ error: 'Image not found' });
+    }
+
+    const imageData = result.rows[0].image_data;
+    const matches = imageData.match(/^data:([^;]+);base64,(.+)$/);
+    
+    if (!matches) {
+      return res.status(500).json({ error: 'Invalid image data format' });
+    }
+
+    const mimeType = matches[1];
+    const base64Data = matches[2];
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    res.set({
+      'Content-Type': mimeType,
+      'Content-Length': buffer.length,
+      'Cache-Control': 'public, max-age=31536000'
+    });
+    
+    res.send(buffer);
+  } catch (error) {
+    console.error('Error serving artwork image:', error);
+    res.status(500).json({ error: 'Failed to serve image' });
   }
 });
 

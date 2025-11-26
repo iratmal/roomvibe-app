@@ -5,6 +5,7 @@ modules = ["nodejs-20", "postgresql-16"]
 
 [agent]
 expertMode = true
+integrations = ["javascript_object_storage:1.0.0"]
 
 [workflows]
 runButton = "Project"
@@ -78,4 +79,3 @@ JWT_SECRET = "dev-secret-key-change-in-production-please"
 
 [userenv.shared]
 VITE_GA4_MEASUREMENT_ID = "G-F4PMGBJX09"
-PRIVATE_OBJECT_DIR = "/roomvibe-storage"
