@@ -62,6 +62,7 @@ export default function CollectionDetail() {
   });
 
   const [statusUpdate, setStatusUpdate] = useState<'draft' | 'published'>('draft');
+  const [statusLoading, setStatusLoading] = useState(false);
 
   const fetchCollection = useCallback(async () => {
     try {
@@ -279,19 +280,9 @@ export default function CollectionDetail() {
   };
 
   const handleUpdateStatus = async () => {
-    if (!collection) {
-      console.error('handleUpdateStatus: collection is null');
-      return;
-    }
+    if (!collection) return;
 
-    console.log('handleUpdateStatus called:', { 
-      collectionId, 
-      currentStatus: collection.status, 
-      newStatus: statusUpdate,
-      apiUrl: `${API_URL}/api/gallery/collections/${collectionId}`
-    });
-
-    setLoading(true);
+    setStatusLoading(true);
     setError('');
     setSuccess('');
 
@@ -303,29 +294,27 @@ export default function CollectionDetail() {
         body: JSON.stringify({ status: statusUpdate })
       });
 
-      console.log('Status update response:', { ok: response.ok, status: response.status });
-
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Status update error:', errorData);
         throw new Error(errorData.error || 'Failed to update status');
       }
 
       const data = await response.json();
-      console.log('Status update success:', data);
       
       setSuccess(data.message || 'Status updated successfully!');
-      setCollection(data.collection);
-      setStatusUpdate(data.collection.status);
+      
+      if (data.collection) {
+        setCollection(data.collection);
+        setStatusUpdate(data.collection.status);
+      }
       
       window.dispatchEvent(new CustomEvent('gallery-collection-updated'));
 
       setTimeout(() => setSuccess(''), 5000);
     } catch (err: any) {
-      console.error('Status update caught error:', err);
       setError(err.message || 'Failed to update status');
     } finally {
-      setLoading(false);
+      setStatusLoading(false);
     }
   };
 
@@ -468,16 +457,17 @@ export default function CollectionDetail() {
               value={statusUpdate}
               onChange={(e) => setStatusUpdate(e.target.value as 'draft' | 'published')}
               className="px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all text-sm"
+              disabled={statusLoading}
             >
               <option value="draft">Draft</option>
               <option value="published">Published</option>
             </select>
             <button
               onClick={handleUpdateStatus}
-              disabled={loading || statusUpdate === collection.status}
+              disabled={statusLoading || statusUpdate === collection.status}
               className="px-6 py-2.5 bg-[#283593] text-white rounded-xl hover:bg-[#1a237e] transition-all font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
             >
-              {loading ? 'Updating...' : 'Update Status'}
+              {statusLoading ? 'Updating...' : 'Update Status'}
             </button>
           </div>
         </div>
