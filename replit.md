@@ -12,46 +12,28 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 **UI/UX Decisions:**
 - **Color Scheme**: RoomVibe branding palette (Primary #283593, Accent #D8B46A, Neutral #DDE1E7, Text #1A1A1A).
 - **Typography**: Inter font family only (SemiBold for headings, Regular for body, Medium for CTAs). Letter-spacing: -0.5px for headings, line-height: 1.15.
-- **Homepage Layout** (November 2025 Redesign):
-    - **Hero Section**: 2-column grid (text left, image right), max-width 1280px, column gap 120px. Desktop: H1 42px, subtitle 18px, pt-80 pb-40. Mobile: stacked, H1 28px, image max-w-65%, centered.
-    - **How It Works**: 3 horizontal steps (desktop), stacked (mobile), gap 80px desktop / 32px mobile.
-    - **Audience Section**: Artists/Designers/Galleries with gold outline icons (#D8B46A), 3 columns with 140px gap, pricing teasers (€19/€29/€49/mo).
-    - **CTA Section**: Centered call-to-action with navy button.
-- **Studio Layout**: Three-panel Canvy-style editor (`#/studio`), responsive and mobile-first. TopNav and SiteFooter are hidden on `#/studio` for iframe embedding.
-- **Iconography**: Inline SVG components with gold accent (#D8B46A) for audience icons.
-- **Artwork Interaction**: Drag-to-move with automatic bounds checking, diagonal resize handle with smart scaling limits. Artwork starts at true physical scale and can be adjusted. Frame selector applies borders outside the artwork.
+- **Homepage Layout**: Features a hero section, "How It Works" section, audience-specific sections (Artists, Designers, Galleries), and a CTA section, all designed for responsive display.
+- **Studio Layout**: Three-panel Canvy-style editor (`#/studio`), responsive and mobile-first, with hidden TopNav and SiteFooter for iframe embedding.
+- **Iconography**: Inline SVG components with gold accent (#D8B46A).
+- **Artwork Interaction**: Drag-to-move with bounds checking, diagonal resize with smart scaling, true physical scale rendering, and frame selection.
 
 **Technical Implementations & Feature Specifications:**
-- **Routing**: Hash routing for landing page (`/`), editor (`#/studio`), authentication (`#/login`, `#/register`), dashboard (`#/dashboard`), and legal pages (`#/privacy`, `#/terms`, `#/upload-consent`).
-- **Authentication System**:
-    - **Backend API**: Express server with JWT authentication, cookie-based (HttpOnly cookies, 7-day expiration).
-    - **User Roles**: user, artist, designer, gallery, admin (stored in PostgreSQL) with Role-Based Access Control (RBAC).
-    - **Security**: bcrypt password hashing, JWT tokens, CORS protection. Email confirmation is temporarily disabled. Password change functionality is available.
+- **Routing**: Hash routing for main pages (`/`, `#/studio`, `#/login`, `#/register`, `#/dashboard`, `#/privacy`, `#/terms`, `#/upload-consent`).
+- **Authentication System**: Express server with JWT, HttpOnly cookie-based authentication, bcrypt hashing, CORS protection, and PostgreSQL for user roles (user, artist, designer, gallery, admin) and RBAC.
 - **Studio Mode**:
-    - **Left Panel (Scene Browser)**: Grid of room preset thumbnails.
-    - **Center Panel (Canvas)**: Displays selected room photo, supports user photo upload. Features real-scale rendering with artwork overlay, smart scaling limits, drag-to-move with bounds checking, and frame rendering.
-    - **Right Panel (Controls)**: Artwork selector, real-size display, frame selector, reset position button.
-    - **Mobile Layout**: On mobile devices, canvas appears first (above the fold), controls second, and room list last (below the fold) using CSS order properties. Desktop layout maintains traditional 3-column structure.
-    - **Room 4 Calibration**: Room 4 uses increased wall height (300cm vs 270cm for other rooms) to render artworks ~10% smaller, providing more realistic proportions relative to furniture. All other rooms use standard 270cm wall height.
-- **Artist Dashboard**: Provides CRUD operations for artwork management (upload, list, edit, delete artworks). Includes image upload, currency selection (EUR/USD/GBP), dimension units (cm/inches), and secure API endpoints. Database stores dimension_unit, price_amount, and price_currency fields. Buy URL opens in new tab via button (prevents auto-navigation on page load).
-    - **Image Storage**: Artwork images are stored as base64-encoded data directly in PostgreSQL (`image_data` TEXT column) for persistence across deployments without requiring external object storage configuration. Images are served via `/api/artwork-image/:id` endpoint which decodes and returns the binary data with proper mime type. This approach ensures uploads survive restarts and works immediately in the Replit environment. For production at scale, consider migrating to Replit Object Storage for better performance.
-    - **Website Integration**: Artists can embed RoomVibe widgets on their websites. Global widget code (artist-wide) and per-artwork widget codes available. Copy-to-clipboard functionality with 3-second confirmation toast. Widget script tags use dynamic artist ID and optional artwork ID for targeted embedding.
-- **Designer Dashboard**: Provides project management for client presentations. Designers can create projects with custom room image uploads (Multer, 10MB limit). Each project has title, client name, room image, and timestamps. CRUD operations via API endpoints with role-based access control. Hash-based navigation between project list and project detail views.
-    - **Image Storage**: Room images are stored as base64-encoded data directly in PostgreSQL (`image_data` TEXT column) for persistence. Images are served via `/api/room-image/:id` endpoint.
-    - **Open in Studio**: Each room image card has an "Open in Studio" button that navigates to `#/studio?roomImage=<URL>&entry=designer`. Studio reads these parameters and loads the room image as the background, with artwork picker ready for immediate use.
-- **Gallery Dashboard**: Provides collection management for online exhibitions. Galleries can create curated collections with title, subtitle, description, and publication status (draft/published). Each collection can contain multiple artworks with upload functionality (Multer, 10MB limit). Database schema includes gallery_collections and gallery_artworks tables with foreign keys and CASCADE deletes. API provides 9 endpoints (GET/POST/PUT/DELETE collections, GET/POST/PUT/DELETE artworks). Hash-based navigation between collection list (#/dashboard/gallery), collection detail (#/dashboard/gallery/collection/:id), and artwork edit (#/dashboard/gallery/artwork/:id/edit) views. Features include status toggling, full artwork CRUD (Create, Read, Update, Delete), pre-filled edit forms, buy URL buttons, delete confirmations, and automatic data refresh on navigation.
-- **Role-Based Dashboards**: Implemented for Artist, Designer, Gallery, User, and Admin roles, with specific content and access controls. Admin users can impersonate other roles for testing.
-- **Stripe Subscriptions**: Full subscription billing integration with Stripe for 4 plans (User free, Artist €9/mo, Designer €29/mo, Gallery €49/mo). Features include:
-    - **Checkout Sessions**: POST `/api/billing/create-checkout-session` creates Stripe Checkout sessions for subscription signup.
-    - **Customer Portal**: POST `/api/billing/customer-portal` provides access to Stripe's billing management portal for plan changes and cancellations.
-    - **Webhook Handler**: POST `/api/stripe/webhook` handles `checkout.session.completed`, `customer.subscription.updated`, and `customer.subscription.deleted` events.
-    - **Subscription Status**: Stored in users table with fields: `subscription_status` (free/active/canceled/expired), `subscription_plan` (user/artist/designer/gallery), `stripe_customer_id`, `stripe_subscription_id`.
-    - **SubscriptionCard Component**: Shared React component displayed on all dashboards showing current plan, status, upgrade buttons, and "Manage Billing" portal access.
-    - **Access Control Middleware**: `requireSubscription()` and `requireMinimumPlan()` helpers for protecting routes based on subscription plan.
-- **Analytics & GDPR**: Integrates Google Analytics 4 (GA4) and Hotjar, conditionally loaded based on GDPR cookie consent. A cookie consent banner and legal pages (Privacy Policy, Terms of Service, Upload Consent) are included.
-- **Artwork Enrichment**: Automated script fetches product details and dimensions from Shopify, populating local data.
-- **Real-Scale Rendering**: Pixel-perfect artwork sizing based on physical dimensions (cm) and standardized room wall height.
-- **Deployment**: Configured for Autoscale using `npm run build` and `npm start` with an Express server serving static files.
+    - **Left Panel (Scene Browser)**: Room preset thumbnails.
+    - **Center Panel (Canvas)**: Displays room photos (preset or user-uploaded), real-scale artwork rendering, smart scaling, drag-to-move, and frame rendering. Room 4 has unique calibration for larger wall height.
+    - **Right Panel (Controls)**: Artwork selector, real-size display, frame selector, reset button.
+    - **Mobile Layout**: Canvas-first, followed by controls, then room list.
+- **Artist Dashboard**: CRUD operations for artwork management (upload, list, edit, delete). Includes image upload, currency/dimension unit selection. Artwork images are base64-encoded and stored in PostgreSQL, served via API. Supports website widget embedding with dynamic artist/artwork IDs.
+- **Designer Dashboard**: Project management with custom room image uploads (Multer, 10MB limit), stored as base64 in PostgreSQL. Features "Open in Studio" functionality for uploaded rooms.
+- **Gallery Dashboard**: Collection management for online exhibitions with CRUD operations for collections and artworks. Supports publication status and multi-artwork uploads per collection.
+- **Role-Based Dashboards**: Specific content and access controls for Artist, Designer, Gallery, User, and Admin roles. Admin users can impersonate other roles.
+- **Stripe Subscriptions**: Full integration for 4 plans (User free, Artist €9/mo, Designer €29/mo, Gallery €49/mo). Includes checkout sessions, customer portal access, and webhook handling for subscription lifecycle events (`checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_succeeded`, `invoice.payment_failed`). Subscription status and plan are stored in the user database and synchronized with user roles.
+- **Analytics & GDPR**: Google Analytics 4 (GA4) and Hotjar integration, conditionally loaded based on GDPR cookie consent banner. Legal pages (Privacy Policy, Terms of Service, Upload Consent) are included.
+- **Artwork Enrichment**: Automated script for fetching product details and dimensions from Shopify.
+- **Real-Scale Rendering**: Pixel-perfect artwork sizing based on physical dimensions and standardized room wall height.
+- **Deployment**: Configured for Autoscale using `npm run build` and `npm start` with an Express server.
 
 ## External Dependencies
 - **React**: UI library.
@@ -60,14 +42,14 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 - **Tailwind CSS**: Utility-first CSS framework.
 - **Shopify Storefront API**: Used for artwork data enrichment.
 - **Node.js**: Runtime environment.
-- **Express**: Node.js web framework for API server and serving static files.
-- **PostgreSQL**: Database for user authentication and membership system.
+- **Express**: Node.js web framework.
+- **PostgreSQL**: Database.
 - **bcryptjs**: Password hashing.
-- **jsonwebtoken**: JWT token generation and verification.
-- **cookie-parser**: HTTP cookie parsing middleware.
-- **cors**: Cross-origin resource sharing middleware.
+- **jsonwebtoken**: JWT.
+- **cookie-parser**: HTTP cookie parsing.
+- **cors**: Cross-origin resource sharing.
 - **dotenv**: Environment variable management.
-- **Multer**: For handling file uploads (in-memory buffer processing).
+- **Multer**: For handling file uploads.
 - **@google-cloud/storage**: For persistent file storage via Replit Object Storage.
 - **Google Analytics 4 (GA4)**: For website analytics.
 - **Hotjar**: For user behavior analytics.
