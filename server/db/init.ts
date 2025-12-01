@@ -26,6 +26,54 @@ export async function initializeDatabase() {
     `);
 
     await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'subscription_status'
+        ) THEN
+          ALTER TABLE users ADD COLUMN subscription_status VARCHAR(20) DEFAULT 'free';
+        END IF;
+      END $$;
+    `);
+
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'subscription_plan'
+        ) THEN
+          ALTER TABLE users ADD COLUMN subscription_plan VARCHAR(20) DEFAULT 'user';
+        END IF;
+      END $$;
+    `);
+
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'stripe_customer_id'
+        ) THEN
+          ALTER TABLE users ADD COLUMN stripe_customer_id VARCHAR(255);
+        END IF;
+      END $$;
+    `);
+
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'stripe_subscription_id'
+        ) THEN
+          ALTER TABLE users ADD COLUMN stripe_subscription_id VARCHAR(255);
+        END IF;
+      END $$;
+    `);
+
+    await query(`
       CREATE TABLE IF NOT EXISTS artworks (
         id SERIAL PRIMARY KEY,
         artist_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
