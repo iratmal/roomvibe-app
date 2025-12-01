@@ -1,0 +1,292 @@
+# Stripe Subscriptions Integration Task for Replit Agent
+
+Below is the full task text you will send to the Replit Agent.
+You may edit anything inside this Canvas before copying.
+
+When you copy/paste to the agent, remember to:
+
+* Add **your TEST secret key** and **publishable key** manually (do NOT paste them into Canvas).
+* Replace **PRICE IDs** or **PRODUCT IDs** according to what Stripe requires.
+
+---
+
+## ✅ Stripe Product IDs (inserted from Irena)
+
+**GALLERY PRODUCT ID:** `prod_TWYEqX7PHujFrO`
+
+**DESIGNER PRODUCT ID:** `prod_TWYDnd6eV54oMN`
+
+**ARTIST PRODUCT ID:** `prod_TWYDkK6OaSaj4C`
+
+**USER PRODUCT ID:** `prod_TWYCZTwBGyatt8`
+
+> ⚠️ *If your Stripe setup uses PRICE IDs (price_xxx) for subscriptions, replace these product IDs with their corresponding price IDs before sending the task to the agent.*
+
+---
+
+# 📌 TASK FOR REPLIT AGENT (Stripe Subscriptions)
+
+Hi! I need you to integrate **Stripe subscriptions** into my RoomVibe app.
+
+## 🧩 Tech context
+
+* App name: **RoomVibe** (SaaS for visualizing art on walls)
+* Backend: **Node.js + Express**
+* Frontend: **React**
+* Authentication and User model already exist
+* Use **TEST MODE** only
+
+---
+
+# 🎯 Goal of this task
+
+Implement full subscription billing for 4 plans:
+
+* **RoomVibe User** — €0 / month
+* **RoomVibe Artist** — €9 / month
+* **RoomVibe Designer** — €29 / month
+* **RoomVibe Gallery** — €49 / month
+
+These products are already created in Stripe.
+Use the PRODUCT/PRICE IDs I provide.
+
+---
+
+# 🔐 Stripe TEST keys to use
+
+Please configure these as environment variables:
+
+```
+STRIPE_SECRET_KEY = sk_test_...
+STRIPE_PUBLISHABLE_KEY = pk_test_...
+STRIPE_WEBHOOK_SECRET = whsec_...
+```
+
+I will add the actual values in Replit manually.
+
+---
+
+# 📦 Stripe product mapping (use my IDs)
+
+Use these 4 PRODUCT IDs (or replace with PRICE IDs if required by your implementation):
+
+```
+USER → prod_TWYCZTwBGyatt8
+ARTIST → prod_TWYDkK6OaSaj4C
+DESIGNER → prod_TWYDnd6eV54oMN
+GALLERY → prod_TWYEqX7PHujFrO
+```
+
+Map them like this inside the backend:
+
+```
+if (plan === 'user') use USER price/product ID
+if (plan === 'artist') use ARTIST price/product ID
+if (plan === 'designer') use DESIGNER price/product ID
+if (plan === 'gallery') use GALLERY price/product ID
+```
+
+---
+
+# ✅ PART 1 — Backend Stripe Setup
+
+1. Install Stripe SDK if missing:
+
+```
+npm install stripe
+```
+
+2. Create a Stripe client helper, example:
+
+```
+const Stripe = require('stripe');
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: '2024-06-20'
+});
+module.exports = stripe;
+```
+
+3. Ensure all keys come from env vars.
+
+---
+
+# ✅ PART 2 — Extend USER model with subscription fields
+
+Add the following fields:
+
+```
+subscription_status: 'free' | 'active' | 'canceled' | 'expired'
+subscription_plan: 'user' | 'artist' | 'designer' | 'gallery'
+stripe_customer_id: string | null
+stripe_subscription_id: string | null
+```
+
+Apply necessary migrations.
+
+---
+
+# ✅ PART 3 — Create Checkout Session Route
+
+Create:
+
+```
+POST /api/billing/create-checkout-session
+```
+
+### Request body
+
+```
+{
+  plan: 'user' | 'artist' | 'designer' | 'gallery'
+}
+```
+
+### Logic
+
+1. Authenticate user
+2. Map plan → product/price ID
+3. If user has `stripe_customer_id`, pass it into the session
+4. Create Checkout Session in mode: `subscription`
+
+Example fields:
+
+```
+mode: 'subscription',
+line_items: [{ price: PRICE_ID, quantity: 1 }],
+success_url: 'https://roomvibe.app/dashboard?billing=success',
+cancel_url: 'https://roomvibe.app/dashboard?billing=cancel',
+metadata: { userId, plan }
+```
+
+Return:
+
+```
+{ url: session.url }
+```
+
+---
+
+# ✅ PART 4 — Stripe Customer Portal
+
+Create:
+
+```
+POST /api/billing/customer-portal
+```
+
+Logic:
+
+1. Auth required
+2. Require `stripe_customer_id`
+3. Create portal session:
+
+```
+const portal = await stripe.billingPortal.sessions.create({
+  customer: user.stripe_customer_id,
+  return_url: 'https://roomvibe.app/dashboard?billing=portal-return'
+});
+```
+
+Return:
+
+```
+{ url: portal.url }
+```
+
+---
+
+# ✅ PART 5 — Webhook Endpoint
+
+Create:
+
+```
+POST /api/stripe/webhook
+```
+
+### Requirements:
+
+* Use `express.raw({ type: 'application/json' })`
+* Verify signature using `STRIPE_WEBHOOK_SECRET`
+
+### Handle events:
+
+#### ✔ `checkout.session.completed`
+
+Update user:
+
+* `subscription_status = 'active'`
+* `subscription_plan = metadata.plan`
+* save `stripe_customer_id` and `stripe_subscription_id`
+
+#### ✔ `customer.subscription.updated`
+
+Update status & plan if changed.
+
+#### ✔ `customer.subscription.deleted`
+
+```
+subscription_status = 'canceled'
+```
+
+Log all events.
+
+---
+
+# ✅ PART 6 — Frontend Hooks
+
+### Pricing page
+
+* Subscribe buttons call:
+
+```
+POST /api/billing/create-checkout-session
+```
+
+then redirect to `url`.
+
+### Dashboard
+
+Show:
+
+* subscription_plan
+* subscription_status
+* Button: "Manage Billing" → calls `/api/billing/customer-portal` and redirects
+
+---
+
+# ✅ PART 7 — Access Control Helper
+
+Add a small helper:
+
+```
+function requireSubscription(plan) {
+  // check req.user.subscription_plan
+}
+```
+
+Mark `req.user.isActiveSubscriber` if plan is active.
+
+---
+
+# ✅ PART 8 — TEST MODE VERIFICATION
+
+Test with Stripe test cards:
+
+* Successful purchase
+* Webhook updates user
+* Cancel subscription
+* Change plan in Customer Portal
+
+Everything must work in **TEST MODE ONLY**.
+
+Later we will switch to LIVE keys.
+
+```
+
+---
+
+## ✔ Canvas ready — now you may paste your actual PRICE IDs or PRODUCT IDs inside the mappings.
+
+Kad si gotova s editiranjem, samo ćeš copy/pasteati agentu u Replit. 😊
+
+```
