@@ -1,0 +1,253 @@
+# Task for Replit Agent – /pricing Page + "Your Plan" Card
+
+Hi! Now that the Stripe subscription backend is working in TEST mode, I’d like you to implement the **/pricing page** and a **“Your Plan” card on the dashboard**, wired into the existing subscription logic.
+
+Please keep things simple, reuse existing UI components/styles, and follow the current React and routing patterns.
+
+---
+
+## 1) `/pricing` page – 4 plans (User / Artist / Designer / Gallery)
+
+**Goal:**
+Create a pricing page that:
+
+* Shows 4 plans in a grid: **User, Artist, Designer, Gallery**
+* Uses the existing Stripe subscription flow:
+
+  * Calls `POST /api/billing/create-checkout-session`
+  * Redirects the user to the returned Stripe Checkout URL
+* Respects login state (cannot start paid checkout if user is not logged in)
+
+**Route:**
+
+* Add a route like `/pricing` (or `#/pricing` depending on the router you already use).
+
+**Layout:**
+
+* Simple hero at the top:
+
+  * Title: `Choose the RoomVibe plan that fits your art world`
+  * Subtitle: `From casual users to pro artists, designers and galleries – upgrade only when you’re ready.`
+* Below: 4 pricing cards in a responsive grid (User, Artist, Designer, Gallery).
+
+---
+
+### Plan cards content
+
+Use this content (you can adjust bullet icons but keep text roughly as is):
+
+#### 1️⃣ User (Free)
+
+* **Title:** `User`
+* **Price:** `€0 / month`
+* **Subtitle:** `Perfect to try RoomVibe without commitment.`
+* **Bullets:**
+
+  * Basic RoomVibe studio
+  * Upload 1 wall photo & 1 artwork
+  * 5 starter mockup rooms
+  * Move and resize artwork on the wall
+  * No exports or downloads
+  * No premium rooms or client tools
+* **Button:** `Start for free`
+
+  * If not logged in → go to login/signup
+  * If logged in → show state like “You’re on the free plan” (no Stripe call, since this is the default).
+
+#### 2️⃣ Artist (9 €)
+
+* **Title:** `Artist`
+* **Price:** `€9 / month`
+* **Subtitle:** `For artists who want professional mockups of their art.`
+* **Bullets:**
+
+  * Everything in User
+  * Upload up to 50 artworks
+  * Access all premium mockup rooms
+  * High-resolution exports & PDFs
+  * Save unlimited projects
+  * Artist dashboard & collections
+* **Button:** `Upgrade to Artist`
+
+  * Requires login
+  * Calls `POST /api/billing/create-checkout-session` with `plan: 'artist'`
+  * On success: redirect `window.location.href = data.url`
+
+#### 3️⃣ Designer (29 €)
+
+* **Title:** `Designer`
+* **Price:** `€29 / month`
+* **Subtitle:** `For interior designers presenting concepts to clients.`
+* **Bullets:**
+
+  * Everything in Artist
+  * Unlimited artwork and mockups
+  * Client folders & project organization
+  * Professional PDF proposals
+  * Light custom branding on exports
+  * Before/After layouts (coming soon)
+* **Button:** `Upgrade to Designer`
+
+  * Same behavior, but `plan: 'designer'`
+
+#### 4️⃣ Gallery (49 €)
+
+* **Title:** `Gallery`
+* **Price:** `€49 / month`
+* **Subtitle:** `For galleries managing collections and exhibitions.`
+* **Bullets:**
+
+  * Everything in Designer
+  * Gallery dashboard
+  * Multi-artist collections
+  * Up to 500 artworks
+  * White-label presentations
+  * Virtual gallery (future upgrade)
+* **Button:** `Upgrade to Gallery`
+
+  * Same behavior, but `plan: 'gallery'`
+
+---
+
+### Behavior details
+
+* If user is **not logged in** and clicks a paid plan button:
+
+  * Redirect them to login/signup
+  * After login, bring them back to `/pricing`.
+
+* If user **is logged in**:
+
+  * Call existing backend route to create a checkout session:
+
+    ```ts
+    POST /api/billing/create-checkout-session
+    body: { plan: 'artist' | 'designer' | 'gallery' }
+    ```
+  * Use the returned `url` to redirect to Stripe Checkout:
+
+    ```ts
+    window.location.href = data.url
+    ```
+
+* For the free **User** plan button:
+
+  * If not logged in → send to login/signup
+  * If logged in → simply show state that they’re already on the free plan (no Stripe call).
+
+---
+
+## 2) “Your Plan” card on the dashboard
+
+**Goal:**
+Show the current user’s plan & status on the dashboard, and give them quick access to billing and pricing.
+
+We already have subscription fields on the user model:
+
+* `subscription_plan`: `'user' | 'artist' | 'designer' | 'gallery'`
+* `subscription_status`: `'free' | 'active' | 'canceled' | 'expired'`
+* `role` already synchronized with plan
+
+### Placement
+
+* Add a small card on the main dashboard (for the logged-in user), for example on the top row, titled `Your Plan`.
+
+### Logic
+
+Use `subscription_plan` + `subscription_status` from the current user (wherever the frontend gets the user session).
+
+Pseudo:
+
+```ts
+const plan = user.subscription_plan;       // 'user' | 'artist' | 'designer' | 'gallery'
+const status = user.subscription_status;   // 'free' | 'active' | 'canceled' | 'expired'
+```
+
+### States
+
+1️⃣ **User (free)**
+`plan = 'user'` and `status = 'free'`
+
+* Title: `Your Plan`
+* Badge: `User`
+* Text: `You’re on the free plan. Perfect for testing RoomVibe with basic features.`
+* Status line: `Status: Free`
+* Primary button: `Upgrade plan` → `/pricing`
+* Secondary link: `View all plans` → `/pricing`
+
+2️⃣ **Artist / Designer / Gallery (active)**
+`status = 'active'` and `plan = 'artist' | 'designer' | 'gallery'`
+
+Display per plan:
+
+* **Artist**
+
+  * Badge: `Artist`
+  * Status: `Status: Active`
+  * Text: `For artists who want professional mockups and high-quality exports.`
+  * Small bullets:
+
+    * `Up to 50 artworks`
+    * `Premium mockup rooms`
+
+* **Designer**
+
+  * Badge: `Designer`
+  * Status: `Status: Active`
+  * Text: `For interior designers presenting concepts to clients.`
+  * Bullets:
+
+    * `Unlimited artworks & mockups`
+    * `Client folders & projects`
+
+* **Gallery**
+
+  * Badge: `Gallery`
+  * Status: `Status: Active`
+  * Text: `For galleries managing collections and exhibitions.`
+  * Bullets:
+
+    * `Gallery dashboard`
+    * `Collections & multi-artist support`
+
+**Buttons for active paid plans:**
+
+* Primary button: `Manage billing`
+
+  * Calls the existing customer portal backend route, for example:
+
+    ```ts
+    POST /api/billing/customer-portal
+    ```
+  * Expects `{ url }` in response → redirect `window.location.href = url`
+
+* Secondary link: `View all plans` → `/pricing`
+
+3️⃣ **Canceled / Expired**
+If `subscription_status = 'canceled'` or `'expired'`:
+
+* Show last plan badge (e.g. `Artist (Canceled)` or just `Artist`)
+* Status: `Status: Canceled`
+* Text: `Your subscription is canceled. You still have free access to the basic RoomVibe studio.`
+* Primary button: `Upgrade again` → `/pricing`
+* Secondary link: `View all plans` → `/pricing`
+
+---
+
+## 3) Use test mode only
+
+All of this should continue to use the existing Stripe TEST setup:
+
+* Test products/prices
+* Test API keys
+* Test webhook endpoint
+
+No changes to LIVE mode yet.
+
+Please keep the implementation:
+
+* consistent with existing components and styling,
+* modular (so we can adjust texts/prices later),
+* with minimal but clear comments where we map `plan → checkout` and `plan → UI text`.
+
+If you have any questions about the plan mapping or need values for plan labels, use the existing Stripe integration docs in `replit.md` as the source of truth.

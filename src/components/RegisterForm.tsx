@@ -22,8 +22,14 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
       setSuccess(data.message || 'Registration successful! You are now logged in.');
       setEmail('');
       setPassword('');
+      const returnToPricing = sessionStorage.getItem('returnToPricing');
       setTimeout(() => {
-        window.location.hash = '#/dashboard';
+        if (returnToPricing) {
+          sessionStorage.removeItem('returnToPricing');
+          window.location.hash = '#/pricing';
+        } else {
+          window.location.hash = '#/dashboard';
+        }
       }, 1500);
     } catch (err) {
       // Error handled by context

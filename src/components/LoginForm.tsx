@@ -16,7 +16,13 @@ export function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormProps) {
     clearError();
     try {
       await login(email, password);
-      onSuccess?.();
+      const returnToPricing = sessionStorage.getItem('returnToPricing');
+      if (returnToPricing) {
+        sessionStorage.removeItem('returnToPricing');
+        window.location.hash = '#/pricing';
+      } else {
+        onSuccess?.();
+      }
     } catch (err) {
       // Error handled by context
     }

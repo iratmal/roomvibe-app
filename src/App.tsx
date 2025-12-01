@@ -18,6 +18,7 @@ import ArtworkEdit from "./components/dashboards/ArtworkEdit";
 import PrivacyPolicy from "./components/legal/PrivacyPolicy";
 import TermsOfService from "./components/legal/TermsOfService";
 import UploadConsent from "./components/legal/UploadConsent";
+import { PricingPage } from "./components/PricingPage";
 import { initGA4, resetGA4, GA4Events } from "./utils/analytics";
 import { initHotjar, resetHotjar } from "./utils/hotjar";
 
@@ -85,8 +86,10 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-white text-rv-text">
-      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/login" && normalizedHash !== "#/register" && normalizedHash !== "#/privacy" && normalizedHash !== "#/terms" && normalizedHash !== "#/upload-consent" && <TopNav />}
-      {normalizedHash === "#/privacy" ? (
+      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/login" && normalizedHash !== "#/register" && normalizedHash !== "#/privacy" && normalizedHash !== "#/terms" && normalizedHash !== "#/upload-consent" && normalizedHash !== "#/pricing" && <TopNav />}
+      {normalizedHash === "#/pricing" ? (
+        <PricingPage />
+      ) : normalizedHash === "#/privacy" ? (
         <PrivacyPolicy />
       ) : normalizedHash === "#/terms" ? (
         <TermsOfService />
@@ -119,7 +122,7 @@ function AppContent() {
       ) : (
         <HomePage />
       )}
-      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/login" && normalizedHash !== "#/register" && normalizedHash !== "#/privacy" && normalizedHash !== "#/terms" && normalizedHash !== "#/upload-consent" && <SiteFooter />}
+      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/login" && normalizedHash !== "#/register" && normalizedHash !== "#/privacy" && normalizedHash !== "#/terms" && normalizedHash !== "#/upload-consent" && normalizedHash !== "#/pricing" && <SiteFooter />}
       <CookieConsentBanner />
     </div>
   );
@@ -273,6 +276,9 @@ function TopNav() {
             <a href="#how" className="text-rv-text hover:text-rv-primary transition-colors">
               How it works
             </a>
+            <a href="#/pricing" className="text-rv-text hover:text-rv-primary transition-colors">
+              Pricing
+            </a>
             <a href="#/studio" className="text-rv-text hover:text-rv-primary transition-colors">
               Studio
             </a>
@@ -313,6 +319,9 @@ function TopNav() {
               <div className="flex flex-col gap-2 font-medium">
                 <a onClick={() => setOpen(false)} href="#how" className="py-2 text-rv-text hover:text-rv-primary transition-colors">
                   How it works
+                </a>
+                <a onClick={() => setOpen(false)} href="#/pricing" className="py-2 text-rv-text hover:text-rv-primary transition-colors">
+                  Pricing
                 </a>
                 <a onClick={() => setOpen(false)} href="#/studio" className="py-2 text-rv-text hover:text-rv-primary transition-colors">
                   Studio
@@ -462,7 +471,7 @@ function AudienceSection() {
               <p className="mt-1 text-[#333] leading-relaxed text-sm md:text-base">
                 {a.line2}
               </p>
-              <a href="#/register" className="mt-5 inline-block text-[#1A2240] font-semibold hover:underline">
+              <a href="#/pricing" className="mt-5 inline-block text-[#1A2240] font-semibold hover:underline">
                 {a.pricing} · See Plans →
               </a>
             </div>
