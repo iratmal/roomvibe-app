@@ -20,6 +20,7 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 **Technical Implementations & Feature Specifications:**
 - **Routing**: Hash routing for main pages (`/`, `#/studio`, `#/login`, `#/register`, `#/dashboard`, `#/privacy`, `#/terms`, `#/upload-consent`).
 - **Authentication System**: Express server with JWT, HttpOnly cookie-based authentication, bcrypt hashing, CORS protection, and PostgreSQL for user roles (user, artist, designer, gallery, admin) and RBAC.
+- **Admin Role Protection**: Admin users have a dedicated `is_admin` boolean flag in the database. When `is_admin=true`, Stripe webhook handlers skip role updates, preserving admin privileges. The `/login` and `/me` endpoints compute `effectiveRole` as 'admin' when `is_admin=true`, ensuring admins always route to the Admin Dashboard regardless of subscription plan.
 - **Studio Mode**:
     - **Left Panel (Scene Browser)**: Room preset thumbnails.
     - **Center Panel (Canvas)**: Displays room photos (preset or user-uploaded), real-scale artwork rendering, smart scaling, drag-to-move, and frame rendering. Room 4 has unique calibration for larger wall height.
