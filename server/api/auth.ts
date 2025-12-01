@@ -181,7 +181,7 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res: Response) => 
     }
 
     const result = await query(
-      'SELECT id, email, role, email_confirmed, created_at, is_admin FROM users WHERE id = $1',
+      'SELECT id, email, role, email_confirmed, created_at, is_admin, subscription_status, subscription_plan FROM users WHERE id = $1',
       [req.user.id]
     );
 
@@ -191,6 +191,28 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res: Response) => 
 
     const user = result.rows[0];
     const effectiveRole = user.is_admin ? 'admin' : user.role;
+    
+    const { getEffectivePlan, getPlanLimits } = await import('../middleware/subscription.js');
+    const effectivePlan = getEffectivePlan(user);
+    const planLimits = getPlanLimits(user);
+
+    const artworkCountResult = await query(
+      'SELECT COUNT(*) as count FROM artworks WHERE artist_id = $1',
+      [user.id]
+    );
+    const artworkCount = parseInt(artworkCountResult.rows[0].count, 10);
+
+    const projectCountResult = await query(
+      'SELECT COUNT(*) as count FROM projects WHERE designer_id = $1',
+      [user.id]
+    );
+    const projectCount = parseInt(projectCountResult.rows[0].count, 10);
+
+    const wallPhotoCountResult = await query(
+      'SELECT COUNT(*) as count FROM room_images ri JOIN projects p ON ri.project_id = p.id WHERE p.designer_id = $1',
+      [user.id]
+    );
+    const wallPhotoCount = parseInt(wallPhotoCountResult.rows[0].count, 10);
 
     res.json({
       user: {
@@ -199,7 +221,16 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res: Response) => 
         role: effectiveRole,
         isAdmin: user.is_admin || false,
         emailConfirmed: user.email_confirmed,
-        createdAt: user.created_at
+        createdAt: user.created_at,
+        subscriptionStatus: user.subscription_status || 'free',
+        subscriptionPlan: user.subscription_plan || 'user',
+        effectivePlan,
+        planLimits,
+        usage: {
+          artworks: artworkCount,
+          projects: projectCount,
+          wallPhotos: wallPhotoCount,
+        }
       }
     });
   } catch (error) {

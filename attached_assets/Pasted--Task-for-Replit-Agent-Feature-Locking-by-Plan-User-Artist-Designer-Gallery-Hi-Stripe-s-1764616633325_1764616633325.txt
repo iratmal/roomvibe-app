@@ -1,0 +1,222 @@
+# Task for Replit Agent – Feature Locking by Plan (User / Artist / Designer / Gallery)
+
+Hi! Stripe subscriptions, pricing page and admin protection are working well. Now we need to **enforce feature access per plan** so that different subscription levels unlock different capabilities in RoomVibe.
+
+Please use the existing subscription fields on the user model:
+
+* `subscription_plan`: `'user' | 'artist' | 'designer' | 'gallery'`
+* `subscription_status`: `'free' | 'active' | 'canceled' | 'expired'`
+* `role`: already synchronized with the plan for non-admins
+* `is_admin`: true/false (admins must NOT be restricted by these rules)
+
+All rules below apply **only when `!is_admin`**.
+
+---
+
+## 1) High-level rules
+
+1. If `subscription_status` is `'canceled'` or `'expired'` → treat the user as **free User** for feature access.
+2. If `subscription_plan` is missing or null → also treat as **free User**.
+3. Only `subscription_status === 'active'` for `artist/designer/gallery` should unlock paid features.
+4. The **Admin** account (`is_admin = true`) must have full access regardless of plan.
+
+---
+
+## 2) Feature matrix by plan
+
+### Plan: User (Free)
+
+**Goal:** Let users try RoomVibe with a very limited, but functional, experience.
+
+* Can access **basic RoomVibe studio**
+* **Limits:**
+
+  * Max **1 uploaded wall photo**
+  * Max **1 uploaded artwork**
+  * Max **5 mockup rooms** (only the basic ones)
+* **Allowed:**
+
+  * Move and resize artwork on the wall
+  * Save 1 basic project (if you use projects)
+* **NOT allowed:**
+
+  * No high-resolution exports or downloads
+  * No premium mockup rooms
+  * No client/project folders
+  * No gallery dashboard or collections
+
+If a free user tries to exceed a limit, show a friendly upgrade message (see section 4).
+
+---
+
+### Plan: Artist (€9)
+
+**Goal:** Working artists who need good mockups and exports of their artworks.
+
+* Inherits everything from **User**, plus:
+* **Limits / unlocks:**
+
+  * Upload up to **50 artworks**
+  * No hard limit on wall photos (can be generous here)
+  * Access to **all premium mockup rooms**
+  * Can save **unlimited projects**
+* **Extra features unlocked:**
+
+  * High-resolution exports (JPG/PNG/PDF – whichever are implemented)
+  * Artist dashboard & collections (current Artist Dashboard view)
+
+---
+
+### Plan: Designer (€29)
+
+**Goal:** Interior designers presenting concepts to clients.
+
+* Inherits everything from **Artist**, plus:
+* **Limits / unlocks:**
+
+  * Upload **unlimited artworks**
+  * Unlimited wall photos and projects
+* **Extra features unlocked:**
+
+  * Client folders & project organization
+  * Professional PDF proposals (if implemented)
+  * Light custom branding on exports (logo/text placeholder)
+  * Any "client presentation" features you see in the code
+
+If some of these features are not yet implemented, just make sure Designer is treated as strictly **>= Artist** where checks are needed.
+
+---
+
+### Plan: Gallery (€49)
+
+**Goal:** Galleries managing collections and exhibitions.
+
+* Inherits everything from **Designer**, plus:
+* **Limits / unlocks:**
+
+  * Up to **500 artworks** (per account)
+* **Extra features unlocked:**
+
+  * Gallery dashboard
+  * Multi-artist collections
+  * Any existing or future "gallery" specific tools
+
+Again, if not all features exist yet, the important part is that Gallery is treated as the **highest tier** with the most generous limits.
+
+---
+
+## 3) Where to enforce the rules
+
+Please enforce access both on **backend** (for security) and on **frontend** (for UX):
+
+### Backend (API level)
+
+Add simple helper logic, something like:
+
+```ts
+function getEffectivePlan(user) {
+  if (user.is_admin) return 'admin';
+
+  const status = user.subscription_status;
+  const plan = user.subscription_plan || 'user';
+
+  if (status !== 'active') return 'user';
+
+  return plan; // 'user' | 'artist' | 'designer' | 'gallery'
+}
+```
+
+And then use this helper in:
+
+* artwork upload endpoints
+* wall upload endpoints
+* export/download endpoints
+* any endpoints for premium rooms, client folders, gallery dashboard, etc.
+
+Example (pseudo):
+
+```ts
+const plan = getEffectivePlan(req.user);
+
+if (plan === 'user') {
+  // check limits for walls, artworks, rooms, etc.
+}
+
+if (plan === 'user' || plan === 'artist') {
+  // maybe block some designer/gallery-only endpoints
+}
+```
+
+### Frontend (UI level)
+
+Use the same logic on the client side (using the user object from `/me`):
+
+* Hide or disable buttons the user cannot use
+* Show upgrade tooltips/messages instead of letting them click and then fail
+* Example places:
+
+  * upload artwork button
+  * export/download buttons
+  * access to premium rooms
+  * client folders / gallery dashboard navigation items
+
+The backend rules are the source of truth; frontend is for nice UX.
+
+---
+
+## 4) Upgrade messaging (UX)
+
+Whenever a user hits a limit or a locked feature, show a **simple, friendly message** instead of a hard error.
+
+Examples:
+
+* Free user trying to upload 2nd artwork:
+
+  * Message: `You’ve reached the limit for the free plan. Upgrade to Artist to upload more artworks.`
+  * Show button → `/pricing`
+
+* Artist trying to use a "client folder" feature:
+
+  * Message: `Client folders are available on the Designer plan. Upgrade to Designer to unlock this feature.`
+
+* Designer trying to use gallery-only feature:
+
+  * Message: `This feature is reserved for Gallery plans. Upgrade to Gallery to manage multi-artist collections.`
+
+Use simple modal, toast or inline alert – whatever matches the existing design system.
+
+---
+
+## 5) Testing checklist (for you and for me)
+
+Please add a short note in the code comments or in `replit.md` describing:
+
+* Where the plan/limit logic lives (helpers/middleware)
+* Which endpoints are protected
+* Which main UI elements are locked/unlocked
+
+Also please test and confirm:
+
+1. Free User:
+
+   * Can upload 1 wall + 1 artwork
+   * Gets a friendly upgrade message when trying to go beyond limits or export.
+2. Artist:
+
+   * Can upload more artworks (up to 50) and use premium rooms
+   * Can export images/PDFs.
+3. Designer:
+
+   * Has access to client/project features (where implemented)
+   * No limits that are stricter than Artist.
+4. Gallery:
+
+   * Is treated as highest tier (at least as permissive as Designer)
+   * Can access gallery-specific tools.
+5. Admin:
+
+   * Not blocked by any of these rules.
+
+The exact numbers (1/50/500) can be defined in a config/constants file so we can tweak them later without touching core logic.
+
+Thank you!

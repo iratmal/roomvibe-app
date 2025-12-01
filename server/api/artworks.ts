@@ -3,6 +3,7 @@ import multer from 'multer';
 import path from 'path';
 import { query } from '../db/database.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { checkArtworkLimit, getEffectivePlan, requireMinimumPlan } from '../middleware/subscription.js';
 
 const router = express.Router();
 
@@ -23,16 +24,24 @@ const upload = multer({
 
 router.get('/artworks', authenticateToken, async (req: any, res) => {
   try {
-    if (req.user.role !== 'artist' && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Only artists and admins can access artworks' });
+    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    
+    if (!['artist', 'designer', 'gallery', 'admin'].includes(effectivePlan)) {
+      return res.status(403).json({ 
+        error: 'Subscription required',
+        message: 'Access to artworks requires an Artist subscription or higher.',
+        current_plan: effectivePlan,
+        suggested_plan: 'artist',
+        upgrade_url: '/pricing'
+      });
     }
 
-    console.log('Fetching artworks for user:', { userId: req.user.id, role: req.user.role });
+    console.log('Fetching artworks for user:', { userId: req.user.id, effectivePlan });
 
     let queryText;
     let queryParams;
 
-    if (req.user.role === 'admin') {
+    if (effectivePlan === 'admin') {
       queryText = `SELECT a.id, a.artist_id, a.title, a.image_url, a.width, a.height, a.dimension_unit, a.price_amount, a.price_currency, a.buy_url, a.created_at, a.updated_at, u.email as artist_email
                    FROM artworks a
                    LEFT JOIN users u ON a.artist_id = u.id
@@ -60,10 +69,18 @@ router.get('/artworks', authenticateToken, async (req: any, res) => {
   }
 });
 
-router.post('/artworks', authenticateToken, upload.single('image'), async (req: any, res) => {
+router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('image'), async (req: any, res) => {
   try {
-    if (req.user.role !== 'artist' && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Only artists and admins can create artworks' });
+    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    
+    if (!['artist', 'designer', 'gallery', 'admin'].includes(effectivePlan)) {
+      return res.status(403).json({ 
+        error: 'Subscription required',
+        message: 'Artwork uploads require an Artist subscription or higher. Upgrade to start uploading your artworks.',
+        current_plan: effectivePlan,
+        suggested_plan: 'artist',
+        upgrade_url: '/pricing'
+      });
     }
 
     const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, artistId } = req.body;
@@ -83,7 +100,7 @@ router.post('/artworks', authenticateToken, upload.single('image'), async (req: 
     const imageData = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
     console.log('[Upload] Image converted to base64, size:', imageData.length);
     
-    const targetArtistId = req.user.role === 'admin' && artistId ? parseInt(artistId) : req.user.id;
+    const targetArtistId = effectivePlan === 'admin' && artistId ? parseInt(artistId) : req.user.id;
     const currency = priceCurrency || 'EUR';
     const unit = dimensionUnit || 'cm';
 
@@ -115,7 +132,9 @@ router.post('/artworks', authenticateToken, upload.single('image'), async (req: 
 
 router.put('/artworks/:id', authenticateToken, upload.single('image'), async (req: any, res) => {
   try {
-    if (req.user.role !== 'artist' && req.user.role !== 'admin') {
+    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    
+    if (!['artist', 'designer', 'gallery', 'admin'].includes(effectivePlan)) {
       return res.status(403).json({ error: 'Only artists and admins can update artworks' });
     }
 
@@ -123,7 +142,7 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
     const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl } = req.body;
 
     let existingArtwork;
-    if (req.user.role === 'admin') {
+    if (effectivePlan === 'admin') {
       existingArtwork = await query('SELECT * FROM artworks WHERE id = $1', [artworkId]);
     } else {
       existingArtwork = await query('SELECT * FROM artworks WHERE id = $1 AND artist_id = $2', [artworkId, req.user.id]);
@@ -162,14 +181,16 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
 
 router.delete('/artworks/:id', authenticateToken, async (req: any, res) => {
   try {
-    if (req.user.role !== 'artist' && req.user.role !== 'admin') {
+    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    
+    if (!['artist', 'designer', 'gallery', 'admin'].includes(effectivePlan)) {
       return res.status(403).json({ error: 'Only artists and admins can delete artworks' });
     }
 
     const artworkId = parseInt(req.params.id);
 
     let result;
-    if (req.user.role === 'admin') {
+    if (effectivePlan === 'admin') {
       result = await query('DELETE FROM artworks WHERE id = $1 RETURNING id', [artworkId]);
     } else {
       result = await query('DELETE FROM artworks WHERE id = $1 AND artist_id = $2 RETURNING id', [artworkId, req.user.id]);

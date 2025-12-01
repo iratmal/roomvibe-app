@@ -3,6 +3,7 @@ import multer from 'multer';
 import path from 'path';
 import { query } from '../db/database.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { checkProjectLimit, checkWallPhotoLimit, getEffectivePlan, requireMinimumPlan } from '../middleware/subscription.js';
 
 const router = express.Router();
 
@@ -24,16 +25,24 @@ const upload = multer({
 
 router.get('/projects', authenticateToken, async (req: any, res) => {
   try {
-    if (req.user.role !== 'designer' && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Only designers and admins can access projects' });
+    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    
+    if (!['designer', 'gallery', 'admin'].includes(effectivePlan)) {
+      return res.status(403).json({ 
+        error: 'Subscription required',
+        message: 'Access to projects requires a Designer subscription or higher.',
+        current_plan: effectivePlan,
+        suggested_plan: 'designer',
+        upgrade_url: '/pricing'
+      });
     }
 
-    console.log('Fetching projects for user:', { userId: req.user.id, role: req.user.role });
+    console.log('Fetching projects for user:', { userId: req.user.id, effectivePlan });
 
     let queryText;
     let queryParams;
 
-    if (req.user.role === 'admin') {
+    if (effectivePlan === 'admin') {
       queryText = `
         SELECT p.*, u.email as designer_email,
         (SELECT COUNT(*) FROM room_images WHERE project_id = p.id) as image_count
@@ -60,10 +69,18 @@ router.get('/projects', authenticateToken, async (req: any, res) => {
   }
 });
 
-router.post('/projects', authenticateToken, async (req: any, res) => {
+router.post('/projects', authenticateToken, checkProjectLimit, async (req: any, res) => {
   try {
-    if (req.user.role !== 'designer' && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Only designers and admins can create projects' });
+    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    
+    if (!['designer', 'gallery', 'admin'].includes(effectivePlan)) {
+      return res.status(403).json({ 
+        error: 'Subscription required',
+        message: 'Creating projects requires a Designer subscription or higher. Upgrade to organize your design work.',
+        current_plan: effectivePlan,
+        suggested_plan: 'designer',
+        upgrade_url: '/pricing'
+      });
     }
 
     const { title, clientName, roomType, notes } = req.body;
@@ -91,7 +108,9 @@ router.post('/projects', authenticateToken, async (req: any, res) => {
 
 router.delete('/projects/:id', authenticateToken, async (req: any, res) => {
   try {
-    if (req.user.role !== 'designer' && req.user.role !== 'admin') {
+    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    
+    if (!['designer', 'gallery', 'admin'].includes(effectivePlan)) {
       return res.status(403).json({ error: 'Only designers and admins can delete projects' });
     }
 
@@ -106,7 +125,7 @@ router.delete('/projects/:id', authenticateToken, async (req: any, res) => {
       return res.status(404).json({ error: 'Project not found' });
     }
 
-    if (req.user.role !== 'admin' && checkResult.rows[0].designer_id !== req.user.id) {
+    if (effectivePlan !== 'admin' && checkResult.rows[0].designer_id !== req.user.id) {
       return res.status(403).json({ error: 'You can only delete your own projects' });
     }
 
@@ -122,7 +141,9 @@ router.delete('/projects/:id', authenticateToken, async (req: any, res) => {
 
 router.get('/projects/:id', authenticateToken, async (req: any, res) => {
   try {
-    if (req.user.role !== 'designer' && req.user.role !== 'admin') {
+    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    
+    if (!['designer', 'gallery', 'admin'].includes(effectivePlan)) {
       return res.status(403).json({ error: 'Only designers and admins can access projects' });
     }
 
@@ -137,7 +158,7 @@ router.get('/projects/:id', authenticateToken, async (req: any, res) => {
       return res.status(404).json({ error: 'Project not found' });
     }
 
-    if (req.user.role !== 'admin' && result.rows[0].designer_id !== req.user.id) {
+    if (effectivePlan !== 'admin' && result.rows[0].designer_id !== req.user.id) {
       return res.status(403).json({ error: 'You can only access your own projects' });
     }
 
@@ -150,7 +171,9 @@ router.get('/projects/:id', authenticateToken, async (req: any, res) => {
 
 router.get('/projects/:id/rooms', authenticateToken, async (req: any, res) => {
   try {
-    if (req.user.role !== 'designer' && req.user.role !== 'admin') {
+    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    
+    if (!['designer', 'gallery', 'admin'].includes(effectivePlan)) {
       return res.status(403).json({ error: 'Only designers and admins can access room images' });
     }
 
@@ -165,7 +188,7 @@ router.get('/projects/:id/rooms', authenticateToken, async (req: any, res) => {
       return res.status(404).json({ error: 'Project not found' });
     }
 
-    if (req.user.role !== 'admin' && projectCheck.rows[0].designer_id !== req.user.id) {
+    if (effectivePlan !== 'admin' && projectCheck.rows[0].designer_id !== req.user.id) {
       return res.status(403).json({ error: 'You can only access your own projects' });
     }
 
@@ -181,10 +204,18 @@ router.get('/projects/:id/rooms', authenticateToken, async (req: any, res) => {
   }
 });
 
-router.post('/projects/:id/rooms', authenticateToken, upload.single('image'), async (req: any, res) => {
+router.post('/projects/:id/rooms', authenticateToken, checkWallPhotoLimit, upload.single('image'), async (req: any, res) => {
   try {
-    if (req.user.role !== 'designer' && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Only designers and admins can upload room images' });
+    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    
+    if (!['designer', 'gallery', 'admin'].includes(effectivePlan)) {
+      return res.status(403).json({ 
+        error: 'Subscription required',
+        message: 'Uploading room photos requires a Designer subscription or higher.',
+        current_plan: effectivePlan,
+        suggested_plan: 'designer',
+        upgrade_url: '/pricing'
+      });
     }
 
     const projectId = parseInt(req.params.id);
@@ -199,7 +230,7 @@ router.post('/projects/:id/rooms', authenticateToken, upload.single('image'), as
       return res.status(404).json({ error: 'Project not found' });
     }
 
-    if (req.user.role !== 'admin' && projectCheck.rows[0].designer_id !== req.user.id) {
+    if (effectivePlan !== 'admin' && projectCheck.rows[0].designer_id !== req.user.id) {
       return res.status(403).json({ error: 'You can only upload to your own projects' });
     }
 
@@ -239,7 +270,9 @@ router.post('/projects/:id/rooms', authenticateToken, upload.single('image'), as
 
 router.delete('/rooms/:id', authenticateToken, async (req: any, res) => {
   try {
-    if (req.user.role !== 'designer' && req.user.role !== 'admin') {
+    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    
+    if (!['designer', 'gallery', 'admin'].includes(effectivePlan)) {
       return res.status(403).json({ error: 'Only designers and admins can delete room images' });
     }
 
@@ -257,7 +290,7 @@ router.delete('/rooms/:id', authenticateToken, async (req: any, res) => {
       return res.status(404).json({ error: 'Room image not found' });
     }
 
-    if (req.user.role !== 'admin' && roomCheck.rows[0].designer_id !== req.user.id) {
+    if (effectivePlan !== 'admin' && roomCheck.rows[0].designer_id !== req.user.id) {
       return res.status(403).json({ error: 'You can only delete your own room images' });
     }
 

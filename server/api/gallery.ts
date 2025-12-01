@@ -2,6 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import { query } from '../db/database.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { checkGalleryArtworkLimit, getEffectivePlan, requireMinimumPlan } from '../middleware/subscription.js';
 
 const router = express.Router();
 
@@ -21,16 +22,24 @@ const upload = multer({
 
 router.get('/collections', authenticateToken, async (req: any, res) => {
   try {
-    if (req.user.role !== 'gallery' && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Only galleries and admins can access collections' });
+    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    
+    if (!['gallery', 'admin'].includes(effectivePlan)) {
+      return res.status(403).json({ 
+        error: 'Gallery subscription required',
+        message: 'The Gallery dashboard is reserved for Gallery plans. Upgrade to Gallery to manage multi-artist collections.',
+        current_plan: effectivePlan,
+        suggested_plan: 'gallery',
+        upgrade_url: '/pricing'
+      });
     }
 
-    console.log('Fetching collections for user:', { userId: req.user.id, role: req.user.role });
+    console.log('Fetching collections for user:', { userId: req.user.id, effectivePlan });
 
     let queryText;
     let queryParams;
 
-    if (req.user.role === 'admin') {
+    if (effectivePlan === 'admin') {
       queryText = `
         SELECT c.*, u.email as gallery_email,
         (SELECT COUNT(*) FROM gallery_artworks WHERE collection_id = c.id) as artwork_count
@@ -59,7 +68,9 @@ router.get('/collections', authenticateToken, async (req: any, res) => {
 
 router.post('/collections', authenticateToken, async (req: any, res) => {
   try {
-    if (req.user.role !== 'gallery' && req.user.role !== 'admin') {
+    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    
+    if (!['gallery', 'admin'].includes(effectivePlan)) {
       return res.status(403).json({ error: 'Only galleries and admins can create collections' });
     }
 
@@ -91,7 +102,9 @@ router.post('/collections', authenticateToken, async (req: any, res) => {
 
 router.put('/collections/:id', authenticateToken, async (req: any, res) => {
   try {
-    if (req.user.role !== 'gallery' && req.user.role !== 'admin') {
+    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    
+    if (!['gallery', 'admin'].includes(effectivePlan)) {
       return res.status(403).json({ error: 'Only galleries and admins can update collections' });
     }
 
@@ -107,7 +120,7 @@ router.put('/collections/:id', authenticateToken, async (req: any, res) => {
       return res.status(404).json({ error: 'Collection not found' });
     }
 
-    if (req.user.role !== 'admin' && checkResult.rows[0].gallery_id !== req.user.id) {
+    if (effectivePlan !== 'admin' && checkResult.rows[0].gallery_id !== req.user.id) {
       return res.status(403).json({ error: 'You can only update your own collections' });
     }
 
@@ -136,7 +149,9 @@ router.put('/collections/:id', authenticateToken, async (req: any, res) => {
 
 router.delete('/collections/:id', authenticateToken, async (req: any, res) => {
   try {
-    if (req.user.role !== 'gallery' && req.user.role !== 'admin') {
+    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    
+    if (!['gallery', 'admin'].includes(effectivePlan)) {
       return res.status(403).json({ error: 'Only galleries and admins can delete collections' });
     }
 
@@ -152,7 +167,7 @@ router.delete('/collections/:id', authenticateToken, async (req: any, res) => {
       return res.status(404).json({ error: 'Collection not found' });
     }
 
-    if (req.user.role !== 'admin' && checkResult.rows[0].gallery_id !== req.user.id) {
+    if (effectivePlan !== 'admin' && checkResult.rows[0].gallery_id !== req.user.id) {
       return res.status(403).json({ error: 'You can only delete your own collections' });
     }
 
@@ -168,7 +183,9 @@ router.delete('/collections/:id', authenticateToken, async (req: any, res) => {
 
 router.get('/collections/:id/artworks', authenticateToken, async (req: any, res) => {
   try {
-    if (req.user.role !== 'gallery' && req.user.role !== 'admin') {
+    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    
+    if (!['gallery', 'admin'].includes(effectivePlan)) {
       return res.status(403).json({ error: 'Only galleries and admins can access artworks' });
     }
 
@@ -184,7 +201,7 @@ router.get('/collections/:id/artworks', authenticateToken, async (req: any, res)
       return res.status(404).json({ error: 'Collection not found' });
     }
 
-    if (req.user.role !== 'admin' && checkResult.rows[0].gallery_id !== req.user.id) {
+    if (effectivePlan !== 'admin' && checkResult.rows[0].gallery_id !== req.user.id) {
       return res.status(403).json({ error: 'You can only view artworks from your own collections' });
     }
 
@@ -203,10 +220,18 @@ router.get('/collections/:id/artworks', authenticateToken, async (req: any, res)
   }
 });
 
-router.post('/collections/:id/artworks', authenticateToken, upload.single('image'), async (req: any, res) => {
+router.post('/collections/:id/artworks', authenticateToken, checkGalleryArtworkLimit, upload.single('image'), async (req: any, res) => {
   try {
-    if (req.user.role !== 'gallery' && req.user.role !== 'admin') {
-      return res.status(403).json({ error: 'Only galleries and admins can add artworks' });
+    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    
+    if (!['gallery', 'admin'].includes(effectivePlan)) {
+      return res.status(403).json({ 
+        error: 'Gallery subscription required',
+        message: 'Adding artworks to collections requires a Gallery subscription.',
+        current_plan: effectivePlan,
+        suggested_plan: 'gallery',
+        upgrade_url: '/pricing'
+      });
     }
 
     const collectionId = req.params.id;
@@ -221,7 +246,7 @@ router.post('/collections/:id/artworks', authenticateToken, upload.single('image
       return res.status(404).json({ error: 'Collection not found' });
     }
 
-    if (req.user.role !== 'admin' && checkResult.rows[0].gallery_id !== req.user.id) {
+    if (effectivePlan !== 'admin' && checkResult.rows[0].gallery_id !== req.user.id) {
       return res.status(403).json({ error: 'You can only add artworks to your own collections' });
     }
 
@@ -281,7 +306,9 @@ router.post('/collections/:id/artworks', authenticateToken, upload.single('image
 
 router.get('/artworks/:id', authenticateToken, async (req: any, res) => {
   try {
-    if (req.user.role !== 'gallery' && req.user.role !== 'admin') {
+    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    
+    if (!['gallery', 'admin'].includes(effectivePlan)) {
       return res.status(403).json({ error: 'Only galleries and admins can access artworks' });
     }
 
@@ -300,7 +327,7 @@ router.get('/artworks/:id', authenticateToken, async (req: any, res) => {
       return res.status(404).json({ error: 'Artwork not found' });
     }
 
-    if (req.user.role !== 'admin' && result.rows[0].gallery_id !== req.user.id) {
+    if (effectivePlan !== 'admin' && result.rows[0].gallery_id !== req.user.id) {
       return res.status(403).json({ error: 'You can only view artworks from your own collections' });
     }
 
@@ -314,7 +341,9 @@ router.get('/artworks/:id', authenticateToken, async (req: any, res) => {
 
 router.put('/artworks/:id', authenticateToken, async (req: any, res) => {
   try {
-    if (req.user.role !== 'gallery' && req.user.role !== 'admin') {
+    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    
+    if (!['gallery', 'admin'].includes(effectivePlan)) {
       return res.status(403).json({ error: 'Only galleries and admins can update artworks' });
     }
 
@@ -335,7 +364,7 @@ router.put('/artworks/:id', authenticateToken, async (req: any, res) => {
       return res.status(404).json({ error: 'Artwork not found' });
     }
 
-    if (req.user.role !== 'admin' && checkResult.rows[0].gallery_id !== req.user.id) {
+    if (effectivePlan !== 'admin' && checkResult.rows[0].gallery_id !== req.user.id) {
       return res.status(403).json({ error: 'You can only update artworks from your own collections' });
     }
 
@@ -383,7 +412,9 @@ router.put('/artworks/:id', authenticateToken, async (req: any, res) => {
 
 router.delete('/artworks/:id', authenticateToken, async (req: any, res) => {
   try {
-    if (req.user.role !== 'gallery' && req.user.role !== 'admin') {
+    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    
+    if (!['gallery', 'admin'].includes(effectivePlan)) {
       return res.status(403).json({ error: 'Only galleries and admins can delete artworks' });
     }
 
@@ -402,7 +433,7 @@ router.delete('/artworks/:id', authenticateToken, async (req: any, res) => {
       return res.status(404).json({ error: 'Artwork not found' });
     }
 
-    if (req.user.role !== 'admin' && checkResult.rows[0].gallery_id !== req.user.id) {
+    if (effectivePlan !== 'admin' && checkResult.rows[0].gallery_id !== req.user.id) {
       return res.status(403).json({ error: 'You can only delete artworks from your own collections' });
     }
 

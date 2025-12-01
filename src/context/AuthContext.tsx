@@ -1,4 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { PlanLimits, PlanType } from '../config/planLimits';
+
+interface UserUsage {
+  artworks: number;
+  projects: number;
+  wallPhotos: number;
+}
 
 interface User {
   id: number;
@@ -6,6 +13,11 @@ interface User {
   role: 'user' | 'artist' | 'designer' | 'gallery' | 'admin';
   isAdmin?: boolean;
   emailConfirmed: boolean;
+  subscriptionStatus?: string;
+  subscriptionPlan?: string;
+  effectivePlan?: PlanType;
+  planLimits?: PlanLimits;
+  usage?: UserUsage;
 }
 
 interface AuthContextType {

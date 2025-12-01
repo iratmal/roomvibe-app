@@ -31,6 +31,13 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 - **Gallery Dashboard**: Collection management for online exhibitions with CRUD operations for collections and artworks. Supports publication status and multi-artwork uploads per collection.
 - **Role-Based Dashboards**: Specific content and access controls for Artist, Designer, Gallery, User, and Admin roles. Admin users can impersonate other roles.
 - **Stripe Subscriptions**: Full integration for 4 plans (User free, Artist €9/mo, Designer €29/mo, Gallery €49/mo). Includes checkout sessions, customer portal access, and webhook handling for subscription lifecycle events (`checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_succeeded`, `invoice.payment_failed`). Subscription status and plan are stored in the user database and synchronized with user roles.
+- **Feature Locking by Plan**: Plan-based access control enforced on both backend (API) and frontend (UI).
+  - **Config Files**: `server/config/planLimits.ts` and `src/config/planLimits.ts` define limits and features per plan.
+  - **Backend Middleware**: `server/middleware/subscription.ts` provides `checkArtworkLimit`, `checkWallPhotoLimit`, `checkProjectLimit`, `checkGalleryArtworkLimit`, `requireMinimumPlan`, and `requireFeature` guards.
+  - **Protected Endpoints**: `POST /api/artworks` (artwork limit), `POST /api/projects` (project limit), `POST /api/projects/:id/rooms` (wall photo limit), `POST /api/gallery/collections/:id/artworks` (gallery artwork limit), `GET /api/gallery/collections` (gallery plan required).
+  - **Plan Limits**: User (1 artwork, 1 wall photo, 1 project), Artist (50 artworks, 100 walls, 100 projects, premium rooms, exports), Designer (unlimited, client folders, PDF proposals, branding), Gallery (500 artworks, gallery dashboard, multi-artist collections).
+  - **Frontend Components**: `UpgradePrompt`, `UsageMeter`, `PlanFeatureBadge` for upgrade messaging and usage display.
+  - **Admin Override**: Admins (`is_admin=true`) bypass all plan restrictions.
 - **Analytics & GDPR**: Google Analytics 4 (GA4) and Hotjar integration, conditionally loaded based on GDPR cookie consent banner. Legal pages (Privacy Policy, Terms of Service, Upload Consent) are included.
 - **Artwork Enrichment**: Automated script for fetching product details and dimensions from Shopify.
 - **Real-Scale Rendering**: Pixel-perfect artwork sizing based on physical dimensions and standardized room wall height.
