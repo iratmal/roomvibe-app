@@ -4,6 +4,7 @@ interface User {
   id: number;
   email: string;
   role: 'user' | 'artist' | 'designer' | 'gallery' | 'admin';
+  isAdmin?: boolean;
   emailConfirmed: boolean;
 }
 

@@ -1,0 +1,91 @@
+# Task for Replit Agent – Admin vs Artist Role + Dashboard Routing
+
+Hi! The Stripe subscription flow and pricing page are working great, but there is one important side-effect we need to fix regarding **roles and dashboards**.
+
+Currently, after testing the Artist/Designer subscription with my main admin account, when I open my bookmarked RoomVibe admin link, I’m taken directly to the **Artist Dashboard** instead of the **admin dashboard with all roles (Admin, Artist, Designer, Gallery, User)**.
+
+This suggests that the subscription logic has overwritten my admin role and/or changed the default redirect after login.
+
+---
+
+## 1) Goal
+
+Keep a **stable admin account** and **admin dashboard** that are **not affected** by Stripe subscriptions and role auto-mapping.
+
+At the same time, keep the current subscription logic for normal users (User/Artist/Designer/Gallery) as it is.
+
+---
+
+## 2) Requirements
+
+### A) Create/ensure a dedicated Super Admin account
+
+* There should be a clear way to have at least one **super admin** user, e.g. via:
+
+  * a boolean field on the user model like `isAdmin: true`, or
+  * a special `role: 'admin'` that is **never** overwritten by Stripe.
+
+* For this super admin account:
+
+  * Stripe subscription changes **must not** modify the admin role
+  * Logging in with this account should always route to the **admin dashboard** (not Artist/Designer/Gallery dashboards).
+
+You can either:
+
+* restore my existing admin account to `isAdmin: true` / `role: 'admin'`, or
+* create a new dedicated admin user for me and send instructions where to change the email in the code/config.
+
+(Use whatever pattern you already use for roles – just make sure the admin user is safe from Stripe role-sync.)
+
+### B) Adjust role-sync logic to skip admin
+
+Wherever you currently map Stripe subscription → `subscription_plan` → `role`, please:
+
+* Add a guard:
+
+  ```ts
+  if (user.isAdmin || user.role === 'admin') {
+    // do NOT change admin role based on Stripe
+    return;
+  }
+  ```
+
+* This ensures that admins are not accidentally turned into artists/designers by the subscription webhooks.
+
+### C) Dashboard routing rules
+
+We need a clear, predictable redirect after login:
+
+1. **Admin user (isAdmin / role === 'admin')**
+
+   * After login → redirect to **Admin Dashboard** route (the one where I can see and manage all roles).
+
+2. **Non-admin users**
+
+   * After login → redirect to their normal dashboard (User/Artist/Designer/Gallery), using the existing logic.
+   * Stripe success URL `...?billing=success` should still redirect to the correct dashboard for that plan.
+
+The key is: bookmark for admin (e.g. `/admin` or similar) should always open the admin interface, even if the same email has an Artist subscription.
+
+---
+
+## 3) Optional: "Your Plan" visibility
+
+If you’ve already implemented the **"Your Plan"** card on the normal dashboard (for non-admin users), please keep it **hidden** or irrelevant on the admin dashboard.
+
+* Admin user doesn’t need the "Your Plan" card for themselves, they mainly need management tools.
+* Normal users (User/Artist/Designer/Gallery) should still see their plan & the `Manage billing` button on their dashboard.
+
+---
+
+## 4) Summary
+
+* Preserve a stable **admin account** unaffected by Stripe.
+* Do **not** change admin role via subscription webhooks.
+* Ensure admin login always goes to the **admin dashboard**, not Artist Dashboard.
+* Keep current subscription behavior for regular users exactly as is.
+
+Please let me know:
+
+* which email is configured as the main admin,
+* and which route is the official admin dashboard entry point, so I can bookmark the correct URL for future use.

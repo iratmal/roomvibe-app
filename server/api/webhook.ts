@@ -40,19 +40,38 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 
         console.log(`✅ Checkout completed for user ${userId}, plan: ${plan}`);
 
-        await query(
-          `UPDATE users SET 
-            subscription_status = 'active',
-            subscription_plan = $1,
-            stripe_customer_id = $2,
-            stripe_subscription_id = $3,
-            role = $1,
-            updated_at = CURRENT_TIMESTAMP
-          WHERE id = $4`,
-          [plan, customerId, subscriptionId, userId]
+        const userResult = await query(
+          'SELECT is_admin FROM users WHERE id = $1',
+          [userId]
         );
+        const isAdmin = userResult.rows[0]?.is_admin === true;
 
-        console.log(`✅ User ${userId} subscription updated to ${plan}`);
+        if (isAdmin) {
+          await query(
+            `UPDATE users SET 
+              subscription_status = 'active',
+              subscription_plan = $1,
+              stripe_customer_id = $2,
+              stripe_subscription_id = $3,
+              updated_at = CURRENT_TIMESTAMP
+            WHERE id = $4`,
+            [plan, customerId, subscriptionId, userId]
+          );
+          console.log(`✅ Admin user ${userId} subscription updated to ${plan} (role preserved)`);
+        } else {
+          await query(
+            `UPDATE users SET 
+              subscription_status = 'active',
+              subscription_plan = $1,
+              stripe_customer_id = $2,
+              stripe_subscription_id = $3,
+              role = $1,
+              updated_at = CURRENT_TIMESTAMP
+            WHERE id = $4`,
+            [plan, customerId, subscriptionId, userId]
+          );
+          console.log(`✅ User ${userId} subscription updated to ${plan}`);
+        }
         break;
       }
 
@@ -77,17 +96,35 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
           subscriptionStatus = 'expired';
         }
 
+        const adminCheckResult = await query(
+          'SELECT is_admin FROM users WHERE stripe_customer_id = $1',
+          [customerId]
+        );
+        const isAdmin = adminCheckResult.rows[0]?.is_admin === true;
+
         if (plan) {
-          await query(
-            `UPDATE users SET 
-              subscription_status = $1,
-              subscription_plan = $2,
-              role = $2,
-              updated_at = CURRENT_TIMESTAMP
-            WHERE stripe_customer_id = $3`,
-            [subscriptionStatus, plan, customerId]
-          );
-          console.log(`✅ Subscription updated for customer ${customerId}: status=${subscriptionStatus}, plan=${plan}`);
+          if (isAdmin) {
+            await query(
+              `UPDATE users SET 
+                subscription_status = $1,
+                subscription_plan = $2,
+                updated_at = CURRENT_TIMESTAMP
+              WHERE stripe_customer_id = $3`,
+              [subscriptionStatus, plan, customerId]
+            );
+            console.log(`✅ Admin subscription updated for customer ${customerId}: status=${subscriptionStatus}, plan=${plan} (role preserved)`);
+          } else {
+            await query(
+              `UPDATE users SET 
+                subscription_status = $1,
+                subscription_plan = $2,
+                role = $2,
+                updated_at = CURRENT_TIMESTAMP
+              WHERE stripe_customer_id = $3`,
+              [subscriptionStatus, plan, customerId]
+            );
+            console.log(`✅ Subscription updated for customer ${customerId}: status=${subscriptionStatus}, plan=${plan}`);
+          }
         } else {
           await query(
             `UPDATE users SET 
@@ -107,18 +144,36 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 
         console.log(`🗑️ Subscription deleted for customer ${customerId}`);
 
-        await query(
-          `UPDATE users SET 
-            subscription_status = 'canceled',
-            subscription_plan = 'user',
-            role = 'user',
-            stripe_subscription_id = NULL,
-            updated_at = CURRENT_TIMESTAMP
-          WHERE stripe_customer_id = $1`,
+        const adminCheckResult = await query(
+          'SELECT is_admin FROM users WHERE stripe_customer_id = $1',
           [customerId]
         );
+        const isAdmin = adminCheckResult.rows[0]?.is_admin === true;
 
-        console.log(`✅ User downgraded to free plan for customer ${customerId}`);
+        if (isAdmin) {
+          await query(
+            `UPDATE users SET 
+              subscription_status = 'canceled',
+              subscription_plan = 'user',
+              stripe_subscription_id = NULL,
+              updated_at = CURRENT_TIMESTAMP
+            WHERE stripe_customer_id = $1`,
+            [customerId]
+          );
+          console.log(`✅ Admin subscription canceled for customer ${customerId} (role preserved)`);
+        } else {
+          await query(
+            `UPDATE users SET 
+              subscription_status = 'canceled',
+              subscription_plan = 'user',
+              role = 'user',
+              stripe_subscription_id = NULL,
+              updated_at = CURRENT_TIMESTAMP
+            WHERE stripe_customer_id = $1`,
+            [customerId]
+          );
+          console.log(`✅ User downgraded to free plan for customer ${customerId}`);
+        }
         break;
       }
 

@@ -74,6 +74,18 @@ export async function initializeDatabase() {
     `);
 
     await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'is_admin'
+        ) THEN
+          ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT FALSE;
+        END IF;
+      END $$;
+    `);
+
+    await query(`
       CREATE TABLE IF NOT EXISTS artworks (
         id SERIAL PRIMARY KEY,
         artist_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,

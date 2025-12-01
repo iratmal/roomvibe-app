@@ -93,7 +93,7 @@ router.post('/login', async (req: Request, res: Response) => {
     }
 
     const result = await query(
-      'SELECT id, email, password_hash, role, email_confirmed FROM users WHERE email = $1',
+      'SELECT id, email, password_hash, role, email_confirmed, is_admin FROM users WHERE email = $1',
       [email.toLowerCase()]
     );
 
@@ -108,8 +108,10 @@ router.post('/login', async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
+    const effectiveRole = user.is_admin ? 'admin' : user.role;
+
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
+      { id: user.id, email: user.email, role: effectiveRole },
       JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -126,7 +128,8 @@ router.post('/login', async (req: Request, res: Response) => {
       user: {
         id: user.id,
         email: user.email,
-        role: user.role,
+        role: effectiveRole,
+        isAdmin: user.is_admin || false,
         emailConfirmed: user.email_confirmed
       }
     });
@@ -178,7 +181,7 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res: Response) => 
     }
 
     const result = await query(
-      'SELECT id, email, role, email_confirmed, created_at FROM users WHERE id = $1',
+      'SELECT id, email, role, email_confirmed, created_at, is_admin FROM users WHERE id = $1',
       [req.user.id]
     );
 
@@ -187,12 +190,14 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res: Response) => 
     }
 
     const user = result.rows[0];
+    const effectiveRole = user.is_admin ? 'admin' : user.role;
 
     res.json({
       user: {
         id: user.id,
         email: user.email,
-        role: user.role,
+        role: effectiveRole,
+        isAdmin: user.is_admin || false,
         emailConfirmed: user.email_confirmed,
         createdAt: user.created_at
       }
