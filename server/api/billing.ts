@@ -6,14 +6,10 @@ import { authenticateToken } from '../middleware/auth.js';
 const router = express.Router();
 
 const getBaseUrl = () => {
-  if (process.env.NODE_ENV === 'production') {
-    return process.env.FRONTEND_URL || 'https://app.roomvibe.app';
+  if (process.env.FRONTEND_URL) {
+    return process.env.FRONTEND_URL;
   }
-  const replitDomain = process.env.REPLIT_DOMAINS?.split(',')[0];
-  if (replitDomain) {
-    return `https://${replitDomain}`;
-  }
-  return 'http://localhost:5000';
+  return 'https://app.roomvibe.app';
 };
 
 router.post('/create-checkout-session', authenticateToken, async (req: any, res) => {
