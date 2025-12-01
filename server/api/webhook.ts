@@ -1,5 +1,5 @@
 import express from 'express';
-import stripe from '../stripe/stripe.js';
+import stripe, { getPlanFromPriceId } from '../stripe/stripe.js';
 import { query } from '../db/database.js';
 
 const router = express.Router();
@@ -60,9 +60,15 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         const subscription = event.data.object as any;
         const customerId = subscription.customer;
         const status = subscription.status;
-        const plan = subscription.metadata?.plan;
 
-        console.log(`📝 Subscription updated: customer ${customerId}, status: ${status}`);
+        const activePriceId = subscription.items?.data?.[0]?.price?.id;
+        let plan = activePriceId ? getPlanFromPriceId(activePriceId) : null;
+        
+        if (!plan) {
+          plan = subscription.metadata?.plan || null;
+        }
+
+        console.log(`📝 Subscription updated: customer ${customerId}, status: ${status}, priceId: ${activePriceId}, plan: ${plan}`);
 
         let subscriptionStatus = 'active';
         if (status === 'canceled' || status === 'unpaid') {
@@ -71,22 +77,27 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
           subscriptionStatus = 'expired';
         }
 
-        const updateQuery = plan
-          ? `UPDATE users SET 
+        if (plan) {
+          await query(
+            `UPDATE users SET 
               subscription_status = $1,
               subscription_plan = $2,
               role = $2,
               updated_at = CURRENT_TIMESTAMP
-            WHERE stripe_customer_id = $3`
-          : `UPDATE users SET 
+            WHERE stripe_customer_id = $3`,
+            [subscriptionStatus, plan, customerId]
+          );
+          console.log(`✅ Subscription updated for customer ${customerId}: status=${subscriptionStatus}, plan=${plan}`);
+        } else {
+          await query(
+            `UPDATE users SET 
               subscription_status = $1,
               updated_at = CURRENT_TIMESTAMP
-            WHERE stripe_customer_id = $2`;
-
-        const params = plan ? [subscriptionStatus, plan, customerId] : [subscriptionStatus, customerId];
-        await query(updateQuery, params);
-
-        console.log(`✅ Subscription status updated for customer ${customerId}`);
+            WHERE stripe_customer_id = $2`,
+            [subscriptionStatus, customerId]
+          );
+          console.log(`✅ Subscription status updated for customer ${customerId}: status=${subscriptionStatus}`);
+        }
         break;
       }
 

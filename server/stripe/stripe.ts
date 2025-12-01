@@ -15,6 +15,18 @@ export const STRIPE_PRICE_IDS: Record<string, string> = {
   gallery: process.env.STRIPE_PRICE_GALLERY || 'prod_TWYEqX7PHujFrO',
 };
 
+export const PRICE_ID_TO_PLAN: Record<string, string> = Object.entries(STRIPE_PRICE_IDS).reduce(
+  (acc, [plan, priceId]) => {
+    acc[priceId] = plan;
+    return acc;
+  },
+  {} as Record<string, string>
+);
+
+export function getPlanFromPriceId(priceId: string): string | null {
+  return PRICE_ID_TO_PLAN[priceId] || null;
+}
+
 export const PLAN_NAMES: Record<string, string> = {
   user: 'RoomVibe User',
   artist: 'RoomVibe Artist',

@@ -41,6 +41,13 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
     - **Open in Studio**: Each room image card has an "Open in Studio" button that navigates to `#/studio?roomImage=<URL>&entry=designer`. Studio reads these parameters and loads the room image as the background, with artwork picker ready for immediate use.
 - **Gallery Dashboard**: Provides collection management for online exhibitions. Galleries can create curated collections with title, subtitle, description, and publication status (draft/published). Each collection can contain multiple artworks with upload functionality (Multer, 10MB limit). Database schema includes gallery_collections and gallery_artworks tables with foreign keys and CASCADE deletes. API provides 9 endpoints (GET/POST/PUT/DELETE collections, GET/POST/PUT/DELETE artworks). Hash-based navigation between collection list (#/dashboard/gallery), collection detail (#/dashboard/gallery/collection/:id), and artwork edit (#/dashboard/gallery/artwork/:id/edit) views. Features include status toggling, full artwork CRUD (Create, Read, Update, Delete), pre-filled edit forms, buy URL buttons, delete confirmations, and automatic data refresh on navigation.
 - **Role-Based Dashboards**: Implemented for Artist, Designer, Gallery, User, and Admin roles, with specific content and access controls. Admin users can impersonate other roles for testing.
+- **Stripe Subscriptions**: Full subscription billing integration with Stripe for 4 plans (User free, Artist €9/mo, Designer €29/mo, Gallery €49/mo). Features include:
+    - **Checkout Sessions**: POST `/api/billing/create-checkout-session` creates Stripe Checkout sessions for subscription signup.
+    - **Customer Portal**: POST `/api/billing/customer-portal` provides access to Stripe's billing management portal for plan changes and cancellations.
+    - **Webhook Handler**: POST `/api/stripe/webhook` handles `checkout.session.completed`, `customer.subscription.updated`, and `customer.subscription.deleted` events.
+    - **Subscription Status**: Stored in users table with fields: `subscription_status` (free/active/canceled/expired), `subscription_plan` (user/artist/designer/gallery), `stripe_customer_id`, `stripe_subscription_id`.
+    - **SubscriptionCard Component**: Shared React component displayed on all dashboards showing current plan, status, upgrade buttons, and "Manage Billing" portal access.
+    - **Access Control Middleware**: `requireSubscription()` and `requireMinimumPlan()` helpers for protecting routes based on subscription plan.
 - **Analytics & GDPR**: Integrates Google Analytics 4 (GA4) and Hotjar, conditionally loaded based on GDPR cookie consent. A cookie consent banner and legal pages (Privacy Policy, Terms of Service, Upload Consent) are included.
 - **Artwork Enrichment**: Automated script fetches product details and dimensions from Shopify, populating local data.
 - **Real-Scale Rendering**: Pixel-perfect artwork sizing based on physical dimensions (cm) and standardized room wall height.
@@ -64,3 +71,4 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 - **@google-cloud/storage**: For persistent file storage via Replit Object Storage.
 - **Google Analytics 4 (GA4)**: For website analytics.
 - **Hotjar**: For user behavior analytics.
+- **Stripe**: For subscription billing and payment processing.
