@@ -71,10 +71,6 @@ externalPort = 3000
 localPort = 46455
 externalPort = 3002
 
-[[ports]]
-localPort = 46567
-externalPort = 4200
-
 [deployment]
 deploymentTarget = "autoscale"
 build = ["npm", "run", "build"]
@@ -82,7 +78,7 @@ run = ["npm", "start"]
 
 [nix]
 channel = "stable-25_05"
-packages = ["unzip"]
+packages = ["unzip", "jq"]
 
 [userenv]
 
@@ -91,3 +87,7 @@ JWT_SECRET = "dev-secret-key-change-in-production-please"
 
 [userenv.shared]
 VITE_GA4_MEASUREMENT_ID = "G-F4PMGBJX09"
+STRIPE_PRICE_USER = "price_1SZV67IpcKai6mhJnBHgRh0L"
+STRIPE_PRICE_ARTIST = "price_1SZV6qIpcKai6mhJaZRJBhdC"
+STRIPE_PRICE_DESIGNER = "price_1SZV7SIpcKai6mhJIJLIwumX"
+STRIPE_PRICE_GALLERY = "price_1SZV7xIpcKai6mhJxwXRayJv"
