@@ -8,6 +8,9 @@ export interface AuthRequest extends Request {
     id: number;
     email: string;
     role: string;
+    subscription_status?: string;
+    subscription_plan?: string;
+    isActiveSubscriber?: boolean;
   };
 }
 

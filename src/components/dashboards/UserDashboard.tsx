@@ -2,6 +2,7 @@ import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ChangePassword } from '../ChangePassword';
 import { ImpersonationBanner } from '../ImpersonationBanner';
+import { SubscriptionCard } from '../SubscriptionCard';
 
 export function UserDashboard() {
   const { user, logout } = useAuth();
@@ -56,6 +57,10 @@ export function UserDashboard() {
               View History
             </button>
           </div>
+        </div>
+
+        <div className="mt-10">
+          <SubscriptionCard />
         </div>
 
         <div className="mt-10 grid gap-6 md:grid-cols-2">

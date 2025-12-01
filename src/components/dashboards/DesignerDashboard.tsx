@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ImpersonationBanner } from '../ImpersonationBanner';
+import { SubscriptionCard } from '../SubscriptionCard';
 
 const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
 
@@ -464,6 +465,10 @@ export function DesignerDashboard() {
 
           {/* Change Password Card with enhanced styling */}
           <ChangePasswordDesigner />
+        </div>
+
+        <div className="mt-8">
+          <SubscriptionCard />
         </div>
       </div>
     </div>

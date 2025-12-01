@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ChangePassword } from '../ChangePassword';
 import { ImpersonationBanner } from '../ImpersonationBanner';
+import { SubscriptionCard } from '../SubscriptionCard';
 
 const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
 
@@ -565,6 +566,10 @@ export function ArtistDashboard() {
               Paste this code into your website's HTML to display a "View in Room" button for all your artworks.
             </p>
           </div>
+        </div>
+
+        <div className="mb-8">
+          <SubscriptionCard />
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
