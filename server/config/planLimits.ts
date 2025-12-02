@@ -201,8 +201,8 @@ export function getUpgradeMessage(currentPlan: PlanType, feature: string): { mes
       suggestedPlan: 'designer',
     },
     pdfProposals: {
-      message: "Professional PDF proposals are available on Designer plan and above.",
-      suggestedPlan: 'designer',
+      message: "Professional PDF proposals are available on Artist plan and above.",
+      suggestedPlan: 'artist',
     },
   };
 

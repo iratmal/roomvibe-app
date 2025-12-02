@@ -1320,9 +1320,9 @@ function Studio() {
   const exportToImage = async (highRes: boolean = false) => {
     if (!canvasRef.current || !art) return;
     
-    // Check plan access for high-res
+    // Check plan access for high-res (Designer+ only)
     if (highRes && !hasHighResExport) {
-      setUpgradeModalMessage("High-resolution exports are available on Artist plan and above. Upgrade to download high-quality images without watermarks.");
+      setUpgradeModalMessage("High-resolution exports are available on Designer plan and above. Upgrade to download high-quality 3000px images.");
       setShowUpgradeModal(true);
       return;
     }
@@ -1478,8 +1478,8 @@ function Studio() {
         ctx.drawImage(artImage, frameX, frameY, scaledArtworkWidth, scaledArtworkHeight);
       }
       
-      // Add watermark for free users (low-res only)
-      if (!highRes && !hasHighResExport) {
+      // Add watermark for FREE users only (on regular download)
+      if (!highRes && isFreePlan) {
         ctx.save();
         ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
         ctx.font = `bold ${Math.round(18 * scaleFactor)}px Inter, sans-serif`;
@@ -1530,9 +1530,9 @@ function Studio() {
   const exportToPdf = async () => {
     if (!canvasRef.current || !art) return;
     
-    // Check plan access for PDF
+    // Check plan access for PDF (Artist+ has PDF export)
     if (!hasPdfExport) {
-      setUpgradeModalMessage("PDF exports are available on Designer plan and above. Upgrade to create professional PDF visualizations.");
+      setUpgradeModalMessage("PDF exports are available on Artist plan and above. Upgrade to create professional PDF visualizations.");
       setShowUpgradeModal(true);
       return;
     }
@@ -2262,7 +2262,7 @@ function Studio() {
                 message="Unlock high-res export"
                 variant="text"
                 onClick={() => {
-                  setUpgradeModalMessage("Upgrade to Artist plan to download high-resolution images without watermarks.");
+                  setUpgradeModalMessage("Upgrade to Designer plan to download high-resolution 3000px images without watermarks.");
                   setShowUpgradeModal(true);
                 }}
                 className="mt-1"
