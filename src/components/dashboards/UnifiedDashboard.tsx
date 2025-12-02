@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { YourPlanCard } from '../YourPlanCard';
 import { ChangePassword } from '../ChangePassword';
+
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 type ModuleType = 'overview' | 'artist' | 'designer' | 'gallery';
 
@@ -284,23 +286,154 @@ function OverviewContent() {
   );
 }
 
+function WidgetEmbedSection() {
+  const [widgetToken, setWidgetToken] = useState<string | null>(null);
+  const [embedCode, setEmbedCode] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchToken = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_BASE}/api/widget/token`, {
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setWidgetToken(data.widgetToken);
+        setEmbedCode(data.embedCode);
+      }
+    } catch (err) {
+      console.error('Failed to fetch widget token:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchToken();
+  }, [fetchToken]);
+
+  const generateToken = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${API_BASE}/api/widget/token/generate`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setWidgetToken(data.widgetToken);
+        setEmbedCode(data.embedCode);
+      } else {
+        setError('Failed to generate widget token');
+      }
+    } catch (err) {
+      setError('Failed to generate widget token');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const copyToClipboard = () => {
+    if (embedCode) {
+      navigator.clipboard.writeText(embedCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral p-6">
+      <div className="flex items-start gap-4 mb-4">
+        <div className="w-10 h-10 rounded-lg bg-rv-accent/10 flex items-center justify-center flex-shrink-0">
+          <svg className="w-5 h-5 text-rv-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+          </svg>
+        </div>
+        <div>
+          <h3 className="text-lg font-bold text-rv-primary">Widget Embed Code</h3>
+          <p className="text-sm text-rv-textMuted mt-1">
+            Add this code to your website to let customers visualize your art in their space.
+          </p>
+        </div>
+      </div>
+
+      {!widgetToken ? (
+        <div className="mt-4">
+          <button
+            onClick={generateToken}
+            disabled={loading}
+            className="px-5 py-2.5 rounded-rvMd text-white font-semibold bg-rv-primary hover:bg-rv-primaryHover transition-all disabled:opacity-50"
+          >
+            {loading ? 'Generating...' : 'Generate Widget Token'}
+          </button>
+          {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+        </div>
+      ) : (
+        <div className="mt-4 space-y-4">
+          <div className="relative">
+            <pre className="bg-rv-surface border border-rv-neutral rounded-lg p-4 text-sm overflow-x-auto text-rv-text font-mono">
+              {embedCode}
+            </pre>
+            <button
+              onClick={copyToClipboard}
+              className="absolute top-2 right-2 px-3 py-1.5 text-xs font-medium rounded bg-rv-primary text-white hover:bg-rv-primaryHover transition-colors"
+            >
+              {copied ? 'Copied!' : 'Copy'}
+            </button>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <button
+              onClick={generateToken}
+              disabled={loading}
+              className="px-4 py-2 text-sm rounded-rvMd border border-rv-neutral text-rv-textMuted hover:bg-rv-surface transition-colors disabled:opacity-50"
+            >
+              {loading ? 'Regenerating...' : 'Regenerate Token'}
+            </button>
+            <p className="text-xs text-rv-textMuted">
+              Regenerating will invalidate the old widget code.
+            </p>
+          </div>
+
+          <div className="p-4 bg-rv-accent/5 border border-rv-accent/20 rounded-lg">
+            <h4 className="text-sm font-semibold text-rv-text mb-2">How to use:</h4>
+            <ol className="text-sm text-rv-textMuted space-y-1 list-decimal list-inside">
+              <li>Copy the embed code above</li>
+              <li>Paste it into your website HTML (before the closing <code className="bg-rv-surface px-1 rounded">&lt;/body&gt;</code> tag)</li>
+              <li>The "See in your room" button will appear automatically</li>
+              <li>Works on Shopify, Wix, Squarespace, WordPress, and custom HTML sites</li>
+            </ol>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ArtistDashboardContent() {
   return (
-    <div className="p-6 md:p-8">
+    <div className="p-6 md:p-8 max-w-4xl">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-rv-primary mb-2">Artist Studio</h1>
         <p className="text-rv-textMuted">Manage your artworks and embed widgets on your website.</p>
       </div>
-      <div className="bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral p-6">
-        <p className="text-rv-textMuted">
-          Artist dashboard content will be integrated here. Use the sidebar navigation to access your artist tools.
-        </p>
-        <a 
-          href="#/dashboard/artist" 
-          className="mt-4 inline-block px-5 py-2.5 rounded-rvMd text-white font-semibold bg-rv-primary hover:bg-rv-primaryHover transition-all"
-        >
-          Open Full Artist Dashboard
-        </a>
+
+      <div className="space-y-6">
+        <WidgetEmbedSection />
+
+        <div className="bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral p-6">
+          <h3 className="text-lg font-bold text-rv-primary mb-4">Artwork Management</h3>
+          <p className="text-rv-textMuted mb-4">
+            Upload and manage your artworks. Each artwork can be displayed in the widget.
+          </p>
+          <a 
+            href="#/dashboard/artist" 
+            className="inline-block px-5 py-2.5 rounded-rvMd text-white font-semibold bg-rv-primary hover:bg-rv-primaryHover transition-all"
+          >
+            Manage Artworks
+          </a>
+        </div>
       </div>
     </div>
   );

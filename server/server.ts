@@ -11,6 +11,7 @@ import projectsRoutes from './api/projects.js';
 import galleryRoutes from './api/gallery.js';
 import billingRoutes from './api/billing.js';
 import webhookRoutes from './api/webhook.js';
+import widgetRoutes from './api/widget.js';
 import { initializeDatabase } from './db/init.js';
 import { query } from './db/database.js';
 import { ObjectStorageService, ObjectNotFoundError } from './objectStorage.js';
@@ -55,6 +56,7 @@ app.use('/api/artist', artworksRoutes);
 app.use('/api/designer', projectsRoutes);
 app.use('/api/gallery', galleryRoutes);
 app.use('/api/billing', billingRoutes);
+app.use('/api/widget', widgetRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'RoomVibe API server running' });

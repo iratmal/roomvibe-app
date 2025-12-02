@@ -153,6 +153,24 @@ export async function initializeDatabase() {
       WHERE is_admin = TRUE;
     `);
 
+    // Add widget_token column for unified widget system
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'widget_token'
+        ) THEN
+          ALTER TABLE users ADD COLUMN widget_token VARCHAR(64) UNIQUE;
+        END IF;
+      END $$;
+    `);
+
+    // Create index for widget token lookups
+    await query(`
+      CREATE INDEX IF NOT EXISTS idx_users_widget_token ON users(widget_token);
+    `);
+
     await query(`
       CREATE TABLE IF NOT EXISTS artworks (
         id SERIAL PRIMARY KEY,
