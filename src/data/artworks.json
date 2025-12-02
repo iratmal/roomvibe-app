@@ -1,5 +1,13 @@
 [
   {
+    "id": "light-my-fire-140-70-cm-roomvibe",
+    "title": "Light my fire",
+    "buyUrl": "https://irenart.studio/collections/original-artwork-2/products/light-my-fire-acrylic-on-canvas-140-x-70-cm",
+    "widthCm": 140,
+    "heightCm": 70,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Lightmyfire_88f725e0-438d-45a5-a299-218153868803.jpg?v=1763727466"
+  },
+  {
     "id": "sandy-90-90-cm-roomvibe",
     "title": "Sandy",
     "buyUrl": "https://irenart.studio/collections/original-artwork-2/products/sandy-acrylic-on-canvas-90-x-90-cm",
@@ -22,14 +30,6 @@
     "widthCm": 90,
     "heightCm": 90,
     "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Movement_12a7235c-ab19-4fcc-9891-5911e7575d76.jpg?v=1763727585"
-  },
-  {
-    "id": "light-my-fire-140-70-cm-roomvibe",
-    "title": "Light my fire",
-    "buyUrl": "https://irenart.studio/collections/original-artwork-2/products/light-my-fire-acrylic-on-canvas-140-x-70-cm",
-    "widthCm": 140,
-    "heightCm": 70,
-    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Lightmyfire_88f725e0-438d-45a5-a299-218153868803.jpg?v=1763727466"
   },
   {
     "id": "energy-80-120-cm-roomvibe",
