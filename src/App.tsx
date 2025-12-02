@@ -1041,18 +1041,33 @@ function Studio() {
     }
   }, [totalWidthPx, totalHeightPx, sceneId, frameStyle]);
 
+  const dragAnimationRef = useRef<number | null>(null);
+  const targetOffsetRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const lastDragPositionRef = useRef<{ x: number; y: number } | null>(null);
+  
   const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     dragStartRef.current = { x: clientX - offsetX, y: clientY - offsetY };
+    lastDragPositionRef.current = { x: clientX, y: clientY };
+    targetOffsetRef.current = { x: offsetX, y: offsetY };
     isDraggingRef.current = true;
   };
 
   const handleDragMove = (e: MouseEvent | TouchEvent) => {
     if (!isDraggingRef.current || !dragStartRef.current || !canvasRef.current) return;
     e.preventDefault();
+    
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    
+    // Apply small movement threshold to reduce jitter (1px minimum total movement)
+    const lastPos = lastDragPositionRef.current;
+    if (lastPos) {
+      const totalMovement = Math.hypot(clientX - lastPos.x, clientY - lastPos.y);
+      if (totalMovement < 1) return;
+    }
+    lastDragPositionRef.current = { x: clientX, y: clientY };
     
     const newOffsetX = clientX - dragStartRef.current.x;
     const newOffsetY = clientY - dragStartRef.current.y;
@@ -1075,13 +1090,30 @@ function Studio() {
     const clampedX = Math.max(minOffsetX, Math.min(maxOffsetX, newOffsetX));
     const clampedY = Math.max(minOffsetY, Math.min(maxOffsetY, newOffsetY));
     
-    setOffsetX(clampedX);
-    setOffsetY(clampedY);
+    // Store target position for smooth animation
+    targetOffsetRef.current = { x: clampedX, y: clampedY };
+    
+    // Use requestAnimationFrame for smooth updates
+    if (dragAnimationRef.current === null) {
+      dragAnimationRef.current = requestAnimationFrame(() => {
+        setOffsetX(targetOffsetRef.current.x);
+        setOffsetY(targetOffsetRef.current.y);
+        dragAnimationRef.current = null;
+      });
+    }
   };
 
   const handleDragEnd = () => {
     isDraggingRef.current = false;
     dragStartRef.current = null;
+    lastDragPositionRef.current = null;
+    if (dragAnimationRef.current !== null) {
+      cancelAnimationFrame(dragAnimationRef.current);
+      dragAnimationRef.current = null;
+    }
+    // Apply final position
+    setOffsetX(targetOffsetRef.current.x);
+    setOffsetY(targetOffsetRef.current.y);
   };
 
   const resetPosition = () => {
@@ -1249,7 +1281,7 @@ function Studio() {
       window.removeEventListener('touchmove', handlePinchMove, options as any);
       window.removeEventListener('touchend', handlePinchEnd);
     };
-  }, [isResizing, isPinching]);
+  }, [isResizing, isPinching, userPhoto]);
 
   return (
     <main>
@@ -1397,6 +1429,7 @@ function Studio() {
               <div 
                 ref={canvasRef} 
                 className="relative h-[400px] sm:h-[480px] lg:h-[560px] w-full overflow-hidden rounded-b-rvLg"
+                style={{ touchAction: 'none' }}
                 onClick={handleCanvasClick}
               >
                 {userPhoto ? (
@@ -1451,6 +1484,7 @@ function Studio() {
                     outline: isArtworkSelected ? '3px solid rgba(40, 53, 147, 0.6)' : 'none',
                     outlineOffset: '4px',
                     transition: 'outline 0.15s ease-in-out',
+                    touchAction: 'none',
                   }}
                   onMouseDown={handleDragStart}
                   onTouchStart={(e) => {
