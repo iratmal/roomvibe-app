@@ -1,0 +1,175 @@
+# TASK: Sidebar UI Polish (Artist / Designer / Gallery Modules)
+
+## GOAL
+Vizualno i UX uskladiti sidebar tako da jasno prikazuje module po grupama (Artist Tools, Designer Tools, Gallery Tools), te poboljšava upgrade putanju i opći izgled. Ovaj zadatak ne mijenja logiku entitlements, samo UI.
+
+---
+
+# 1) ADD GROUP TITLES (SECTION HEADERS)
+
+U sidebar dodati tri grupna naslova:
+
+### ARTIST TOOLS  
+– prikazuje se samo ako user.artist_access = true  
+– ako user.artist_access = false → ne prikazivati grupu
+
+### DESIGNER TOOLS  
+– prikazuje se uvijek  
+– ako user.designer_access = false → modul je zaključan
+
+### GALLERY TOOLS  
+– prikazuje se uvijek  
+– ako user.gallery_access = false → modul je zaključan
+
+**Style za group title:**
+```
+font-size: 11px;
+font-weight: 600;
+letter-spacing: 0.8px;
+text-transform: uppercase;
+color: #7D8CB5; /* soft navy-gray */
+margin: 18px 0 6px 18px;
+```
+
+---
+
+# 2) IMPROVE LOCKED MODULE DESIGN
+
+Za svaki modul bez entitlementa:
+
+### ✖ Current:
+– samo lock ikona i cijena
+
+### ✔ Required:
+Prikazati:
+
+- ikona modula (siva varijanta)
+- naziv modula (disabled state)
+- lock ikona desno
+- ispod toga tanki caption:
+
+`Upgrade to unlock Designer Tools`
+
+**Disabled state styling:**
+```
+opacity: 0.55;
+cursor: pointer;
+```
+
+**Hover state (i dalje zaključano):**
+```
+background: rgba(40,53,147,0.06); /* soft navy tint */
+border-radius: 8px;
+```
+
+Klik otvara Upgrade modal:
+```
+openUpgradeModal("designer" or "gallery")
+```
+
+---
+
+# 3) IMPROVE ACTIVE MODULE BADGE
+
+Trenutni “Active” badge je dobar – ali treba UX polish.
+
+### NEW STYLE:
+```
+background: #283593;
+color: #FFFFFF;
+font-size: 11px;
+padding: 2px 6px;
+border-radius: 6px;
+```
+
+Badge se prikazuje u istoj liniji s nazivom modula, desno.
+
+---
+
+# 4) UPGRADE LABEL IMPROVEMENT FOR LOCKED MODULES
+
+Trenutno: “€29/mo”
+
+Treba zamijeniti s:
+
+### Designer Tools (locked)
+```
+€29/mo • Unlock →
+```
+
+### Gallery Hub (locked)
+```
+€49/mo • Unlock →
+```
+
+**Arrow icon:**
+- right arrow from lucide-react
+- size 14px
+- stroke 1.75px
+
+---
+
+# 5) HOVER TOOLTIP FOR LOCKED MODULE
+
+Na hover iznad zaključanog modula prikazati tooltip:
+
+```
+Unlock this tool with the Designer Plan
+```
+
+ili za Gallery:
+
+```
+Unlock this tool with the Gallery Plan
+```
+
+---
+
+# 6) SIDEBAR SPACING & INDENT POLISH
+
+Apply these adjustments:
+
+```
+Module row padding: 12px 18px
+Icon size: 20px
+Space between icon + text: 10px
+Space between module rows: 2px
+Group title margin-top: 20px
+Sidebar padding-top: 16px
+```
+
+Sidebar treba izgledati “zrakasto”, premium i jednostavno.
+
+---
+
+# 7) MOBILE SIDEBAR POLISH (MINOR)
+
+Za mobilne uređaje:
+
+- Sidebar collapses into slide-in drawer (already exists)
+- Update section headers (smaller font-size: 10px)
+- Increase tap-area for module rows (min-height: 48px)
+- Lock icon larger: 18px
+
+---
+
+# 8) STOP CONDITIONS
+
+Task je završen kada:
+
+✓ Sidebar prikazuje tri jasne grupe: Artist Tools / Designer Tools / Gallery Tools  
+✓ Active badge stil je poboljšan  
+✓ Locked moduli imaju bolji dizajn + hover effect  
+✓ “Unlock →” CTA je dodan uz cijenu  
+✓ Tooltip radi na hover  
+✓ Mobile sidebar radi s ažuriranim spacingom  
+✓ Nema promjena u logici entitlements (samo UI)  
+
+---
+
+# 9) NOTES
+
+- Ne dirati backend logiku  
+- Ne mijenjati routing  
+- Ne micati postojeće module, samo ih vizualno grupirati  
+- Sve UI promjene moraju biti neinvazivne i minimalne  

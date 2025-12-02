@@ -6,6 +6,7 @@ import { ChangePassword } from '../ChangePassword';
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
 type ModuleType = 'overview' | 'artist' | 'designer' | 'gallery';
+type GroupType = 'general' | 'artist' | 'designer' | 'gallery';
 
 interface ModuleConfig {
   id: ModuleType;
@@ -14,6 +15,9 @@ interface ModuleConfig {
   icon: React.ReactNode;
   description: string;
   price: string;
+  unlockCta: string;
+  tooltipText: string;
+  group: GroupType;
 }
 
 const MODULES: ModuleConfig[] = [
@@ -21,6 +25,7 @@ const MODULES: ModuleConfig[] = [
     id: 'overview',
     label: 'Overview',
     entitlement: null,
+    group: 'general',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -28,11 +33,14 @@ const MODULES: ModuleConfig[] = [
     ),
     description: 'Account overview and settings',
     price: 'Free',
+    unlockCta: '',
+    tooltipText: '',
   },
   {
     id: 'artist',
     label: 'Artist Studio',
     entitlement: 'artist_access',
+    group: 'artist',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -40,11 +48,14 @@ const MODULES: ModuleConfig[] = [
     ),
     description: 'Manage artworks, embed widgets',
     price: '€9/mo',
+    unlockCta: '€9/mo \u2022 Unlock \u2192',
+    tooltipText: 'Unlock this tool with the Artist Plan',
   },
   {
     id: 'designer',
     label: 'Designer Tools',
     entitlement: 'designer_access',
+    group: 'designer',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -52,11 +63,14 @@ const MODULES: ModuleConfig[] = [
     ),
     description: 'Projects, client room uploads',
     price: '€29/mo',
+    unlockCta: '€29/mo \u2022 Unlock \u2192',
+    tooltipText: 'Unlock this tool with the Designer Plan',
   },
   {
     id: 'gallery',
     label: 'Gallery Hub',
     entitlement: 'gallery_access',
+    group: 'gallery',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
@@ -64,18 +78,117 @@ const MODULES: ModuleConfig[] = [
     ),
     description: 'Collections, multi-artist curation',
     price: '€49/mo',
+    unlockCta: '€49/mo \u2022 Unlock \u2192',
+    tooltipText: 'Unlock this tool with the Gallery Plan',
   },
 ];
+
+const GROUP_TITLES: Record<GroupType, string> = {
+  general: '',
+  artist: 'ARTIST TOOLS',
+  designer: 'DESIGNER TOOLS',
+  gallery: 'GALLERY TOOLS',
+};
+
+function SectionHeader({ title, collapsed }: { title: string; collapsed: boolean }) {
+  if (!title || collapsed) return null;
+  return (
+    <div 
+      className="text-[11px] font-semibold tracking-[0.8px] uppercase mt-5 mb-1.5 ml-[18px] first:mt-0"
+      style={{ color: '#7D8CB5' }}
+    >
+      {title}
+    </div>
+  );
+}
+
+function LockIcon({ className = "w-4 h-4" }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+    </svg>
+  );
+}
+
+function UpgradeModal({ 
+  isOpen, 
+  onClose, 
+  planType 
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  planType: 'artist' | 'designer' | 'gallery';
+}) {
+  if (!isOpen) return null;
+
+  const planDetails = {
+    artist: { name: 'Artist', price: '€9/mo', features: ['Artwork management', 'Embed widgets', 'Basic analytics'] },
+    designer: { name: 'Designer', price: '€29/mo', features: ['Client room uploads', 'Project management', 'Premium rooms', 'PDF exports'] },
+    gallery: { name: 'Gallery', price: '€49/mo', features: ['Multi-artist collections', 'Virtual exhibitions', 'Advanced curation', 'Custom branding'] },
+  };
+
+  const plan = planDetails[planType];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={onClose}>
+      <div 
+        className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 relative"
+        onClick={e => e.stopPropagation()}
+      >
+        <button 
+          onClick={onClose}
+          className="absolute top-4 right-4 text-rv-textMuted hover:text-rv-text transition-colors"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <div className="text-center mb-6">
+          <div className="w-12 h-12 rounded-full bg-rv-accent/10 flex items-center justify-center mx-auto mb-4">
+            <svg className="w-6 h-6 text-rv-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h3 className="text-xl font-bold text-rv-primary">Unlock {plan.name} Tools</h3>
+          <p className="text-rv-textMuted mt-2">{plan.price}</p>
+        </div>
+
+        <ul className="space-y-2 mb-6">
+          {plan.features.map((feature, i) => (
+            <li key={i} className="flex items-center gap-2 text-sm text-rv-text">
+              <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              {feature}
+            </li>
+          ))}
+        </ul>
+
+        <a
+          href="#/pricing"
+          className="block w-full text-center px-5 py-3 rounded-lg text-white font-semibold bg-rv-primary hover:bg-rv-primaryHover transition-all"
+        >
+          View Pricing
+        </a>
+      </div>
+    </div>
+  );
+}
 
 export function UnifiedDashboard() {
   const { user, hasEntitlement, logout } = useAuth();
   const [activeModule, setActiveModule] = useState<ModuleType>('overview');
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; planType: 'artist' | 'designer' | 'gallery' }>({ open: false, planType: 'artist' });
+  const [hoveredModule, setHoveredModule] = useState<ModuleType | null>(null);
 
   const isAdmin = user?.isAdmin || user?.role === 'admin';
 
   const handleModuleClick = (module: ModuleConfig) => {
-    if (module.entitlement && !hasEntitlement(module.entitlement) && !isAdmin) {
+    const isLocked = module.entitlement && !hasEntitlement(module.entitlement) && !isAdmin;
+    if (isLocked && module.id !== 'overview') {
+      setUpgradeModal({ open: true, planType: module.id as 'artist' | 'designer' | 'gallery' });
       return;
     }
     setActiveModule(module.id);
@@ -102,8 +215,30 @@ export function UnifiedDashboard() {
     return 'locked';
   };
 
+  const shouldShowGroup = (group: GroupType): boolean => {
+    if (group === 'general') return true;
+    if (group === 'artist') {
+      return isAdmin || hasEntitlement('artist_access');
+    }
+    return true;
+  };
+
+  const groupedModules = MODULES.reduce((acc, module) => {
+    if (!acc[module.group]) acc[module.group] = [];
+    acc[module.group].push(module);
+    return acc;
+  }, {} as Record<GroupType, ModuleConfig[]>);
+
+  const groupOrder: GroupType[] = ['general', 'artist', 'designer', 'gallery'];
+
   return (
     <div className="min-h-screen bg-rv-surface flex">
+      <UpgradeModal 
+        isOpen={upgradeModal.open} 
+        onClose={() => setUpgradeModal({ ...upgradeModal, open: false })}
+        planType={upgradeModal.planType}
+      />
+
       <aside className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-white border-r border-rv-neutral flex flex-col transition-all duration-300`}>
         <div className="p-4 border-b border-rv-neutral flex items-center justify-between">
           {sidebarOpen && (
@@ -130,48 +265,77 @@ export function UnifiedDashboard() {
           </button>
         </div>
 
-        <nav className="flex-1 p-3 space-y-1">
-          {MODULES.map((module) => {
-            const status = getModuleStatus(module);
-            const isActive = activeModule === module.id;
-            const isLocked = status === 'locked';
+        <nav className="flex-1 pt-4 px-3 space-y-0.5 overflow-y-auto">
+          {groupOrder.map((group) => {
+            if (!shouldShowGroup(group)) return null;
+            const modules = groupedModules[group];
+            if (!modules || modules.length === 0) return null;
 
             return (
-              <button
-                key={module.id}
-                onClick={() => handleModuleClick(module)}
-                disabled={isLocked}
-                className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left transition-all ${
-                  isActive
-                    ? 'bg-rv-primary text-white'
-                    : isLocked
-                    ? 'text-rv-textMuted cursor-not-allowed opacity-60'
-                    : 'text-rv-text hover:bg-rv-surface'
-                }`}
-                title={sidebarOpen ? undefined : module.label}
-              >
-                <div className={`flex-shrink-0 ${isActive ? 'text-white' : isLocked ? 'text-rv-textMuted' : 'text-rv-accent'}`}>
-                  {module.icon}
-                </div>
-                {sidebarOpen && (
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium truncate">{module.label}</span>
-                      {isLocked && (
-                        <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
-                      )}
-                      {status === 'active' && module.entitlement && (
-                        <span className="px-1.5 py-0.5 text-xs bg-green-100 text-green-700 rounded">Active</span>
+              <div key={group}>
+                <SectionHeader title={GROUP_TITLES[group]} collapsed={!sidebarOpen} />
+                
+                {modules.map((module) => {
+                  const status = getModuleStatus(module);
+                  const isActive = activeModule === module.id;
+                  const isLocked = status === 'locked';
+                  const isHovered = hoveredModule === module.id;
+
+                  return (
+                    <div key={module.id} className="relative group">
+                      <button
+                        onClick={() => handleModuleClick(module)}
+                        onMouseEnter={() => setHoveredModule(module.id)}
+                        onMouseLeave={() => setHoveredModule(null)}
+                        className={`w-full flex items-center gap-2.5 py-3 px-[18px] rounded-lg text-left transition-all min-h-[48px] ${
+                          isActive
+                            ? 'bg-rv-primary text-white'
+                            : isLocked
+                            ? 'opacity-[0.55] cursor-pointer hover:bg-[rgba(40,53,147,0.06)]'
+                            : 'text-rv-text hover:bg-rv-surface'
+                        }`}
+                        title={sidebarOpen ? undefined : module.label}
+                      >
+                        <div className={`flex-shrink-0 w-5 h-5 ${isActive ? 'text-white' : isLocked ? 'text-rv-textMuted' : 'text-rv-accent'}`}>
+                          {module.icon}
+                        </div>
+                        {sidebarOpen && (
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className={`font-medium truncate ${isLocked ? 'text-rv-textMuted' : ''}`}>{module.label}</span>
+                              <div className="flex items-center gap-1.5 flex-shrink-0">
+                                {status === 'active' && module.entitlement && (
+                                  <span className="px-1.5 py-0.5 text-[11px] font-medium bg-rv-primary text-white rounded-md">
+                                    Active
+                                  </span>
+                                )}
+                                {isLocked && (
+                                  <LockIcon className="w-4 h-4 md:w-[18px] md:h-[18px] text-rv-textMuted" />
+                                )}
+                              </div>
+                            </div>
+                            {isLocked && (
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <span className="text-xs text-rv-accent">{module.unlockCta}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </button>
+
+                      {isLocked && isHovered && sidebarOpen && (
+                        <div 
+                          className="absolute left-full ml-2 top-1/2 -translate-y-1/2 z-50 px-3 py-2 bg-rv-primary text-white text-xs rounded-lg shadow-lg whitespace-nowrap pointer-events-none"
+                          style={{ maxWidth: '200px' }}
+                        >
+                          {module.tooltipText}
+                          <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-rv-primary" />
+                        </div>
                       )}
                     </div>
-                    {isLocked && (
-                      <span className="text-xs text-rv-accent">{module.price}</span>
-                    )}
-                  </div>
-                )}
-              </button>
+                  );
+                })}
+              </div>
             );
           })}
         </nav>
