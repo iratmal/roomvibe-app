@@ -29,15 +29,16 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
     - **Mobile Layout**: Canvas-first, followed by controls, then room list.
     - **Artwork Locking (Free Users)**: Free users see only 1 placeholder artwork with a locked indicator showing "+X more artworks". Clicking the locked indicator opens an upgrade modal. URL parameter bypass is blocked for free users. Paid users (Artist/Designer/Gallery/Admin) see the full artwork dropdown.
     - **Premium Room Library**: 100 premium room scenes with plan-based access limits. Free users: 3 rooms, Artist: 30 rooms, Designer/Gallery/Admin: unlimited. Locked rooms show UpgradePrompt, unlocked rooms show ComingSoonModal (placeholder until real images added). Data in `src/data/premiumRooms.ts`, limits in `src/config/planLimits.ts`.
-    - **Export Features**: High-resolution image export (3000px+) and PDF export with plan-based restrictions.
-      - Free users: Low-res preview (1280px) with "RoomVibe – Upgrade for High-Res" watermark. High-res and PDF buttons trigger upgrade modal.
-      - Artist plan+: Full high-res image export without watermark.
-      - Designer plan+: PDF export with centered image and artwork caption.
+    - **Export Features**: Image export (1200px regular, 3000px high-res) and PDF export with plan-based restrictions.
+      - Free users: Low-res download (1200px) with "RoomVibe – Upgrade for High-Res" watermark. High-res and PDF buttons trigger upgrade modal.
+      - Artist plan: No watermark on regular download (1200px), PDF export unlocked, high-res export locked (Designer+ only).
+      - Designer plan+: All exports unlocked including high-resolution 3000px images and PDF proposals.
       - Export renders room background, artwork, and frame at proper scale using canvas rendering.
+      - Export UI: Three buttons (Download, High-Resolution Download, PDF Export) with plan-specific captions and upgrade CTAs.
     - **Upgrade Nudges & Success Modal**: Subtle conversion prompts to encourage upgrades without disrupting workflow.
       - Success Modal: Shows after exports for Free/Artist users with "Your export is ready!" message and upgrade CTA.
-      - Free user nudges: Text link under artwork section ("Unlock high-res export → Upgrade").
-      - Artist user nudges: "Pro" badge on Premium Rooms header, hint in Export section about PDF exports.
+      - Free user nudges: Text link under artwork section ("Unlock high-res export → Upgrade"), upgrade CTA after download button.
+      - Artist user nudges: "Pro" badge on Premium Rooms header, hint in Export section about high-res exports (Designer+).
       - Designer+ users see no upgrade prompts in Studio.
       - Components: `ExportSuccessModal`, `UpgradeNudge` (variants: text, badge, hint).
 - **Artist Dashboard**: CRUD operations for artwork management (upload, list, edit, delete). Includes image upload, currency/dimension unit selection. Artwork images are base64-encoded and stored in PostgreSQL, served via API. Supports website widget embedding with dynamic artist/artwork IDs.
@@ -49,7 +50,7 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
   - **Config Files**: `server/config/planLimits.ts` and `src/config/planLimits.ts` define limits and features per plan.
   - **Backend Middleware**: `server/middleware/subscription.ts` provides `checkArtworkLimit`, `checkWallPhotoLimit`, `checkProjectLimit`, `checkGalleryArtworkLimit`, `requireMinimumPlan`, and `requireFeature` guards.
   - **Protected Endpoints**: `POST /api/artworks` (artwork limit), `POST /api/projects` (project limit), `POST /api/projects/:id/rooms` (wall photo limit), `POST /api/gallery/collections/:id/artworks` (gallery artwork limit), `GET /api/gallery/collections` (gallery plan required).
-  - **Plan Limits**: User (1 artwork, 1 wall photo, 1 project), Artist (50 artworks, 100 walls, 100 projects, premium rooms, exports), Designer (unlimited, client folders, PDF proposals, branding), Gallery (500 artworks, gallery dashboard, multi-artist collections).
+  - **Plan Limits**: User (1 artwork, 1 wall photo, 1 project), Artist (50 artworks, 100 walls, 100 projects, premium rooms, PDF exports, no high-res), Designer (unlimited, client folders, high-res exports, PDF proposals, branding), Gallery (500 artworks, gallery dashboard, multi-artist collections).
   - **Frontend Components**: `UpgradePrompt`, `UsageMeter`, `PlanFeatureBadge` for upgrade messaging and usage display.
   - **Admin Override**: Admins (`is_admin=true`) bypass all plan restrictions.
 - **Analytics & GDPR**: Google Analytics 4 (GA4) and Hotjar integration, conditionally loaded based on GDPR cookie consent banner. Legal pages (Privacy Policy, Terms of Service, Upload Consent) are included.
