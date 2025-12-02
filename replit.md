@@ -26,6 +26,7 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
     - **Center Panel (Canvas)**: Displays room photos (preset or user-uploaded), real-scale artwork rendering, smart scaling, drag-to-move, and frame rendering. Room 4 has unique calibration for larger wall height.
     - **Right Panel (Controls)**: Artwork selector, real-size display, frame selector, reset button.
     - **Mobile Layout**: Canvas-first, followed by controls, then room list.
+    - **Artwork Locking (Free Users)**: Free users see only 1 placeholder artwork with a locked indicator showing "+X more artworks". Clicking the locked indicator opens an upgrade modal. URL parameter bypass is blocked for free users. Paid users (Artist/Designer/Gallery/Admin) see the full artwork dropdown.
 - **Artist Dashboard**: CRUD operations for artwork management (upload, list, edit, delete). Includes image upload, currency/dimension unit selection. Artwork images are base64-encoded and stored in PostgreSQL, served via API. Supports website widget embedding with dynamic artist/artwork IDs.
 - **Designer Dashboard**: Project management with custom room image uploads (Multer, 10MB limit), stored as base64 in PostgreSQL. Features "Open in Studio" functionality for uploaded rooms.
 - **Gallery Dashboard**: Collection management for online exhibitions with CRUD operations for collections and artworks. Supports publication status and multi-artwork uploads per collection.
