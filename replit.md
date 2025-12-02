@@ -29,7 +29,7 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
     - **Artist Dashboard**: CRUD for artwork management, including image uploads and website widget embedding.
     - **Designer Dashboard**: Project management and custom room image uploads.
     - **Gallery Dashboard**: Collection management for online exhibitions.
-    - All non-admin users access a unified dashboard with sidebar navigation and module-specific content.
+    - All non-admin users access a unified dashboard with sidebar navigation and module-specific content. Sidebar features grouped sections (Artist Tools, Designer Tools, Gallery Tools), locked modules show "Upgrade to unlock X Tools" subtext, and uses polished spacing (12px 18px padding, 20px icons, 10px gaps).
 - **Stripe Subscriptions**: Full integration for four plans (Free, Artist, Designer, Gallery) handling checkout, customer portal, and webhook events to manage user roles and entitlements.
 - **Multi-Entitlement System**: Users can accumulate and retain access to multiple modules (Artist, Designer, Gallery) via subscriptions. Entitlements are additively granted and revoked upon subscription changes. Admin users automatically possess all entitlements.
 - **Unified Widget System**: A single embeddable JavaScript widget (`public/widget.js`) that dynamically adapts its functionality (Artist, Designer, Gallery modes) based on the user's entitlements. The widget is modal-based with RoomVibe branding and offers mode-specific layouts and controls, including advanced features for Gallery mode.
