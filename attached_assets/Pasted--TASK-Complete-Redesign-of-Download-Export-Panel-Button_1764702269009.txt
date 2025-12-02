@@ -1,0 +1,168 @@
+# TASK: Complete Redesign of Download & Export Panel (Buttons, Icons, Watermark Logic, Styling)
+
+## GOAL
+
+1. Implementirati jasnu, novu i ispravnu logiku za Download, High-Resolution Download i PDF Export.
+2. Ukloniti watermark iz običnog downloada za sve plaćene korisnike (Basic i Pro).
+3. Preimenovati sve gumbe i dodati download ikone.
+4. Uvesti nove styling smjernice prema RoomVibe brendu.
+5. Poboljšati UX i vizualnu hijerarhiju u desnom sidebaru studija.
+
+---
+
+# 1) NEW LOGIC FOR FREE / BASIC / PRO USERS
+
+### FREE USER
+
+* **Download** → LOW-RES + WATERMARK
+* **High-Resolution Download** → LOCKED → Show Upgrade modal
+* **PDF Export** → LOCKED
+* CTA “Unlock all features – Upgrade” must be clearly visible as a clickable link/button.
+
+### BASIC USER
+
+* **Download** → NO WATERMARK
+* **High-Resolution Download** → LOCKED (unless later configured differently)
+* **PDF Export** → NO WATERMARK
+
+### PRO USER
+
+* **Download** → NO WATERMARK
+* **High-Resolution Download** → NO WATERMARK (full size)
+* **PDF Export** → NO WATERMARK
+
+---
+
+# 2) BUTTON RENAMING (MANDATORY)
+
+Old Label → New Label
+
+* “Preview” → **“Download”**
+* “High-Res” → **“High-Resolution Download”**
+* “Export as PDF” → **“PDF Export”**
+
+---
+
+# 3) ADD DOWNLOAD ICONS
+
+Use a standard outline icon (lucide-react Download or similar):
+
+* size: **18px**
+* stroke-width: **1.75px**
+* color: matches button text color
+* icon placement: **left of text**
+* spacing between icon & text: **6–8 px**
+
+---
+
+# 4) BUTTON STYLING (TAILWIND/CSS)
+
+### **Download button**
+
+* border: `1.5px solid #283593`
+* text color: `#283593`
+* padding: `px-4 py-2`
+* radius: `8px`
+* background: white
+* hover: `rgba(40,53,147,0.06)`
+
+### **High-Resolution Download (Pro feature)**
+
+* border: `1.5px solid #D8B46A`
+* text color: `#D8B46A`
+* padding: `px-4 py-2`
+* radius: `8px`
+* background: white
+* hover: `rgba(216,180,106,0.10)`
+* if user IS NOT PRO → clicking triggers Upgrade modal
+
+### **PDF Export**
+
+* text-only button
+* text color: `#283593`
+* hover underline
+* no border
+
+---
+
+# 5) CAPTION TEXT UNDER EACH BUTTON
+
+Add a small, subtle caption (font-size: 12px, color: #666):
+
+### For Download:
+
+```
+(1200 px · no watermark for paid plans)
+```
+
+### For High-Resolution Download:
+
+```
+(3000 px · no watermark · Pro feature)
+```
+
+### For PDF Export:
+
+```
+(Printer-ready quality)
+```
+
+Caption appears directly beneath each button.
+
+---
+
+# 6) UPGRADE CTA FIX
+
+Replace current yellow text with a proper clickable CTA.
+
+### Option A — blue link:
+
+* text: **“Unlock High-Resolution Export → Upgrade”**
+* color: `#283593`
+* font-weight: 600
+* underline on hover
+
+### Option B — small outlined button:
+
+* border: `1.5px solid #D8B46A`
+* text color: `#D8B46A`
+* padding: `4px 10px`
+* radius: `6px`
+
+Either option must look clearly clickable and intentional.
+
+---
+
+# 7) FUNCTIONAL REQUIREMENTS
+
+* No watermark for ANY paid user in Download.
+* High-Resolution Download only for PRO plan (or plan-based logic).
+* Watermark + low-res ONLY for Free plan.
+* Upgrade modal must appear for Free/Basic when clicking Pro-only buttons.
+* All export logic must work identically on mobile and desktop.
+
+---
+
+# 8) STOP CONDITION
+
+✓ Buttons show new names
+✓ Icons appear on all download buttons
+✓ Captions appear under each button
+✓ Watermark logic correct: Free → watermark; Paid → no watermark
+✓ High-res restricted properly
+✓ PDF export styled correctly
+✓ Upgrade CTA redesigned and clickable
+✓ Sidebar layout not broken
+✓ Mobile + desktop tested and working
+
+---
+
+# 9) NOTES
+
+* Do NOT refactor unrelated files.
+* Do NOT change export resolution unless required.
+* Keep all changes minimal and isolated.
+* Follow brand colors:
+
+  * Blue: `#283593`
+  * Gold: `#D8B46A`

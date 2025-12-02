@@ -37,12 +37,12 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     maxMockupRooms: -1,
     maxPremiumRooms: 30,
     premiumRoomsAccess: true,
-    highResExport: true,
+    highResExport: false,
     clientFolders: false,
     galleryDashboard: false,
     multiArtistCollections: false,
     customBranding: false,
-    pdfProposals: false,
+    pdfProposals: true,
   },
   designer: {
     maxArtworks: -1,
@@ -216,8 +216,8 @@ export function getUpgradeMessage(currentPlan: PlanType, feature: string): { mes
       suggestedPlan: currentPlan === 'user' ? 'artist' : 'designer',
     },
     highResExport: {
-      message: "High-resolution exports are available on Artist plan and above. Upgrade to download high-quality images.",
-      suggestedPlan: 'artist',
+      message: "High-resolution exports are available on Designer plan and above. Upgrade to download high-quality 3000px images.",
+      suggestedPlan: 'designer',
     },
     premiumRoomsAccess: {
       message: "Premium mockup rooms are available on Artist plan and above. Upgrade to access all rooms.",
