@@ -7,6 +7,13 @@ interface UserUsage {
   wallPhotos: number;
 }
 
+// Entitlements for multi-module access
+export interface UserEntitlements {
+  artist_access: boolean;
+  designer_access: boolean;
+  gallery_access: boolean;
+}
+
 interface User {
   id: number;
   email: string;
@@ -18,6 +25,7 @@ interface User {
   effectivePlan?: PlanType;
   planLimits?: PlanLimits;
   usage?: UserUsage;
+  entitlements?: UserEntitlements;
 }
 
 interface AuthContextType {
@@ -33,6 +41,8 @@ interface AuthContextType {
   setImpersonation: (role: 'user' | 'artist' | 'designer' | 'gallery' | null) => void;
   clearImpersonation: () => void;
   effectiveRole: string;
+  hasEntitlement: (entitlement: 'artist_access' | 'designer_access' | 'gallery_access') => boolean;
+  hasAnyEntitlement: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -211,6 +221,26 @@ export function AuthProvider({ children }: { children: React.ReactNode}) {
     ? impersonatedRole 
     : (user?.role || 'user');
 
+  // Helper function to check if user has a specific entitlement
+  const hasEntitlement = (entitlement: 'artist_access' | 'designer_access' | 'gallery_access'): boolean => {
+    if (!user) return false;
+    // Admins have all entitlements
+    if (user.isAdmin || user.role === 'admin') return true;
+    // Check specific entitlement
+    return user.entitlements?.[entitlement] || false;
+  };
+
+  // Helper function to check if user has any paid entitlement
+  const hasAnyEntitlement = (): boolean => {
+    if (!user) return false;
+    if (user.isAdmin || user.role === 'admin') return true;
+    return (
+      (user.entitlements?.artist_access || false) ||
+      (user.entitlements?.designer_access || false) ||
+      (user.entitlements?.gallery_access || false)
+    );
+  };
+
   return (
     <AuthContext.Provider value={{ 
       user, 
@@ -224,7 +254,9 @@ export function AuthProvider({ children }: { children: React.ReactNode}) {
       impersonatedRole,
       setImpersonation,
       clearImpersonation,
-      effectiveRole
+      effectiveRole,
+      hasEntitlement,
+      hasAnyEntitlement
     }}>
       {children}
     </AuthContext.Provider>
