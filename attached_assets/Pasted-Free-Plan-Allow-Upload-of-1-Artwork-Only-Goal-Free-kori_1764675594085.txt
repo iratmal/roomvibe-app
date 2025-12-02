@@ -1,0 +1,90 @@
+Free Plan: Allow Upload of 1 Artwork Only
+
+Goal:
+Free korisniku želimo omogućiti upload samo 1 vlastitog artworka.
+Ako Free korisnik pokuša uploadati drugi artwork, treba dobiti Upgrade modal i upload se ne smije izvršiti.
+Basic i Pro planovi ostaju bez limita (ili prema postojećoj logici).
+
+Context:
+
+Postoji postojeći upload sistem za artworke (backend + frontend).
+
+Upload endpoint je nešto poput:
+
+POST /api/artworks ili slično (pogledaj postojeći kod za upload i iskoristi ga).
+
+Postoji korisnički model koji već sadrži informaciju o planu (Free / Basic / Pro).
+
+Trenutno ne postoji ograničenje uploadova po planu – svi korisnici mogu uploadati više slika.
+
+Scope (napraviti točno ovo):
+
+Dodati provjeru plana korisnika na backendu za upload artworka
+
+U endpointu za upload (npr. POST /api/artworks) prvo dohvatiti korisnika i njegov plan.
+
+Ako je plan Free:
+
+prebrojati koliko artworka taj korisnik već ima spremljenih (u bazi).
+
+ako već ima 1 ili više artworka → blokirati upload i vratiti jasan error kod/poruku (npr. FREE_PLAN_UPLOAD_LIMIT_REACHED).
+
+ako ima 0 artworka → dopustiti upload normalno.
+
+Frontend: reagiranje na backend error za Free limit
+
+U komponenti koja obrađuje upload (studio ili dashboard upload komponenta), obraditi error tipa FREE_PLAN_UPLOAD_LIMIT_REACHED.
+
+Kada se pojavi taj error, umjesto generičke poruke, prikazati Upgrade modal s jasnim tekstom, npr.:
+
+„Na Free planu možeš uploadati samo 1 artwork. Nadogradi svoj plan da dodaš više slika.“
+
+Modal mora imati barem:
+
+CTA gumb „Upgrade plan“ → vodi na postojeću Billing / Pricing stranicu.
+
+gumb „Cancel“ → zatvori modal bez uploadanja.
+
+UI informacija o limitu za Free korisnika
+
+U Artist / user dashboardu gdje korisnik vidi svoje artworke (ili u Studio sidebaru – gdje je smisleno), prikazati kratku informaciju za Free korisnika, npr.:
+
+„Free plan: 1/1 artwork uploaded“
+
+Ovo se može implementirati jednostavno kao:
+
+tekst temeljen na broju artworka (0 ili 1) i planu.
+
+Basic i Pro korisnici ne trebaju vidjeti ovaj limit (ili mogu imati „∞“ / „unlimited“ ako postoji takva logika, ali nije nužno sada).
+
+Ne dirati logiku za Basic i Pro planove
+
+Za Basic i Pro planove upload treba nastaviti raditi kao i do sada, bez novih ograničenja, osim ako u kodu već postoji neka druga logika (u tom slučaju je ne mijenjati).
+
+Stop Condition:
+
+Free korisnik:
+
+može uspješno uploadati samo 1 artwork.
+
+kod pokušaja drugog uploada:
+
+upload se ne izvršava
+
+prikazuje se Upgrade modal
+
+Basic / Pro korisnici:
+
+upload funkcionalnost radi isto kao i prije ovog taska.
+
+UI jasno prikazuje Free korisniku status npr. „1/1 artwork uploaded“ ili slično.
+
+Notes:
+
+Ne mijenjati postojeći sistem planova, billing ili Stripe logiku.
+
+Ne refaktorirati globalni upload sistem izvan nužnog za ovaj limit.
+
+Ne koristiti skupe modele; ako nakon 2–3 pokušaja nešto ne radi, stani i objasni gdje zapinje (koji file, koja funkcija).
+
+Cilj je minimalna intervencija u postojeći kod s jasnom logikom per-plan limita samo za Free korisnike.
