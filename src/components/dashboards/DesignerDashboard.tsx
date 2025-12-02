@@ -145,6 +145,18 @@ export function DesignerDashboard() {
       <ImpersonationBanner />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16">
+        {/* Open Studio CTA Button */}
+        <a
+          href="#/studio"
+          className="mb-8 flex items-center justify-center gap-2 w-full sm:w-auto sm:inline-flex px-6 py-3.5 bg-[#283593] text-white font-semibold rounded-xl hover:bg-[#1a237e] transition-all shadow-lg shadow-[#283593]/25"
+          style={{ fontFamily: 'Inter, sans-serif' }}
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          Open Studio
+        </a>
+
         {/* Header Section with warm grey background */}
         <div className="mb-12 pb-8 border-b border-slate-200">
           <h1 className="text-4xl md:text-5xl font-semibold mb-3 text-[#283593] tracking-tight" style={{ fontFamily: 'Inter, sans-serif' }}>
