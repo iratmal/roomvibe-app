@@ -23,6 +23,8 @@ import UploadConsent from "./components/legal/UploadConsent";
 import { PricingPage } from "./components/PricingPage";
 import { UpgradePrompt } from "./components/UpgradePrompt";
 import { ComingSoonModal } from "./components/ComingSoonModal";
+import { ExportSuccessModal } from "./components/ExportSuccessModal";
+import { UpgradeNudge } from "./components/UpgradeNudge";
 import { initGA4, resetGA4, GA4Events } from "./utils/analytics";
 import { initHotjar, resetHotjar } from "./utils/hotjar";
 
@@ -764,6 +766,11 @@ function Studio() {
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [exportType, setExportType] = useState<'image' | 'pdf' | null>(null);
   
+  // Export success modal state (shown for Free and Artist users only)
+  const [showExportSuccessModal, setShowExportSuccessModal] = useState<boolean>(false);
+  const [exportSuccessType, setExportSuccessType] = useState<'image' | 'pdf'>('image');
+  const isArtistPlan = effectivePlan === 'artist';
+  
   // Check if user has high-res export access
   const hasHighResExport = planLimits.highResExport;
   const hasPdfExport = planLimits.pdfProposals;
@@ -1453,6 +1460,12 @@ function Studio() {
       link.href = dataUrl;
       link.click();
       
+      // Show success modal for Free and Artist users only (not for Designer/Gallery/Admin)
+      if (isFreePlan || isArtistPlan) {
+        setExportSuccessType('image');
+        setShowExportSuccessModal(true);
+      }
+      
     } catch (err) {
       console.error('[Export] Failed to export image:', err);
     } finally {
@@ -1630,6 +1643,9 @@ function Studio() {
       
       // Save PDF
       pdf.save(`roomvibe-${art.title?.replace(/\s+/g, '-').toLowerCase() || 'visualization'}.pdf`);
+      
+      // Note: PDF export is only available for Designer+ plans, so no success modal needed
+      // (Designer and above users don't need upgrade encouragement)
       
     } catch (err) {
       console.error('[Export] Failed to export PDF:', err);
@@ -2325,6 +2341,18 @@ function Studio() {
           onClose={() => setShowComingSoonModal(false)}
         />
       )}
+      
+      {/* Export Success Modal (for Free and Artist users only) */}
+      <ExportSuccessModal
+        isOpen={showExportSuccessModal}
+        onClose={() => setShowExportSuccessModal(false)}
+        onUpgrade={() => {
+          setShowExportSuccessModal(false);
+          window.location.hash = '#/pricing';
+        }}
+        currentPlan={effectivePlan}
+        exportType={exportSuccessType}
+      />
     </main>
   );
 }
