@@ -1089,34 +1089,39 @@ function Studio() {
     const clientY = isTouch ? e.touches[0].clientY : e.clientY;
     
     // For touch events: detect direction before committing to drag
-    if (isTouch && touchStartPosRef.current && !touchDirectionLockedRef.current) {
-      const deltaX = Math.abs(clientX - touchStartPosRef.current.x);
-      const deltaY = Math.abs(clientY - touchStartPosRef.current.y);
-      
-      // Wait until we have enough movement to determine direction
-      if (deltaX < TOUCH_DIRECTION_THRESHOLD && deltaY < TOUCH_DIRECTION_THRESHOLD) {
-        return; // Not enough movement yet
+    if (isTouch) {
+      // If already locked to vertical scroll, let it scroll
+      if (touchDirectionLockedRef.current === 'vertical') {
+        return;
       }
       
-      // Determine direction: vertical means scroll, horizontal means drag
-      if (deltaY > deltaX) {
-        // Vertical movement dominant → allow scroll, don't drag
-        touchDirectionLockedRef.current = 'vertical';
-        touchStartPosRef.current = null;
-        return; // Let browser handle scroll
-      } else {
-        // Horizontal movement dominant → activate drag
-        touchDirectionLockedRef.current = 'horizontal';
-        isDraggingRef.current = true;
+      // If direction not yet determined, detect it
+      if (touchStartPosRef.current && !touchDirectionLockedRef.current) {
+        const deltaX = Math.abs(clientX - touchStartPosRef.current.x);
+        const deltaY = Math.abs(clientY - touchStartPosRef.current.y);
+        
+        // Wait until we have enough movement to determine direction
+        if (deltaX < TOUCH_DIRECTION_THRESHOLD && deltaY < TOUCH_DIRECTION_THRESHOLD) {
+          return; // Not enough movement yet
+        }
+        
+        // Determine direction: vertical means scroll, horizontal means drag
+        if (deltaY > deltaX) {
+          // Vertical movement dominant → allow scroll, don't drag
+          touchDirectionLockedRef.current = 'vertical';
+          touchStartPosRef.current = null;
+          dragStartRef.current = null;
+          return; // Let browser handle scroll
+        } else {
+          // Horizontal movement dominant → activate drag and prevent scroll
+          touchDirectionLockedRef.current = 'horizontal';
+          isDraggingRef.current = true;
+          e.preventDefault();
+        }
       }
     }
     
-    // If touch is locked to vertical scroll, let it scroll
-    if (isTouch && touchDirectionLockedRef.current === 'vertical') {
-      return;
-    }
-    
-    // Standard drag handling (for mouse or horizontal touch)
+    // Standard drag handling (for mouse or confirmed horizontal touch)
     if (!isDraggingRef.current || !dragStartRef.current || !canvasRef.current) return;
     e.preventDefault();
     
