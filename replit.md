@@ -1,7 +1,7 @@
 # RoomVibe Studio - Full Application
 
 ## Overview
-RoomVibe Studio is a comprehensive React/TypeScript web application for visualizing artwork in room environments using a Canvy-style three-panel editor. It enables users to preview how artworks would appear on their walls, featuring true-to-scale sizing and the potential for wall recoloring. The application provides a modern, user-friendly art visualization experience, designed for integration with e-commerce platforms. It includes a full-stack authentication system with role-based access control and robust security features, ready for e-commerce integration. The project aims to become a leading art visualization tool for artists, designers, and galleries.
+RoomVibe Studio is a comprehensive React/TypeScript web application designed for visualizing artwork within various room environments. It offers a Canvy-style three-panel editor for previewing artworks with true-to-scale sizing and includes features like wall recoloring. The application aims to provide a modern, user-friendly art visualization experience, ready for integration with e-commerce platforms. It features a full-stack authentication system with role-based access control and robust security, targeting artists, designers, and galleries. The long-term ambition is to establish RoomVibe Studio as a leading tool in art visualization.
 
 ## User Preferences
 I prefer simple language in explanations. I like functional programming paradigms where applicable. I want iterative development, with small, testable changes. Ask before making major architectural changes or introducing new dependencies. I prefer detailed explanations for complex logic. Do not make changes to files in the `public/presets` folder. Do not make changes to the `server.js` file.
@@ -11,71 +11,33 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 
 **UI/UX Decisions:**
 - **Color Scheme**: RoomVibe branding palette (Primary #283593, Accent #D8B46A, Neutral #DDE1E7, Text #1A1A1A).
-- **Typography**: Inter font family only (SemiBold for headings, Regular for body, Medium for CTAs). Letter-spacing: -0.5px for headings, line-height: 1.15.
-- **Homepage Layout**: Features a hero section, "How It Works" section, audience-specific sections (Artists, Designers, Galleries), and a CTA section, all designed for responsive display.
-- **Studio Layout**: Three-panel Canvy-style editor (`#/studio`), responsive and mobile-first, with hidden TopNav and SiteFooter for iframe embedding. Responsive canvas height (400px mobile, 480px tablet, 560px desktop).
-- **Iconography**: Inline SVG components with gold accent (#D8B46A).
-- **Artwork Interaction**: Drag-to-move with bounds checking, diagonal resize with smart scaling, true physical scale rendering, and frame selection. Resize handles use 40px touch targets with 12px minimal visual appearance. Mobile touch handling uses direction detection (8px threshold) to differentiate between vertical scroll and horizontal drag.
-- **Studio Section Styling**: Consistent uppercase tracking-wide headings, space-y-5 section rhythm, subtle bg-rv-surface/50 info cards, unified button styling.
+- **Typography**: Inter font family for all text.
+- **Homepage Layout**: Responsive design featuring a hero section, "How It Works", audience-specific sections, and a CTA.
+- **Studio Layout**: A responsive, mobile-first, three-panel editor with dynamic canvas height and hidden navigation for iframe embedding.
+- **Iconography**: Inline SVG components with gold accent.
+- **Artwork Interaction**: Drag-to-move with bounds, diagonal resizing with smart scaling, true physical scale rendering, and frame selection. Mobile touch handling differentiates between scroll and drag.
 
 **Technical Implementations & Feature Specifications:**
-- **Routing**: Hash routing for main pages (`/`, `#/studio`, `#/login`, `#/register`, `#/dashboard`, `#/privacy`, `#/terms`, `#/upload-consent`).
-- **Authentication System**: Express server with JWT, HttpOnly cookie-based authentication, bcrypt hashing, CORS protection, and PostgreSQL for user roles (user, artist, designer, gallery, admin) and RBAC.
-- **Admin Role Protection**: Admin users have a dedicated `is_admin` boolean flag in the database. When `is_admin=true`, Stripe webhook handlers skip role updates, preserving admin privileges. The `/login` and `/me` endpoints compute `effectiveRole` as 'admin' when `is_admin=true`, ensuring admins always route to the Admin Dashboard regardless of subscription plan.
+- **Routing**: Utilizes hash routing for all main application pages.
+- **Authentication System**: Express.js backend with JWT, HttpOnly cookies, bcrypt, CORS, and PostgreSQL for user management, roles (user, artist, designer, gallery, admin), and RBAC. Admin roles bypass plan restrictions and have dedicated dashboard access.
 - **Studio Mode**:
-    - **Left Panel (Scene Browser)**: Room preset thumbnails.
-    - **Center Panel (Canvas)**: Displays room photos (preset or user-uploaded), real-scale artwork rendering, smart scaling, drag-to-move, and frame rendering. Room 4 has unique calibration for larger wall height.
-    - **Right Panel (Controls)**: Artwork selector, real-size display, frame selector, reset button.
-    - **Mobile Layout**: Canvas-first, followed by controls, then room list.
-    - **Artwork Locking (Free Users)**: Free users see only 1 placeholder artwork with a locked indicator showing "+X more artworks". Clicking the locked indicator opens an upgrade modal. URL parameter bypass is blocked for free users. Paid users (Artist/Designer/Gallery/Admin) see the full artwork dropdown.
-    - **Premium Room Library**: 100 premium room scenes with plan-based access limits. Free users: 3 rooms, Artist: 30 rooms, Designer/Gallery/Admin: unlimited. Locked rooms show UpgradePrompt, unlocked rooms show ComingSoonModal (placeholder until real images added). Data in `src/data/premiumRooms.ts`, limits in `src/config/planLimits.ts`.
-    - **Export Features**: Image export (1200px regular, 3000px high-res) and PDF export with plan-based restrictions.
-      - Free users: Low-res download (1200px) with "RoomVibe – Upgrade for High-Res" watermark. High-res and PDF buttons trigger upgrade modal.
-      - Artist plan: No watermark on regular download (1200px), PDF export unlocked, high-res export locked (Designer+ only).
-      - Designer plan+: All exports unlocked including high-resolution 3000px images and PDF proposals.
-      - Export renders room background, artwork, and frame at proper scale using canvas rendering.
-      - Export UI: Three buttons (Download, High-Resolution Download, PDF Export) with plan-specific captions and upgrade CTAs.
-    - **Upgrade Nudges & Success Modal**: Subtle conversion prompts to encourage upgrades without disrupting workflow.
-      - Success Modal: Shows after exports for Free/Artist users with "Your export is ready!" message and upgrade CTA.
-      - Free user nudges: Text link under artwork section ("Unlock high-res export → Upgrade"), upgrade CTA after download button.
-      - Artist user nudges: "Pro" badge on Premium Rooms header, hint in Export section about high-res exports (Designer+).
-      - Designer+ users see no upgrade prompts in Studio.
-      - Components: `ExportSuccessModal`, `UpgradeNudge` (variants: text, badge, hint).
-- **Artist Dashboard**: CRUD operations for artwork management (upload, list, edit, delete). Includes image upload, currency/dimension unit selection. Artwork images are base64-encoded and stored in PostgreSQL, served via API. Supports website widget embedding with dynamic artist/artwork IDs.
-- **Designer Dashboard**: Project management with custom room image uploads (Multer, 10MB limit), stored as base64 in PostgreSQL. Features "Open in Studio" functionality for uploaded rooms.
-- **Gallery Dashboard**: Collection management for online exhibitions with CRUD operations for collections and artworks. Supports publication status and multi-artwork uploads per collection.
-- **Role-Based Dashboards**: Specific content and access controls for Artist, Designer, Gallery, User, and Admin roles. Admin users can impersonate other roles.
-- **Stripe Subscriptions**: Full integration for 4 plans (User free, Artist €9/mo, Designer €29/mo, Gallery €49/mo). Includes checkout sessions, customer portal access, and webhook handling for subscription lifecycle events (`checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_succeeded`, `invoice.payment_failed`). Subscription status and plan are stored in the user database and synchronized with user roles.
-- **Multi-Entitlement System**: Users can accumulate access to multiple modules (Artist, Designer, Gallery) through subscriptions. Database stores three boolean entitlement columns: `artist_access`, `designer_access`, `gallery_access`. When a user subscribes to a plan, the corresponding entitlement is SET to TRUE without resetting other entitlements. This allows users to maintain access across modules even after canceling one subscription. Admin users automatically have all entitlements.
-  - **Backend Implementation**: Auth middleware (`server/middleware/auth.ts`) includes `requireEntitlement()` and `requireAnyEntitlement()` helpers. Stripe webhooks SET entitlements additively on subscription creation and REVOKE specific entitlements on cancellation.
-  - **Frontend Implementation**: AuthContext provides `hasEntitlement()` and `hasAnyEntitlement()` helper functions. User object includes `entitlements: { artist_access, designer_access, gallery_access }`.
-- **Unified Dashboard**: All non-admin users see a single dashboard with sidebar navigation (`UnifiedDashboard` component). Sidebar shows Overview (always available) plus Artist Studio, Designer Tools, and Gallery Hub modules. Locked modules display with lock icon and price; active modules show "Active" badge. Clicking locked modules is disabled; users must upgrade via pricing page. Module content areas link to full dedicated dashboards. Includes Widget Embed Code section with token generation and copy functionality.
-- **Unified Widget System**: Single embeddable widget (`public/widget.js`) that adapts to user entitlements. Users embed one script tag with their unique widget token on any website (Shopify, Wix, WordPress, etc.).
-  - **Widget Token**: Stored in `users.widget_token` column. Generated via dashboard or API (`/api/widget/token/generate`). Retrieved via `/api/widget/token`.
-  - **Widget Config API**: `GET /api/widget/config?widgetId=XXX` returns user type, entitlements, capabilities, and data (artworks, rooms, gallery scenes).
-  - **Three Modes**: Artist (artwork preview, Buy Now button), Designer (premium rooms, high-res exports), Gallery (multi-artwork exhibitions).
-  - **Capabilities**: Determined by entitlements - premiumRooms, highResExport, multiArtwork, exhibitionMode, buyButton, pdfExport, frames, customBranding.
-  - **Widget UI/UX (Updated)**: Modal-based with RoomVibe branding, mode-specific layouts and controls.
-    - **Layout**: Canvas left (70-80%), sidebar right (20-30%) on desktop; stacked on mobile with 70vh canvas height.
-    - **Mode-specific controls**: Artist (Change Room, Frame, Download, Buy Now), Designer (Premium Rooms, Frame, Export dropdown), Gallery (Exhibition Rooms, Artwork List, Export dropdown).
-    - **Gallery mode**: Horizontal thumbnail carousel in sidebar, exhibition navigation arrows, slide enter/exit animations (150ms), swipe and keyboard navigation.
-    - **Animations**: 200ms fade-in for modal/elements, 150ms room transitions with Promise-based timing, slide animations for gallery navigation.
-    - **Touch handling**: Vertical scroll allowed when dy > dx, horizontal drag for artwork repositioning.
-    - **Icons**: 18px size, 1.75px stroke width (lucide-style).
-    - **Info tooltip**: Quick tips per mode accessible from header.
-  - **Upgrade Modal**: "Unlock Premium Tools" title with gold lock icon, shown when users attempt locked features.
-  - **Embed Code**: `<script src="https://domain/widget.js" data-widget-id="TOKEN"></script>`
-- **Gallery Exhibition Page**: Public route (`#/exhibition/:widgetId`) for viewing published gallery collections. Features slideshow navigation, artwork details, purchase links, and responsive design.
-- **Feature Locking by Plan**: Plan-based access control enforced on both backend (API) and frontend (UI).
-  - **Config Files**: `server/config/planLimits.ts` and `src/config/planLimits.ts` define limits and features per plan.
-  - **Backend Middleware**: `server/middleware/subscription.ts` provides `checkArtworkLimit`, `checkWallPhotoLimit`, `checkProjectLimit`, `checkGalleryArtworkLimit`, `requireMinimumPlan`, and `requireFeature` guards.
-  - **Protected Endpoints**: `POST /api/artworks` (artwork limit), `POST /api/projects` (project limit), `POST /api/projects/:id/rooms` (wall photo limit), `POST /api/gallery/collections/:id/artworks` (gallery artwork limit), `GET /api/gallery/collections` (gallery plan required).
-  - **Plan Limits**: User (1 artwork, 1 wall photo, 1 project), Artist (50 artworks, 100 walls, 100 projects, premium rooms, PDF exports, no high-res), Designer (unlimited, client folders, high-res exports, PDF proposals, branding), Gallery (500 artworks, gallery dashboard, multi-artist collections).
-  - **Frontend Components**: `UpgradePrompt`, `UsageMeter`, `PlanFeatureBadge` for upgrade messaging and usage display.
-  - **Admin Override**: Admins (`is_admin=true`) bypass all plan restrictions.
-- **Analytics & GDPR**: Google Analytics 4 (GA4) and Hotjar integration, conditionally loaded based on GDPR cookie consent banner. Legal pages (Privacy Policy, Terms of Service, Upload Consent) are included.
+    - **Interface**: Left panel for scene browsing, center canvas for artwork visualization, and a right panel for controls (artwork, size, frame selection). Mobile prioritizes canvas, then controls, then room list.
+    - **Artwork Access**: Free users are limited to a placeholder artwork, with an upgrade path for full artwork selection. Paid users have full access.
+    - **Premium Room Library**: Tiered access to a library of premium room scenes based on subscription plan.
+    - **Export Features**: Supports image (regular 1200px, high-res 3000px) and PDF exports with plan-based restrictions and watermarking for free users. Upgrade nudges are integrated into the export flow.
+- **Role-Based Dashboards**:
+    - **Artist Dashboard**: CRUD for artwork management, including image uploads and website widget embedding.
+    - **Designer Dashboard**: Project management and custom room image uploads.
+    - **Gallery Dashboard**: Collection management for online exhibitions.
+    - All non-admin users access a unified dashboard with sidebar navigation and module-specific content.
+- **Stripe Subscriptions**: Full integration for four plans (Free, Artist, Designer, Gallery) handling checkout, customer portal, and webhook events to manage user roles and entitlements.
+- **Multi-Entitlement System**: Users can accumulate and retain access to multiple modules (Artist, Designer, Gallery) via subscriptions. Entitlements are additively granted and revoked upon subscription changes. Admin users automatically possess all entitlements.
+- **Unified Widget System**: A single embeddable JavaScript widget (`public/widget.js`) that dynamically adapts its functionality (Artist, Designer, Gallery modes) based on the user's entitlements. The widget is modal-based with RoomVibe branding and offers mode-specific layouts and controls, including advanced features for Gallery mode.
+- **Gallery Exhibition Page**: Publicly accessible page for viewing published gallery collections with slideshow navigation and artwork details.
+- **Feature Locking by Plan**: Comprehensive access control enforced on both frontend and backend through dedicated configuration files and middleware, based on subscription plans and defined limits for artworks, wall photos, and projects.
+- **Analytics & GDPR**: Google Analytics 4 and Hotjar integration, loaded conditionally based on cookie consent. Legal pages (Privacy Policy, Terms of Service, Upload Consent) are included.
 - **Artwork Enrichment**: Automated script for fetching product details and dimensions from Shopify.
-- **Real-Scale Rendering**: Pixel-perfect artwork sizing based on physical dimensions and standardized room wall height.
+- **Real-Scale Rendering**: Achieves pixel-perfect artwork sizing using physical dimensions and standardized room wall heights.
 - **Deployment**: Configured for Autoscale using `npm run build` and `npm start` with an Express server.
 
 ## External Dependencies
@@ -83,7 +45,7 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 - **TypeScript**: For type safety.
 - **Vite**: Build tool and development server.
 - **Tailwind CSS**: Utility-first CSS framework.
-- **Shopify Storefront API**: Used for artwork data enrichment.
+- **Shopify Storefront API**: Artwork data enrichment.
 - **Node.js**: Runtime environment.
 - **Express**: Node.js web framework.
 - **PostgreSQL**: Database.
@@ -92,9 +54,9 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 - **cookie-parser**: HTTP cookie parsing.
 - **cors**: Cross-origin resource sharing.
 - **dotenv**: Environment variable management.
-- **Multer**: For handling file uploads.
-- **@google-cloud/storage**: For persistent file storage via Replit Object Storage.
-- **Google Analytics 4 (GA4)**: For website analytics.
-- **Hotjar**: For user behavior analytics.
-- **Stripe**: For subscription billing and payment processing.
-- **jsPDF**: For PDF export generation.
+- **Multer**: File uploads.
+- **@google-cloud/storage**: Persistent file storage (via Replit Object Storage).
+- **Google Analytics 4 (GA4)**: Website analytics.
+- **Hotjar**: User behavior analytics.
+- **Stripe**: Subscription billing and payments.
+- **jsPDF**: PDF export generation.
