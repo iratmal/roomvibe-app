@@ -1,0 +1,145 @@
+# TASK: Mobile Export Panel Polish (High-Resolution Export + Unlock CTA Fix)
+
+This task fixes UI inconsistencies between desktop vs. mobile for the Export section inside the RoomVibe Studio.  
+No logic changes — purely UI corrections for mobile breakpoints.
+
+====================================================================
+# 1) ISSUE SUMMARY
+
+On mobile view:
+
+1. The **High-Resolution Download** button is missing the gold border.
+2. The **Unlock High-Resolution Export – Upgrade** CTA shows navy text, but  
+   → it is missing the gold border (only plain text appears).
+3. A **legacy small yellow text line** (“Unlock High-Resolution Export Upgrade”) still appears under the Export section on mobile — this should be completely removed.
+4. Desktop styling for export buttons does not fully apply on mobile due to:
+   - different component structure OR
+   - mobile CSS overrides / missing breakpoints.
+
+Mobile and desktop UI must match 100%.
+
+====================================================================
+# 2) REQUIRED FIXES
+
+## FIX A — Restore GOLD border for mobile export buttons
+
+Apply this styling to BOTH buttons on mobile:
+
+```
+border: 1.5px solid #D8B46A !important;   /* Gold border */
+color: #283593 !important;                /* Navy text */
+font-weight: 500 !important;
+border-radius: 8px;
+padding: 10px 16px;
+```
+
+This applies to:
+
+### 1) High-Resolution Download (premium)
+### 2) Unlock High-Resolution Export → Upgrade to Designer (locked CTA)
+
+Ensure mobile breakpoints do NOT override borders.
+
+---
+
+## FIX B — Remove legacy yellow-text element on mobile
+
+On some mobile layouts, an older element appears:
+
+`Unlock High-Resolution Export Upgrade` (small yellow font)
+
+This must be **completely removed** for all breakpoints.
+
+Action:
+
+- Locate the legacy `<p>`, `<small>` or helper `<span>`  
+- Remove entirely OR conditionally hide:
+
+```
+display: none !important;
+```
+
+Stop showing this element anywhere in the new UI.
+
+---
+
+## FIX C — Match desktop spacing and hierarchy on mobile
+
+Apply consistent layout:
+
+### Spacing rules:
+```
+margin-top: 16px;
+margin-bottom: 12px;
+button spacing: 12px between buttons;
+```
+
+### Typography rules:
+```
+font-size: 14px;
+font-weight: 500;
+line-height: 1.35;
+```
+
+### Export section header:
+Ensure “EXPORT” label is visible and correctly spaced.
+
+---
+
+## FIX D — Ensure layout order is identical to desktop:
+
+Correct order on mobile must be:
+
+1. EXPORT (section label)
+2. Download (regular)
+3. High-Resolution Download (premium / locked)
+4. PDF Export
+5. Unlock Premium CTA (if locked)
+6. View & Buy button
+
+Nothing should be duplicated or reordered.
+
+---
+
+====================================================================
+# 3) CSS TARGETING GUIDELINES
+
+### Mobile breakpoint:
+Use same breakpoint as rest of the app:
+
+```
+@media (max-width: 768px) { ... }
+```
+
+Inside that scope:
+
+- Reapply gold border  
+- Reapply navy text  
+- Remove legacy elements  
+- Normalize spacing  
+
+Ensure the mobile component is not using stale or fallback CSS inherited from older export panel versions.
+
+---
+
+====================================================================
+# 4) STOP CONDITIONS
+
+Mobile export panel is considered complete when:
+
+✓ High-Resolution Download button has gold border + navy text  
+✓ Unlock High-Resolution CTA has gold border + navy text  
+✓ No yellow-text legacy lines remain visible anywhere  
+✓ Buttons are readable, consistent, and match desktop styling  
+✓ Button spacing is correct  
+✓ Entire mobile export panel visually matches the desktop design system  
+✓ No duplicated or outdated elements appear  
+
+---
+
+====================================================================
+# 5) NOTES
+
+- This task must NOT alter the logic of export, feature locking, or entitlements.  
+- Pure UI polish only.  
+- Desktop version must remain unchanged — only mobile fixes should apply.
