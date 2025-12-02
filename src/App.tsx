@@ -19,6 +19,7 @@ import PrivacyPolicy from "./components/legal/PrivacyPolicy";
 import TermsOfService from "./components/legal/TermsOfService";
 import UploadConsent from "./components/legal/UploadConsent";
 import { PricingPage } from "./components/PricingPage";
+import { UpgradePrompt } from "./components/UpgradePrompt";
 import { initGA4, resetGA4, GA4Events } from "./utils/analytics";
 import { initHotjar, resetHotjar } from "./utils/hotjar";
 
@@ -738,6 +739,14 @@ const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
 
 function Studio() {
   const isInIframe = useIsInIframe();
+  const { user } = useAuth();
+  
+  // Determine user's effective plan for artwork access
+  const effectivePlan = user?.effectivePlan || 'user';
+  const isFreePlan = effectivePlan === 'user';
+  
+  // Upgrade modal state
+  const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false);
   
   // Check URL params for widget mode or designer mode
   const getInitialState = (): { sceneId: string; isUploadMode: boolean; designerRoomImage: string | null } => {
@@ -1568,19 +1577,75 @@ function Studio() {
           {/* Right: Controls - Shown second on mobile (order-2), last on desktop (lg:order-3) */}
           <aside className="order-2 lg:order-3 col-span-12 lg:col-span-3 rounded-rvLg border border-rv-neutral bg-white shadow-rvSoft p-4 lg:p-5 h-auto lg:h-[78vh] overflow-auto">
             <div className="text-sm font-bold text-rv-primary">Artwork</div>
-            <div className="mt-3 flex items-center gap-2">
-              <select
-                className="w-full rounded-rvMd border-2 border-rv-neutral px-3 py-2 text-sm font-medium text-rv-text focus:outline-none focus:ring-2 focus:ring-rv-primary transition-all"
-                value={artId}
-                onChange={(e) => setArtId(e.target.value)}
-              >
-                {artworksState.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.title}
-                  </option>
-                ))}
-              </select>
-            </div>
+            
+            {/* Free users: Show limited artwork gallery with lock */}
+            {isFreePlan ? (
+              <div className="mt-3">
+                {/* Show only the first artwork for free users */}
+                <div className="space-y-2">
+                  {artworksState.slice(0, 1).map((a) => (
+                    <button
+                      key={a.id}
+                      onClick={() => setArtId(a.id)}
+                      className={`w-full flex items-center gap-3 p-2 rounded-rvMd border-2 transition-all text-left ${
+                        artId === a.id
+                          ? "border-rv-primary bg-rv-primary/5"
+                          : "border-rv-neutral bg-white hover:bg-rv-surface"
+                      }`}
+                    >
+                      <div className="w-12 h-12 rounded bg-rv-surface overflow-hidden flex-shrink-0">
+                        <img 
+                          src={a.overlayImageUrl} 
+                          alt={a.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-rv-text truncate">{a.title}</p>
+                        <p className="text-xs text-rv-textMuted">{a.widthCm} × {a.heightCm} cm</p>
+                      </div>
+                    </button>
+                  ))}
+                  
+                  {/* Locked artworks indicator */}
+                  {artworksState.length > 1 && (
+                    <button
+                      onClick={() => setShowUpgradeModal(true)}
+                      className="w-full flex items-center gap-3 p-3 rounded-rvMd border-2 border-dashed border-rv-neutral bg-rv-surface/50 hover:bg-rv-surface transition-all cursor-pointer"
+                    >
+                      <div className="w-12 h-12 rounded bg-rv-neutral/30 flex items-center justify-center flex-shrink-0">
+                        <svg className="w-5 h-5 text-rv-textMuted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="text-sm font-semibold text-rv-primary">+{artworksState.length - 1} more artworks</p>
+                        <p className="text-xs text-rv-textMuted">Upgrade to unlock all artworks</p>
+                      </div>
+                      <svg className="w-5 h-5 text-rv-accent flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              /* Paid users: Show full artwork dropdown */
+              <div className="mt-3 flex items-center gap-2">
+                <select
+                  className="w-full rounded-rvMd border-2 border-rv-neutral px-3 py-2 text-sm font-medium text-rv-text focus:outline-none focus:ring-2 focus:ring-rv-primary transition-all"
+                  value={artId}
+                  onChange={(e) => setArtId(e.target.value)}
+                >
+                  {artworksState.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            
             {art && art.widthCm && art.heightCm && (
               <>
                 <div className="mt-2 text-xs text-rv-textMuted font-medium">
@@ -1632,6 +1697,17 @@ function Studio() {
           </aside>
         </div>
       </div>
+      
+      {/* Upgrade Modal for Free Users */}
+      {showUpgradeModal && (
+        <UpgradePrompt
+          variant="modal"
+          message="Unlock access to our full collection of sample artworks to see how different styles look in your space. Upgrade now to explore all artwork options!"
+          currentPlan="user"
+          suggestedPlan="artist"
+          onClose={() => setShowUpgradeModal(false)}
+        />
+      )}
     </main>
   );
 }
