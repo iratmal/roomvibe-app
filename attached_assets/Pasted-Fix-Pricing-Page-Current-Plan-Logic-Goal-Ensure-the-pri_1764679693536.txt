@@ -1,0 +1,120 @@
+Fix Pricing Page “Current Plan” Logic
+
+Goal
+Ensure the pricing page correctly shows the user’s actual subscription plan, instead of assuming that “Artist” role = “Artist paid plan”.
+Free users must be able to upgrade to Artist (9€/month) and should not see “Current plan” on the Artist card unless they are actually on the paid Artist plan.
+
+Context
+
+The dashboard correctly shows the real plan, e.g.:
+
+“Free plan – Perfect for testing RoomVibe…”
+
+The pricing page (/pricing) currently shows on the Artist (9 €) card:
+
+“Current plan” even when the user is still on the Free plan.
+
+As a result, Free users with Artist role:
+
+see “Current plan” on the Artist card
+
+cannot click “Upgrade” to open Stripe checkout for Artist plan.
+
+We need to make the pricing cards use the same plan source-of-truth as the dashboard.
+
+Scope
+
+Locate pricing component and current plan logic
+
+Find the React component that renders the pricing cards (likely something like:
+src/pages/pricing.tsx or src/components/pricing/PricingCards.tsx).
+
+Identify how it currently decides which card shows “Current plan” vs “Upgrade”.
+
+Confirm if it is using user role (e.g. artist) instead of user plan.
+
+Use the real plan field instead of role
+
+Reuse the same plan field that the dashboard uses to show “Free plan / Artist plan / Designer / Gallery”.
+
+The pricing logic must be based on something like user.plan (or whatever the existing field is called), not on the role.
+
+Implement mapping such as:
+
+plan === "free" → Free/User column is current
+
+plan === "artist" → Artist column is current
+
+plan === "designer" → Designer column is current
+
+plan === "gallery" → Gallery column is current
+
+Fix button/label states per plan
+
+For each plan card on /pricing:
+
+If user is on that exact plan → show:
+
+label: “Current plan”
+
+no “Upgrade” button for that card
+
+If user is on a lower plan → show:
+
+button “Upgrade to [Plan]” (e.g. “Upgrade to Artist”, “Upgrade to Designer”)
+
+clicking should open the correct Stripe checkout or upgrade flow (existing behavior).
+
+If user is on a higher plan (e.g. already Designer, looking at Artist card) → you can either:
+
+show “Included in your current plan” or
+
+simply keep a disabled state (but do NOT show “Current plan”).
+
+Special case: Free Artist users
+
+For a user with Artist dashboard but Free plan:
+
+dashboard: keep showing “Free plan” (no change here)
+
+pricing page must show:
+
+User/Free column as their current plan (or clearly marked as Free).
+
+Artist 9 €/month card with an “Upgrade to Artist” button (NOT “Current plan”).
+
+After a real upgrade occurs (when subscription is actually created), the Artist card should then show “Current plan”.
+
+Fallback behavior
+
+If for any reason user.plan is missing/undefined, treat it as "free" by default on the pricing page, so the user always sees upgrade buttons and never gets blocked.
+
+Stop Condition
+
+When logged in as a Free user (Artist role):
+
+Dashboard shows “Free plan” (unchanged).
+
+Pricing page:
+
+does NOT show “Current plan” on the Artist (9 €/month) card.
+
+shows an “Upgrade to Artist” button that correctly opens the Stripe upgrade/checkout flow.
+
+When logged in as a paid Artist plan user:
+
+Pricing page shows “Current plan” on the Artist card.
+
+Higher plans (Designer, Gallery) show “Upgrade to Designer / Upgrade to Gallery”.
+
+Designer/Gallery paid users see their own plan as “Current plan”.
+
+No user ever gets stuck with “Current plan” on a plan they haven’t actually paid for.
+
+Notes
+
+Do not modify Stripe billing logic or subscription creation — only the UI conditional logic for labels/buttons on the pricing cards.
+
+Reuse the same plan state that the dashboard uses (single source of truth).
+
+If the plan field is unclear, stop after a few key files and describe which user fields exist and how the dashboard currently determines the plan label.

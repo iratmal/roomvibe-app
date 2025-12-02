@@ -124,7 +124,17 @@ export function PricingPage() {
     }
   };
 
-  const currentPlan = user?.role || 'user';
+  const currentPlan = user?.effectivePlan || 'user';
+  const currentPlanIndex = PLANS.findIndex(p => p.id === currentPlan);
+  
+  const getPlanState = (planId: string): 'current' | 'upgrade' | 'included' => {
+    if (!user) return 'upgrade';
+    const planIndex = PLANS.findIndex(p => p.id === planId);
+    if (planId === currentPlan) return 'current';
+    if (planIndex < currentPlanIndex) return 'included';
+    return 'upgrade';
+  };
+  
   const isCurrentPlan = (planId: string): boolean => !!(user && currentPlan === planId);
 
   return (
@@ -184,7 +194,7 @@ export function PricingPage() {
               <PlanCard
                 key={plan.id}
                 plan={plan}
-                isCurrentPlan={isCurrentPlan(plan.id)}
+                planState={getPlanState(plan.id)}
                 isLoading={loadingPlan === plan.id}
                 onSelect={() => handlePlanClick(plan)}
                 user={user}
@@ -223,19 +233,22 @@ export function PricingPage() {
 
 interface PlanCardProps {
   plan: PlanConfig;
-  isCurrentPlan: boolean;
+  planState: 'current' | 'upgrade' | 'included';
   isLoading: boolean;
   onSelect: () => void;
   user: any;
 }
 
-function PlanCard({ plan, isCurrentPlan, isLoading, onSelect, user }: PlanCardProps) {
+function PlanCard({ plan, planState, isLoading, onSelect, user }: PlanCardProps) {
   const getButtonState = () => {
-    if (isCurrentPlan) {
+    if (planState === 'current') {
       if (plan.id === 'user') {
         return { text: "You're on the free plan", disabled: true, style: 'secondary' };
       }
       return { text: 'Current plan', disabled: true, style: 'secondary' };
+    }
+    if (planState === 'included') {
+      return { text: 'Included in your plan', disabled: true, style: 'secondary' };
     }
     if (isLoading) {
       return { text: 'Loading...', disabled: true, style: 'primary' };
