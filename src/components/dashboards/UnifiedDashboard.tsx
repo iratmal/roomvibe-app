@@ -1,0 +1,351 @@
+import React, { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { YourPlanCard } from '../YourPlanCard';
+import { ChangePassword } from '../ChangePassword';
+
+type ModuleType = 'overview' | 'artist' | 'designer' | 'gallery';
+
+interface ModuleConfig {
+  id: ModuleType;
+  label: string;
+  entitlement: 'artist_access' | 'designer_access' | 'gallery_access' | null;
+  icon: React.ReactNode;
+  description: string;
+  price: string;
+}
+
+const MODULES: ModuleConfig[] = [
+  {
+    id: 'overview',
+    label: 'Overview',
+    entitlement: null,
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+      </svg>
+    ),
+    description: 'Account overview and settings',
+    price: 'Free',
+  },
+  {
+    id: 'artist',
+    label: 'Artist Studio',
+    entitlement: 'artist_access',
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+    ),
+    description: 'Manage artworks, embed widgets',
+    price: '€9/mo',
+  },
+  {
+    id: 'designer',
+    label: 'Designer Tools',
+    entitlement: 'designer_access',
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+      </svg>
+    ),
+    description: 'Projects, client room uploads',
+    price: '€29/mo',
+  },
+  {
+    id: 'gallery',
+    label: 'Gallery Hub',
+    entitlement: 'gallery_access',
+    icon: (
+      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+      </svg>
+    ),
+    description: 'Collections, multi-artist curation',
+    price: '€49/mo',
+  },
+];
+
+export function UnifiedDashboard() {
+  const { user, hasEntitlement, logout } = useAuth();
+  const [activeModule, setActiveModule] = useState<ModuleType>('overview');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const isAdmin = user?.isAdmin || user?.role === 'admin';
+
+  const handleModuleClick = (module: ModuleConfig) => {
+    if (module.entitlement && !hasEntitlement(module.entitlement) && !isAdmin) {
+      return;
+    }
+    setActiveModule(module.id);
+  };
+
+  const renderModuleContent = () => {
+    switch (activeModule) {
+      case 'artist':
+        return <ArtistDashboardContent />;
+      case 'designer':
+        return <DesignerDashboardContent />;
+      case 'gallery':
+        return <GalleryDashboardContent />;
+      case 'overview':
+      default:
+        return <OverviewContent />;
+    }
+  };
+
+  const getModuleStatus = (module: ModuleConfig): 'active' | 'locked' | 'available' => {
+    if (!module.entitlement) return 'available';
+    if (isAdmin) return 'available';
+    if (hasEntitlement(module.entitlement)) return 'active';
+    return 'locked';
+  };
+
+  return (
+    <div className="min-h-screen bg-rv-surface flex">
+      <aside className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-white border-r border-rv-neutral flex flex-col transition-all duration-300`}>
+        <div className="p-4 border-b border-rv-neutral flex items-center justify-between">
+          {sidebarOpen && (
+            <a href="#/" className="flex items-center">
+              <img 
+                src="/roomvibe-logo-transparent.png" 
+                alt="RoomVibe" 
+                className="h-12 w-auto"
+              />
+            </a>
+          )}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="p-2 rounded-lg hover:bg-rv-surface transition-colors"
+            aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+          >
+            <svg className="w-5 h-5 text-rv-textMuted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              {sidebarOpen ? (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+              )}
+            </svg>
+          </button>
+        </div>
+
+        <nav className="flex-1 p-3 space-y-1">
+          {MODULES.map((module) => {
+            const status = getModuleStatus(module);
+            const isActive = activeModule === module.id;
+            const isLocked = status === 'locked';
+
+            return (
+              <button
+                key={module.id}
+                onClick={() => handleModuleClick(module)}
+                disabled={isLocked}
+                className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left transition-all ${
+                  isActive
+                    ? 'bg-rv-primary text-white'
+                    : isLocked
+                    ? 'text-rv-textMuted cursor-not-allowed opacity-60'
+                    : 'text-rv-text hover:bg-rv-surface'
+                }`}
+                title={sidebarOpen ? undefined : module.label}
+              >
+                <div className={`flex-shrink-0 ${isActive ? 'text-white' : isLocked ? 'text-rv-textMuted' : 'text-rv-accent'}`}>
+                  {module.icon}
+                </div>
+                {sidebarOpen && (
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium truncate">{module.label}</span>
+                      {isLocked && (
+                        <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                      )}
+                      {status === 'active' && module.entitlement && (
+                        <span className="px-1.5 py-0.5 text-xs bg-green-100 text-green-700 rounded">Active</span>
+                      )}
+                    </div>
+                    {isLocked && (
+                      <span className="text-xs text-rv-accent">{module.price}</span>
+                    )}
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="p-3 border-t border-rv-neutral space-y-2">
+          {sidebarOpen && (
+            <>
+              <div className="px-3 py-2 text-sm text-rv-textMuted">
+                <div className="font-medium text-rv-text truncate">{user?.email}</div>
+                <div className="text-xs">{user?.effectivePlan || user?.subscriptionPlan || 'Free'} Plan</div>
+              </div>
+              <a
+                href="#/pricing"
+                className="flex items-center gap-2 px-3 py-2 text-sm text-rv-accent hover:bg-rv-surface rounded-lg transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <span>Upgrade</span>
+              </a>
+            </>
+          )}
+          <button
+            onClick={logout}
+            className={`flex items-center gap-2 px-3 py-2 text-sm text-rv-textMuted hover:text-rv-text hover:bg-rv-surface rounded-lg transition-colors ${sidebarOpen ? 'w-full' : 'justify-center'}`}
+            title={sidebarOpen ? undefined : 'Sign Out'}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            {sidebarOpen && <span>Sign Out</span>}
+          </button>
+        </div>
+      </aside>
+
+      <main className="flex-1 overflow-auto">
+        <div className="min-h-full">
+          {renderModuleContent()}
+        </div>
+      </main>
+    </div>
+  );
+}
+
+function OverviewContent() {
+  const { user } = useAuth();
+  
+  return (
+    <div className="p-6 md:p-8 max-w-5xl">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-rv-primary mb-2">Welcome back!</h1>
+        <p className="text-rv-textMuted">{user?.email}</p>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
+        <div className="p-6 bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral">
+          <h2 className="text-xl font-bold mb-2 text-rv-primary">Studio</h2>
+          <p className="text-rv-textMuted mb-5 leading-relaxed">
+            Visualize artwork in room environments with true-to-scale rendering.
+          </p>
+          <a
+            href="#/studio"
+            className="inline-block px-5 py-2.5 rounded-rvMd text-white font-semibold bg-rv-primary hover:bg-rv-primaryHover transition-all shadow-rvSoft hover:shadow-rvElevated"
+          >
+            Open Studio
+          </a>
+        </div>
+
+        <div className="p-6 bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral">
+          <h2 className="text-xl font-bold mb-2 text-rv-primary">My Favorites</h2>
+          <p className="text-rv-textMuted mb-5 leading-relaxed">
+            Save your favorite artwork combinations for later.
+          </p>
+          <button className="px-5 py-2.5 border-2 border-rv-neutral rounded-rvMd hover:bg-rv-surface transition-colors font-semibold text-rv-text">
+            View Favorites
+          </button>
+        </div>
+
+        <div className="p-6 bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral">
+          <h2 className="text-xl font-bold mb-2 text-rv-primary">Recent Visualizations</h2>
+          <p className="text-rv-textMuted mb-5 leading-relaxed">
+            View your recently created room visualizations.
+          </p>
+          <button className="px-5 py-2.5 border-2 border-rv-neutral rounded-rvMd hover:bg-rv-surface transition-colors font-semibold text-rv-text">
+            View History
+          </button>
+        </div>
+      </div>
+
+      <YourPlanCard />
+
+      <div className="mt-8 grid gap-6 md:grid-cols-2">
+        <div className="p-6 bg-rv-primary/5 rounded-rvLg border border-rv-primary/20">
+          <h3 className="text-lg font-bold mb-3 text-rv-primary">Account Information</h3>
+          <div className="space-y-2 text-sm">
+            <p><span className="font-semibold text-rv-text">Email:</span> <span className="text-rv-textMuted">{user?.email}</span></p>
+            <p><span className="font-semibold text-rv-text">Account Type:</span> <span className="text-rv-textMuted">{user?.role}</span></p>
+            <p>
+              <span className="font-semibold text-rv-text">Email Confirmed:</span>{' '}
+              {user?.emailConfirmed ? (
+                <span className="text-green-600 font-semibold">Verified</span>
+              ) : (
+                <span className="text-amber-600 font-semibold">Pending</span>
+              )}
+            </p>
+          </div>
+        </div>
+
+        <ChangePassword />
+      </div>
+    </div>
+  );
+}
+
+function ArtistDashboardContent() {
+  return (
+    <div className="p-6 md:p-8">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-rv-primary mb-2">Artist Studio</h1>
+        <p className="text-rv-textMuted">Manage your artworks and embed widgets on your website.</p>
+      </div>
+      <div className="bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral p-6">
+        <p className="text-rv-textMuted">
+          Artist dashboard content will be integrated here. Use the sidebar navigation to access your artist tools.
+        </p>
+        <a 
+          href="#/dashboard/artist" 
+          className="mt-4 inline-block px-5 py-2.5 rounded-rvMd text-white font-semibold bg-rv-primary hover:bg-rv-primaryHover transition-all"
+        >
+          Open Full Artist Dashboard
+        </a>
+      </div>
+    </div>
+  );
+}
+
+function DesignerDashboardContent() {
+  return (
+    <div className="p-6 md:p-8">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-rv-primary mb-2">Designer Tools</h1>
+        <p className="text-rv-textMuted">Manage projects and upload client room photos.</p>
+      </div>
+      <div className="bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral p-6">
+        <p className="text-rv-textMuted">
+          Designer dashboard content will be integrated here. Use the sidebar navigation to access your designer tools.
+        </p>
+        <a 
+          href="#/dashboard/designer" 
+          className="mt-4 inline-block px-5 py-2.5 rounded-rvMd text-white font-semibold bg-rv-primary hover:bg-rv-primaryHover transition-all"
+        >
+          Open Full Designer Dashboard
+        </a>
+      </div>
+    </div>
+  );
+}
+
+function GalleryDashboardContent() {
+  return (
+    <div className="p-6 md:p-8">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-rv-primary mb-2">Gallery Hub</h1>
+        <p className="text-rv-textMuted">Curate collections and manage multi-artist exhibitions.</p>
+      </div>
+      <div className="bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral p-6">
+        <p className="text-rv-textMuted">
+          Gallery dashboard content will be integrated here. Use the sidebar navigation to access your gallery tools.
+        </p>
+        <a 
+          href="#/dashboard/gallery" 
+          className="mt-4 inline-block px-5 py-2.5 rounded-rvMd text-white font-semibold bg-rv-primary hover:bg-rv-primaryHover transition-all"
+        >
+          Open Full Gallery Dashboard
+        </a>
+      </div>
+    </div>
+  );
+}

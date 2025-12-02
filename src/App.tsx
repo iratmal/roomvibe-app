@@ -14,6 +14,7 @@ import { ArtistDashboard } from "./components/dashboards/ArtistDashboard";
 import { DesignerDashboard } from "./components/dashboards/DesignerDashboard";
 import { GalleryDashboard } from "./components/dashboards/GalleryDashboard";
 import { AdminDashboard } from "./components/dashboards/AdminDashboard";
+import { UnifiedDashboard } from "./components/dashboards/UnifiedDashboard";
 import ProjectDetail from "./components/dashboards/ProjectDetail";
 import CollectionDetail from "./components/dashboards/CollectionDetail";
 import ArtworkEdit from "./components/dashboards/ArtworkEdit";
@@ -179,23 +180,18 @@ function DashboardRouter() {
     return null;
   }
 
-  switch (effectiveRole) {
-    case 'admin':
-      return <AdminDashboard />;
-    case 'artist':
-      return <ArtistDashboard />;
-    case 'designer':
-      return <DesignerDashboard />;
-    case 'gallery':
-      return <GalleryDashboard />;
-    case 'user':
-    default:
-      return <UserDashboard />;
+  // Admin goes to admin dashboard
+  if (effectiveRole === 'admin') {
+    return <AdminDashboard />;
   }
+
+  // All users get the unified dashboard with sidebar navigation
+  // The sidebar shows modules based on their entitlements
+  return <UnifiedDashboard />;
 }
 
 function RoleDashboardRouter({ requiredRole }: { requiredRole: string }) {
-  const { user, loading, impersonatedRole, setImpersonation } = useAuth();
+  const { user, loading, impersonatedRole, setImpersonation, hasEntitlement } = useAuth();
 
   useEffect(() => {
     const normalizeHash = (hash: string) => {
@@ -230,8 +226,19 @@ function RoleDashboardRouter({ requiredRole }: { requiredRole: string }) {
     return null;
   }
 
-  const isAdmin = user.role === 'admin';
-  const hasAccess = user.role === requiredRole || isAdmin;
+  const isAdmin = user.role === 'admin' || user.isAdmin;
+  
+  // Map role to entitlement
+  const entitlementMap: Record<string, 'artist_access' | 'designer_access' | 'gallery_access'> = {
+    artist: 'artist_access',
+    designer: 'designer_access',
+    gallery: 'gallery_access',
+  };
+  
+  const requiredEntitlement = entitlementMap[requiredRole];
+  
+  // Check access via entitlement system (or admin override)
+  const hasAccess = isAdmin || (requiredEntitlement && hasEntitlement(requiredEntitlement));
 
   if (!hasAccess) {
     window.location.hash = '#/dashboard';
