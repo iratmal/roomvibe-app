@@ -1732,11 +1732,24 @@ function Studio() {
                   </svg>
                   Premium
                 </div>
-                {!hasUnlimitedPremiumRooms && (
-                  <span className="text-[10px] text-rv-textMuted font-medium">
-                    {maxPremiumRooms}/{premiumRooms.length}
-                  </span>
-                )}
+                <div className="flex items-center gap-2">
+                  {!hasUnlimitedPremiumRooms && (
+                    <span className="text-[10px] text-rv-textMuted font-medium">
+                      {maxPremiumRooms}/{premiumRooms.length}
+                    </span>
+                  )}
+                  {/* Badge for artist users to unlock more rooms */}
+                  {isArtistPlan && (
+                    <UpgradeNudge
+                      message="Pro"
+                      variant="badge"
+                      onClick={() => {
+                        setUpgradeModalMessage("Upgrade to Designer to access all 100+ premium rooms.");
+                        setShowUpgradeModal(true);
+                      }}
+                    />
+                  )}
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-2.5">
                 {premiumRooms.map((room, index) => {
@@ -2190,6 +2203,19 @@ function Studio() {
                 </div>
               </div>
             )}
+            
+            {/* Subtle upgrade nudge for free users */}
+            {isFreePlan && (
+              <UpgradeNudge
+                message="Unlock high-res export"
+                variant="text"
+                onClick={() => {
+                  setUpgradeModalMessage("Upgrade to Artist plan to download high-resolution images without watermarks.");
+                  setShowUpgradeModal(true);
+                }}
+                className="mt-1"
+              />
+            )}
 
             <div>
               <div className="text-xs font-semibold text-rv-textMuted uppercase tracking-wide mb-3">Frame</div>
@@ -2303,6 +2329,19 @@ function Studio() {
                 <p className="text-[10px] text-rv-textMuted text-center mt-1">
                   Preview includes watermark. <button onClick={() => { setUpgradeModalMessage("Upgrade to Artist plan or higher to download high-resolution images without watermarks."); setShowUpgradeModal(true); }} className="text-rv-primary hover:underline">Upgrade</button> for full quality.
                 </p>
+              )}
+              
+              {/* Upgrade hint for artist users about PDF */}
+              {isArtistPlan && !hasPdfExport && (
+                <UpgradeNudge
+                  message="PDF exports and full branding in Designer"
+                  variant="hint"
+                  onClick={() => {
+                    setUpgradeModalMessage("Upgrade to Designer to unlock PDF proposals, custom branding, and advanced export features.");
+                    setShowUpgradeModal(true);
+                  }}
+                  className="mt-2"
+                />
               )}
             </div>
 
