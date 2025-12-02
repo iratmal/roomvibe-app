@@ -748,6 +748,10 @@ function Studio() {
   // Upgrade modal state
   const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false);
   
+  // Placeholder artwork for free users - first artwork in the catalog
+  const placeholderArtwork = (localArtworks as any[])[0];
+  const placeholderArtId = placeholderArtwork?.id || 'light-my-fire-140-70-cm-roomvibe';
+  
   // Check URL params for widget mode or designer mode
   const getInitialState = (): { sceneId: string; isUploadMode: boolean; designerRoomImage: string | null } => {
     try {
@@ -800,6 +804,12 @@ function Studio() {
   
   useEffect(() => {
     const loadArtworkFromUrl = async () => {
+      // Free users are restricted to placeholder artwork only
+      // Skip URL-based artwork loading for free users
+      if (isFreePlan) {
+        return;
+      }
+      
       try {
         const hash = window.location.hash;
         const queryIndex = hash.indexOf('?');
@@ -848,9 +858,18 @@ function Studio() {
     };
     
     loadArtworkFromUrl();
-  }, []);
+  }, [isFreePlan]);
   
-  const art = artworksState.find((a) => a.id === artId);
+  // Enforce placeholder artwork for free users
+  useEffect(() => {
+    if (isFreePlan && artId !== placeholderArtId) {
+      setArtId(placeholderArtId);
+    }
+  }, [isFreePlan, artId, placeholderArtId]);
+  
+  // For free users, always use placeholder artwork regardless of state
+  const effectiveArtId = isFreePlan ? placeholderArtId : artId;
+  const art = artworksState.find((a) => a.id === effectiveArtId);
 
   const [frameStyle, setFrameStyle] = useState<string>("none");
   
