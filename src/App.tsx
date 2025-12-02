@@ -918,6 +918,11 @@ function Studio() {
   // Pinch-to-zoom state
   const [isPinching, setIsPinching] = useState<boolean>(false);
   const pinchStartRef = useRef<{ distance: number; startScale: number } | null>(null);
+  
+  // Mobile touch direction detection - determines if touch is scroll (vertical) or drag (horizontal)
+  const touchStartPosRef = useRef<{ x: number; y: number } | null>(null);
+  const touchDirectionLockedRef = useRef<'horizontal' | 'vertical' | null>(null);
+  const TOUCH_DIRECTION_THRESHOLD = 8; // pixels to determine direction
 
   // Track Studio visit on mount
   useEffect(() => {
@@ -1066,15 +1071,54 @@ function Studio() {
     dragStartRef.current = { x: clientX - offsetX, y: clientY - offsetY };
     lastDragPositionRef.current = { x: clientX, y: clientY };
     targetOffsetRef.current = { x: offsetX, y: offsetY };
-    isDraggingRef.current = true;
+    
+    // For touch events, don't activate dragging immediately - wait to detect direction
+    if ('touches' in e) {
+      touchStartPosRef.current = { x: clientX, y: clientY };
+      touchDirectionLockedRef.current = null;
+      isDraggingRef.current = false; // Will be set to true once horizontal direction is confirmed
+    } else {
+      // Mouse events: activate drag immediately (desktop)
+      isDraggingRef.current = true;
+    }
   };
 
   const handleDragMove = (e: MouseEvent | TouchEvent) => {
+    const isTouch = 'touches' in e;
+    const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+    const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+    
+    // For touch events: detect direction before committing to drag
+    if (isTouch && touchStartPosRef.current && !touchDirectionLockedRef.current) {
+      const deltaX = Math.abs(clientX - touchStartPosRef.current.x);
+      const deltaY = Math.abs(clientY - touchStartPosRef.current.y);
+      
+      // Wait until we have enough movement to determine direction
+      if (deltaX < TOUCH_DIRECTION_THRESHOLD && deltaY < TOUCH_DIRECTION_THRESHOLD) {
+        return; // Not enough movement yet
+      }
+      
+      // Determine direction: vertical means scroll, horizontal means drag
+      if (deltaY > deltaX) {
+        // Vertical movement dominant → allow scroll, don't drag
+        touchDirectionLockedRef.current = 'vertical';
+        touchStartPosRef.current = null;
+        return; // Let browser handle scroll
+      } else {
+        // Horizontal movement dominant → activate drag
+        touchDirectionLockedRef.current = 'horizontal';
+        isDraggingRef.current = true;
+      }
+    }
+    
+    // If touch is locked to vertical scroll, let it scroll
+    if (isTouch && touchDirectionLockedRef.current === 'vertical') {
+      return;
+    }
+    
+    // Standard drag handling (for mouse or horizontal touch)
     if (!isDraggingRef.current || !dragStartRef.current || !canvasRef.current) return;
     e.preventDefault();
-    
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     
     // Apply small movement threshold to reduce jitter (1px minimum total movement)
     const lastPos = lastDragPositionRef.current;
@@ -1122,6 +1166,9 @@ function Studio() {
     isDraggingRef.current = false;
     dragStartRef.current = null;
     lastDragPositionRef.current = null;
+    // Reset touch direction tracking
+    touchStartPosRef.current = null;
+    touchDirectionLockedRef.current = null;
     if (dragAnimationRef.current !== null) {
       cancelAnimationFrame(dragAnimationRef.current);
       dragAnimationRef.current = null;
@@ -1848,7 +1895,7 @@ function Studio() {
               <div 
                 ref={canvasRef} 
                 className="relative h-[400px] sm:h-[480px] lg:h-[560px] w-full overflow-hidden rounded-b-rvLg"
-                style={{ touchAction: 'none' }}
+                style={{ touchAction: 'pan-y' }}
                 onClick={handleCanvasClick}
               >
                 {userPhoto ? (
@@ -1903,7 +1950,7 @@ function Studio() {
                     outline: isArtworkSelected ? '3px solid rgba(40, 53, 147, 0.6)' : 'none',
                     outlineOffset: '4px',
                     transition: 'outline 0.15s ease-in-out',
-                    touchAction: 'none',
+                    touchAction: 'pan-y',
                   }}
                   onMouseDown={handleDragStart}
                   onTouchStart={(e) => {

@@ -1,0 +1,81 @@
+# Task: Mobile Studio – Enable Vertical Scrolling
+
+## Goal
+
+Omogućiti normalno vertikalno scrollanje po stranici kada je korisnik u RoomVibe Studiju na mobitelu, bez da drag/logika pomicanja slike blokira scroll.
+
+## Context
+
+* Na mobilnim uređajima canvas i artwork drag logika hvata `touchstart` / `touchmove` i time blokira prirodni scroll stranice.
+* Korisnik može scrollati samo izvan canvasa, što je loše korisničko iskustvo.
+* Drag funkcija slike treba raditi samo kada korisnik jasno napravi horizontalni pokret.
+* Relevantni fileovi:
+
+  * components/studio/StudioCanvas.tsx
+  * hooks/useDragArtwork.ts
+  * svi handleri koji obrađuju `touchstart`, `touchmove`, `pointerdown`, `pointermove`
+
+## Scope (što točno napraviti)
+
+### 1) Dodati CSS koji dopušta scroll preko canvasa
+
+Na parent container studija dodati:
+
+```
+touch-action: pan-y;
+```
+
+ili Tailwind verziju:
+
+```
+<div className="touch-pan-y">
+```
+
+### 2) Uvesti “drag threshold” logiku
+
+U handlerima koji obrađuju touch/pointer kretanje implementirati kontrolu smjera povlačenja.
+
+Ako korisnik povlači vertikalno → dopustiti scroll, NE pomicati artwork:
+
+```
+const THRESHOLD = 5;
+
+if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > THRESHOLD) {
+  // Vertikalni pokret → scroll strane, ne dirati artwork
+  return;
+}
+```
+
+### 3) Drag aktivirati samo kod horizontalnog pokreta
+
+Ako je horizontalni pokret dominantan:
+
+```
+if (Math.abs(deltaX) > THRESHOLD) {
+    startDragging();
+}
+```
+
+### 4) Ne mijenjati desktop logiku
+
+Promjene primijeniti samo za mobilne touch/pointer evente.
+
+### 5) Osigurati da scaling i drag i dalje rade
+
+Testirati da:
+
+* zoom (pinch) radi kao prije
+* drag radi kad je horizontalan potez
+* scroll radi kad je vertikalni potez
+
+## Stop Condition
+
+* Na mobitelu se može normalno scrollati stranica dok je prst na canvasu.
+* Drag slike radi samo kod horizontalnog poteza.
+* Nema neželjenog jittera.
+
+## Notes
+
+* Ne raditi refaktor.
+* Ne mijenjati izgled studija.
+* Implementirati minimalne potrebne promjene u logiku.
