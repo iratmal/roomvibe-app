@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import localArtworks from "./data/artworks.json";
 import presets from "./data/presets.json";
+import { premiumRooms, type PremiumRoom } from "./data/premiumRooms";
+import { PLAN_LIMITS, type PlanType } from "./config/planLimits";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { CookieConsentProvider, useCookieConsent } from "./context/CookieConsentContext";
 import CookieConsentBanner from "./components/CookieConsentBanner";
@@ -20,6 +22,7 @@ import TermsOfService from "./components/legal/TermsOfService";
 import UploadConsent from "./components/legal/UploadConsent";
 import { PricingPage } from "./components/PricingPage";
 import { UpgradePrompt } from "./components/UpgradePrompt";
+import { ComingSoonModal } from "./components/ComingSoonModal";
 import { initGA4, resetGA4, GA4Events } from "./utils/analytics";
 import { initHotjar, resetHotjar } from "./utils/hotjar";
 
@@ -742,11 +745,20 @@ function Studio() {
   const { user } = useAuth();
   
   // Determine user's effective plan for artwork access
-  const effectivePlan = user?.effectivePlan || 'user';
+  const effectivePlan = (user?.effectivePlan || 'user') as PlanType;
   const isFreePlan = effectivePlan === 'user';
+  
+  // Premium rooms access limits based on plan
+  const planLimits = PLAN_LIMITS[effectivePlan];
+  const maxPremiumRooms = planLimits.maxPremiumRooms;
+  const hasUnlimitedPremiumRooms = maxPremiumRooms === -1;
   
   // Upgrade modal state
   const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false);
+  const [upgradeModalMessage, setUpgradeModalMessage] = useState<string>("");
+  
+  // Coming soon modal for premium rooms without images
+  const [showComingSoonModal, setShowComingSoonModal] = useState<boolean>(false);
   
   // Placeholder artwork for free users - first artwork in the catalog
   const placeholderArtwork = (localArtworks as any[])[0];
@@ -1273,6 +1285,79 @@ function Studio() {
                 </button>
               ))}
             </div>
+
+            {/* Premium Rooms Section */}
+            <div className="mt-6 pt-4 border-t border-rv-neutral">
+              <div className="mb-3 flex items-center justify-between">
+                <div className="text-sm font-bold text-[#D8B46A] flex items-center gap-1.5">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                  </svg>
+                  Premium Rooms
+                </div>
+                {!hasUnlimitedPremiumRooms && (
+                  <span className="text-xs text-rv-textMuted">
+                    {maxPremiumRooms} of {premiumRooms.length}
+                  </span>
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {premiumRooms.map((room, index) => {
+                  const isLocked = !hasUnlimitedPremiumRooms && index >= maxPremiumRooms;
+                  
+                  return (
+                    <button
+                      key={room.id}
+                      onClick={() => {
+                        if (isLocked) {
+                          const message = effectivePlan === 'user'
+                            ? "Upgrade to Artist to access more premium rooms (30 rooms)."
+                            : effectivePlan === 'artist'
+                            ? "Upgrade to Designer to access all 100+ premium rooms."
+                            : "Upgrade to access more premium rooms.";
+                          setUpgradeModalMessage(message);
+                          setShowUpgradeModal(true);
+                        } else {
+                          setShowComingSoonModal(true);
+                        }
+                      }}
+                      className={`group relative overflow-hidden rounded-rvMd border-2 ${
+                        isLocked ? "border-rv-neutral/50 opacity-70" : "border-rv-neutral hover:border-[#D8B46A]"
+                      } bg-white shadow-sm hover:shadow-rvSoft transition-all`}
+                    >
+                      <div className="h-24 w-full bg-gradient-to-br from-[#F7F3EE] to-[#E8E4DF] flex items-center justify-center">
+                        <div className="text-[#D8B46A]/40">
+                          <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                            <path d="M3 9h18" />
+                            <path d="M9 21V9" />
+                          </svg>
+                        </div>
+                      </div>
+                      
+                      {/* Locked overlay */}
+                      {isLocked && (
+                        <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
+                          <div className="bg-rv-primary/90 rounded-full p-2">
+                            <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="absolute inset-0 ring-0 group-hover:ring-2 group-hover:ring-[#D8B46A] rounded-rvMd transition-all" />
+                      <div className={`absolute bottom-0 left-0 right-0 px-2 py-1 text-[10px] font-semibold ${
+                        isLocked ? "bg-gray-400/80 text-white" : "bg-[#D8B46A]/90 text-white"
+                      }`}>
+                        {room.name}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </aside>
 
           {/* Center: Canvas - Shown first on mobile (order-1), middle on desktop (lg:order-2) */}
@@ -1721,10 +1806,20 @@ function Studio() {
       {showUpgradeModal && (
         <UpgradePrompt
           variant="modal"
-          message="Unlock access to our full collection of sample artworks to see how different styles look in your space. Upgrade now to explore all artwork options!"
-          currentPlan="user"
-          suggestedPlan="artist"
-          onClose={() => setShowUpgradeModal(false)}
+          message={upgradeModalMessage || "Unlock access to our full collection of sample artworks to see how different styles look in your space. Upgrade now to explore all artwork options!"}
+          currentPlan={effectivePlan}
+          suggestedPlan={effectivePlan === 'user' ? 'artist' : 'designer'}
+          onClose={() => {
+            setShowUpgradeModal(false);
+            setUpgradeModalMessage("");
+          }}
+        />
+      )}
+      
+      {/* Coming Soon Modal for Premium Rooms */}
+      {showComingSoonModal && (
+        <ComingSoonModal
+          onClose={() => setShowComingSoonModal(false)}
         />
       )}
     </main>
