@@ -1,0 +1,81 @@
+RoomVibe Studio UI Polish
+
+Goal
+Polish the RoomVibe Studio UI to look cleaner and more consistent, without changing the core layout or logic.
+
+Context
+The Studio is already fully functional (scenes, artwork, frames, upload, modals). We only want visual and UX refinements: spacing, alignment, handle styling, hover states, etc. No new features.
+
+Scope
+
+Spacing & alignment
+
+Review Studio main layout (Scenes sidebar, canvas, right panel).
+
+Fix any obvious misalignments, inconsistent paddings/margins, or elements that feel “too tight” or “too far apart”.
+
+Make sure sections in the right panel (artwork info, frame options, actions) have consistent vertical spacing and headings.
+
+Drag handles styling
+
+Update the artwork drag/resize handles on the canvas so they look:
+
+consistent in size
+
+clearly visible on both light and busy backgrounds
+
+They should feel modern and minimal (e.g. small rounded handles, consistent border and shadow), not heavy or distracting.
+
+Buttons & hover states
+
+Ensure main buttons in Studio (e.g. “Upload wall photo”, “View & Buy”, upgrade CTAs) use consistent styles:
+
+same font size
+
+same border-radius
+
+same padding
+
+Add or refine hover / active states so they feel responsive but subtle (no aggressive animations).
+
+Typography consistency
+
+Apply consistent typography for:
+
+section titles (e.g. “Scenes”, “Frame”, “Artwork details”)
+
+body text
+
+Use the same font families, weights and sizes that are already defined in the design system / app theme.
+
+Avoid introducing new fonts; just align with existing ones.
+
+Mobile Studio check
+
+Open the Studio on a typical mobile viewport.
+
+Ensure:
+
+no text is cut off
+
+icons and buttons are tappable (not too small or too close)
+
+vertical spacing between sections is comfortable.
+
+Fix small issues (overlaps, misaligned paddings) without changing the main mobile layout.
+
+Stop Condition
+
+Desktop Studio looks visually cleaner: consistent spacing, aligned sections, polished handles and buttons.
+
+Mobile Studio has no obvious spacing/alignment issues and is comfortable to use.
+
+No core behavior has changed: scenes, drag/resize, frames, modals, uploads and exports all still work exactly as before.
+
+Notes
+
+This is a polish-only task. Do not refactor major layout structures or introduce new complex components.
+
+If something looks ambiguous or design decisions are unclear, keep changes minimal and document what you adjusted.
+
+If more than a few small layout fixes would be needed for a full redesign, stop and briefly describe the current limitations instead of rewriting large sections.

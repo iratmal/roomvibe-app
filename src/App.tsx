@@ -1260,14 +1260,14 @@ function Studio() {
         </div>
         <div className="grid grid-cols-12 gap-4 lg:gap-6">
           {/* Left: Scenes gallery - Shown last on mobile (order-3), first on desktop (lg:order-1) */}
-          <aside className="order-3 lg:order-1 col-span-12 lg:col-span-3 rounded-rvLg border border-rv-neutral bg-white shadow-rvSoft p-3 lg:p-4 h-auto lg:h-[78vh] overflow-auto">
-            <div className="mb-3 flex items-center justify-between">
-              <div className="text-sm font-bold text-rv-primary">Scenes</div>
-              <a href="#home" className="text-xs font-semibold text-rv-primary hover:text-rv-primaryHover underline">
+          <aside className="order-3 lg:order-1 col-span-12 lg:col-span-3 rounded-rvLg border border-rv-neutral bg-white shadow-rvSoft p-4 h-auto lg:h-[78vh] overflow-auto">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="text-xs font-semibold text-rv-textMuted uppercase tracking-wide">Scenes</div>
+              <a href="#home" className="text-xs font-medium text-rv-textMuted hover:text-rv-primary transition-colors">
                 Home
               </a>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2.5">
               {(presets as any).map((p: any) => (
                 <button
                   key={p.id}
@@ -1275,33 +1275,32 @@ function Studio() {
                     setUserPhoto(null);
                     setSceneId(p.id);
                   }}
-                  className={`group relative overflow-hidden rounded-rvMd border-2 ${
-                    sceneId === p.id ? "border-rv-primary" : "border-rv-neutral"
-                  } bg-white shadow-sm hover:shadow-rvSoft transition-all`}
+                  className={`group relative overflow-hidden rounded-rvMd border ${
+                    sceneId === p.id ? "border-rv-primary ring-1 ring-rv-primary/30" : "border-rv-neutral hover:border-rv-primary/40"
+                  } bg-white shadow-sm hover:shadow-md transition-all`}
                 >
-                  <img src={p.photo} alt={p.name} className="h-24 w-full object-cover" />
-                  <div className="absolute inset-0 ring-0 group-hover:ring-2 group-hover:ring-rv-primary rounded-rvMd transition-all" />
-                  <div className="absolute bottom-0 left-0 right-0 bg-rv-primary/80 px-2 py-1 text-[10px] text-white font-semibold">{p.name}</div>
+                  <img src={p.photo} alt={p.name} className="h-20 w-full object-cover" />
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5 text-[10px] text-white font-medium">{p.name}</div>
                 </button>
               ))}
             </div>
 
             {/* Premium Rooms Section */}
-            <div className="mt-6 pt-4 border-t border-rv-neutral">
-              <div className="mb-3 flex items-center justify-between">
-                <div className="text-sm font-bold text-[#D8B46A] flex items-center gap-1.5">
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <div className="mt-5 pt-4 border-t border-rv-neutral/60">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="text-xs font-semibold text-[#D8B46A] uppercase tracking-wide flex items-center gap-1.5">
+                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                   </svg>
-                  Premium Rooms
+                  Premium
                 </div>
                 {!hasUnlimitedPremiumRooms && (
-                  <span className="text-xs text-rv-textMuted">
-                    {maxPremiumRooms} of {premiumRooms.length}
+                  <span className="text-[10px] text-rv-textMuted font-medium">
+                    {maxPremiumRooms}/{premiumRooms.length}
                   </span>
                 )}
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2.5">
                 {premiumRooms.map((room, index) => {
                   const isLocked = !hasUnlimitedPremiumRooms && index >= maxPremiumRooms;
                   
@@ -1321,13 +1320,13 @@ function Studio() {
                           setShowComingSoonModal(true);
                         }
                       }}
-                      className={`group relative overflow-hidden rounded-rvMd border-2 ${
-                        isLocked ? "border-rv-neutral/50 opacity-70" : "border-rv-neutral hover:border-[#D8B46A]"
-                      } bg-white shadow-sm hover:shadow-rvSoft transition-all`}
+                      className={`group relative overflow-hidden rounded-rvMd border ${
+                        isLocked ? "border-rv-neutral/40 opacity-60" : "border-rv-neutral hover:border-[#D8B46A]/60"
+                      } bg-white shadow-sm hover:shadow-md transition-all`}
                     >
-                      <div className="h-24 w-full bg-gradient-to-br from-[#F7F3EE] to-[#E8E4DF] flex items-center justify-center">
-                        <div className="text-[#D8B46A]/40">
-                          <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <div className="h-20 w-full bg-gradient-to-br from-[#F7F3EE] to-[#E8E4DF] flex items-center justify-center">
+                        <div className="text-[#D8B46A]/30">
+                          <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                             <rect x="3" y="3" width="18" height="18" rx="2" />
                             <path d="M3 9h18" />
                             <path d="M9 21V9" />
@@ -1337,9 +1336,9 @@ function Studio() {
                       
                       {/* Locked overlay */}
                       {isLocked && (
-                        <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
-                          <div className="bg-rv-primary/90 rounded-full p-2">
-                            <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
+                          <div className="bg-rv-textMuted/80 rounded-full p-1.5">
+                            <svg className="h-3 w-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                               <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                               <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                             </svg>
@@ -1347,9 +1346,8 @@ function Studio() {
                         </div>
                       )}
                       
-                      <div className="absolute inset-0 ring-0 group-hover:ring-2 group-hover:ring-[#D8B46A] rounded-rvMd transition-all" />
-                      <div className={`absolute bottom-0 left-0 right-0 px-2 py-1 text-[10px] font-semibold ${
-                        isLocked ? "bg-gray-400/80 text-white" : "bg-[#D8B46A]/90 text-white"
+                      <div className={`absolute bottom-0 left-0 right-0 px-2 py-1 text-[10px] font-medium ${
+                        isLocked ? "bg-gray-400/70 text-white" : "bg-gradient-to-t from-[#D8B46A]/80 to-[#D8B46A]/60 text-white"
                       }`}>
                         {room.name}
                       </div>
@@ -1367,16 +1365,16 @@ function Studio() {
                 <div className="flex items-center gap-2 text-rv-primary font-semibold">
                   <RoomIcon className="h-4 w-4" /> {userPhoto ? 'Your Wall' : scene?.name || 'Upload Your Wall'}
                 </div>
-                <div className="flex items-center gap-3 text-rv-textMuted">
+                <div className="flex items-center gap-3">
                   <button
-                    className="rounded-rvMd border-2 border-rv-neutral bg-white px-3 py-1.5 text-xs font-semibold text-rv-text hover:bg-rv-surface transition-colors"
+                    className="rounded-rvMd border border-rv-neutral bg-white px-3 py-1.5 text-xs font-medium text-rv-text hover:bg-rv-surface hover:border-rv-primary/30 transition-all"
                     onClick={() => fileRef.current?.click()}
                   >
                     Upload wall photo
                   </button>
                   {userPhoto && (
-                    <button className="text-xs font-semibold text-rv-primary hover:text-rv-primaryHover underline transition-colors" onClick={() => setUserPhoto(null)}>
-                      Remove photo
+                    <button className="text-xs font-medium text-rv-textMuted hover:text-rv-primary transition-colors" onClick={() => setUserPhoto(null)}>
+                      Remove
                     </button>
                   )}
                   <input
@@ -1398,7 +1396,7 @@ function Studio() {
 
               <div 
                 ref={canvasRef} 
-                className="relative h-[560px] w-full overflow-hidden rounded-b-rvLg"
+                className="relative h-[400px] sm:h-[480px] lg:h-[560px] w-full overflow-hidden rounded-b-rvLg"
                 onClick={handleCanvasClick}
               >
                 {userPhoto ? (
@@ -1611,64 +1609,56 @@ function Studio() {
                   {/* Resize handles - visible only when selected */}
                   {isArtworkSelected && (
                     <>
-                      {/* Top-left corner */}
+                      {/* Top-left corner - outer div is touch target, inner div is visual */}
                       <div
-                        className="absolute w-7 h-7 bg-white border-3 border-rv-primary rounded-full hover:bg-rv-primary hover:scale-110 transition-all shadow-md cursor-nw-resize flex items-center justify-center"
+                        className="absolute w-10 h-10 flex items-center justify-center cursor-nw-resize"
                         style={{ 
-                          top: `-${totalFrameThicknessPx + 10}px`,
-                          left: `-${totalFrameThicknessPx + 10}px`,
+                          top: `-${totalFrameThicknessPx + 16}px`,
+                          left: `-${totalFrameThicknessPx + 16}px`,
                         }}
                         onMouseDown={(e) => handleResizeStart(e, 'nw')}
                         onTouchStart={(e) => handleResizeStart(e, 'nw')}
                       >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4 text-rv-primary hover:text-white transition-colors">
-                          <path d="M15 9l-6 6m0-4l4-4" strokeWidth="2.5" strokeLinecap="round" />
-                        </svg>
+                        <div className="w-3 h-3 bg-white border-2 border-rv-primary rounded-sm shadow-sm" />
                       </div>
                       
                       {/* Top-right corner */}
                       <div
-                        className="absolute w-7 h-7 bg-white border-3 border-rv-primary rounded-full hover:bg-rv-primary hover:scale-110 transition-all shadow-md cursor-ne-resize flex items-center justify-center"
+                        className="absolute w-10 h-10 flex items-center justify-center cursor-ne-resize"
                         style={{ 
-                          top: `-${totalFrameThicknessPx + 10}px`,
-                          right: `-${totalFrameThicknessPx + 10}px`,
+                          top: `-${totalFrameThicknessPx + 16}px`,
+                          right: `-${totalFrameThicknessPx + 16}px`,
                         }}
                         onMouseDown={(e) => handleResizeStart(e, 'ne')}
                         onTouchStart={(e) => handleResizeStart(e, 'ne')}
                       >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4 text-rv-primary hover:text-white transition-colors">
-                          <path d="M9 9l6 6m-4 0l4-4" strokeWidth="2.5" strokeLinecap="round" />
-                        </svg>
+                        <div className="w-3 h-3 bg-white border-2 border-rv-primary rounded-sm shadow-sm" />
                       </div>
                       
                       {/* Bottom-left corner */}
                       <div
-                        className="absolute w-7 h-7 bg-white border-3 border-rv-primary rounded-full hover:bg-rv-primary hover:scale-110 transition-all shadow-md cursor-sw-resize flex items-center justify-center"
+                        className="absolute w-10 h-10 flex items-center justify-center cursor-sw-resize"
                         style={{ 
-                          bottom: `-${totalFrameThicknessPx + 10}px`,
-                          left: `-${totalFrameThicknessPx + 10}px`,
+                          bottom: `-${totalFrameThicknessPx + 16}px`,
+                          left: `-${totalFrameThicknessPx + 16}px`,
                         }}
                         onMouseDown={(e) => handleResizeStart(e, 'sw')}
                         onTouchStart={(e) => handleResizeStart(e, 'sw')}
                       >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4 text-rv-primary hover:text-white transition-colors">
-                          <path d="M15 15l-6-6m4 0l-4 4" strokeWidth="2.5" strokeLinecap="round" />
-                        </svg>
+                        <div className="w-3 h-3 bg-white border-2 border-rv-primary rounded-sm shadow-sm" />
                       </div>
                       
                       {/* Bottom-right corner */}
                       <div
-                        className="absolute w-7 h-7 bg-white border-3 border-rv-primary rounded-full hover:bg-rv-primary hover:scale-110 transition-all shadow-md cursor-se-resize flex items-center justify-center"
+                        className="absolute w-10 h-10 flex items-center justify-center cursor-se-resize"
                         style={{ 
-                          bottom: `-${totalFrameThicknessPx + 10}px`,
-                          right: `-${totalFrameThicknessPx + 10}px`,
+                          bottom: `-${totalFrameThicknessPx + 16}px`,
+                          right: `-${totalFrameThicknessPx + 16}px`,
                         }}
                         onMouseDown={(e) => handleResizeStart(e, 'se')}
                         onTouchStart={(e) => handleResizeStart(e, 'se')}
                       >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-4 h-4 text-rv-primary hover:text-white transition-colors">
-                          <path d="M9 15l6-6m0 4l-4 4" strokeWidth="2.5" strokeLinecap="round" />
-                        </svg>
+                        <div className="w-3 h-3 bg-white border-2 border-rv-primary rounded-sm shadow-sm" />
                       </div>
                     </>
                   )}
@@ -1679,12 +1669,12 @@ function Studio() {
           </section>
 
           {/* Right: Controls - Shown second on mobile (order-2), last on desktop (lg:order-3) */}
-          <aside className="order-2 lg:order-3 col-span-12 lg:col-span-3 rounded-rvLg border border-rv-neutral bg-white shadow-rvSoft p-4 lg:p-5 h-auto lg:h-[78vh] overflow-auto">
-            <div className="text-sm font-bold text-rv-primary">Artwork</div>
+          <aside className="order-2 lg:order-3 col-span-12 lg:col-span-3 rounded-rvLg border border-rv-neutral bg-white shadow-rvSoft p-4 lg:p-5 h-auto lg:h-[78vh] overflow-auto space-y-5">
+            <div className="text-xs font-semibold text-rv-textMuted uppercase tracking-wide">Artwork</div>
             
             {/* Free users: Show limited artwork gallery with lock */}
             {isFreePlan ? (
-              <div className="mt-3">
+              <div className="-mt-3">
                 {/* Show only the first artwork for free users */}
                 <div className="space-y-2">
                   {artworksState.slice(0, 1).map((a) => (
@@ -1735,9 +1725,9 @@ function Studio() {
               </div>
             ) : (
               /* Paid users: Show full artwork dropdown */
-              <div className="mt-3 flex items-center gap-2">
+              <div className="-mt-3">
                 <select
-                  className="w-full rounded-rvMd border-2 border-rv-neutral px-3 py-2 text-sm font-medium text-rv-text focus:outline-none focus:ring-2 focus:ring-rv-primary transition-all"
+                  className="w-full rounded-rvMd border border-rv-neutral px-3 py-2.5 text-sm font-medium text-rv-text bg-white focus:outline-none focus:ring-2 focus:ring-rv-primary/20 focus:border-rv-primary transition-all"
                   value={artId}
                   onChange={(e) => setArtId(e.target.value)}
                 >
@@ -1751,39 +1741,41 @@ function Studio() {
             )}
             
             {art && art.widthCm && art.heightCm && (
-              <>
-                <div className="mt-2 text-xs text-rv-textMuted font-medium">
-                  Real size: {art.widthCm} × {art.heightCm} cm
+              <div className="-mt-3 p-3 bg-rv-surface/50 rounded-rvMd">
+                <div className="text-xs text-rv-textMuted">
+                  Original: <span className="font-medium text-rv-text">{art.widthCm} × {art.heightCm} cm</span>
                 </div>
-                <div className="mt-1 text-xs text-rv-primary font-semibold">
-                  Current size: {Math.round(art.widthCm * scale)} × {Math.round(art.heightCm * scale)} cm
+                <div className="mt-1 text-xs text-rv-textMuted">
+                  Display: <span className="font-medium text-rv-primary">{Math.round(art.widthCm * scale)} × {Math.round(art.heightCm * scale)} cm</span>
                 </div>
-              </>
+              </div>
             )}
 
-            <div className="mt-6 text-sm font-bold text-rv-primary">Frame</div>
-            <div className="mt-3 grid grid-cols-2 gap-2 text-xs max-h-[280px] overflow-y-auto pr-1">
+            <div>
+              <div className="text-xs font-semibold text-rv-textMuted uppercase tracking-wide mb-3">Frame</div>
+              <div className="grid grid-cols-2 gap-2 text-xs max-h-[240px] overflow-y-auto pr-1">
               {FRAME_STYLES.map((frame) => (
                 <button
                   key={frame.id}
                   onClick={() => setFrameStyle(frame.id)}
-                  className={`rounded-rvMd border-2 px-2 py-2 font-semibold transition-all text-left ${
+                  className={`rounded-rvMd border px-2.5 py-2 font-medium transition-all text-left ${
                     frameStyle === frame.id
-                      ? "border-rv-primary bg-rv-primary text-white shadow-sm"
-                      : "border-rv-neutral bg-white text-rv-text hover:bg-rv-surface"
+                      ? "border-rv-primary bg-rv-primary/5 text-rv-primary ring-1 ring-rv-primary/20"
+                      : "border-rv-neutral bg-white text-rv-text hover:bg-rv-surface hover:border-rv-neutral"
                   }`}
                 >
                   {frame.label}
                 </button>
               ))}
+              </div>
             </div>
 
-            <div className="mt-5">
+            <div className="pt-2 border-t border-rv-neutral/50">
               <button
                 onClick={resetPosition}
-                className="text-xs font-semibold text-rv-primary hover:text-rv-primaryHover underline transition-colors"
+                className="text-xs font-medium text-rv-textMuted hover:text-rv-primary transition-colors"
               >
-                Reset position
+                Reset position & size
               </button>
             </div>
 
@@ -1793,7 +1785,7 @@ function Studio() {
                 target="_blank"
                 rel="noreferrer"
                 onClick={() => GA4Events.buyClick((art as any).buyUrl || (art as any).onlineStoreUrl || "#")}
-                className="mt-6 inline-flex w-full items-center justify-center rounded-rvLg bg-rv-primary px-4 py-3 text-sm font-bold text-white shadow-rvSoft hover:bg-rv-primaryHover hover:shadow-rvElevated transition-all"
+                className="inline-flex w-full items-center justify-center rounded-rvMd bg-rv-primary px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-rv-primaryHover hover:shadow-md transition-all"
               >
                 View &amp; Buy
               </a>
