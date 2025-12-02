@@ -26,16 +26,8 @@ router.get('/artworks', authenticateToken, async (req: any, res) => {
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
     
-    if (!['artist', 'designer', 'gallery', 'admin'].includes(effectivePlan)) {
-      return res.status(403).json({ 
-        error: 'Subscription required',
-        message: 'Access to artworks requires an Artist subscription or higher.',
-        current_plan: effectivePlan,
-        suggested_plan: 'artist',
-        upgrade_url: '/pricing'
-      });
-    }
-
+    // Allow all authenticated users to view their own artworks (for usage tracking)
+    // Even free users need to see their artworks to understand their upload limit
     console.log('Fetching artworks for user:', { userId: req.user.id, effectivePlan });
 
     let queryText;
@@ -73,15 +65,8 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
     
-    if (!['artist', 'designer', 'gallery', 'admin'].includes(effectivePlan)) {
-      return res.status(403).json({ 
-        error: 'Subscription required',
-        message: 'Artwork uploads require an Artist subscription or higher. Upgrade to start uploading your artworks.',
-        current_plan: effectivePlan,
-        suggested_plan: 'artist',
-        upgrade_url: '/pricing'
-      });
-    }
+    // Allow all authenticated users to upload artworks (limit enforced by checkArtworkLimit middleware)
+    // Free users can upload 1 artwork, paid users have higher limits
 
     const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, artistId } = req.body;
 

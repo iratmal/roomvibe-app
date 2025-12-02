@@ -3,6 +3,8 @@ import { useAuth } from '../../context/AuthContext';
 import { ChangePassword } from '../ChangePassword';
 import { ImpersonationBanner } from '../ImpersonationBanner';
 import { YourPlanCard } from '../YourPlanCard';
+import { UpgradePrompt } from '../UpgradePrompt';
+import { PLAN_LIMITS } from '../../config/planLimits';
 
 const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
 
@@ -46,6 +48,14 @@ export function ArtistDashboard() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
   const [showWidgetModal, setShowWidgetModal] = useState<Artwork | null>(null);
   const [copySuccess, setCopySuccess] = useState('');
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  
+  // Calculate plan info for usage display
+  const effectivePlan = user?.effectivePlan || 'user';
+  const isFreePlan = effectivePlan === 'user';
+  const planLimits = PLAN_LIMITS[effectivePlan as keyof typeof PLAN_LIMITS] || PLAN_LIMITS.user;
+  const maxArtworks = planLimits.maxArtworks;
+  const isAtLimit = maxArtworks !== -1 && artworks.length >= maxArtworks;
 
   const [formData, setFormData] = useState({
     title: '',
@@ -142,12 +152,26 @@ export function ArtistDashboard() {
 
       if (!response.ok) {
         let errorMessage = 'Failed to save artwork';
+        let isLimitError = false;
         try {
           const errorData = await response.json();
-          errorMessage = errorData.error || errorMessage;
+          errorMessage = errorData.message || errorData.error || errorMessage;
+          
+          // Check if this is an artwork limit error
+          if (errorData.error === 'Artwork limit reached' || response.status === 403 && errorData.limit !== undefined) {
+            isLimitError = true;
+          }
         } catch (parseError) {
           errorMessage = `Server error: ${response.status} ${response.statusText}`;
         }
+        
+        // Show upgrade modal for limit errors instead of generic error
+        if (isLimitError) {
+          setShowUpgradeModal(true);
+          setLoading(false);
+          return;
+        }
+        
         throw new Error(errorMessage);
       }
 
@@ -297,6 +321,43 @@ export function ArtistDashboard() {
         {success && (
           <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-rvMd text-green-700">
             {success}
+          </div>
+        )}
+
+        {/* Usage indicator for free users */}
+        {maxArtworks !== -1 && (
+          <div className={`mb-6 p-4 rounded-rvMd border ${isAtLimit ? 'bg-amber-50 border-amber-200' : 'bg-blue-50 border-blue-200'}`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isAtLimit ? 'bg-amber-100' : 'bg-blue-100'}`}>
+                  <svg className={`w-5 h-5 ${isAtLimit ? 'text-amber-600' : 'text-blue-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className={`font-semibold ${isAtLimit ? 'text-amber-700' : 'text-blue-700'}`}>
+                    Artwork Upload Limit
+                  </p>
+                  <p className={`text-sm ${isAtLimit ? 'text-amber-600' : 'text-blue-600'}`}>
+                    {artworks.length}/{maxArtworks} artwork{maxArtworks !== 1 ? 's' : ''} uploaded
+                    {isFreePlan && ' (Free plan)'}
+                  </p>
+                </div>
+              </div>
+              {isAtLimit && (
+                <button
+                  onClick={() => setShowUpgradeModal(true)}
+                  className="px-4 py-2 bg-rv-primary text-white rounded-rvMd text-sm font-semibold hover:bg-rv-primaryHover transition-colors shadow-rvSoft"
+                >
+                  Upgrade Plan
+                </button>
+              )}
+            </div>
+            {isAtLimit && isFreePlan && (
+              <p className="mt-2 text-sm text-amber-600">
+                You've reached your upload limit. Upgrade to Artist plan to upload more artworks.
+              </p>
+            )}
           </div>
         )}
 
@@ -652,6 +713,17 @@ export function ArtistDashboard() {
               </button>
             </div>
           </div>
+        )}
+
+        {/* Upgrade Modal for artwork limit */}
+        {showUpgradeModal && (
+          <UpgradePrompt
+            variant="modal"
+            message="On the Free plan, you can upload only 1 artwork. Upgrade your plan to add more artworks and unlock additional features."
+            currentPlan="user"
+            suggestedPlan="artist"
+            onClose={() => setShowUpgradeModal(false)}
+          />
         )}
       </div>
     </div>
