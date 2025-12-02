@@ -39,6 +39,7 @@ const PLANS: PlanConfig[] = [
     subtitle: 'For artists who want professional mockups of their art.',
     features: [
       'Everything in User',
+      'Embed "View in Your Room" widget on your website (allows your customers to preview your artwork on their own walls)',
       'Upload up to 50 artworks',
       'Access all premium mockup rooms',
       'High-resolution exports & PDFs',
@@ -56,6 +57,7 @@ const PLANS: PlanConfig[] = [
     subtitle: 'For interior designers presenting concepts to clients.',
     features: [
       'Everything in Artist',
+      'Embed project-specific "View in Your Room" widgets for clients (lets clients preview design proposals directly on their walls)',
       'Unlimited artwork and mockups',
       'Client folders & project organization',
       'Professional PDF proposals',
@@ -72,6 +74,7 @@ const PLANS: PlanConfig[] = [
     subtitle: 'For galleries managing collections and exhibitions.',
     features: [
       'Everything in Designer',
+      'Embed multi-artist "View in Your Room" widget for gallery websites (visitors can preview artworks from different artists on their own walls)',
       'Gallery dashboard',
       'Multi-artist collections',
       'Up to 500 artworks',
