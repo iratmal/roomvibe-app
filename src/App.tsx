@@ -2298,102 +2298,116 @@ function Studio() {
             </div>
 
             {/* Export Section */}
-            <div className="space-y-2">
+            <div className="space-y-4">
               <div className="text-xs font-semibold text-rv-textMuted uppercase tracking-wide">Export</div>
-              <div className="grid grid-cols-2 gap-2">
-                {/* Download Preview (Low-res for free, high-res for paid) */}
+              
+              {/* Download Button (1200px) */}
+              <div className="space-y-1">
                 <button
                   onClick={() => exportToImage(false)}
                   disabled={isExporting}
-                  className="flex items-center justify-center gap-1.5 px-3 py-2.5 border border-rv-neutral rounded-rvMd text-sm font-medium text-rv-text bg-white hover:bg-rv-surface hover:border-rv-primary/40 transition-all disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white rounded-lg text-sm font-medium text-[#283593] transition-all disabled:opacity-50 hover:bg-[rgba(40,53,147,0.06)]"
+                  style={{ border: '1.5px solid #283593' }}
                 >
                   {isExporting && exportType === 'image' ? (
-                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <svg className="w-[18px] h-[18px] animate-spin" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
                   ) : (
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                     </svg>
                   )}
-                  Preview
+                  Download
                 </button>
-                
-                {/* High-Res Export */}
+                <p className="text-xs text-[#666] text-center">
+                  (1200 px {!isFreePlan ? '· no watermark' : '· watermark on free plan'})
+                </p>
+              </div>
+              
+              {/* High-Resolution Download Button (3000px - Designer+) */}
+              <div className="space-y-1">
                 <button
                   onClick={() => exportToImage(true)}
                   disabled={isExporting}
-                  className={`flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-rvMd text-sm font-medium transition-all disabled:opacity-50 ${
-                    hasHighResExport 
-                      ? 'bg-rv-primary text-white hover:bg-rv-primaryHover' 
-                      : 'border border-rv-accent/30 bg-rv-accent/5 text-rv-accent hover:bg-rv-accent/10'
-                  }`}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white rounded-lg text-sm font-medium text-[#D8B46A] transition-all disabled:opacity-50 hover:bg-[rgba(216,180,106,0.10)]"
+                  style={{ border: '1.5px solid #D8B46A' }}
                 >
                   {isExporting && exportType === 'image' ? (
-                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <svg className="w-[18px] h-[18px] animate-spin" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
                   ) : !hasHighResExport ? (
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                   ) : (
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                     </svg>
                   )}
-                  High-Res
+                  High-Resolution Download
                 </button>
+                <p className="text-xs text-[#666] text-center">
+                  (3000 px · no watermark · Designer feature)
+                </p>
               </div>
               
-              {/* PDF Export */}
-              <button
-                onClick={exportToPdf}
-                disabled={isExporting}
-                className={`w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-rvMd text-sm font-medium transition-all disabled:opacity-50 ${
-                  hasPdfExport 
-                    ? 'border border-rv-primary/30 bg-rv-primary/5 text-rv-primary hover:bg-rv-primary/10' 
-                    : 'border border-rv-accent/30 bg-rv-accent/5 text-rv-accent hover:bg-rv-accent/10'
-                }`}
-              >
-                {isExporting && exportType === 'pdf' ? (
-                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                ) : !hasPdfExport ? (
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                ) : (
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                  </svg>
-                )}
-                Export as PDF
-                {!hasPdfExport && <span className="text-xs opacity-75">(Designer+)</span>}
-              </button>
-              
-              {/* Upgrade hint for free users */}
-              {!hasHighResExport && (
-                <p className="text-[10px] text-rv-textMuted text-center mt-1">
-                  Preview includes watermark. <button onClick={() => { setUpgradeModalMessage("Upgrade to Artist plan or higher to download high-resolution images without watermarks."); setShowUpgradeModal(true); }} className="text-rv-primary hover:underline">Upgrade</button> for full quality.
+              {/* PDF Export - Text Link Style */}
+              <div className="space-y-1">
+                <button
+                  onClick={exportToPdf}
+                  disabled={isExporting}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-[#283593] transition-all disabled:opacity-50 hover:underline"
+                >
+                  {isExporting && exportType === 'pdf' ? (
+                    <svg className="w-[18px] h-[18px] animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                  ) : !hasPdfExport ? (
+                    <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                  )}
+                  PDF Export
+                </button>
+                <p className="text-xs text-[#666] text-center">
+                  (Printer-ready quality)
                 </p>
+              </div>
+              
+              {/* Upgrade CTA for Free Users */}
+              {isFreePlan && (
+                <button
+                  onClick={() => { 
+                    setUpgradeModalMessage("Upgrade to remove watermarks and unlock high-resolution exports, PDF proposals, and more professional features."); 
+                    setShowUpgradeModal(true); 
+                  }}
+                  className="w-full text-center text-sm font-semibold text-[#283593] hover:underline transition-colors mt-2"
+                >
+                  Unlock High-Resolution Export → Upgrade
+                </button>
               )}
               
-              {/* Upgrade hint for artist users about PDF */}
-              {isArtistPlan && !hasPdfExport && (
-                <UpgradeNudge
-                  message="PDF exports and full branding in Designer"
-                  variant="hint"
+              {/* Upgrade hint for Basic (Artist) users about High-Res */}
+              {isArtistPlan && !hasHighResExport && (
+                <button
                   onClick={() => {
-                    setUpgradeModalMessage("Upgrade to Designer to unlock PDF proposals, custom branding, and advanced export features.");
+                    setUpgradeModalMessage("Upgrade to Designer to unlock high-resolution 3000px exports, PDF proposals, and custom branding.");
                     setShowUpgradeModal(true);
                   }}
-                  className="mt-2"
-                />
+                  className="w-full flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-[#D8B46A] transition-all hover:bg-[rgba(216,180,106,0.10)]"
+                  style={{ border: '1.5px solid #D8B46A' }}
+                >
+                  Unlock High-Resolution → Upgrade to Designer
+                </button>
               )}
             </div>
 
