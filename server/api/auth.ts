@@ -93,7 +93,7 @@ router.post('/login', async (req: Request, res: Response) => {
     }
 
     const result = await query(
-      'SELECT id, email, password_hash, role, email_confirmed, is_admin FROM users WHERE email = $1',
+      'SELECT id, email, password_hash, role, email_confirmed, is_admin, artist_access, designer_access, gallery_access FROM users WHERE email = $1',
       [email.toLowerCase()]
     );
 
@@ -109,6 +109,13 @@ router.post('/login', async (req: Request, res: Response) => {
     }
 
     const effectiveRole = user.is_admin ? 'admin' : user.role;
+
+    // Build entitlements object - admins get all access
+    const entitlements = {
+      artist_access: user.is_admin ? true : (user.artist_access || false),
+      designer_access: user.is_admin ? true : (user.designer_access || false),
+      gallery_access: user.is_admin ? true : (user.gallery_access || false),
+    };
 
     const token = jwt.sign(
       { id: user.id, email: user.email, role: effectiveRole },
@@ -130,7 +137,8 @@ router.post('/login', async (req: Request, res: Response) => {
         email: user.email,
         role: effectiveRole,
         isAdmin: user.is_admin || false,
-        emailConfirmed: user.email_confirmed
+        emailConfirmed: user.email_confirmed,
+        entitlements
       }
     });
   } catch (error) {
@@ -181,7 +189,7 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res: Response) => 
     }
 
     const result = await query(
-      'SELECT id, email, role, email_confirmed, created_at, is_admin, subscription_status, subscription_plan FROM users WHERE id = $1',
+      'SELECT id, email, role, email_confirmed, created_at, is_admin, subscription_status, subscription_plan, artist_access, designer_access, gallery_access FROM users WHERE id = $1',
       [req.user.id]
     );
 
@@ -195,6 +203,13 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res: Response) => 
     const { getEffectivePlan, getPlanLimits } = await import('../middleware/subscription.js');
     const effectivePlan = getEffectivePlan(user);
     const planLimits = getPlanLimits(user);
+
+    // Build entitlements object - admins get all access
+    const entitlements = {
+      artist_access: user.is_admin ? true : (user.artist_access || false),
+      designer_access: user.is_admin ? true : (user.designer_access || false),
+      gallery_access: user.is_admin ? true : (user.gallery_access || false),
+    };
 
     const artworkCountResult = await query(
       'SELECT COUNT(*) as count FROM artworks WHERE artist_id = $1',
@@ -226,6 +241,7 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res: Response) => 
         subscriptionPlan: user.subscription_plan || 'user',
         effectivePlan,
         planLimits,
+        entitlements,
         usage: {
           artworks: artworkCount,
           projects: projectCount,

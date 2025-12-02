@@ -4,6 +4,16 @@ import { query } from '../db/database.js';
 
 const router = express.Router();
 
+// Helper function to get entitlement field name from plan
+function getEntitlementFieldFromPlan(plan: string): string | null {
+  const planToEntitlement: Record<string, string> = {
+    'artist': 'artist_access',
+    'designer': 'designer_access',
+    'gallery': 'gallery_access',
+  };
+  return planToEntitlement[plan] || null;
+}
+
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'] as string;
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -46,19 +56,42 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         );
         const isAdmin = userResult.rows[0]?.is_admin === true;
 
+        // Get the entitlement field for this plan
+        const entitlementField = getEntitlementFieldFromPlan(plan);
+
         if (isAdmin) {
+          // Admin: update subscription but keep all entitlements (they have all access)
           await query(
             `UPDATE users SET 
               subscription_status = 'active',
               subscription_plan = $1,
               stripe_customer_id = $2,
               stripe_subscription_id = $3,
+              artist_access = TRUE,
+              designer_access = TRUE,
+              gallery_access = TRUE,
               updated_at = CURRENT_TIMESTAMP
             WHERE id = $4`,
             [plan, customerId, subscriptionId, userId]
           );
-          console.log(`✅ Admin user ${userId} subscription updated to ${plan} (role preserved)`);
+          console.log(`✅ Admin user ${userId} subscription updated to ${plan} (all entitlements granted)`);
+        } else if (entitlementField) {
+          // Non-admin: SET the specific entitlement to TRUE (don't reset others)
+          await query(
+            `UPDATE users SET 
+              subscription_status = 'active',
+              subscription_plan = $1,
+              stripe_customer_id = $2,
+              stripe_subscription_id = $3,
+              role = $1,
+              ${entitlementField} = TRUE,
+              updated_at = CURRENT_TIMESTAMP
+            WHERE id = $4`,
+            [plan, customerId, subscriptionId, userId]
+          );
+          console.log(`✅ User ${userId} subscription updated to ${plan}, ${entitlementField} = TRUE`);
         } else {
+          // Unknown plan - just update subscription status
           await query(
             `UPDATE users SET 
               subscription_status = 'active',
@@ -70,7 +103,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             WHERE id = $4`,
             [plan, customerId, subscriptionId, userId]
           );
-          console.log(`✅ User ${userId} subscription updated to ${plan}`);
+          console.log(`✅ User ${userId} subscription updated to ${plan} (unknown plan type)`);
         }
         break;
       }
@@ -102,17 +135,50 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         );
         const isAdmin = adminCheckResult.rows[0]?.is_admin === true;
 
+        // Get the entitlement field for this plan
+        const entitlementField = plan ? getEntitlementFieldFromPlan(plan) : null;
+
         if (plan) {
           if (isAdmin) {
+            // Admin: keep all entitlements
             await query(
               `UPDATE users SET 
                 subscription_status = $1,
                 subscription_plan = $2,
+                artist_access = TRUE,
+                designer_access = TRUE,
+                gallery_access = TRUE,
                 updated_at = CURRENT_TIMESTAMP
               WHERE stripe_customer_id = $3`,
               [subscriptionStatus, plan, customerId]
             );
-            console.log(`✅ Admin subscription updated for customer ${customerId}: status=${subscriptionStatus}, plan=${plan} (role preserved)`);
+            console.log(`✅ Admin subscription updated for customer ${customerId}: status=${subscriptionStatus}, plan=${plan}`);
+          } else if (entitlementField && subscriptionStatus === 'active') {
+            // Active subscription: SET the specific entitlement (don't reset others)
+            await query(
+              `UPDATE users SET 
+                subscription_status = $1,
+                subscription_plan = $2,
+                role = $2,
+                ${entitlementField} = TRUE,
+                updated_at = CURRENT_TIMESTAMP
+              WHERE stripe_customer_id = $3`,
+              [subscriptionStatus, plan, customerId]
+            );
+            console.log(`✅ Subscription updated for customer ${customerId}: status=${subscriptionStatus}, plan=${plan}, ${entitlementField}=TRUE`);
+          } else if (entitlementField && (subscriptionStatus === 'canceled' || subscriptionStatus === 'expired')) {
+            // Canceled/expired: revoke the specific entitlement
+            await query(
+              `UPDATE users SET 
+                subscription_status = $1,
+                subscription_plan = $2,
+                role = $2,
+                ${entitlementField} = FALSE,
+                updated_at = CURRENT_TIMESTAMP
+              WHERE stripe_customer_id = $3`,
+              [subscriptionStatus, plan, customerId]
+            );
+            console.log(`✅ Subscription ${subscriptionStatus} for customer ${customerId}: ${entitlementField}=FALSE`);
           } else {
             await query(
               `UPDATE users SET 
@@ -142,15 +208,27 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         const subscription = event.data.object as any;
         const customerId = subscription.customer;
 
-        console.log(`🗑️ Subscription deleted for customer ${customerId}`);
+        // Get the plan from the canceled subscription to know which entitlement to revoke
+        const activePriceId = subscription.items?.data?.[0]?.price?.id;
+        let plan = activePriceId ? getPlanFromPriceId(activePriceId) : null;
+        if (!plan) {
+          plan = subscription.metadata?.plan || null;
+        }
+
+        console.log(`🗑️ Subscription deleted for customer ${customerId}, plan: ${plan}`);
 
         const adminCheckResult = await query(
-          'SELECT is_admin FROM users WHERE stripe_customer_id = $1',
+          'SELECT is_admin, subscription_plan FROM users WHERE stripe_customer_id = $1',
           [customerId]
         );
         const isAdmin = adminCheckResult.rows[0]?.is_admin === true;
+        const currentPlan = adminCheckResult.rows[0]?.subscription_plan || plan;
+
+        // Get the entitlement field for the canceled plan
+        const entitlementField = getEntitlementFieldFromPlan(currentPlan);
 
         if (isAdmin) {
+          // Admin: keep all entitlements but update subscription status
           await query(
             `UPDATE users SET 
               subscription_status = 'canceled',
@@ -160,7 +238,21 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             WHERE stripe_customer_id = $1`,
             [customerId]
           );
-          console.log(`✅ Admin subscription canceled for customer ${customerId} (role preserved)`);
+          console.log(`✅ Admin subscription canceled for customer ${customerId} (all entitlements preserved)`);
+        } else if (entitlementField) {
+          // Non-admin: revoke only the specific entitlement for the canceled plan
+          await query(
+            `UPDATE users SET 
+              subscription_status = 'canceled',
+              subscription_plan = 'user',
+              role = 'user',
+              stripe_subscription_id = NULL,
+              ${entitlementField} = FALSE,
+              updated_at = CURRENT_TIMESTAMP
+            WHERE stripe_customer_id = $1`,
+            [customerId]
+          );
+          console.log(`✅ User downgraded for customer ${customerId}: ${entitlementField}=FALSE`);
         } else {
           await query(
             `UPDATE users SET 
