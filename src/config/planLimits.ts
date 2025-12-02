@@ -5,6 +5,7 @@ export interface PlanLimits {
   maxWallPhotos: number;
   maxProjects: number;
   maxMockupRooms: number;
+  maxPremiumRooms: number;
   premiumRoomsAccess: boolean;
   highResExport: boolean;
   clientFolders: boolean;
@@ -20,6 +21,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     maxWallPhotos: 1,
     maxProjects: 1,
     maxMockupRooms: 5,
+    maxPremiumRooms: 3,
     premiumRoomsAccess: false,
     highResExport: false,
     clientFolders: false,
@@ -33,6 +35,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     maxWallPhotos: 100,
     maxProjects: 100,
     maxMockupRooms: -1,
+    maxPremiumRooms: 30,
     premiumRoomsAccess: true,
     highResExport: true,
     clientFolders: false,
@@ -46,6 +49,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     maxWallPhotos: -1,
     maxProjects: -1,
     maxMockupRooms: -1,
+    maxPremiumRooms: -1,
     premiumRoomsAccess: true,
     highResExport: true,
     clientFolders: true,
@@ -59,6 +63,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     maxWallPhotos: -1,
     maxProjects: -1,
     maxMockupRooms: -1,
+    maxPremiumRooms: -1,
     premiumRoomsAccess: true,
     highResExport: true,
     clientFolders: true,
@@ -72,6 +77,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     maxWallPhotos: -1,
     maxProjects: -1,
     maxMockupRooms: -1,
+    maxPremiumRooms: -1,
     premiumRoomsAccess: true,
     highResExport: true,
     clientFolders: true,
@@ -216,6 +222,14 @@ export function getUpgradeMessage(currentPlan: PlanType, feature: string): { mes
     premiumRoomsAccess: {
       message: "Premium mockup rooms are available on Artist plan and above. Upgrade to access all rooms.",
       suggestedPlan: 'artist',
+    },
+    maxPremiumRooms: {
+      message: currentPlan === 'user' 
+        ? "Upgrade to Artist to access more premium rooms (30 rooms)."
+        : currentPlan === 'artist'
+        ? "Upgrade to Designer to access all 100+ premium rooms."
+        : "Upgrade to access more premium rooms.",
+      suggestedPlan: currentPlan === 'user' ? 'artist' : 'designer',
     },
     clientFolders: {
       message: "Client folders are available on the Designer plan. Upgrade to Designer to unlock this feature.",
