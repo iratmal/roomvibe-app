@@ -34,6 +34,12 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
       - Artist plan+: Full high-res image export without watermark.
       - Designer plan+: PDF export with centered image and artwork caption.
       - Export renders room background, artwork, and frame at proper scale using canvas rendering.
+    - **Upgrade Nudges & Success Modal**: Subtle conversion prompts to encourage upgrades without disrupting workflow.
+      - Success Modal: Shows after exports for Free/Artist users with "Your export is ready!" message and upgrade CTA.
+      - Free user nudges: Text link under artwork section ("Unlock high-res export → Upgrade").
+      - Artist user nudges: "Pro" badge on Premium Rooms header, hint in Export section about PDF exports.
+      - Designer+ users see no upgrade prompts in Studio.
+      - Components: `ExportSuccessModal`, `UpgradeNudge` (variants: text, badge, hint).
 - **Artist Dashboard**: CRUD operations for artwork management (upload, list, edit, delete). Includes image upload, currency/dimension unit selection. Artwork images are base64-encoded and stored in PostgreSQL, served via API. Supports website widget embedding with dynamic artist/artwork IDs.
 - **Designer Dashboard**: Project management with custom room image uploads (Multer, 10MB limit), stored as base64 in PostgreSQL. Features "Open in Studio" functionality for uploaded rooms.
 - **Gallery Dashboard**: Collection management for online exhibitions with CRUD operations for collections and artworks. Supports publication status and multi-artwork uploads per collection.
