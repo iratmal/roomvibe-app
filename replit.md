@@ -13,9 +13,10 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 - **Color Scheme**: RoomVibe branding palette (Primary #283593, Accent #D8B46A, Neutral #DDE1E7, Text #1A1A1A).
 - **Typography**: Inter font family only (SemiBold for headings, Regular for body, Medium for CTAs). Letter-spacing: -0.5px for headings, line-height: 1.15.
 - **Homepage Layout**: Features a hero section, "How It Works" section, audience-specific sections (Artists, Designers, Galleries), and a CTA section, all designed for responsive display.
-- **Studio Layout**: Three-panel Canvy-style editor (`#/studio`), responsive and mobile-first, with hidden TopNav and SiteFooter for iframe embedding.
+- **Studio Layout**: Three-panel Canvy-style editor (`#/studio`), responsive and mobile-first, with hidden TopNav and SiteFooter for iframe embedding. Responsive canvas height (400px mobile, 480px tablet, 560px desktop).
 - **Iconography**: Inline SVG components with gold accent (#D8B46A).
-- **Artwork Interaction**: Drag-to-move with bounds checking, diagonal resize with smart scaling, true physical scale rendering, and frame selection.
+- **Artwork Interaction**: Drag-to-move with bounds checking, diagonal resize with smart scaling, true physical scale rendering, and frame selection. Resize handles use 40px touch targets with 12px minimal visual appearance.
+- **Studio Section Styling**: Consistent uppercase tracking-wide headings, space-y-5 section rhythm, subtle bg-rv-surface/50 info cards, unified button styling.
 
 **Technical Implementations & Feature Specifications:**
 - **Routing**: Hash routing for main pages (`/`, `#/studio`, `#/login`, `#/register`, `#/dashboard`, `#/privacy`, `#/terms`, `#/upload-consent`).
