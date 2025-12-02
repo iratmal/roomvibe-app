@@ -15,7 +15,7 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 - **Homepage Layout**: Features a hero section, "How It Works" section, audience-specific sections (Artists, Designers, Galleries), and a CTA section, all designed for responsive display.
 - **Studio Layout**: Three-panel Canvy-style editor (`#/studio`), responsive and mobile-first, with hidden TopNav and SiteFooter for iframe embedding. Responsive canvas height (400px mobile, 480px tablet, 560px desktop).
 - **Iconography**: Inline SVG components with gold accent (#D8B46A).
-- **Artwork Interaction**: Drag-to-move with bounds checking, diagonal resize with smart scaling, true physical scale rendering, and frame selection. Resize handles use 40px touch targets with 12px minimal visual appearance.
+- **Artwork Interaction**: Drag-to-move with bounds checking, diagonal resize with smart scaling, true physical scale rendering, and frame selection. Resize handles use 40px touch targets with 12px minimal visual appearance. Mobile touch handling uses direction detection (8px threshold) to differentiate between vertical scroll and horizontal drag.
 - **Studio Section Styling**: Consistent uppercase tracking-wide headings, space-y-5 section rhythm, subtle bg-rv-surface/50 info cards, unified button styling.
 
 **Technical Implementations & Feature Specifications:**
