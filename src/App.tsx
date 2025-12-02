@@ -2266,18 +2266,6 @@ function Studio() {
               </div>
             )}
             
-            {/* Subtle upgrade nudge for free users */}
-            {isFreePlan && (
-              <UpgradeNudge
-                message="Unlock high-res export"
-                variant="text"
-                onClick={() => {
-                  setUpgradeModalMessage("Upgrade to Designer plan to download high-resolution 3000px images without watermarks.");
-                  setShowUpgradeModal(true);
-                }}
-                className="mt-1"
-              />
-            )}
 
             <div>
               <div className="text-xs font-semibold text-rv-textMuted uppercase tracking-wide mb-3">Frame</div>
@@ -2400,7 +2388,8 @@ function Studio() {
                     setUpgradeModalMessage("Upgrade to remove watermarks and unlock high-resolution exports, PDF proposals, and more professional features."); 
                     setShowUpgradeModal(true); 
                   }}
-                  className="w-full text-center text-sm font-semibold text-[#283593] hover:underline transition-colors mt-2"
+                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-[#283593] transition-all hover:bg-[rgba(40,53,147,0.06)]"
+                  style={{ border: '1.5px solid #D8B46A' }}
                 >
                   Unlock High-Resolution Export → Upgrade
                 </button>
@@ -2413,7 +2402,7 @@ function Studio() {
                     setUpgradeModalMessage("Upgrade to Designer to unlock high-resolution 3000px exports, PDF proposals, and custom branding.");
                     setShowUpgradeModal(true);
                   }}
-                  className="w-full flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-[#283593] transition-all hover:bg-[rgba(40,53,147,0.06)]"
+                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-[#283593] transition-all hover:bg-[rgba(40,53,147,0.06)]"
                   style={{ border: '1.5px solid #D8B46A' }}
                 >
                   Unlock High-Resolution → Upgrade to Designer
