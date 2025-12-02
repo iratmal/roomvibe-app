@@ -16,6 +16,7 @@ interface ModuleConfig {
   description: string;
   price: string;
   unlockCta: string;
+  unlockSubtext: string;
   tooltipText: string;
   group: GroupType;
 }
@@ -34,6 +35,7 @@ const MODULES: ModuleConfig[] = [
     description: 'Account overview and settings',
     price: 'Free',
     unlockCta: '',
+    unlockSubtext: '',
     tooltipText: '',
   },
   {
@@ -49,6 +51,7 @@ const MODULES: ModuleConfig[] = [
     description: 'Manage artworks, embed widgets',
     price: '€9/mo',
     unlockCta: '€9/mo \u2022 Unlock \u2192',
+    unlockSubtext: 'Upgrade to unlock Artist Tools',
     tooltipText: 'Unlock this tool with the Artist Plan',
   },
   {
@@ -64,6 +67,7 @@ const MODULES: ModuleConfig[] = [
     description: 'Projects, client room uploads',
     price: '€29/mo',
     unlockCta: '€29/mo \u2022 Unlock \u2192',
+    unlockSubtext: 'Upgrade to unlock Designer Tools',
     tooltipText: 'Unlock this tool with the Designer Plan',
   },
   {
@@ -79,6 +83,7 @@ const MODULES: ModuleConfig[] = [
     description: 'Collections, multi-artist curation',
     price: '€49/mo',
     unlockCta: '€49/mo \u2022 Unlock \u2192',
+    unlockSubtext: 'Upgrade to unlock Gallery Tools',
     tooltipText: 'Unlock this tool with the Gallery Plan',
   },
 ];
@@ -94,8 +99,8 @@ function SectionHeader({ title, collapsed }: { title: string; collapsed: boolean
   if (!title || collapsed) return null;
   return (
     <div 
-      className="text-[11px] font-semibold tracking-[0.8px] uppercase mt-5 mb-1.5 ml-[18px] first:mt-0"
-      style={{ color: '#7D8CB5' }}
+      className="text-[11px] font-semibold tracking-[0.8px] uppercase mb-1.5 ml-[18px]"
+      style={{ color: '#7D8CB5', marginTop: '20px' }}
     >
       {title}
     </div>
@@ -265,7 +270,7 @@ export function UnifiedDashboard() {
           </button>
         </div>
 
-        <nav className="flex-1 pt-4 px-3 space-y-0.5 overflow-y-auto">
+        <nav className="flex-1 pt-4 px-3 space-y-0.5 overflow-y-auto" style={{ paddingTop: '16px' }}>
           {groupOrder.map((group) => {
             if (!shouldShowGroup(group)) return null;
             const modules = groupedModules[group];
@@ -287,16 +292,17 @@ export function UnifiedDashboard() {
                         onClick={() => handleModuleClick(module)}
                         onMouseEnter={() => setHoveredModule(module.id)}
                         onMouseLeave={() => setHoveredModule(null)}
-                        className={`w-full flex items-center gap-2.5 py-3 px-[18px] rounded-lg text-left transition-all min-h-[48px] ${
+                        className={`w-full flex items-center rounded-lg text-left transition-all ${
                           isActive
                             ? 'bg-rv-primary text-white'
                             : isLocked
                             ? 'opacity-[0.55] cursor-pointer hover:bg-[rgba(40,53,147,0.06)]'
                             : 'text-rv-text hover:bg-rv-surface'
                         }`}
+                        style={{ padding: '12px 18px', gap: '10px' }}
                         title={sidebarOpen ? undefined : module.label}
                       >
-                        <div className={`flex-shrink-0 w-5 h-5 ${isActive ? 'text-white' : isLocked ? 'text-rv-textMuted' : 'text-rv-accent'}`}>
+                        <div className={`flex-shrink-0 ${isActive ? 'text-white' : isLocked ? 'text-rv-textMuted' : 'text-rv-accent'}`} style={{ width: '20px', height: '20px' }}>
                           {module.icon}
                         </div>
                         {sidebarOpen && (
@@ -314,9 +320,9 @@ export function UnifiedDashboard() {
                                 )}
                               </div>
                             </div>
-                            {isLocked && (
-                              <div className="flex items-center gap-1 mt-0.5">
-                                <span className="text-xs text-rv-accent">{module.unlockCta}</span>
+                            {isLocked && module.unlockSubtext && (
+                              <div className="mt-0.5">
+                                <span className="text-xs text-rv-textMuted">{module.unlockSubtext}</span>
                               </div>
                             )}
                           </div>

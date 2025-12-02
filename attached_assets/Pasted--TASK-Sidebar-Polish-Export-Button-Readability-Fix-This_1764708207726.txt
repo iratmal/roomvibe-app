@@ -1,0 +1,184 @@
+# TASK: Sidebar Polish + Export Button Readability Fix
+
+This task applies 100% UI polish based on the latest design review  
+(no logic changes, no new features — UI fixes only).
+
+====================================================================
+# PART 1 — SIDEBAR UI POLISH (Artist / Designer / Gallery)
+====================================================================
+
+## 1) Add Section Headers (group titles)
+
+Add the following headers in the sidebar:
+
+### ARTIST TOOLS  
+(show only if user.artist_access === true)
+
+### DESIGNER TOOLS  
+(always visible; modules locked/unlocked based on entitlement)
+
+### GALLERY TOOLS  
+(always visible; modules locked/unlocked based on entitlement)
+
+**Header style:**
+```
+font-size: 11px;
+font-weight: 600;
+letter-spacing: 0.8px;
+text-transform: uppercase;
+color: #7D8CB5;
+margin: 18px 0 6px 18px;
+```
+
+---
+
+## 2) Locked module design improvement
+
+For modules without entitlement:
+
+- greyed-out icon  
+- greyed-out label  
+- lock icon aligned right  
+- below label add:  
+  `Upgrade to unlock Designer Tools`  
+  or  
+  `Upgrade to unlock Gallery Tools`
+
+**Disabled state:**
+```
+opacity: 0.55;
+cursor: pointer;
+```
+
+**Hover:**
+```
+background: rgba(40,53,147,0.06);
+border-radius: 8px;
+```
+
+On click → `openUpgradeModal(plan)`
+
+---
+
+## 3) Active badge improvement
+
+Replace with:
+
+```
+background: #283593;
+color: white;
+font-size: 11px;
+padding: 2px 6px;
+border-radius: 6px;
+```
+
+---
+
+## 4) Locked module pricing label improvement
+
+Replace the existing price label with:
+
+Designer Tools:
+```
+€29/mo • Unlock →
+```
+
+Gallery Hub:
+```
+€49/mo • Unlock →
+```
+
+Use lucide arrow-right (14px, 1.75px stroke).
+
+---
+
+## 5) Tooltip for locked items
+
+On hover show:
+
+Designer locked:
+```
+Unlock this tool with the Designer Plan
+```
+
+Gallery locked:
+```
+Unlock this tool with the Gallery Plan
+```
+
+---
+
+## 6) Sidebar spacing polish
+
+Apply:
+```
+Module padding: 12px 18px
+Icon size: 20px
+Spacing icon→text: 10px
+Spacing between rows: 2px
+Group title margin-top: 20px
+Sidebar padding-top: 16px
+```
+
+---
+
+====================================================================
+# PART 2 — EXPORT BUTTON READABILITY FIX (Studio Panel)
+====================================================================
+
+## Problem:
+Gold text on white background is too low-contrast, difficult to read.
+
+## Fix:
+KEEP gold border (premium indicator)  
+CHANGE text color to navy blue (#283593)
+
+Apply to:
+
+### 1) High-Resolution Download (premium export)
+Button styling:
+```
+border: 1.5px solid #D8B46A;
+color: #283593;
+font-weight: 500;
+```
+
+### 2) Unlock High-Resolution → Upgrade to Designer
+Replace gold text with navy text:
+```
+color: #283593;
+font-weight: 500;
+```
+
+### 3) PDF Export
+Increase readability:
+```
+font-weight: 500;
+color: #283593;
+```
+
+Keep border styling as-is (outline button).
+
+---
+
+## STOP CONDITION
+
+Task is complete when:
+
+✓ Sidebar has grouped sections with correct spacing & styles  
+✓ Locked modules show correct disabled styling, tooltips, and Unlock CTA  
+✓ Active badge polished  
+✓ Pricing labels show “Unlock →” format  
+✓ High-Resolution Download button text is navy (blue), not gold  
+✓ Unlock High-Res CTA text is navy  
+✓ PDF Export readability improved  
+✓ No changes made to logic or entitlements  
+✓ Pure UI polish only  
+
+---
+
+## NOTES
+
+- DO NOT change business logic  
+- DO NOT change entitlement conditions  
+- This task is UI-only  
