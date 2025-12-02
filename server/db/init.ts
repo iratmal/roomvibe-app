@@ -85,6 +85,74 @@ export async function initializeDatabase() {
       END $$;
     `);
 
+    // Add entitlement columns for multi-role access
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'artist_access'
+        ) THEN
+          ALTER TABLE users ADD COLUMN artist_access BOOLEAN DEFAULT FALSE;
+        END IF;
+      END $$;
+    `);
+
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'designer_access'
+        ) THEN
+          ALTER TABLE users ADD COLUMN designer_access BOOLEAN DEFAULT FALSE;
+        END IF;
+      END $$;
+    `);
+
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'gallery_access'
+        ) THEN
+          ALTER TABLE users ADD COLUMN gallery_access BOOLEAN DEFAULT FALSE;
+        END IF;
+      END $$;
+    `);
+
+    // Backfill entitlements from existing subscription_plan for existing users
+    await query(`
+      UPDATE users SET 
+        artist_access = CASE 
+          WHEN subscription_plan IN ('artist', 'designer', 'gallery') AND subscription_status IN ('active', 'free') THEN TRUE
+          WHEN role = 'artist' AND subscription_status = 'free' THEN TRUE
+          ELSE COALESCE(artist_access, FALSE)
+        END,
+        designer_access = CASE 
+          WHEN subscription_plan IN ('designer', 'gallery') AND subscription_status IN ('active', 'free') THEN TRUE
+          WHEN role = 'designer' AND subscription_status = 'free' THEN TRUE
+          ELSE COALESCE(designer_access, FALSE)
+        END,
+        gallery_access = CASE 
+          WHEN subscription_plan = 'gallery' AND subscription_status IN ('active', 'free') THEN TRUE
+          WHEN role = 'gallery' AND subscription_status = 'free' THEN TRUE
+          ELSE COALESCE(gallery_access, FALSE)
+        END
+      WHERE artist_access IS NULL OR designer_access IS NULL OR gallery_access IS NULL
+        OR (subscription_status = 'active' AND subscription_plan IS NOT NULL);
+    `);
+
+    // Admins get all access
+    await query(`
+      UPDATE users SET 
+        artist_access = TRUE,
+        designer_access = TRUE,
+        gallery_access = TRUE
+      WHERE is_admin = TRUE;
+    `);
+
     await query(`
       CREATE TABLE IF NOT EXISTS artworks (
         id SERIAL PRIMARY KEY,
