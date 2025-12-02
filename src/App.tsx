@@ -2341,7 +2341,7 @@ function Studio() {
                 <button
                   onClick={() => exportToImage(true)}
                   disabled={isExporting}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white rounded-lg text-sm font-medium text-[#D8B46A] transition-all disabled:opacity-50 hover:bg-[rgba(216,180,106,0.10)]"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white rounded-lg text-sm font-medium text-[#283593] transition-all disabled:opacity-50 hover:bg-[rgba(40,53,147,0.06)]"
                   style={{ border: '1.5px solid #D8B46A' }}
                 >
                   {isExporting && exportType === 'image' ? (
@@ -2413,7 +2413,7 @@ function Studio() {
                     setUpgradeModalMessage("Upgrade to Designer to unlock high-resolution 3000px exports, PDF proposals, and custom branding.");
                     setShowUpgradeModal(true);
                   }}
-                  className="w-full flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-[#D8B46A] transition-all hover:bg-[rgba(216,180,106,0.10)]"
+                  className="w-full flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-[#283593] transition-all hover:bg-[rgba(40,53,147,0.06)]"
                   style={{ border: '1.5px solid #D8B46A' }}
                 >
                   Unlock High-Resolution → Upgrade to Designer
