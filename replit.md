@@ -29,6 +29,11 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
     - **Mobile Layout**: Canvas-first, followed by controls, then room list.
     - **Artwork Locking (Free Users)**: Free users see only 1 placeholder artwork with a locked indicator showing "+X more artworks". Clicking the locked indicator opens an upgrade modal. URL parameter bypass is blocked for free users. Paid users (Artist/Designer/Gallery/Admin) see the full artwork dropdown.
     - **Premium Room Library**: 100 premium room scenes with plan-based access limits. Free users: 3 rooms, Artist: 30 rooms, Designer/Gallery/Admin: unlimited. Locked rooms show UpgradePrompt, unlocked rooms show ComingSoonModal (placeholder until real images added). Data in `src/data/premiumRooms.ts`, limits in `src/config/planLimits.ts`.
+    - **Export Features**: High-resolution image export (3000px+) and PDF export with plan-based restrictions.
+      - Free users: Low-res preview (1280px) with "RoomVibe – Upgrade for High-Res" watermark. High-res and PDF buttons trigger upgrade modal.
+      - Artist plan+: Full high-res image export without watermark.
+      - Designer plan+: PDF export with centered image and artwork caption.
+      - Export renders room background, artwork, and frame at proper scale using canvas rendering.
 - **Artist Dashboard**: CRUD operations for artwork management (upload, list, edit, delete). Includes image upload, currency/dimension unit selection. Artwork images are base64-encoded and stored in PostgreSQL, served via API. Supports website widget embedding with dynamic artist/artwork IDs.
 - **Designer Dashboard**: Project management with custom room image uploads (Multer, 10MB limit), stored as base64 in PostgreSQL. Features "Open in Studio" functionality for uploaded rooms.
 - **Gallery Dashboard**: Collection management for online exhibitions with CRUD operations for collections and artworks. Supports publication status and multi-artwork uploads per collection.
@@ -65,3 +70,4 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 - **Google Analytics 4 (GA4)**: For website analytics.
 - **Hotjar**: For user behavior analytics.
 - **Stripe**: For subscription billing and payment processing.
+- **jsPDF**: For PDF export generation.

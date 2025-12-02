@@ -760,6 +760,14 @@ function Studio() {
   // Coming soon modal for premium rooms without images
   const [showComingSoonModal, setShowComingSoonModal] = useState<boolean>(false);
   
+  // Export state
+  const [isExporting, setIsExporting] = useState<boolean>(false);
+  const [exportType, setExportType] = useState<'image' | 'pdf' | null>(null);
+  
+  // Check if user has high-res export access
+  const hasHighResExport = planLimits.highResExport;
+  const hasPdfExport = planLimits.pdfProposals;
+  
   // Placeholder artwork for free users - first artwork in the catalog
   const placeholderArtwork = (localArtworks as any[])[0];
   const placeholderArtId = placeholderArtwork?.id || 'light-my-fire-140-70-cm-roomvibe';
@@ -1246,6 +1254,388 @@ function Studio() {
   const handleCanvasClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       setIsArtworkSelected(false);
+    }
+  };
+
+  // Export visualization to high-resolution image
+  const exportToImage = async (highRes: boolean = false) => {
+    if (!canvasRef.current || !art) return;
+    
+    // Check plan access for high-res
+    if (highRes && !hasHighResExport) {
+      setUpgradeModalMessage("High-resolution exports are available on Artist plan and above. Upgrade to download high-quality images without watermarks.");
+      setShowUpgradeModal(true);
+      return;
+    }
+    
+    setIsExporting(true);
+    setExportType('image');
+    
+    try {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Canvas context not available');
+      
+      // Get current canvas dimensions
+      const canvasRect = canvasRef.current.getBoundingClientRect();
+      const canvasWidth = canvasRect.width;
+      const canvasHeight = canvasRect.height;
+      const aspectRatio = canvasWidth / canvasHeight;
+      
+      // Set output resolution
+      const targetSize = highRes ? 3000 : 1280;
+      let outputWidth: number, outputHeight: number;
+      
+      if (aspectRatio > 1) {
+        outputWidth = targetSize;
+        outputHeight = Math.round(targetSize / aspectRatio);
+      } else {
+        outputHeight = targetSize;
+        outputWidth = Math.round(targetSize * aspectRatio);
+      }
+      
+      canvas.width = outputWidth;
+      canvas.height = outputHeight;
+      
+      // Scale factor for rendering
+      const scaleFactor = outputWidth / canvasWidth;
+      
+      // Load and draw background image
+      const bgImage = new Image();
+      bgImage.crossOrigin = 'anonymous';
+      const bgSrc = userPhoto || (scene?.photo || '');
+      
+      await new Promise<void>((resolve, reject) => {
+        bgImage.onload = () => resolve();
+        bgImage.onerror = () => reject(new Error('Failed to load background'));
+        bgImage.src = bgSrc;
+      });
+      
+      // Draw background to cover canvas
+      const bgAspect = bgImage.width / bgImage.height;
+      const canvasAspect = outputWidth / outputHeight;
+      let drawWidth, drawHeight, drawX, drawY;
+      
+      if (bgAspect > canvasAspect) {
+        drawHeight = outputHeight;
+        drawWidth = drawHeight * bgAspect;
+        drawX = (outputWidth - drawWidth) / 2;
+        drawY = 0;
+      } else {
+        drawWidth = outputWidth;
+        drawHeight = drawWidth / bgAspect;
+        drawX = 0;
+        drawY = (outputHeight - drawHeight) / 2;
+      }
+      
+      ctx.drawImage(bgImage, drawX, drawY, drawWidth, drawHeight);
+      
+      // Calculate artwork position and size at export resolution
+      const scaledArtworkWidth = artworkWidthPx * scaleFactor;
+      const scaledArtworkHeight = artworkHeightPx * scaleFactor;
+      const scaledTotalWidth = totalWidthPx * scaleFactor;
+      const scaledTotalHeight = totalHeightPx * scaleFactor;
+      const scaledFrameBorder = frameBorderPx * scaleFactor;
+      const scaledMatWidth = matWidthPx * scaleFactor;
+      const scaledGapWidth = gapWidthPx * scaleFactor;
+      
+      // Position based on safe area + offset
+      const centerX = (safe.x * outputWidth) + (offsetX * scaleFactor);
+      const centerY = (safe.y * outputHeight) + (offsetY * scaleFactor);
+      const frameX = centerX - scaledTotalWidth / 2;
+      const frameY = centerY - scaledTotalHeight / 2;
+      
+      // Load artwork image
+      const artImage = new Image();
+      artImage.crossOrigin = 'anonymous';
+      const artSrc = art.overlayImageUrl || art.imageUrl || '';
+      
+      await new Promise<void>((resolve, reject) => {
+        artImage.onload = () => resolve();
+        artImage.onerror = () => reject(new Error('Failed to load artwork'));
+        artImage.src = artSrc;
+      });
+      
+      // Draw frame and artwork
+      const frameConfig = getFrameConfig(frameStyle);
+      
+      // Draw frame shadow
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+      ctx.shadowBlur = 30 * scaleFactor;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 15 * scaleFactor;
+      ctx.fillStyle = frameConfig.borderColor || '#333';
+      ctx.fillRect(frameX, frameY, scaledTotalWidth, scaledTotalHeight);
+      ctx.restore();
+      
+      if (frameConfig.hasMat) {
+        // Draw frame border
+        ctx.fillStyle = frameConfig.borderColor || '#333';
+        ctx.fillRect(frameX, frameY, scaledTotalWidth, scaledTotalHeight);
+        
+        // Draw mat
+        ctx.fillStyle = frameConfig.matColor || '#f5f5f0';
+        ctx.fillRect(
+          frameX + scaledFrameBorder,
+          frameY + scaledFrameBorder,
+          scaledTotalWidth - scaledFrameBorder * 2,
+          scaledTotalHeight - scaledFrameBorder * 2
+        );
+        
+        // Draw artwork
+        const artX = frameX + scaledFrameBorder + scaledMatWidth;
+        const artY = frameY + scaledFrameBorder + scaledMatWidth;
+        ctx.drawImage(artImage, artX, artY, scaledArtworkWidth, scaledArtworkHeight);
+      } else if (frameConfig.isFloating) {
+        // Floating frame
+        ctx.fillStyle = frameConfig.borderColor || '#333';
+        ctx.fillRect(frameX, frameY, scaledTotalWidth, scaledTotalHeight);
+        
+        // Gap
+        ctx.fillStyle = frameConfig.gapColor || '#fff';
+        ctx.fillRect(
+          frameX + scaledFrameBorder,
+          frameY + scaledFrameBorder,
+          scaledTotalWidth - scaledFrameBorder * 2,
+          scaledTotalHeight - scaledFrameBorder * 2
+        );
+        
+        // Artwork
+        const artX = frameX + scaledFrameBorder + scaledGapWidth;
+        const artY = frameY + scaledFrameBorder + scaledGapWidth;
+        ctx.drawImage(artImage, artX, artY, scaledArtworkWidth, scaledArtworkHeight);
+      } else if (frameConfig.borderWidth > 0) {
+        // Standard frame
+        ctx.fillStyle = frameConfig.borderColor || '#333';
+        ctx.fillRect(frameX, frameY, scaledTotalWidth, scaledTotalHeight);
+        
+        // Artwork
+        const artX = frameX + scaledFrameBorder;
+        const artY = frameY + scaledFrameBorder;
+        ctx.drawImage(artImage, artX, artY, scaledArtworkWidth, scaledArtworkHeight);
+      } else {
+        // No frame
+        ctx.drawImage(artImage, frameX, frameY, scaledArtworkWidth, scaledArtworkHeight);
+      }
+      
+      // Add watermark for free users (low-res only)
+      if (!highRes && !hasHighResExport) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+        ctx.font = `bold ${Math.round(18 * scaleFactor)}px Inter, sans-serif`;
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'bottom';
+        
+        const watermarkText = 'RoomVibe – Upgrade for High-Res';
+        const padding = 20 * scaleFactor;
+        const textMetrics = ctx.measureText(watermarkText);
+        
+        // Background for watermark
+        ctx.fillStyle = 'rgba(40, 53, 147, 0.9)';
+        ctx.fillRect(
+          outputWidth - textMetrics.width - padding * 2,
+          outputHeight - 40 * scaleFactor,
+          textMetrics.width + padding * 2,
+          40 * scaleFactor
+        );
+        
+        // Watermark text
+        ctx.fillStyle = '#fff';
+        ctx.fillText(watermarkText, outputWidth - padding, outputHeight - 12 * scaleFactor);
+        ctx.restore();
+      }
+      
+      // Download the image
+      const dataUrl = canvas.toDataURL('image/png', 1.0);
+      const link = document.createElement('a');
+      link.download = `roomvibe-${art.title?.replace(/\s+/g, '-').toLowerCase() || 'visualization'}-${highRes ? 'highres' : 'preview'}.png`;
+      link.href = dataUrl;
+      link.click();
+      
+    } catch (err) {
+      console.error('[Export] Failed to export image:', err);
+    } finally {
+      setIsExporting(false);
+      setExportType(null);
+    }
+  };
+
+  // Export visualization to PDF
+  const exportToPdf = async () => {
+    if (!canvasRef.current || !art) return;
+    
+    // Check plan access for PDF
+    if (!hasPdfExport) {
+      setUpgradeModalMessage("PDF exports are available on Designer plan and above. Upgrade to create professional PDF visualizations.");
+      setShowUpgradeModal(true);
+      return;
+    }
+    
+    setIsExporting(true);
+    setExportType('pdf');
+    
+    try {
+      // Dynamic import jsPDF
+      const { jsPDF } = await import('jspdf');
+      
+      // First generate high-res image
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Canvas context not available');
+      
+      const canvasRect = canvasRef.current.getBoundingClientRect();
+      const canvasWidth = canvasRect.width;
+      const canvasHeight = canvasRect.height;
+      const aspectRatio = canvasWidth / canvasHeight;
+      
+      const targetSize = 2400;
+      let outputWidth: number, outputHeight: number;
+      
+      if (aspectRatio > 1) {
+        outputWidth = targetSize;
+        outputHeight = Math.round(targetSize / aspectRatio);
+      } else {
+        outputHeight = targetSize;
+        outputWidth = Math.round(targetSize * aspectRatio);
+      }
+      
+      canvas.width = outputWidth;
+      canvas.height = outputHeight;
+      
+      const scaleFactor = outputWidth / canvasWidth;
+      
+      // Load and draw background
+      const bgImage = new Image();
+      bgImage.crossOrigin = 'anonymous';
+      const bgSrc = userPhoto || (scene?.photo || '');
+      
+      await new Promise<void>((resolve, reject) => {
+        bgImage.onload = () => resolve();
+        bgImage.onerror = () => reject(new Error('Failed to load background'));
+        bgImage.src = bgSrc;
+      });
+      
+      const bgAspect = bgImage.width / bgImage.height;
+      const canvasAspect = outputWidth / outputHeight;
+      let drawWidth, drawHeight, drawX, drawY;
+      
+      if (bgAspect > canvasAspect) {
+        drawHeight = outputHeight;
+        drawWidth = drawHeight * bgAspect;
+        drawX = (outputWidth - drawWidth) / 2;
+        drawY = 0;
+      } else {
+        drawWidth = outputWidth;
+        drawHeight = drawWidth / bgAspect;
+        drawX = 0;
+        drawY = (outputHeight - drawHeight) / 2;
+      }
+      
+      ctx.drawImage(bgImage, drawX, drawY, drawWidth, drawHeight);
+      
+      // Calculate artwork position
+      const scaledArtworkWidth = artworkWidthPx * scaleFactor;
+      const scaledArtworkHeight = artworkHeightPx * scaleFactor;
+      const scaledTotalWidth = totalWidthPx * scaleFactor;
+      const scaledTotalHeight = totalHeightPx * scaleFactor;
+      const scaledFrameBorder = frameBorderPx * scaleFactor;
+      const scaledMatWidth = matWidthPx * scaleFactor;
+      const scaledGapWidth = gapWidthPx * scaleFactor;
+      
+      const centerX = (safe.x * outputWidth) + (offsetX * scaleFactor);
+      const centerY = (safe.y * outputHeight) + (offsetY * scaleFactor);
+      const frameX = centerX - scaledTotalWidth / 2;
+      const frameY = centerY - scaledTotalHeight / 2;
+      
+      // Load artwork
+      const artImage = new Image();
+      artImage.crossOrigin = 'anonymous';
+      const artSrc = art.overlayImageUrl || art.imageUrl || '';
+      
+      await new Promise<void>((resolve, reject) => {
+        artImage.onload = () => resolve();
+        artImage.onerror = () => reject(new Error('Failed to load artwork'));
+        artImage.src = artSrc;
+      });
+      
+      // Draw frame and artwork (same logic as image export)
+      const frameConfig = getFrameConfig(frameStyle);
+      
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+      ctx.shadowBlur = 30 * scaleFactor;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 15 * scaleFactor;
+      ctx.fillStyle = frameConfig.borderColor || '#333';
+      ctx.fillRect(frameX, frameY, scaledTotalWidth, scaledTotalHeight);
+      ctx.restore();
+      
+      if (frameConfig.hasMat) {
+        ctx.fillStyle = frameConfig.borderColor || '#333';
+        ctx.fillRect(frameX, frameY, scaledTotalWidth, scaledTotalHeight);
+        ctx.fillStyle = frameConfig.matColor || '#f5f5f0';
+        ctx.fillRect(frameX + scaledFrameBorder, frameY + scaledFrameBorder, scaledTotalWidth - scaledFrameBorder * 2, scaledTotalHeight - scaledFrameBorder * 2);
+        ctx.drawImage(artImage, frameX + scaledFrameBorder + scaledMatWidth, frameY + scaledFrameBorder + scaledMatWidth, scaledArtworkWidth, scaledArtworkHeight);
+      } else if (frameConfig.isFloating) {
+        ctx.fillStyle = frameConfig.borderColor || '#333';
+        ctx.fillRect(frameX, frameY, scaledTotalWidth, scaledTotalHeight);
+        ctx.fillStyle = frameConfig.gapColor || '#fff';
+        ctx.fillRect(frameX + scaledFrameBorder, frameY + scaledFrameBorder, scaledTotalWidth - scaledFrameBorder * 2, scaledTotalHeight - scaledFrameBorder * 2);
+        ctx.drawImage(artImage, frameX + scaledFrameBorder + scaledGapWidth, frameY + scaledFrameBorder + scaledGapWidth, scaledArtworkWidth, scaledArtworkHeight);
+      } else if (frameConfig.borderWidth > 0) {
+        ctx.fillStyle = frameConfig.borderColor || '#333';
+        ctx.fillRect(frameX, frameY, scaledTotalWidth, scaledTotalHeight);
+        ctx.drawImage(artImage, frameX + scaledFrameBorder, frameY + scaledFrameBorder, scaledArtworkWidth, scaledArtworkHeight);
+      } else {
+        ctx.drawImage(artImage, frameX, frameY, scaledArtworkWidth, scaledArtworkHeight);
+      }
+      
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+      
+      // Create PDF
+      const pdf = new jsPDF({
+        orientation: aspectRatio > 1 ? 'landscape' : 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 15;
+      
+      // Calculate image dimensions to fit page with margin
+      const maxWidth = pageWidth - margin * 2;
+      const maxHeight = pageHeight - margin * 2 - 15; // Extra space for caption
+      
+      let imgWidth = maxWidth;
+      let imgHeight = imgWidth / aspectRatio;
+      
+      if (imgHeight > maxHeight) {
+        imgHeight = maxHeight;
+        imgWidth = imgHeight * aspectRatio;
+      }
+      
+      const imgX = (pageWidth - imgWidth) / 2;
+      const imgY = margin;
+      
+      // Add image to PDF
+      pdf.addImage(dataUrl, 'JPEG', imgX, imgY, imgWidth, imgHeight);
+      
+      // Add caption at bottom
+      pdf.setFontSize(10);
+      pdf.setTextColor(100);
+      const caption = `${art.title || 'Artwork'} • ${Math.round(art.widthCm * scale)} × ${Math.round(art.heightCm * scale)} cm • RoomVibe Visualization`;
+      pdf.text(caption, pageWidth / 2, imgY + imgHeight + 8, { align: 'center' });
+      
+      // Save PDF
+      pdf.save(`roomvibe-${art.title?.replace(/\s+/g, '-').toLowerCase() || 'visualization'}.pdf`);
+      
+    } catch (err) {
+      console.error('[Export] Failed to export PDF:', err);
+    } finally {
+      setIsExporting(false);
+      setExportType(null);
     }
   };
 
@@ -1811,6 +2201,93 @@ function Studio() {
               >
                 Reset position & size
               </button>
+            </div>
+
+            {/* Export Section */}
+            <div className="space-y-2">
+              <div className="text-xs font-semibold text-rv-textMuted uppercase tracking-wide">Export</div>
+              <div className="grid grid-cols-2 gap-2">
+                {/* Download Preview (Low-res for free, high-res for paid) */}
+                <button
+                  onClick={() => exportToImage(false)}
+                  disabled={isExporting}
+                  className="flex items-center justify-center gap-1.5 px-3 py-2.5 border border-rv-neutral rounded-rvMd text-sm font-medium text-rv-text bg-white hover:bg-rv-surface hover:border-rv-primary/40 transition-all disabled:opacity-50"
+                >
+                  {isExporting && exportType === 'image' ? (
+                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                  )}
+                  Preview
+                </button>
+                
+                {/* High-Res Export */}
+                <button
+                  onClick={() => exportToImage(true)}
+                  disabled={isExporting}
+                  className={`flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-rvMd text-sm font-medium transition-all disabled:opacity-50 ${
+                    hasHighResExport 
+                      ? 'bg-rv-primary text-white hover:bg-rv-primaryHover' 
+                      : 'border border-rv-accent/30 bg-rv-accent/5 text-rv-accent hover:bg-rv-accent/10'
+                  }`}
+                >
+                  {isExporting && exportType === 'image' ? (
+                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                  ) : !hasHighResExport ? (
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                  )}
+                  High-Res
+                </button>
+              </div>
+              
+              {/* PDF Export */}
+              <button
+                onClick={exportToPdf}
+                disabled={isExporting}
+                className={`w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-rvMd text-sm font-medium transition-all disabled:opacity-50 ${
+                  hasPdfExport 
+                    ? 'border border-rv-primary/30 bg-rv-primary/5 text-rv-primary hover:bg-rv-primary/10' 
+                    : 'border border-rv-accent/30 bg-rv-accent/5 text-rv-accent hover:bg-rv-accent/10'
+                }`}
+              >
+                {isExporting && exportType === 'pdf' ? (
+                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                ) : !hasPdfExport ? (
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                )}
+                Export as PDF
+                {!hasPdfExport && <span className="text-xs opacity-75">(Designer+)</span>}
+              </button>
+              
+              {/* Upgrade hint for free users */}
+              {!hasHighResExport && (
+                <p className="text-[10px] text-rv-textMuted text-center mt-1">
+                  Preview includes watermark. <button onClick={() => { setUpgradeModalMessage("Upgrade to Artist plan or higher to download high-resolution images without watermarks."); setShowUpgradeModal(true); }} className="text-rv-primary hover:underline">Upgrade</button> for full quality.
+                </p>
+              )}
             </div>
 
             {art && (
