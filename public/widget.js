@@ -15,6 +15,7 @@
   var currentRoom = null;
   var currentFrame = 'none';
   var selectedArtworks = [];
+  var exhibitionIndex = 0;
 
   function getBaseUrl() {
     var scripts = document.querySelectorAll('script[data-widget-id]');
@@ -40,6 +41,7 @@
     var style = document.createElement('style');
     style.id = 'roomvibe-unified-widget-styles';
     style.textContent = [
+      '@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap");',
       '.rv-widget-container {',
       '  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;',
       '  box-sizing: border-box;',
@@ -52,10 +54,10 @@
       '  display: inline-flex;',
       '  align-items: center;',
       '  gap: 8px;',
-      '  padding: 12px 20px;',
+      '  padding: 10px 16px;',
       '  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;',
       '  font-size: 14px;',
-      '  font-weight: 600;',
+      '  font-weight: 500;',
       '  color: ' + ROOMVIBE_COLORS.white + ';',
       '  background: ' + ROOMVIBE_COLORS.primary + ';',
       '  border: none;',
@@ -63,11 +65,11 @@
       '  cursor: pointer;',
       '  text-decoration: none;',
       '  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;',
-      '  box-shadow: 0 2px 8px rgba(40, 53, 147, 0.25);',
+      '  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);',
       '}',
       '.rv-widget-btn:hover {',
       '  transform: translateY(-1px);',
-      '  box-shadow: 0 4px 12px rgba(40, 53, 147, 0.35);',
+      '  box-shadow: 0 4px 12px rgba(40, 53, 147, 0.25);',
       '}',
       '.rv-widget-btn:active {',
       '  transform: translateY(0);',
@@ -79,7 +81,7 @@
       '  box-shadow: none;',
       '}',
       '.rv-widget-btn-secondary:hover {',
-      '  background: ' + ROOMVIBE_COLORS.softGrey + ';',
+      '  background: rgba(40, 53, 147, 0.05);',
       '}',
       '.rv-widget-btn-premium {',
       '  background: ' + ROOMVIBE_COLORS.white + ';',
@@ -89,6 +91,18 @@
       '}',
       '.rv-widget-btn-premium:hover {',
       '  background: rgba(216, 180, 106, 0.1);',
+      '}',
+      '.rv-widget-btn-text {',
+      '  background: transparent;',
+      '  color: ' + ROOMVIBE_COLORS.primary + ';',
+      '  border: none;',
+      '  box-shadow: none;',
+      '  padding: 6px 8px;',
+      '}',
+      '.rv-widget-btn-text:hover {',
+      '  text-decoration: underline;',
+      '  transform: none;',
+      '  box-shadow: none;',
       '}',
       '.rv-widget-btn svg {',
       '  width: 18px;',
@@ -108,7 +122,7 @@
       '  justify-content: center;',
       '  padding: 16px;',
       '  opacity: 0;',
-      '  transition: opacity 0.25s ease;',
+      '  transition: opacity 0.2s ease;',
       '}',
       '.rv-modal-overlay.rv-visible {',
       '  opacity: 1;',
@@ -122,13 +136,15 @@
       '  border-radius: 16px;',
       '  overflow: hidden;',
       '  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.35);',
-      '  transform: scale(0.95) translateY(10px);',
-      '  transition: transform 0.25s ease;',
+      '  transform: translateY(4px);',
+      '  opacity: 0;',
+      '  transition: transform 0.2s ease, opacity 0.2s ease;',
       '  display: flex;',
       '  flex-direction: column;',
       '}',
       '.rv-modal-overlay.rv-visible .rv-modal {',
-      '  transform: scale(1) translateY(0);',
+      '  transform: translateY(0);',
+      '  opacity: 1;',
       '}',
       '.rv-modal-header {',
       '  display: flex;',
@@ -138,6 +154,16 @@
       '  border-bottom: 1px solid ' + ROOMVIBE_COLORS.softGrey + ';',
       '  background: ' + ROOMVIBE_COLORS.white + ';',
       '}',
+      '.rv-modal-header-left {',
+      '  display: flex;',
+      '  align-items: center;',
+      '  gap: 12px;',
+      '}',
+      '.rv-modal-header-right {',
+      '  display: flex;',
+      '  align-items: center;',
+      '  gap: 8px;',
+      '}',
       '.rv-modal-title {',
       '  font-size: 18px;',
       '  font-weight: 600;',
@@ -146,6 +172,27 @@
       '  display: flex;',
       '  align-items: center;',
       '  gap: 10px;',
+      '}',
+      '.rv-info-btn {',
+      '  width: 32px;',
+      '  height: 32px;',
+      '  display: flex;',
+      '  align-items: center;',
+      '  justify-content: center;',
+      '  background: transparent;',
+      '  border: 1.5px solid ' + ROOMVIBE_COLORS.softGrey + ';',
+      '  border-radius: 50%;',
+      '  cursor: pointer;',
+      '  color: #6B7280;',
+      '  transition: border-color 0.15s ease, color 0.15s ease;',
+      '}',
+      '.rv-info-btn:hover {',
+      '  border-color: ' + ROOMVIBE_COLORS.primary + ';',
+      '  color: ' + ROOMVIBE_COLORS.primary + ';',
+      '}',
+      '.rv-info-btn svg {',
+      '  width: 16px;',
+      '  height: 16px;',
       '}',
       '.rv-modal-close {',
       '  width: 36px;',
@@ -169,18 +216,20 @@
       '  flex: 1;',
       '  overflow: hidden;',
       '}',
-      '.rv-sidebar {',
-      '  width: 280px;',
-      '  border-right: 1px solid ' + ROOMVIBE_COLORS.softGrey + ';',
-      '  overflow-y: auto;',
-      '  padding: 16px;',
-      '  background: #FAFBFC;',
-      '}',
       '.rv-main {',
       '  flex: 1;',
       '  display: flex;',
       '  flex-direction: column;',
       '  overflow: hidden;',
+      '  min-width: 0;',
+      '}',
+      '.rv-sidebar {',
+      '  width: 280px;',
+      '  flex-shrink: 0;',
+      '  border-left: 1px solid ' + ROOMVIBE_COLORS.softGrey + ';',
+      '  overflow-y: auto;',
+      '  padding: 16px;',
+      '  background: #FAFBFC;',
       '}',
       '.rv-canvas-area {',
       '  flex: 1;',
@@ -192,19 +241,37 @@
       '  min-height: 400px;',
       '  overflow: hidden;',
       '}',
+      '.rv-canvas-wrapper {',
+      '  position: relative;',
+      '  width: 100%;',
+      '  height: 100%;',
+      '  display: flex;',
+      '  align-items: center;',
+      '  justify-content: center;',
+      '}',
       '.rv-room-image {',
       '  max-width: 100%;',
       '  max-height: 100%;',
       '  object-fit: contain;',
+      '  transition: opacity 0.15s ease;',
+      '}',
+      '.rv-room-image.rv-transitioning {',
+      '  opacity: 0;',
       '}',
       '.rv-artwork-overlay {',
       '  position: absolute;',
       '  cursor: move;',
       '  box-shadow: 0 8px 32px rgba(0,0,0,0.3);',
-      '  transition: box-shadow 0.2s ease;',
+      '  transition: box-shadow 0.2s ease, opacity 0.2s ease, transform 0.2s ease;',
+      '  opacity: 0;',
+      '  transform: translateY(4px);',
+      '}',
+      '.rv-artwork-overlay.rv-visible {',
+      '  opacity: 1;',
+      '  transform: translateY(0);',
       '}',
       '.rv-artwork-overlay:hover {',
-      '  box-shadow: 0 12px 40px rgba(0,0,0,0.4);',
+      '  box-shadow: 0 12px 40px rgba(0,0,0,0.35);',
       '}',
       '.rv-artwork-overlay img {',
       '  width: 100%;',
@@ -213,14 +280,68 @@
       '  display: block;',
       '}',
       '.rv-controls {',
-      '  padding: 16px 20px;',
+      '  padding: 12px 16px;',
       '  border-top: 1px solid ' + ROOMVIBE_COLORS.softGrey + ';',
       '  background: ' + ROOMVIBE_COLORS.white + ';',
       '  display: flex;',
       '  align-items: center;',
       '  justify-content: space-between;',
-      '  gap: 16px;',
-      '  flex-wrap: wrap;',
+      '  gap: 12px;',
+      '}',
+      '.rv-controls-left {',
+      '  display: flex;',
+      '  align-items: center;',
+      '  gap: 8px;',
+      '  flex-wrap: nowrap;',
+      '  overflow-x: auto;',
+      '  -webkit-overflow-scrolling: touch;',
+      '  scrollbar-width: none;',
+      '  -ms-overflow-style: none;',
+      '}',
+      '.rv-controls-left::-webkit-scrollbar {',
+      '  display: none;',
+      '}',
+      '.rv-controls-right {',
+      '  display: flex;',
+      '  align-items: center;',
+      '  gap: 8px;',
+      '  flex-shrink: 0;',
+      '}',
+      '.rv-control-btn {',
+      '  display: flex;',
+      '  align-items: center;',
+      '  gap: 6px;',
+      '  padding: 8px 12px;',
+      '  font-family: Inter, sans-serif;',
+      '  font-size: 13px;',
+      '  font-weight: 500;',
+      '  color: ' + ROOMVIBE_COLORS.text + ';',
+      '  background: ' + ROOMVIBE_COLORS.white + ';',
+      '  border: 1.5px solid ' + ROOMVIBE_COLORS.softGrey + ';',
+      '  border-radius: 8px;',
+      '  cursor: pointer;',
+      '  white-space: nowrap;',
+      '  transition: border-color 0.15s ease, background 0.15s ease;',
+      '}',
+      '.rv-control-btn:hover {',
+      '  border-color: ' + ROOMVIBE_COLORS.primary + ';',
+      '  background: rgba(40, 53, 147, 0.03);',
+      '}',
+      '.rv-control-btn.rv-active {',
+      '  border-color: ' + ROOMVIBE_COLORS.primary + ';',
+      '  background: rgba(40, 53, 147, 0.08);',
+      '  color: ' + ROOMVIBE_COLORS.primary + ';',
+      '}',
+      '.rv-control-btn.rv-premium {',
+      '  color: ' + ROOMVIBE_COLORS.gold + ';',
+      '  border-color: ' + ROOMVIBE_COLORS.gold + ';',
+      '}',
+      '.rv-control-btn.rv-premium:hover {',
+      '  background: rgba(216, 180, 106, 0.08);',
+      '}',
+      '.rv-control-btn svg {',
+      '  width: 18px;',
+      '  height: 18px;',
       '}',
       '.rv-section {',
       '  margin-bottom: 20px;',
@@ -249,7 +370,13 @@
       '  border: 1px solid ' + ROOMVIBE_COLORS.softGrey + ';',
       '  background: ' + ROOMVIBE_COLORS.white + ';',
       '  cursor: pointer;',
-      '  transition: border-color 0.15s ease, background 0.15s ease;',
+      '  transition: border-color 0.15s ease, background 0.15s ease, opacity 0.2s ease, transform 0.2s ease;',
+      '  opacity: 0;',
+      '  transform: translateY(4px);',
+      '}',
+      '.rv-artwork-item.rv-visible {',
+      '  opacity: 1;',
+      '  transform: translateY(0);',
       '}',
       '.rv-artwork-item:hover {',
       '  border-color: ' + ROOMVIBE_COLORS.primary + ';',
@@ -293,7 +420,13 @@
       '  overflow: hidden;',
       '  border: 2px solid transparent;',
       '  cursor: pointer;',
-      '  transition: border-color 0.15s ease;',
+      '  transition: border-color 0.15s ease, opacity 0.2s ease, transform 0.2s ease;',
+      '  opacity: 0;',
+      '  transform: translateY(4px);',
+      '}',
+      '.rv-room-item.rv-visible {',
+      '  opacity: 1;',
+      '  transform: translateY(0);',
       '}',
       '.rv-room-item:hover {',
       '  border-color: ' + ROOMVIBE_COLORS.primary + ';',
@@ -329,8 +462,9 @@
       '  color: ' + ROOMVIBE_COLORS.primary + ';',
       '}',
       '.rv-buy-btn {',
-      '  background: ' + ROOMVIBE_COLORS.gold + ';',
-      '  color: ' + ROOMVIBE_COLORS.white + ';',
+      '  background: ' + ROOMVIBE_COLORS.gold + ' !important;',
+      '  color: ' + ROOMVIBE_COLORS.white + ' !important;',
+      '  border: none !important;',
       '}',
       '.rv-buy-btn:hover {',
       '  opacity: 0.9;',
@@ -396,38 +530,271 @@
       '  text-align: center;',
       '  color: ' + ROOMVIBE_COLORS.error + ';',
       '}',
+      '.rv-tooltip {',
+      '  position: absolute;',
+      '  top: calc(100% + 8px);',
+      '  right: 0;',
+      '  width: 280px;',
+      '  padding: 16px;',
+      '  background: ' + ROOMVIBE_COLORS.white + ';',
+      '  border-radius: 8px;',
+      '  box-shadow: 0 4px 20px rgba(0,0,0,0.15);',
+      '  font-size: 13px;',
+      '  line-height: 1.5;',
+      '  color: ' + ROOMVIBE_COLORS.text + ';',
+      '  z-index: 10;',
+      '  opacity: 0;',
+      '  transform: translateY(-4px);',
+      '  transition: opacity 0.2s ease, transform 0.2s ease;',
+      '  pointer-events: none;',
+      '}',
+      '.rv-tooltip.rv-visible {',
+      '  opacity: 1;',
+      '  transform: translateY(0);',
+      '  pointer-events: auto;',
+      '}',
+      '.rv-tooltip h4 {',
+      '  margin: 0 0 8px;',
+      '  font-size: 14px;',
+      '  font-weight: 600;',
+      '  color: ' + ROOMVIBE_COLORS.primary + ';',
+      '}',
+      '.rv-tooltip ul {',
+      '  margin: 0;',
+      '  padding: 0 0 0 16px;',
+      '}',
+      '.rv-tooltip li {',
+      '  margin-bottom: 4px;',
+      '}',
+      '.rv-exhibition-nav {',
+      '  position: absolute;',
+      '  top: 50%;',
+      '  transform: translateY(-50%);',
+      '  width: 44px;',
+      '  height: 44px;',
+      '  display: flex;',
+      '  align-items: center;',
+      '  justify-content: center;',
+      '  background: rgba(255,255,255,0.9);',
+      '  border: none;',
+      '  border-radius: 50%;',
+      '  cursor: pointer;',
+      '  box-shadow: 0 2px 8px rgba(0,0,0,0.15);',
+      '  z-index: 5;',
+      '  transition: background 0.15s ease, transform 0.15s ease;',
+      '}',
+      '.rv-exhibition-nav:hover {',
+      '  background: ' + ROOMVIBE_COLORS.white + ';',
+      '  transform: translateY(-50%) scale(1.05);',
+      '}',
+      '.rv-exhibition-nav.rv-prev {',
+      '  left: 16px;',
+      '}',
+      '.rv-exhibition-nav.rv-next {',
+      '  right: 16px;',
+      '}',
+      '.rv-exhibition-nav svg {',
+      '  width: 20px;',
+      '  height: 20px;',
+      '  color: ' + ROOMVIBE_COLORS.primary + ';',
+      '}',
+      '.rv-exhibition-counter {',
+      '  position: absolute;',
+      '  bottom: 16px;',
+      '  left: 50%;',
+      '  transform: translateX(-50%);',
+      '  padding: 6px 12px;',
+      '  background: rgba(0,0,0,0.6);',
+      '  border-radius: 20px;',
+      '  font-size: 12px;',
+      '  font-weight: 500;',
+      '  color: ' + ROOMVIBE_COLORS.white + ';',
+      '}',
+      '.rv-artwork-slide {',
+      '  position: absolute;',
+      '  top: 0;',
+      '  left: 0;',
+      '  width: 100%;',
+      '  height: 100%;',
+      '  display: flex;',
+      '  align-items: center;',
+      '  justify-content: center;',
+      '  transition: transform 0.15s ease-out, opacity 0.15s ease-out;',
+      '}',
+      '.rv-artwork-slide.rv-slide-enter-left {',
+      '  transform: translateX(-30%);',
+      '  opacity: 0;',
+      '}',
+      '.rv-artwork-slide.rv-slide-enter-right {',
+      '  transform: translateX(30%);',
+      '  opacity: 0;',
+      '}',
+      '.rv-artwork-slide.rv-slide-exit-left {',
+      '  transform: translateX(-30%);',
+      '  opacity: 0;',
+      '}',
+      '.rv-artwork-slide.rv-slide-exit-right {',
+      '  transform: translateX(30%);',
+      '  opacity: 0;',
+      '}',
+      '.rv-artwork-slide.rv-slide-active {',
+      '  transform: translateX(0);',
+      '  opacity: 1;',
+      '}',
+      '.rv-gallery-thumbs {',
+      '  display: flex;',
+      '  gap: 8px;',
+      '  overflow-x: auto;',
+      '  padding: 8px 0;',
+      '  -webkit-overflow-scrolling: touch;',
+      '  scrollbar-width: none;',
+      '}',
+      '.rv-gallery-thumbs::-webkit-scrollbar {',
+      '  display: none;',
+      '}',
+      '.rv-gallery-thumb {',
+      '  flex-shrink: 0;',
+      '  width: 64px;',
+      '  height: 64px;',
+      '  border-radius: 8px;',
+      '  overflow: hidden;',
+      '  border: 2px solid transparent;',
+      '  cursor: pointer;',
+      '  transition: border-color 0.15s ease, transform 0.15s ease;',
+      '}',
+      '.rv-gallery-thumb:hover {',
+      '  border-color: ' + ROOMVIBE_COLORS.primary + ';',
+      '  transform: scale(1.05);',
+      '}',
+      '.rv-gallery-thumb.rv-selected {',
+      '  border-color: ' + ROOMVIBE_COLORS.gold + ';',
+      '}',
+      '.rv-gallery-thumb img {',
+      '  width: 100%;',
+      '  height: 100%;',
+      '  object-fit: cover;',
+      '}',
+      '.rv-dropdown {',
+      '  position: relative;',
+      '}',
+      '.rv-dropdown-menu {',
+      '  position: absolute;',
+      '  top: calc(100% + 4px);',
+      '  left: 0;',
+      '  min-width: 180px;',
+      '  background: ' + ROOMVIBE_COLORS.white + ';',
+      '  border: 1px solid ' + ROOMVIBE_COLORS.softGrey + ';',
+      '  border-radius: 8px;',
+      '  box-shadow: 0 4px 16px rgba(0,0,0,0.12);',
+      '  z-index: 20;',
+      '  opacity: 0;',
+      '  transform: translateY(-4px);',
+      '  transition: opacity 0.15s ease, transform 0.15s ease;',
+      '  pointer-events: none;',
+      '}',
+      '.rv-dropdown-menu.rv-visible {',
+      '  opacity: 1;',
+      '  transform: translateY(0);',
+      '  pointer-events: auto;',
+      '}',
+      '.rv-dropdown-item {',
+      '  display: flex;',
+      '  align-items: center;',
+      '  gap: 8px;',
+      '  width: 100%;',
+      '  padding: 10px 14px;',
+      '  font-size: 13px;',
+      '  color: ' + ROOMVIBE_COLORS.text + ';',
+      '  background: none;',
+      '  border: none;',
+      '  cursor: pointer;',
+      '  text-align: left;',
+      '  transition: background 0.15s ease;',
+      '}',
+      '.rv-dropdown-item:first-child {',
+      '  border-radius: 8px 8px 0 0;',
+      '}',
+      '.rv-dropdown-item:last-child {',
+      '  border-radius: 0 0 8px 8px;',
+      '}',
+      '.rv-dropdown-item:hover {',
+      '  background: rgba(40, 53, 147, 0.05);',
+      '}',
+      '.rv-dropdown-item.rv-locked {',
+      '  color: ' + ROOMVIBE_COLORS.gold + ';',
+      '}',
+      '.rv-dropdown-item svg {',
+      '  width: 16px;',
+      '  height: 16px;',
+      '}',
       '@media (max-width: 768px) {',
+      '  .rv-modal {',
+      '    max-height: 100vh;',
+      '    border-radius: 0;',
+      '  }',
       '  .rv-modal-body {',
       '    flex-direction: column;',
       '  }',
+      '  .rv-main {',
+      '    order: 1;',
+      '  }',
       '  .rv-sidebar {',
+      '    order: 2;',
       '    width: 100%;',
-      '    border-right: none;',
-      '    border-bottom: 1px solid ' + ROOMVIBE_COLORS.softGrey + ';',
-      '    max-height: 200px;',
+      '    border-left: none;',
+      '    border-top: 1px solid ' + ROOMVIBE_COLORS.softGrey + ';',
+      '    max-height: 30vh;',
       '  }',
       '  .rv-canvas-area {',
-      '    min-height: 300px;',
+      '    min-height: 50vh;',
+      '    height: 70vh;',
       '  }',
       '  .rv-controls {',
-      '    flex-direction: column;',
-      '    align-items: stretch;',
+      '    position: sticky;',
+      '    bottom: 0;',
+      '    z-index: 10;',
+      '    padding: 10px 12px;',
+      '    flex-wrap: nowrap;',
+      '  }',
+      '  .rv-controls-left {',
+      '    flex: 1;',
+      '    overflow-x: auto;',
+      '    padding-bottom: 2px;',
+      '  }',
+      '  .rv-control-btn {',
+      '    padding: 8px 10px;',
+      '    font-size: 12px;',
+      '  }',
+      '  .rv-control-btn span {',
+      '    display: none;',
+      '  }',
+      '  .rv-exhibition-nav {',
+      '    width: 40px;',
+      '    height: 40px;',
       '  }',
       '}'
     ].join('\n');
     document.head.appendChild(style);
   }
 
-  function createRoomIcon() {
-    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>';
-  }
-
-  function createLockIcon() {
-    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>';
-  }
-
-  function createDownloadIcon() {
-    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+  function createIcon(name) {
+    var icons = {
+      room: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>',
+      lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>',
+      download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+      image: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>',
+      frame: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>',
+      layers: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 2,7 12,12 22,7 12,2"/><polyline points="2,17 12,22 22,17"/><polyline points="2,12 12,17 22,12"/></svg>',
+      arrowLeft: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></svg>',
+      arrowRight: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/></svg>',
+      info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+      close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+      chevronDown: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="6,9 12,15 18,9"/></svg>',
+      file: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>',
+      gallery: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/><rect x="14" y="14" width="8" height="8" rx="1"/></svg>',
+      building: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>'
+    };
+    return icons[name] || '';
   }
 
   async function fetchWidgetConfig(widgetId) {
@@ -471,6 +838,10 @@
       });
       
       container.appendChild(item);
+
+      setTimeout(function() {
+        item.classList.add('rv-visible');
+      }, 50 + (index * 30));
     });
 
     if (artworks.length > 0) {
@@ -495,6 +866,10 @@
       });
       
       container.appendChild(item);
+
+      setTimeout(function() {
+        item.classList.add('rv-visible');
+      }, 50 + (index * 30));
     });
 
     if (rooms.length > 0) {
@@ -531,49 +906,129 @@
     });
   }
 
-  function updateArtworkOverlay(canvasArea, artwork, room, frame) {
-    var existing = canvasArea.querySelector('.rv-artwork-overlay');
-    if (existing) existing.remove();
-
-    if (!artwork || !room) return;
-
-    var overlay = document.createElement('div');
-    overlay.className = 'rv-artwork-overlay';
+  function renderGalleryThumbnails(container, artworks, onSelect) {
+    container.innerHTML = '';
     
-    var frameColor = 'transparent';
-    var frameWidth = 0;
-    if (frame && frame.id !== 'none') {
-      frameWidth = 8;
-      switch (frame.id) {
-        case 'black': frameColor = '#1a1a1a'; break;
-        case 'white': frameColor = '#ffffff'; break;
-        case 'wood': frameColor = '#8B4513'; break;
-        case 'gold': frameColor = ROOMVIBE_COLORS.gold; break;
-      }
+    if (!artworks || artworks.length === 0) {
+      container.innerHTML = '<div style="color: #6B7280; font-size: 13px;">No artworks in this exhibition</div>';
+      return;
     }
 
-    var scale = 1.5;
-    var displayWidth = artwork.width * scale;
-    var displayHeight = artwork.height * scale;
+    artworks.forEach(function(artwork, index) {
+      var thumb = document.createElement('div');
+      thumb.className = 'rv-gallery-thumb' + (index === 0 ? ' rv-selected' : '');
+      thumb.innerHTML = '<img src="' + artwork.imageUrl + '" alt="' + artwork.title + '">';
+      
+      thumb.addEventListener('click', function() {
+        container.querySelectorAll('.rv-gallery-thumb').forEach(function(el) {
+          el.classList.remove('rv-selected');
+        });
+        thumb.classList.add('rv-selected');
+        onSelect(artwork, index);
+      });
+      
+      container.appendChild(thumb);
+    });
 
-    overlay.style.cssText = [
-      'width: ' + displayWidth + 'px',
-      'height: ' + displayHeight + 'px',
-      'border: ' + frameWidth + 'px solid ' + frameColor,
-      'top: 50%',
-      'left: 50%',
-      'transform: translate(-50%, -60%)'
-    ].join(';');
+    if (artworks.length > 0) {
+      onSelect(artworks[0], 0);
+    }
+  }
 
-    overlay.innerHTML = '<img src="' + artwork.imageUrl + '" alt="' + artwork.title + '">';
-    canvasArea.appendChild(overlay);
+  function updateArtworkOverlay(canvasArea, artwork, room, frame, animate) {
+    var existing = canvasArea.querySelector('.rv-artwork-overlay');
+    if (existing) {
+      if (animate) {
+        existing.classList.remove('rv-visible');
+        setTimeout(function() {
+          if (existing.parentNode) existing.remove();
+          createNewOverlay();
+        }, 150);
+      } else {
+        existing.remove();
+        createNewOverlay();
+      }
+    } else {
+      createNewOverlay();
+    }
 
-    makeDraggable(overlay, canvasArea);
+    function createNewOverlay() {
+      if (!artwork || !room) return;
+
+      var overlay = document.createElement('div');
+      overlay.className = 'rv-artwork-overlay';
+      
+      var frameColor = 'transparent';
+      var frameWidth = 0;
+      if (frame && frame.id !== 'none') {
+        frameWidth = 8;
+        switch (frame.id) {
+          case 'black': frameColor = '#1a1a1a'; break;
+          case 'white': frameColor = '#ffffff'; break;
+          case 'wood': frameColor = '#8B4513'; break;
+          case 'gold': frameColor = ROOMVIBE_COLORS.gold; break;
+        }
+      }
+
+      var scale = 1.5;
+      var displayWidth = artwork.width * scale;
+      var displayHeight = artwork.height * scale;
+
+      overlay.style.cssText = [
+        'width: ' + displayWidth + 'px',
+        'height: ' + displayHeight + 'px',
+        'border: ' + frameWidth + 'px solid ' + frameColor,
+        'top: 50%',
+        'left: 50%',
+        'transform: translate(-50%, -60%)'
+      ].join(';');
+
+      overlay.innerHTML = '<img src="' + artwork.imageUrl + '" alt="' + artwork.title + '">';
+      canvasArea.appendChild(overlay);
+
+      setTimeout(function() {
+        overlay.classList.add('rv-visible');
+      }, 10);
+
+      makeDraggable(overlay, canvasArea);
+    }
+  }
+
+  function transitionRoom(roomImage, newSrc, callback) {
+    roomImage.classList.add('rv-transitioning');
+    
+    var img = new Image();
+    img.src = newSrc;
+    
+    var fadeOut = new Promise(function(resolve) {
+      setTimeout(resolve, 150);
+    });
+    
+    var imageLoad = new Promise(function(resolve) {
+      if (img.complete) {
+        resolve();
+      } else {
+        img.onload = resolve;
+        img.onerror = resolve;
+      }
+    });
+    
+    Promise.all([fadeOut, imageLoad]).then(function() {
+      roomImage.src = newSrc;
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          roomImage.classList.remove('rv-transitioning');
+          if (callback) callback();
+        });
+      });
+    });
   }
 
   function makeDraggable(element, container) {
     var isDragging = false;
     var startX, startY, initialLeft, initialTop;
+    var touchStartY = 0;
+    var touchMoved = false;
 
     element.addEventListener('mousedown', function(e) {
       isDragging = true;
@@ -609,7 +1064,9 @@
     element.addEventListener('touchstart', function(e) {
       if (e.touches.length !== 1) return;
       
-      isDragging = true;
+      touchStartY = e.touches[0].clientY;
+      touchMoved = false;
+      
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
       
@@ -617,24 +1074,32 @@
       var containerRect = container.getBoundingClientRect();
       initialLeft = rect.left - containerRect.left;
       initialTop = rect.top - containerRect.top;
-      
-      element.style.transform = 'none';
-      element.style.left = initialLeft + 'px';
-      element.style.top = initialTop + 'px';
     }, { passive: true });
 
-    document.addEventListener('touchmove', function(e) {
-      if (!isDragging || e.touches.length !== 1) return;
+    element.addEventListener('touchmove', function(e) {
+      if (e.touches.length !== 1) return;
       
       var dx = e.touches[0].clientX - startX;
       var dy = e.touches[0].clientY - startY;
       
-      element.style.left = (initialLeft + dx) + 'px';
-      element.style.top = (initialTop + dy) + 'px';
-    }, { passive: true });
+      if (!touchMoved && Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 8) {
+        return;
+      }
+      
+      if (Math.abs(dx) > 8 || touchMoved) {
+        touchMoved = true;
+        isDragging = true;
+        e.preventDefault();
+        
+        element.style.transform = 'none';
+        element.style.left = (initialLeft + dx) + 'px';
+        element.style.top = (initialTop + dy) + 'px';
+      }
+    }, { passive: false });
 
-    document.addEventListener('touchend', function() {
+    element.addEventListener('touchend', function() {
       isDragging = false;
+      touchMoved = false;
     });
   }
 
@@ -642,35 +1107,11 @@
     var overlay = document.createElement('div');
     overlay.className = 'rv-modal-overlay';
     
-    var featureMessages = {
-      'highResExport': {
-        title: 'High-Resolution Export',
-        text: 'Download stunning 3000px images perfect for print and professional presentations.'
-      },
-      'premiumRooms': {
-        title: 'Premium Room Library',
-        text: 'Access our full collection of beautifully designed room presets.'
-      },
-      'pdfExport': {
-        title: 'PDF Proposals',
-        text: 'Create professional PDF presentations for your clients.'
-      },
-      'exhibitionMode': {
-        title: 'Exhibition Mode',
-        text: 'Create virtual gallery exhibitions with multiple artworks.'
-      }
-    };
-
-    var message = featureMessages[feature] || {
-      title: 'Premium Feature',
-      text: 'This feature is available on higher subscription plans.'
-    };
-
     overlay.innerHTML = [
       '<div class="rv-modal rv-upgrade-modal">',
-      '  <div class="rv-upgrade-icon">' + createLockIcon() + '</div>',
-      '  <h3 class="rv-upgrade-title">' + message.title + '</h3>',
-      '  <p class="rv-upgrade-text">' + message.text + '<br><br>This feature is part of the <strong>' + requiredPlan + '</strong> plan. Upgrade now to unlock it!</p>',
+      '  <div class="rv-upgrade-icon">' + createIcon('lock') + '</div>',
+      '  <h3 class="rv-upgrade-title">Unlock Premium Tools</h3>',
+      '  <p class="rv-upgrade-text">This feature is part of the <strong>' + requiredPlan + '</strong> plan.<br>Upgrade now to access premium room library, high-resolution exports, and more!</p>',
       '  <div class="rv-upgrade-buttons">',
       '    <button type="button" class="rv-widget-btn rv-widget-btn-secondary rv-cancel-btn">Cancel</button>',
       '    <button type="button" class="rv-widget-btn rv-upgrade-btn">Upgrade Now</button>',
@@ -688,7 +1129,7 @@
       overlay.classList.remove('rv-visible');
       setTimeout(function() {
         if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-      }, 250);
+      }, 200);
     }
 
     overlay.querySelector('.rv-cancel-btn').addEventListener('click', closeModal);
@@ -699,6 +1140,100 @@
     overlay.addEventListener('click', function(e) {
       if (e.target === overlay) closeModal();
     });
+  }
+
+  function showInfoTooltip(button, userType) {
+    var existingTooltip = document.querySelector('.rv-tooltip');
+    if (existingTooltip) {
+      existingTooltip.remove();
+      return;
+    }
+
+    var tips = {
+      artist: [
+        'Drag artwork to reposition on the wall',
+        'Choose from different room presets',
+        'Add frames to your artwork',
+        'Download preview images'
+      ],
+      designer: [
+        'Access premium room library',
+        'Export high-resolution images',
+        'Create PDF proposals',
+        'Custom branding options'
+      ],
+      gallery: [
+        'Create virtual exhibitions',
+        'Showcase multiple artworks',
+        'Navigate with arrow keys',
+        'Export slideshows and PDFs'
+      ]
+    };
+
+    var currentTips = tips[userType] || tips.artist;
+    var tooltip = document.createElement('div');
+    tooltip.className = 'rv-tooltip';
+    tooltip.innerHTML = [
+      '<h4>Quick Tips</h4>',
+      '<ul>',
+      currentTips.map(function(tip) { return '<li>' + tip + '</li>'; }).join(''),
+      '</ul>'
+    ].join('');
+
+    button.parentNode.style.position = 'relative';
+    button.parentNode.appendChild(tooltip);
+
+    setTimeout(function() {
+      tooltip.classList.add('rv-visible');
+    }, 10);
+
+    document.addEventListener('click', function closeTooltip(e) {
+      if (!tooltip.contains(e.target) && e.target !== button) {
+        tooltip.classList.remove('rv-visible');
+        setTimeout(function() {
+          if (tooltip.parentNode) tooltip.remove();
+        }, 200);
+        document.removeEventListener('click', closeTooltip);
+      }
+    });
+  }
+
+  function createDropdown(button, items) {
+    var dropdown = document.createElement('div');
+    dropdown.className = 'rv-dropdown';
+    
+    button.parentNode.insertBefore(dropdown, button);
+    dropdown.appendChild(button);
+
+    var menu = document.createElement('div');
+    menu.className = 'rv-dropdown-menu';
+    
+    items.forEach(function(item) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'rv-dropdown-item' + (item.locked ? ' rv-locked' : '');
+      btn.innerHTML = item.icon + '<span>' + item.label + '</span>' + (item.locked ? createIcon('lock') : '');
+      btn.addEventListener('click', function() {
+        menu.classList.remove('rv-visible');
+        item.onClick();
+      });
+      menu.appendChild(btn);
+    });
+
+    dropdown.appendChild(menu);
+
+    button.addEventListener('click', function(e) {
+      e.stopPropagation();
+      menu.classList.toggle('rv-visible');
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!dropdown.contains(e.target)) {
+        menu.classList.remove('rv-visible');
+      }
+    });
+
+    return dropdown;
   }
 
   async function exportImage(canvasArea, highRes) {
@@ -768,7 +1303,7 @@
       }
 
       if (!highRes && widgetConfig && widgetConfig.userType === 'user') {
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
         ctx.fillRect(width - 320, height - 50, 310, 40);
         ctx.fillStyle = ROOMVIBE_COLORS.primary;
         ctx.font = 'bold 14px Inter, sans-serif';
@@ -787,52 +1322,118 @@
     }
   }
 
+  function getModeTitle(userType) {
+    var titles = {
+      artist: 'Preview in your room',
+      designer: 'Designer Studio',
+      gallery: 'Gallery View',
+      user: 'Preview in your room'
+    };
+    return titles[userType] || 'Preview in your room';
+  }
+
+  function getModeControls(userType, capabilities) {
+    var controls = {
+      left: [],
+      right: []
+    };
+
+    if (userType === 'artist' || userType === 'user') {
+      controls.left = [
+        { id: 'rooms', icon: createIcon('room'), label: 'Change Room', action: 'toggleRooms' },
+        { id: 'frames', icon: createIcon('frame'), label: 'Frame', action: 'toggleFrames' }
+      ];
+      controls.right = [
+        { id: 'download', icon: createIcon('download'), label: 'Download', action: 'download' }
+      ];
+      if (capabilities.buyButton) {
+        controls.right.push({ id: 'buy', icon: '', label: 'Buy Now', action: 'buy', primary: true });
+      }
+    } else if (userType === 'designer') {
+      controls.left = [
+        { id: 'rooms', icon: createIcon('building'), label: 'Premium Rooms', action: 'toggleRooms', premium: capabilities.premiumRooms },
+        { id: 'frames', icon: createIcon('frame'), label: 'Frame', action: 'toggleFrames' }
+      ];
+      controls.right = [
+        { id: 'export', icon: createIcon('download'), label: 'Export', action: 'showExportMenu', hasDropdown: true }
+      ];
+    } else if (userType === 'gallery') {
+      controls.left = [
+        { id: 'rooms', icon: createIcon('building'), label: 'Exhibition Rooms', action: 'toggleRooms' },
+        { id: 'artworks', icon: createIcon('gallery'), label: 'Artwork List', action: 'toggleArtworks' }
+      ];
+      controls.right = [
+        { id: 'export', icon: createIcon('file'), label: 'Export', action: 'showExportMenu', hasDropdown: true }
+      ];
+    }
+
+    return controls;
+  }
+
   function createWidgetModal(config) {
     widgetConfig = config;
+    currentFrame = 'none';
+    exhibitionIndex = 0;
 
     var overlay = document.createElement('div');
     overlay.className = 'rv-modal-overlay';
 
-    var modeLabel = config.userType.charAt(0).toUpperCase() + config.userType.slice(1);
-    var showBuyButton = config.capabilities.buyButton && config.data.artworks.length > 0;
+    var modeTitle = getModeTitle(config.userType);
+    var controls = getModeControls(config.userType, config.capabilities);
+    var isGalleryMode = config.userType === 'gallery';
 
     overlay.innerHTML = [
       '<div class="rv-modal">',
       '  <div class="rv-modal-header">',
-      '    <h2 class="rv-modal-title">',
-      '      ' + createRoomIcon(),
-      '      <span>RoomVibe Studio</span>',
-      '      <span style="font-size: 11px; background: ' + ROOMVIBE_COLORS.softGrey + '; padding: 3px 8px; border-radius: 4px; color: #6B7280;">' + modeLabel + ' Mode</span>',
-      '    </h2>',
-      '    <button type="button" class="rv-modal-close">&times;</button>',
+      '    <div class="rv-modal-header-left">',
+      '      <h2 class="rv-modal-title">' + modeTitle + '</h2>',
+      '    </div>',
+      '    <div class="rv-modal-header-right">',
+      '      <button type="button" class="rv-info-btn" aria-label="Help">' + createIcon('info') + '</button>',
+      '      <button type="button" class="rv-modal-close" aria-label="Close">' + createIcon('close') + '</button>',
+      '    </div>',
       '  </div>',
       '  <div class="rv-modal-body">',
-      '    <div class="rv-sidebar">',
-      '      <div class="rv-section">',
-      '        <h3 class="rv-section-title">Artworks</h3>',
-      '        <div class="rv-artwork-list"></div>',
-      '      </div>',
-      '      <div class="rv-section">',
-      '        <h3 class="rv-section-title">Room Presets</h3>',
-      '        <div class="rv-room-grid"></div>',
-      '      </div>',
-      '      <div class="rv-section">',
-      '        <h3 class="rv-section-title">Frame Style</h3>',
-      '        <div class="rv-frame-options"></div>',
-      '      </div>',
-      '    </div>',
       '    <div class="rv-main">',
       '      <div class="rv-canvas-area">',
       '        <img class="rv-room-image" src="" alt="Room preview">',
+      (isGalleryMode ? '        <button type="button" class="rv-exhibition-nav rv-prev" aria-label="Previous">' + createIcon('arrowLeft') + '</button>' : ''),
+      (isGalleryMode ? '        <button type="button" class="rv-exhibition-nav rv-next" aria-label="Next">' + createIcon('arrowRight') + '</button>' : ''),
+      (isGalleryMode ? '        <div class="rv-exhibition-counter">1 / 1</div>' : ''),
       '      </div>',
       '      <div class="rv-controls">',
-      '        <div style="display: flex; gap: 10px; flex-wrap: wrap;">',
-      '          <button type="button" class="rv-widget-btn rv-widget-btn-secondary rv-download-btn">' + createDownloadIcon() + ' Download</button>',
-      '          <button type="button" class="rv-widget-btn rv-widget-btn-premium rv-hires-btn">' + createDownloadIcon() + ' High-Res</button>',
-      '          <button type="button" class="rv-widget-btn rv-widget-btn-premium rv-pdf-btn">PDF Export</button>',
-      '        </div>',
-      (showBuyButton ? '        <button type="button" class="rv-widget-btn rv-buy-btn">Buy Now</button>' : ''),
+      '        <div class="rv-controls-left"></div>',
+      '        <div class="rv-controls-right"></div>',
       '      </div>',
+      '    </div>',
+      '    <div class="rv-sidebar">',
+      (isGalleryMode ? 
+        '      <div class="rv-section">' +
+        '        <h3 class="rv-section-title">Exhibition</h3>' +
+        '        <div class="rv-gallery-thumbs"></div>' +
+        '      </div>' +
+        '      <div class="rv-section">' +
+        '        <h3 class="rv-section-title">Exhibition Rooms</h3>' +
+        '        <div class="rv-room-grid"></div>' +
+        '      </div>' +
+        '      <div class="rv-section">' +
+        '        <h3 class="rv-section-title">Frame Style</h3>' +
+        '        <div class="rv-frame-options"></div>' +
+        '      </div>'
+        :
+        '      <div class="rv-section">' +
+        '        <h3 class="rv-section-title">Artworks</h3>' +
+        '        <div class="rv-artwork-list"></div>' +
+        '      </div>' +
+        '      <div class="rv-section">' +
+        '        <h3 class="rv-section-title">Room Presets</h3>' +
+        '        <div class="rv-room-grid"></div>' +
+        '      </div>' +
+        '      <div class="rv-section">' +
+        '        <h3 class="rv-section-title">Frame Style</h3>' +
+        '        <div class="rv-frame-options"></div>' +
+        '      </div>'
+      ),
       '    </div>',
       '  </div>',
       '</div>'
@@ -842,21 +1443,23 @@
 
     var modal = overlay.querySelector('.rv-modal');
     var closeBtn = overlay.querySelector('.rv-modal-close');
+    var infoBtn = overlay.querySelector('.rv-info-btn');
     var artworkList = overlay.querySelector('.rv-artwork-list');
     var roomGrid = overlay.querySelector('.rv-room-grid');
     var frameOptions = overlay.querySelector('.rv-frame-options');
     var canvasArea = overlay.querySelector('.rv-canvas-area');
     var roomImage = overlay.querySelector('.rv-room-image');
-    var downloadBtn = overlay.querySelector('.rv-download-btn');
-    var hiresBtn = overlay.querySelector('.rv-hires-btn');
-    var pdfBtn = overlay.querySelector('.rv-pdf-btn');
-    var buyBtn = overlay.querySelector('.rv-buy-btn');
+    var controlsLeft = overlay.querySelector('.rv-controls-left');
+    var controlsRight = overlay.querySelector('.rv-controls-right');
+    var exhibitionCounter = overlay.querySelector('.rv-exhibition-counter');
+    var prevBtn = overlay.querySelector('.rv-exhibition-nav.rv-prev');
+    var nextBtn = overlay.querySelector('.rv-exhibition-nav.rv-next');
 
     function closeModal() {
       overlay.classList.remove('rv-visible');
       setTimeout(function() {
         if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-      }, 250);
+      }, 200);
     }
 
     closeBtn.addEventListener('click', closeModal);
@@ -870,6 +1473,10 @@
       }
     });
 
+    infoBtn.addEventListener('click', function() {
+      showInfoTooltip(infoBtn, config.userType);
+    });
+
     var allArtworks = config.data.artworks || [];
     if (config.userType === 'gallery' && config.data.galleryScenes) {
       config.data.galleryScenes.forEach(function(scene) {
@@ -879,49 +1486,244 @@
       });
     }
 
-    renderArtworkList(artworkList, allArtworks, function(artwork) {
-      currentArtwork = artwork;
-      updateArtworkOverlay(canvasArea, currentArtwork, currentRoom, { id: currentFrame });
-    });
+    if (isGalleryMode) {
+      var galleryThumbs = overlay.querySelector('.rv-gallery-thumbs');
+      if (galleryThumbs) {
+        renderGalleryThumbnails(galleryThumbs, allArtworks, function(artwork, idx) {
+          currentArtwork = artwork;
+          exhibitionIndex = idx;
+          updateArtworkOverlay(canvasArea, currentArtwork, currentRoom, { id: currentFrame }, true);
+          if (exhibitionCounter) {
+            exhibitionCounter.textContent = (exhibitionIndex + 1) + ' / ' + allArtworks.length;
+          }
+        });
+      }
+    } else {
+      renderArtworkList(artworkList, allArtworks, function(artwork) {
+        currentArtwork = artwork;
+        updateArtworkOverlay(canvasArea, currentArtwork, currentRoom, { id: currentFrame }, true);
+      });
+    }
 
     renderRoomGrid(roomGrid, config.data.rooms || [], function(room) {
       currentRoom = room;
-      roomImage.src = BASE_URL + room.image;
-      updateArtworkOverlay(canvasArea, currentArtwork, currentRoom, { id: currentFrame });
+      transitionRoom(roomImage, BASE_URL + room.image, function() {
+        updateArtworkOverlay(canvasArea, currentArtwork, currentRoom, { id: currentFrame }, true);
+      });
     });
 
     renderFrameOptions(frameOptions, function(frame) {
       currentFrame = frame.id;
-      updateArtworkOverlay(canvasArea, currentArtwork, currentRoom, frame);
+      updateArtworkOverlay(canvasArea, currentArtwork, currentRoom, frame, false);
     });
 
-    downloadBtn.addEventListener('click', function() {
-      exportImage(canvasArea, false);
+    function handleAction(action) {
+      switch (action) {
+        case 'toggleRooms':
+          var roomSection = overlay.querySelector('.rv-room-grid').parentNode;
+          roomSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          break;
+        case 'toggleFrames':
+          var frameSection = overlay.querySelector('.rv-frame-options').parentNode;
+          frameSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          break;
+        case 'toggleArtworks':
+          var artSection = overlay.querySelector('.rv-artwork-list').parentNode;
+          artSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          break;
+        case 'download':
+          exportImage(canvasArea, false);
+          break;
+        case 'buy':
+          if (currentArtwork && currentArtwork.buyUrl) {
+            window.open(currentArtwork.buyUrl, '_blank');
+          } else {
+            alert('Buy link not available for this artwork.');
+          }
+          break;
+      }
+    }
+
+    controls.left.forEach(function(ctrl) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'rv-control-btn' + (ctrl.premium === false ? ' rv-premium' : '');
+      btn.innerHTML = ctrl.icon + '<span>' + ctrl.label + '</span>';
+      btn.addEventListener('click', function() {
+        handleAction(ctrl.action);
+      });
+      controlsLeft.appendChild(btn);
     });
 
-    hiresBtn.addEventListener('click', function() {
-      if (!config.capabilities.highResExport) {
-        showUpgradeModal('highResExport', 'Designer');
+    controls.right.forEach(function(ctrl) {
+      if (ctrl.hasDropdown) {
+        var dropdownBtn = document.createElement('button');
+        dropdownBtn.type = 'button';
+        dropdownBtn.className = 'rv-control-btn';
+        dropdownBtn.innerHTML = ctrl.icon + '<span>' + ctrl.label + '</span>' + createIcon('chevronDown');
+
+        var exportItems = [
+          { 
+            icon: createIcon('download'), 
+            label: 'Download PNG', 
+            locked: false, 
+            onClick: function() { exportImage(canvasArea, false); } 
+          },
+          { 
+            icon: createIcon('download'), 
+            label: 'High-Res PNG', 
+            locked: !config.capabilities.highResExport, 
+            onClick: function() { 
+              if (config.capabilities.highResExport) {
+                exportImage(canvasArea, true);
+              } else {
+                showUpgradeModal('highResExport', 'Designer or Gallery');
+              }
+            } 
+          },
+          { 
+            icon: createIcon('file'), 
+            label: 'PDF Export', 
+            locked: !config.capabilities.pdfExport, 
+            onClick: function() { 
+              if (config.capabilities.pdfExport) {
+                alert('PDF export coming soon!');
+              } else {
+                showUpgradeModal('pdfExport', 'Artist');
+              }
+            } 
+          }
+        ];
+
+        createDropdown(dropdownBtn, exportItems);
+        controlsRight.appendChild(dropdownBtn.parentNode);
       } else {
-        exportImage(canvasArea, true);
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'rv-control-btn' + (ctrl.primary ? ' rv-buy-btn' : '');
+        btn.innerHTML = ctrl.icon + '<span>' + ctrl.label + '</span>';
+        btn.addEventListener('click', function() {
+          handleAction(ctrl.action);
+        });
+        controlsRight.appendChild(btn);
       }
     });
 
-    pdfBtn.addEventListener('click', function() {
-      if (!config.capabilities.pdfExport) {
-        showUpgradeModal('pdfExport', 'Artist');
-      } else {
-        alert('PDF export coming soon!');
-      }
-    });
+    if (isGalleryMode && allArtworks.length > 0) {
+      exhibitionCounter.textContent = '1 / ' + allArtworks.length;
+      var isAnimating = false;
 
-    if (buyBtn && currentArtwork) {
-      buyBtn.addEventListener('click', function() {
-        var url = currentArtwork && currentArtwork.buyUrl;
-        if (url) {
-          window.open(url, '_blank');
+      function navigateExhibition(direction) {
+        if (isAnimating || allArtworks.length <= 1) return;
+        isAnimating = true;
+
+        var oldIndex = exhibitionIndex;
+        if (direction === 'prev') {
+          exhibitionIndex = exhibitionIndex === 0 ? allArtworks.length - 1 : exhibitionIndex - 1;
         } else {
-          alert('Buy link not available for this artwork.');
+          exhibitionIndex = exhibitionIndex === allArtworks.length - 1 ? 0 : exhibitionIndex + 1;
+        }
+        
+        var currentOverlay = canvasArea.querySelector('.rv-artwork-overlay');
+        if (currentOverlay) {
+          currentOverlay.classList.add(direction === 'prev' ? 'rv-slide-exit-right' : 'rv-slide-exit-left');
+          currentOverlay.classList.remove('rv-visible');
+        }
+        
+        setTimeout(function() {
+          if (currentOverlay && currentOverlay.parentNode) {
+            currentOverlay.remove();
+          }
+          
+          currentArtwork = allArtworks[exhibitionIndex];
+          updateArtworkOverlayWithSlide(canvasArea, currentArtwork, currentRoom, { id: currentFrame }, direction);
+          exhibitionCounter.textContent = (exhibitionIndex + 1) + ' / ' + allArtworks.length;
+
+          artworkList.querySelectorAll('.rv-artwork-item').forEach(function(el, idx) {
+            el.classList.toggle('rv-selected', idx === exhibitionIndex);
+          });
+          
+          var galleryThumbs = overlay.querySelectorAll('.rv-gallery-thumb');
+          galleryThumbs.forEach(function(thumb, idx) {
+            thumb.classList.toggle('rv-selected', idx === exhibitionIndex);
+          });
+          
+          setTimeout(function() {
+            isAnimating = false;
+          }, 150);
+        }, 150);
+      }
+
+      function updateArtworkOverlayWithSlide(canvasArea, artwork, room, frame, direction) {
+        if (!artwork || !room) return;
+
+        var overlay = document.createElement('div');
+        overlay.className = 'rv-artwork-overlay';
+        overlay.classList.add(direction === 'prev' ? 'rv-slide-enter-left' : 'rv-slide-enter-right');
+        
+        var frameColor = 'transparent';
+        var frameWidth = 0;
+        if (frame && frame.id !== 'none') {
+          frameWidth = 8;
+          switch (frame.id) {
+            case 'black': frameColor = '#1a1a1a'; break;
+            case 'white': frameColor = '#ffffff'; break;
+            case 'wood': frameColor = '#8B4513'; break;
+            case 'gold': frameColor = ROOMVIBE_COLORS.gold; break;
+          }
+        }
+
+        var scale = 1.5;
+        var displayWidth = artwork.width * scale;
+        var displayHeight = artwork.height * scale;
+
+        overlay.style.cssText = [
+          'width: ' + displayWidth + 'px',
+          'height: ' + displayHeight + 'px',
+          'border: ' + frameWidth + 'px solid ' + frameColor,
+          'top: 50%',
+          'left: 50%',
+          'transform: translate(-50%, -60%)'
+        ].join(';');
+
+        overlay.innerHTML = '<img src="' + artwork.imageUrl + '" alt="' + artwork.title + '">';
+        canvasArea.appendChild(overlay);
+
+        requestAnimationFrame(function() {
+          requestAnimationFrame(function() {
+            overlay.classList.remove('rv-slide-enter-left', 'rv-slide-enter-right');
+            overlay.classList.add('rv-visible');
+          });
+        });
+
+        makeDraggable(overlay, canvasArea);
+      }
+
+      prevBtn.addEventListener('click', function() { navigateExhibition('prev'); });
+      nextBtn.addEventListener('click', function() { navigateExhibition('next'); });
+
+      document.addEventListener('keydown', function navHandler(e) {
+        if (!document.body.contains(overlay)) {
+          document.removeEventListener('keydown', navHandler);
+          return;
+        }
+        if (e.key === 'ArrowLeft') navigateExhibition('prev');
+        if (e.key === 'ArrowRight') navigateExhibition('next');
+      });
+
+      var touchStartX = 0;
+      var touchStartTime = 0;
+      canvasArea.addEventListener('touchstart', function(e) {
+        touchStartX = e.touches[0].clientX;
+        touchStartTime = Date.now();
+      }, { passive: true });
+
+      canvasArea.addEventListener('touchend', function(e) {
+        var touchEndX = e.changedTouches[0].clientX;
+        var touchDuration = Date.now() - touchStartTime;
+        var diff = touchStartX - touchEndX;
+        if (Math.abs(diff) > 50 && touchDuration < 500) {
+          navigateExhibition(diff > 0 ? 'next' : 'prev');
         }
       });
     }
@@ -944,7 +1746,7 @@
     var button = document.createElement('button');
     button.type = 'button';
     button.className = 'rv-widget-btn';
-    button.innerHTML = createRoomIcon() + '<span>' + buttonText + '</span>';
+    button.innerHTML = createIcon('room') + '<span>' + buttonText + '</span>';
 
     button.addEventListener('click', async function(e) {
       e.preventDefault();
@@ -1009,7 +1811,7 @@
   if (typeof window.RoomVibeWidget === 'undefined') {
     window.RoomVibeWidget = {
       init: init,
-      version: '2.0.0'
+      version: '2.1.0'
     };
   }
 

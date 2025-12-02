@@ -55,8 +55,15 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
   - **Widget Config API**: `GET /api/widget/config?widgetId=XXX` returns user type, entitlements, capabilities, and data (artworks, rooms, gallery scenes).
   - **Three Modes**: Artist (artwork preview, Buy Now button), Designer (premium rooms, high-res exports), Gallery (multi-artwork exhibitions).
   - **Capabilities**: Determined by entitlements - premiumRooms, highResExport, multiArtwork, exhibitionMode, buyButton, pdfExport, frames, customBranding.
-  - **Widget UI**: Modal-based with room preview, artwork selection, frame picker, drag-to-move positioning, and export buttons.
-  - **Upgrade Modal**: Shown when users attempt to use locked features.
+  - **Widget UI/UX (Updated)**: Modal-based with RoomVibe branding, mode-specific layouts and controls.
+    - **Layout**: Canvas left (70-80%), sidebar right (20-30%) on desktop; stacked on mobile with 70vh canvas height.
+    - **Mode-specific controls**: Artist (Change Room, Frame, Download, Buy Now), Designer (Premium Rooms, Frame, Export dropdown), Gallery (Exhibition Rooms, Artwork List, Export dropdown).
+    - **Gallery mode**: Horizontal thumbnail carousel in sidebar, exhibition navigation arrows, slide enter/exit animations (150ms), swipe and keyboard navigation.
+    - **Animations**: 200ms fade-in for modal/elements, 150ms room transitions with Promise-based timing, slide animations for gallery navigation.
+    - **Touch handling**: Vertical scroll allowed when dy > dx, horizontal drag for artwork repositioning.
+    - **Icons**: 18px size, 1.75px stroke width (lucide-style).
+    - **Info tooltip**: Quick tips per mode accessible from header.
+  - **Upgrade Modal**: "Unlock Premium Tools" title with gold lock icon, shown when users attempt locked features.
   - **Embed Code**: `<script src="https://domain/widget.js" data-widget-id="TOKEN"></script>`
 - **Gallery Exhibition Page**: Public route (`#/exhibition/:widgetId`) for viewing published gallery collections. Features slideshow navigation, artwork details, purchase links, and responsive design.
 - **Feature Locking by Plan**: Plan-based access control enforced on both backend (API) and frontend (UI).
