@@ -1,0 +1,245 @@
+# TASK: Pricing Page (Modular Plans) – Full UI/UX Implementation
+
+## GOAL
+Create a clean, modern, modular Pricing Page that clearly presents:
+- Artist Plan (€9/mo)
+- Designer Plan (€29/mo)
+- Gallery Plan (€49/mo)
+- All-Access Plan (€79/mo or €59–69 promo)
+- The ability to stack plans additively
+- Feature comparison
+- Upgrade buttons with entitlement logic
+
+This pricing page will be used for onboarding and upgrades inside the dashboard.
+
+====================================================================
+# 1) PAGE STRUCTURE
+
+The Pricing Page must contain *four pricing cards* in one responsive layout.
+
+## ORDER OF CARDS (left → right):
+1. **Artist Plan – €9/mo**
+2. **Designer Plan – €29/mo**
+3. **Gallery Plan – €49/mo**
+4. **All-Access Plan – €79/mo** (recommended plan → highlight badge)
+
+Desktop: 4-column layout  
+Mobile: Stack vertically
+
+---
+
+====================================================================
+# 2) CARD DESIGN (ALL PLANS)
+
+### CARD STYLE
+```
+background: white;
+border: 1.5px solid #DDE1E7;
+border-radius: 12px;
+padding: 26px;
+box-shadow: 0px 4px 10px rgba(0,0,0,0.04);
+display: flex;
+flex-direction: column;
+gap: 16px;
+```
+
+### HEADER (plan name + price)
+```
+font-size: 20px;
+font-weight: 600;
+color: #283593;
+```
+
+Price style:
+```
+font-size: 24px;
+font-weight: 700;
+margin-top: 4px;
+```
+
+### FEATURE LIST
+Use lucide “check-circle” icons.
+
+Example row:
+```
+[✓] High-resolution export
+```
+
+Feature text style:
+```
+font-size: 15px;
+color: #4A5A7F;
+line-height: 1.5;
+```
+
+Spacing between features: **10px**
+
+---
+
+====================================================================
+# 3) INDIVIDUAL PLAN CONTENT
+
+## ARTIST PLAN (€9/mo)
+- Upload up to 50 artworks  
+- Standard rooms  
+- Basic Download export  
+- Frame styling controls  
+- Widget embed  
+- Buy button integration (Shopify, WooCommerce, Wix, etc.)
+
+Button:
+```
+[ Activate Artist Plan ]
+```
+
+If already active:
+```
+✓ Active
+```
+Primary blue badge.
+
+---
+
+## DESIGNER PLAN (€29/mo)
+- All Artist features +
+- Premium mockup rooms  
+- High-resolution export (3000px+)  
+- PDF export  
+- Designer Studio tools  
+- Mockup downloads  
+- Unlimited previews  
+
+Button:
+```
+[ Unlock Designer Tools ]
+```
+
+If active → “✓ Active”
+
+---
+
+## GALLERY PLAN (€49/mo)
+- Multi-art wall presentations  
+- Virtual exhibition rooms  
+- Gallery Hub  
+- Exhibition PDF export  
+- Public exhibition share links  
+
+Button:
+```
+[ Unlock Gallery Tools ]
+```
+
+If active → “✓ Active”
+
+---
+
+## ALL-ACCESS PLAN (€79/mo)  
+*(or €59–69 intro price)*
+
+Highlight as *Recommended Plan*:
+Use a gold badge:
+```
+RECOMMENDED
+background: #D8B46A;
+color: white;
+font-size: 12px;
+font-weight: 600;
+padding: 4px 10px;
+border-radius: 100px;
+```
+
+Includes:
+- Artist Module  
+- Designer Module  
+- Gallery Module  
+- All premium features  
+- Best price for full-time professionals  
+
+Button:
+```
+[ Upgrade to All-Access ]
+```
+
+If active → “✓ Active – All Modules Unlocked”
+
+---
+
+====================================================================
+# 4) UPGRADE LOGIC (FRONTEND ONLY)
+
+Buttons must trigger:
+```
+openUpgradeModal("artist" | "designer" | "gallery" | "allaccess")
+```
+
+If plan already active:
+- button becomes disabled  
+- shows badge: “✓ Active”  
+
+If user has partial entitlements:
+Example:
+User has Artist access → Designer card shows “Unlock Designer Tools”
+
+---
+
+====================================================================
+# 5) COMPARISON TABLE (OPTIONAL BLOCK)
+
+Below cards, add one clean comparison table:
+
+Columns: Artist | Designer | Gallery | All-Access  
+Rows:  
+- Artwork upload limit  
+- Premium rooms  
+- High-resolution export  
+- PDF export  
+- Virtual exhibitions  
+- Widget embed  
+- Buy button  
+- Public gallery pages  
+
+Use checkmarks (✓) and dashes (—).
+
+Make table responsive.
+
+---
+
+====================================================================
+# 6) MOBILE RESPONSIVE RULES
+
+On mobile:
+- Cards stack vertically  
+- Buttons stretch to full width  
+- Reduce card padding to 20px  
+- Keep recommended badge visible  
+
+Spacing:
+```
+margin-bottom: 22px;
+```
+
+---
+
+====================================================================
+# 7) STOP CONDITIONS
+
+Pricing Page is complete when:
+
+✓ Four pricing cards appear with correct layout  
+✓ Artist/Designer/Gallery/All-Access plans are visually distinct  
+✓ Recommended badge visible on All-Access  
+✓ Upgrade buttons open correct modal  
+✓ Active plans display “✓ Active” badge  
+✓ Feature lists readable and consistent  
+✓ Comparison table displays correctly  
+✓ Mobile layout clean and stacked  
+✓ No outdated pricing elements remain  
+
+---
+
+====================================================================
+# 8) NOTES
+- No backend logic changes — this is a UI-level implementation only.  
+- Stripe billing logic already handled by entitlements & webhook.  
+- Focus on premium visual quality.  
