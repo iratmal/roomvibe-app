@@ -354,6 +354,15 @@ export function UnifiedDashboard() {
                 <div className="text-xs">{user?.effectivePlan || user?.subscriptionPlan || 'Free'} Plan</div>
               </div>
               <a
+                href="#/studio"
+                className="flex items-center gap-2 px-3 py-2 text-sm text-white bg-[#283593] hover:bg-[#1a237e] rounded-lg transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span>Open Studio</span>
+              </a>
+              <a
                 href="#/pricing"
                 className="flex items-center gap-2 px-3 py-2 text-sm text-rv-accent hover:bg-rv-surface rounded-lg transition-colors"
               >
@@ -364,6 +373,15 @@ export function UnifiedDashboard() {
               </a>
             </>
           )}
+          <a
+            href="#/studio"
+            className={`flex items-center gap-2 px-3 py-2 text-sm text-white bg-[#283593] hover:bg-[#1a237e] rounded-lg transition-colors ${sidebarOpen ? 'hidden' : 'justify-center'}`}
+            title="Open Studio"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </a>
           <button
             onClick={logout}
             className={`flex items-center gap-2 px-3 py-2 text-sm text-rv-textMuted hover:text-rv-text hover:bg-rv-surface rounded-lg transition-colors ${sidebarOpen ? 'w-full' : 'justify-center'}`}

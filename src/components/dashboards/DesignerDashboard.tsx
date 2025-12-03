@@ -18,7 +18,7 @@ interface Project {
 }
 
 export function DesignerDashboard() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -145,26 +145,34 @@ export function DesignerDashboard() {
       <ImpersonationBanner />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16">
-        {/* Open Studio CTA Button */}
-        <a
-          href="#/studio"
-          className="mb-8 flex items-center justify-center gap-2 w-full sm:w-auto sm:inline-flex px-6 py-3.5 bg-[#283593] text-white font-semibold rounded-xl hover:bg-[#1a237e] transition-all shadow-lg shadow-[#283593]/25"
-          style={{ fontFamily: 'Inter, sans-serif' }}
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          Open Studio
-        </a>
-
-        {/* Header Section with warm grey background */}
-        <div className="mb-12 pb-8 border-b border-slate-200">
-          <h1 className="text-4xl md:text-5xl font-semibold mb-3 text-[#283593] tracking-tight" style={{ fontFamily: 'Inter, sans-serif' }}>
-            Designer Dashboard
-          </h1>
-          <p className="text-lg text-slate-500" style={{ fontFamily: 'Inter, sans-serif' }}>
-            Create client projects and generate room visualizations.
-          </p>
+        {/* Header Section */}
+        <div className="flex justify-between items-start mb-12 pb-8 border-b border-slate-200">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-semibold mb-3 text-[#283593] tracking-tight" style={{ fontFamily: 'Inter, sans-serif' }}>
+              Designer Dashboard
+            </h1>
+            <p className="text-lg text-slate-500" style={{ fontFamily: 'Inter, sans-serif' }}>
+              Create client projects and generate room visualizations.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <a
+              href="#/studio"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#283593] text-white text-sm font-semibold rounded-lg hover:bg-[#1a237e] transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span className="hidden sm:inline">Open Studio</span>
+              <span className="sm:hidden">Studio</span>
+            </a>
+            <button
+              onClick={logout}
+              className="px-4 py-2.5 text-sm font-semibold border-2 border-rv-neutral rounded-lg hover:bg-rv-surface transition-colors text-rv-text"
+            >
+              Logout
+            </button>
+          </div>
         </div>
 
         {error && (
