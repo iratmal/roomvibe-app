@@ -569,12 +569,12 @@ function WidgetEmbedSection() {
       ) : (
         <div className="mt-4 space-y-4">
           <div className="relative">
-            <pre className="bg-rv-surface border border-rv-neutral rounded-lg p-4 pr-20 text-[13px] leading-relaxed overflow-x-auto text-rv-text font-mono whitespace-pre-wrap break-all">
+            <pre className="bg-rv-surface border border-rv-neutral rounded-lg p-4 pr-24 sm:pr-20 text-[12px] sm:text-[13px] leading-relaxed overflow-x-auto text-rv-text font-mono whitespace-pre-wrap break-all">
               {embedCode}
             </pre>
             <button
               onClick={copyToClipboard}
-              className="absolute right-2 top-1/2 -translate-y-1/2 h-8 px-3 text-[13px] font-medium rounded-md bg-rv-primary text-white hover:bg-rv-primaryHover transition-colors z-10"
+              className="absolute right-2 top-1/2 -translate-y-1/2 h-9 sm:h-8 px-3 text-[13px] font-medium rounded-md bg-rv-primary text-white hover:bg-rv-primaryHover transition-colors z-10 min-w-[70px]"
             >
               {copied ? 'Copied!' : 'Copy'}
             </button>

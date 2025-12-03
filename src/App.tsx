@@ -631,17 +631,17 @@ function StudioHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-rv-neutral bg-white/80 backdrop-blur">
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-        <div className="flex h-20 md:h-24 items-center justify-between">
+        <div className="flex h-16 sm:h-20 md:h-24 items-center justify-between">
           <a href="#/" className="flex items-center">
             <img 
               src="/roomvibe-logo-transparent.png" 
               alt="RoomVibe" 
-              className="h-16 md:h-20 w-auto"
+              className="h-12 sm:h-16 md:h-20 w-auto"
             />
           </a>
           <a
             href="#/dashboard"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 bg-[#283593] text-white text-[13px] md:text-sm font-medium rounded-md md:rounded-lg hover:bg-[#1e2a6e] transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 bg-[#283593] text-white text-[13px] md:text-sm font-medium rounded-md md:rounded-lg hover:bg-[#1e2a6e] transition-colors min-h-[44px] sm:min-h-0"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
               <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -1875,9 +1875,10 @@ function Studio() {
                           setShowComingSoonModal(true);
                         }
                       }}
-                      className={`group relative overflow-hidden rounded-rvMd border ${
-                        isLocked ? "border-rv-neutral/40 opacity-60" : "border-rv-neutral hover:border-[#D8B46A]/60"
-                      } bg-white shadow-sm hover:shadow-md transition-all`}
+                      className={`group relative overflow-hidden rounded-rvMd bg-white shadow-sm hover:shadow-md transition-all ${
+                        isLocked ? "opacity-70" : ""
+                      }`}
+                      style={{ border: isLocked ? '1.5px solid #D8B46A' : '1px solid #DDE1E7' }}
                     >
                       <div className="h-20 w-full bg-gradient-to-br from-[#F7F3EE] to-[#E8E4DF] flex items-center justify-center">
                         <div className="text-[#D8B46A]/30">
@@ -1889,10 +1890,10 @@ function Studio() {
                         </div>
                       </div>
                       
-                      {/* Locked overlay */}
+                      {/* Locked overlay with gold-styled lock */}
                       {isLocked && (
-                        <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
-                          <div className="bg-rv-textMuted/80 rounded-full p-1.5">
+                        <div className="absolute top-2 right-2">
+                          <div className="bg-[#D8B46A] rounded-full p-1.5 shadow-sm">
                             <svg className="h-3 w-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                               <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                               <path d="M7 11V7a5 5 0 0 1 10 0v4" />
@@ -1901,8 +1902,8 @@ function Studio() {
                         </div>
                       )}
                       
-                      <div className={`absolute bottom-0 left-0 right-0 px-2 py-1 text-[10px] font-medium ${
-                        isLocked ? "bg-gray-400/70 text-white" : "bg-gradient-to-t from-[#D8B46A]/80 to-[#D8B46A]/60 text-white"
+                      <div className={`absolute bottom-0 left-0 right-0 px-2 py-1.5 text-[10px] font-medium ${
+                        isLocked ? "bg-[#283593]/80 text-white" : "bg-gradient-to-t from-[#D8B46A]/80 to-[#D8B46A]/60 text-white"
                       }`}>
                         {room.name}
                       </div>
@@ -2311,15 +2312,15 @@ function Studio() {
 
             <div>
               <div className="text-xs font-semibold text-rv-textMuted uppercase tracking-wide mb-3">Frame</div>
-              <div className="grid grid-cols-2 gap-2 text-xs max-h-[240px] overflow-y-auto pr-1">
+              <div className="grid grid-cols-2 gap-2.5 text-xs max-h-[240px] overflow-y-auto pr-1">
               {FRAME_STYLES.map((frame) => (
                 <button
                   key={frame.id}
                   onClick={() => setFrameStyle(frame.id)}
-                  className={`rounded-rvMd border px-2.5 py-2 font-medium transition-all text-left ${
+                  className={`rounded-rvMd border px-3 py-2.5 font-medium transition-all text-left min-h-[44px] flex items-center ${
                     frameStyle === frame.id
                       ? "border-rv-primary bg-rv-primary/5 text-rv-primary ring-1 ring-rv-primary/20"
-                      : "border-rv-neutral bg-white text-rv-text hover:bg-rv-surface hover:border-rv-neutral"
+                      : "border-rv-neutral bg-white text-rv-text hover:bg-rv-surface hover:border-rv-primary/30"
                   }`}
                 >
                   {frame.label}
@@ -2395,12 +2396,13 @@ function Studio() {
                 </p>
               </div>
               
-              {/* PDF Export - Text Link Style */}
+              {/* PDF Export - Styled Button */}
               <div className="space-y-1">
                 <button
                   onClick={exportToPdf}
                   disabled={isExporting}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-[#283593] transition-all disabled:opacity-50 hover:underline"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white rounded-lg text-sm font-medium text-[#283593] transition-all disabled:opacity-50 hover:bg-[rgba(40,53,147,0.06)]"
+                  style={{ border: '1.5px solid #D8B46A' }}
                 >
                   {isExporting && exportType === 'pdf' ? (
                     <svg className="w-[18px] h-[18px] animate-spin" fill="none" viewBox="0 0 24 24">

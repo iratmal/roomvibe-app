@@ -1,0 +1,187 @@
+# TASK 5: FINAL STUDIO POLISH  
+### Final UI/UX adjustments for Studio (desktop + mobile)
+
+## GOAL
+Finish polishing the Studio interface to align with RoomVibe’s premium SaaS visual identity.  
+This task focuses ONLY on UI/UI polish — no logic changes.
+
+====================================================================
+# 1) REPOSITION HEADER ELEMENTS (Studio Header Polish)
+
+## A) Move Logo Left, Back-to-Dashboard Button Right
+Current:
+[Back to Dashboard] ............ RoomVibe Logo
+
+Required:
+RoomVibe Logo ................................ [Back to Dashboard]
+
+### Desktop:
+```
+display: flex;
+justify-content: space-between;
+align-items: center;
+```
+
+### Mobile:
+Center logo  
+Below or above → `[← Dashboard]` button  
+Smaller sizing:
+```
+padding: 6px 12px;
+font-size: 13px;
+```
+
+====================================================================
+# 2) FIX COPY BUTTON OVERLAP IN EMBED CODE FIELD (MOBILE + DESKTOP)
+
+Issue:
+Copy button overlaps the embed script text in the input field.
+
+Fix:
+- Add right padding to input:
+```
+padding-right: 60px !important;
+```
+- Position copy button properly:
+```
+position: absolute;
+right: 8px;
+top: 50%;
+transform: translateY(-50%);
+```
+- Parent container requires:
+```
+position: relative;
+```
+
+Stop condition:
+✓ No overlapping  
+✓ Button aligned right  
+✓ Text always readable  
+
+====================================================================
+# 3) EXPORT PANEL POLISH (NAVY TEXT + GOLD BORDERS)
+
+## A) High-Resolution Download button  
+Apply:
+```
+border: 1.5px solid #D8B46A !important;
+color: #283593 !important;
+font-weight: 500;
+```
+
+## B) Unlock High-Resolution CTA  
+Apply same styling:
+```
+border: 1.5px solid #D8B46A !important;
+color: #283593 !important;
+```
+
+## C) PDF Export  
+Increase readability:
+```
+font-weight: 500;
+color: #283593;
+```
+
+Stop condition:
+✓ All premium buttons readable  
+✓ Gold borders visible on desktop & mobile  
+✓ No yellow or legacy text anywhere  
+
+====================================================================
+# 4) REMOVE LEGACY ELEMENTS (MOBILE ONLY)
+
+Issue:
+Mobile view still shows old tiny yellow text:
+“Unlock High Resolution Export Upgrade”
+
+Fix:
+- Identify legacy `<p>`, `<small>`, or `<span>` element  
+- Remove OR hide:
+```
+display: none !important;
+```
+Stop condition:
+✓ No legacy yellow text on any device  
+
+====================================================================
+# 5) MOBILE EXPORT PANEL SPACING & ORDER FIX
+
+Correct order must be:
+
+1. EXPORT (section label)  
+2. Download  
+3. High-Resolution Download  
+4. PDF Export  
+5. Unlock CTA (if locked)  
+6. View & Buy (if Artist plan)
+
+Spacing:
+```
+margin-top: 16px;
+margin-bottom: 12px;
+button gap: 12px;
+```
+
+Stop condition:
+✓ No duplicated buttons  
+✓ Clean vertical spacing  
+✓ Consistent order on all devices  
+
+====================================================================
+# 6) MOBILE SCROLL + INTERACTION POLISH
+
+Ensure:
+- Vertical scroll always works inside Studio  
+- Editing artwork does NOT block scroll  
+- Pinch-to-zoom works on artwork and rooms  
+- Studio canvas maintains ~70vh height on mobile  
+
+Fix (where needed):
+```
+touch-action: pan-y;
+overflow-y: auto;
+```
+
+Stop condition:
+✓ User can freely scroll Studio on mobile  
+✓ No scroll lock bugs  
+
+====================================================================
+# 7) GENERAL VISUAL POLISH
+
+### A) Frame Selector Bar  
+- Center icons  
+- Add 6px spacing  
+- Increase click area for mobile
+
+### B) Room Selector Carousel  
+- Smooth scroll  
+- Proper padding  
+- Clear active state highlight
+
+### C) Premium Room Lock State  
+- Gold border  
+- Navy text  
+- Lock icon right-aligned  
+
+====================================================================
+# 8) STOP CONDITIONS — TASK COMPLETE WHEN:
+
+✓ Header layout corrected (logo left, button right)  
+✓ Copy button never overlaps text  
+✓ High-Res + Unlock buttons use navy text + gold borders  
+✓ PDF Export styling improved  
+✓ Legacy yellow text removed (mobile)  
+✓ Export panel has correct order, spacing, and readability  
+✓ Mobile scroll fully functional  
+✓ Frame & room selectors polished  
+✓ No visual bugs remain in Studio  
+
+====================================================================
+# 9) NOTES
+- Do NOT change export logic  
+- Do NOT modify entitlements  
+- UI/UX polish only  
+- Keep current component structure  
