@@ -1,0 +1,115 @@
+# TASK: Replace Text Link With Blue Button → "Back to Dashboard" (Studio Header)
+
+## GOAL
+Improve navigation clarity and UI consistency by replacing the existing text link
+("← Back to Home") with a **primary blue button** labeled **"← Back to Dashboard"**.
+
+This creates a clear, premium, and consistent navigation element across Studio.
+
+---
+
+# REQUIRED CHANGES
+
+## 1) Remove the existing text link
+Remove or hide the current inline navigation:
+
+`← Back to Home`
+
+---
+
+## 2) Add a primary blue button labeled "← Back to Dashboard"
+
+Button style (match existing primary buttons):
+
+```
+background: #283593;       /* RoomVibe Navy */
+color: #FFFFFF;
+font-size: 14px;
+font-weight: 500;
+padding: 8px 16px;
+border-radius: 8px;
+display: inline-flex;
+align-items: center;
+gap: 6px;
+cursor: pointer;
+border: none;
+```
+
+**Icon:**  
+Use lucide-react `arrow-left`  
+- size: 16px  
+- stroke: 1.75px  
+- color: white  
+
+---
+
+## 3) Placement in header
+
+Position the button:
+
+- top-left section of Studio header  
+- aligned vertically with the Studio title  
+- consistent spacing (same margin-left as original text link)
+
+Example layout:
+
+```
+[← Back to Dashboard]         RoomVibe Studio
+```
+
+On mobile:
+
+```
+[← Dashboard]
+(RoomVibe Studio centered)
+```
+
+---
+
+## 4) Navigation behavior
+
+On click → redirect to:
+
+```
+/dashboard
+```
+
+No other change to routing logic.
+
+---
+
+## 5) Mobile responsiveness
+
+For screens under 768px:
+
+- button becomes slightly smaller:
+```
+padding: 6px 12px;
+font-size: 13px;
+border-radius: 6px;
+```
+
+- optionally shorten label to:
+`← Dashboard`
+
+Keep the same blue styling.
+
+---
+
+# STOP CONDITIONS
+
+Task is complete when:
+
+✓ Text link is fully replaced with a blue button  
+✓ Button matches RoomVibe primary button style  
+✓ Arrow icon appears correctly  
+✓ Button redirects to `/dashboard`  
+✓ Mobile version uses the same button (or shortened label)  
+✓ Layout remains clean and aligned on all screen sizes  
+
+---
+
+# NOTES
+
+- Do not modify other navigation items.  
+- This is purely a visual and UX polish task.  
