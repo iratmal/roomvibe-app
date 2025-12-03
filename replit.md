@@ -31,6 +31,13 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
     - **Gallery Dashboard**: Collection management for online exhibitions.
     - All non-admin users access a unified dashboard with sidebar navigation and module-specific content. Sidebar features grouped sections (Artist Tools, Designer Tools, Gallery Tools), locked modules show "Upgrade to unlock X Tools" subtext, and uses polished spacing (12px 18px padding, 20px icons, 10px gaps).
 - **Stripe Subscriptions**: Full integration for four plans (Free, Artist, Designer, Gallery) handling checkout, customer portal, and webhook events to manage user roles and entitlements.
+- **Pricing Page**: Modular pricing page (`#/pricing`) with 4 plan cards:
+    - **Artist** (€9/mo): Standard rooms, widget embed, buy button integration.
+    - **Designer** (€29/mo): Premium rooms, high-res export, PDF export, Designer Studio.
+    - **Gallery** (€49/mo): Virtual exhibitions, Gallery Hub, multi-art walls.
+    - **All-Access** (€79/mo): All modules included with RECOMMENDED gold badge (#D8B46A).
+    - Feature comparison table with checkmarks and dashes.
+    - Entitlement-based Active badges shown above disabled buttons when plan is active.
 - **Billing Page**: Dedicated billing management page (`#/billing`) with 3-section layout:
     - **Active Modules**: Blue pill cards showing current entitlements (background #E8EBF7, border-left #283593).
     - **Available Plans**: Gold-bordered upgrade cards (1.5px solid #D8B46A) with feature lists for locked modules.
