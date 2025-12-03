@@ -31,6 +31,10 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
     - **Gallery Dashboard**: Collection management for online exhibitions.
     - All non-admin users access a unified dashboard with sidebar navigation and module-specific content. Sidebar features grouped sections (Artist Tools, Designer Tools, Gallery Tools), locked modules show "Upgrade to unlock X Tools" subtext, and uses polished spacing (12px 18px padding, 20px icons, 10px gaps).
 - **Stripe Subscriptions**: Full integration for four plans (Free, Artist, Designer, Gallery) handling checkout, customer portal, and webhook events to manage user roles and entitlements.
+- **Billing Page**: Dedicated billing management page (`#/billing`) with 3-section layout:
+    - **Active Modules**: Blue pill cards showing current entitlements (background #E8EBF7, border-left #283593).
+    - **Available Plans**: Gold-bordered upgrade cards (1.5px solid #D8B46A) with feature lists for locked modules.
+    - **Billing Management**: Navy "Manage Billing" button (Stripe portal) and navy-outline "View All Plans" button.
 - **Multi-Entitlement System**: Users can accumulate and retain access to multiple modules (Artist, Designer, Gallery) via subscriptions. Entitlements are additively granted and revoked upon subscription changes. Admin users automatically possess all entitlements.
 - **Unified Widget System**: A single embeddable JavaScript widget (`public/widget.js`) that dynamically adapts its functionality (Artist, Designer, Gallery modes) based on the user's entitlements. The widget is modal-based with RoomVibe branding and offers mode-specific layouts and controls, including advanced features for Gallery mode.
 - **Gallery Exhibition Page**: Publicly accessible page for viewing published gallery collections with slideshow navigation and artwork details.
