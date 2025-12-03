@@ -594,24 +594,22 @@ function StudioHeader() {
     <header className="sticky top-0 z-50 border-b border-rv-neutral bg-white/80 backdrop-blur">
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
         <div className="flex h-20 md:h-24 items-center justify-between">
-          <div className="flex items-center gap-4 md:gap-6">
-            <a
-              href="#/dashboard"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 bg-[#283593] text-white text-[13px] md:text-sm font-medium rounded-md md:rounded-lg hover:bg-[#1e2a6e] transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              <span className="hidden sm:inline">Back to Dashboard</span>
-              <span className="sm:hidden">Dashboard</span>
-            </a>
-          </div>
           <a href="#/" className="flex items-center">
             <img 
               src="/roomvibe-logo-transparent.png" 
               alt="RoomVibe" 
               className="h-16 md:h-20 w-auto"
             />
+          </a>
+          <a
+            href="#/dashboard"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 bg-[#283593] text-white text-[13px] md:text-sm font-medium rounded-md md:rounded-lg hover:bg-[#1e2a6e] transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span className="hidden sm:inline">Back to Dashboard</span>
+            <span className="sm:hidden">Dashboard</span>
           </a>
         </div>
       </div>
