@@ -22,6 +22,7 @@ import PrivacyPolicy from "./components/legal/PrivacyPolicy";
 import TermsOfService from "./components/legal/TermsOfService";
 import UploadConsent from "./components/legal/UploadConsent";
 import { PricingPage } from "./components/PricingPage";
+import { BillingPage } from "./components/BillingPage";
 import { Exhibition } from "./pages/Exhibition";
 import { UpgradePrompt } from "./components/UpgradePrompt";
 import { ComingSoonModal } from "./components/ComingSoonModal";
@@ -94,9 +95,11 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-white text-rv-text">
-      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/login" && normalizedHash !== "#/register" && normalizedHash !== "#/privacy" && normalizedHash !== "#/terms" && normalizedHash !== "#/upload-consent" && normalizedHash !== "#/pricing" && !normalizedHash.startsWith("#/exhibition") && <TopNav />}
+      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/login" && normalizedHash !== "#/register" && normalizedHash !== "#/privacy" && normalizedHash !== "#/terms" && normalizedHash !== "#/upload-consent" && normalizedHash !== "#/pricing" && normalizedHash !== "#/billing" && !normalizedHash.startsWith("#/exhibition") && <TopNav />}
       {normalizedHash === "#/pricing" ? (
         <PricingPage />
+      ) : normalizedHash === "#/billing" ? (
+        <BillingPage />
       ) : normalizedHash === "#/privacy" ? (
         <PrivacyPolicy />
       ) : normalizedHash === "#/terms" ? (
@@ -132,7 +135,7 @@ function AppContent() {
       ) : (
         <HomePage />
       )}
-      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/login" && normalizedHash !== "#/register" && normalizedHash !== "#/privacy" && normalizedHash !== "#/terms" && normalizedHash !== "#/upload-consent" && normalizedHash !== "#/pricing" && !normalizedHash.startsWith("#/exhibition") && <SiteFooter />}
+      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/login" && normalizedHash !== "#/register" && normalizedHash !== "#/privacy" && normalizedHash !== "#/terms" && normalizedHash !== "#/upload-consent" && normalizedHash !== "#/pricing" && normalizedHash !== "#/billing" && !normalizedHash.startsWith("#/exhibition") && <SiteFooter />}
       <CookieConsentBanner />
     </div>
   );

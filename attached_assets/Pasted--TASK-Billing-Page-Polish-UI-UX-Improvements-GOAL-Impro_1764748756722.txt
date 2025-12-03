@@ -1,0 +1,184 @@
+# TASK: Billing Page Polish (UI/UX Improvements)
+
+## GOAL
+Improve clarity, structure, and visual hierarchy on the Billing Page so that users can clearly see:
+- Which plans/modules they currently have (Artist / Designer / Gallery)
+- Which plans are locked
+- How to upgrade
+- How to manage billing
+- What each plan includes
+
+This is a UI/UX polish task — no backend logic changes required.
+
+====================================================================
+# 1) CURRENT ISSUES
+- Active plans are not visually distinct.
+- Locked plans are not clearly separated.
+- Pricing information is not displayed in a clean, consistent layout.
+- There is no clear "You have these modules" vs. "You can unlock these modules" section.
+- Manage Billing button is visually weak.
+- Features list is too subtle and lacks structure.
+
+====================================================================
+# 2) REQUIRED CHANGES
+
+# SECTION A — PAGE STRUCTURE
+
+Rebuild the billing page into 3 clear sections:
+
+---
+
+## **SECTION 1 — Your Active Modules** (always at top)
+
+If user has entitlements:
+
+Show them as **pill cards**:
+
+Example:
+
+### Active Modules
+```
+[ Artist Module – Active ]
+[ Designer Module – Active ] *(if user has it)*
+[ Gallery Module – Active ]  *(if user has it)*
+```
+
+**Style (pill card):**
+```
+background: #E8EBF7;
+border-left: 4px solid #283593;
+border-radius: 6px;
+padding: 10px 14px;
+font-weight: 500;
+color: #283593;
+```
+
+---
+
+## **SECTION 2 — Available Plans to Unlock**
+
+Show the locked plans as **upgrade cards**:
+
+Example:
+
+### Unlock More Tools
+[ Designer Plan – €29/mo → Unlock ]
+- Premium mockup rooms  
+- High-resolution export  
+- PDF export  
+- Designer Studio tools  
+
+[ Gallery Plan – €49/mo → Unlock ]
+- Virtual exhibitions  
+- Multi-art walls  
+- Gallery Hub tools  
+
+**Upgrade button style:**
+```
+border: 1.5px solid #D8B46A;
+color: #283593;
+border-radius: 8px;
+font-weight: 500;
+padding: 10px 16px;
+```
+
+Each card must have:
+- name of the module  
+- price  
+- short feature list  
+- "Unlock →" CTA
+
+If user already has the plan → card becomes “Active”.
+
+---
+
+## **SECTION 3 — Billing Management**
+
+Place this section at bottom:
+
+### Billing Management
+[ Manage Billing ]  (Stripe portal)
+[ View All Plans ]  (pricing page)
+
+**Manage Billing button:**
+Primary blue:
+
+```
+background: #283593;
+color: white;
+padding: 10px 16px;
+border-radius: 8px;
+font-weight: 500;
+```
+
+**View All Plans:**
+Outline button:
+
+```
+border: 1.5px solid #283593;
+color: #283593;
+background: white;
+padding: 10px 16px;
+border-radius: 8px;
+```
+
+---
+
+====================================================================
+# 3) VISUAL STYLE REFINEMENTS
+
+### FEATURES LIST STYLE (for locked and unlocked modules)
+```
+font-size: 14px;
+color: #4A5A7F;
+line-height: 1.45;
+margin-left: 12px;
+```
+
+### CARD SPACING
+```
+margin-bottom: 18px;
+padding: 16px;
+border-radius: 8px;
+box-shadow: 0px 2px 6px rgba(0,0,0,0.05);
+```
+
+### ICONS
+Use lucide icons:
+- check-circle for active modules
+- lock for locked modules
+- arrow-right for upgrade CTA
+
+---
+
+====================================================================
+# 4) MOBILE RESPONSIVE RULES
+
+On mobile:
+- Cards stack vertically with full width.
+- CTA buttons stretch to 100% width.
+- Reduce padding inside cards slightly.
+- Text remains readable, not cramped.
+
+---
+
+====================================================================
+# 5) STOP CONDITIONS
+
+Billing Page is considered COMPLETE when:
+
+✓ Active modules are clearly shown as blue-highlighted cards  
+✓ Locked modules are clearly shown with gold-bordered “Unlock →” cards  
+✓ Pricing information is easy to read  
+✓ Manage Billing and View All Plans buttons are polished and aligned  
+✓ Feature lists are readable and consistent  
+✓ No mixed or outdated styles remain  
+✓ Layout is correct on both desktop and mobile  
+
+---
+
+====================================================================
+# 6) NOTES
+- Do NOT change entitlements or billing logic.
+- This task is purely UI/UX layout & design improvements.
+- All actions and routing remain the same.
