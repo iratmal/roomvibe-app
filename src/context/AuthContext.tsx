@@ -26,6 +26,7 @@ interface User {
   planLimits?: PlanLimits;
   usage?: UserUsage;
   entitlements?: UserEntitlements;
+  onboardingCompleted?: boolean;
 }
 
 interface AuthContextType {
@@ -43,6 +44,7 @@ interface AuthContextType {
   effectiveRole: string;
   hasEntitlement: (entitlement: 'artist_access' | 'designer_access' | 'gallery_access') => boolean;
   hasAnyEntitlement: () => boolean;
+  completeOnboarding: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -241,6 +243,22 @@ export function AuthProvider({ children }: { children: React.ReactNode}) {
     );
   };
 
+  // Function to mark onboarding as completed
+  const completeOnboarding = async (): Promise<void> => {
+    try {
+      const response = await fetch(`${API_URL}/api/auth/complete-onboarding`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        setUser(prevUser => prevUser ? { ...prevUser, onboardingCompleted: true } : null);
+      }
+    } catch (err) {
+      console.error('Failed to complete onboarding:', err);
+    }
+  };
+
   return (
     <AuthContext.Provider value={{ 
       user, 
@@ -256,7 +274,8 @@ export function AuthProvider({ children }: { children: React.ReactNode}) {
       clearImpersonation,
       effectiveRole,
       hasEntitlement,
-      hasAnyEntitlement
+      hasAnyEntitlement,
+      completeOnboarding
     }}>
       {children}
     </AuthContext.Provider>

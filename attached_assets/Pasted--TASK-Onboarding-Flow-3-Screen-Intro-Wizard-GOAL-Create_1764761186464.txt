@@ -1,0 +1,230 @@
+# TASK: Onboarding Flow (3-Screen Intro Wizard)
+
+## GOAL
+Create a clean, modern onboarding wizard that introduces new users to RoomVibe and explains:
+1) the modular system (Artist / Designer / Gallery),
+2) how RoomVibe tools work,
+3) optional setup steps to begin using the platform.
+
+This onboarding appears only for first-time users OR until completed.
+
+====================================================================
+# 1) GENERAL BEHAVIOR
+
+- On first login → redirect user to `/onboarding`  
+- After completing onboarding → redirect to `/dashboard`
+- User can SKIP onboarding at any moment  
+- Store completion flag: `onboarding_completed = true`
+
+### Navigation:
+- Bottom: “Next →”
+- Top-right: “Skip”
+- Step dots indicator (● ○ ○)
+
+====================================================================
+# 2) ONBOARDING SCREEN 1  
+## “Welcome to RoomVibe — Choose Your Creative Tools”
+
+### CONTENT:
+Title:
+**Welcome to RoomVibe**
+
+Subtitle:
+**RoomVibe is built as three powerful modules — choose the tools that match how you work.**
+
+Three module cards (no buttons here, just visual explanation):
+
+### CARD 1 — Artist Module  
+Icon: `palette`  
+Short description:
+```
+Upload your artworks, preview them in real rooms, and embed the widget on your website.
+```
+
+### CARD 2 — Designer Module  
+Icon: `layout`  
+Short description:
+```
+Use premium rooms, mockups, high-resolution export and PDF presentations.
+```
+
+### CARD 3 — Gallery Module  
+Icon: `image`  
+Short description:
+```
+Create virtual exhibitions, build gallery walls and share public links.
+```
+
+### BUTTON:
+`Next →`
+
+Skip in top-right corner:
+`Skip onboarding`
+
+Style:
+Blue button (#283593), white text, 8px radius.
+
+---
+
+====================================================================
+# 3) ONBOARDING SCREEN 2  
+## “How RoomVibe Works”
+
+### CONTENT:
+
+Title:
+**Beautiful visualizations in seconds**
+
+3 feature rows with icons:
+
+### Feature 1  
+Icon: `upload`  
+**Upload your artwork**  
+“RoomVibe instantly places it into realistic rooms or gallery walls.”
+
+### Feature 2  
+Icon: `wand`  
+**Preview & customize**  
+“Change rooms, frames, lighting and orientation.”
+
+### Feature 3  
+Icon: `code`  
+**Embed on your website**  
+“Use the RoomVibe Widget to let customers preview art directly on your site.”
+
+Under the features add:
+
+Small hint text (optional):
+```
+The tools you see depend on your active modules (Artist, Designer, Gallery).
+```
+
+BUTTON:
+`Next →`
+
+---
+
+====================================================================
+# 4) ONBOARDING SCREEN 3  
+## “Set Up Your Workspace”
+
+### CONTENT:
+
+Title:
+**Your RoomVibe workspace is ready**
+
+Subtitle:
+**Here are the first steps to get started:**
+
+Checklist items:
+
+- `[ ]` Upload your first artwork  
+- `[ ]` Try the Studio (visualize art in different rooms)  
+- `[ ]` Explore Designer Tools or Gallery Tools (if unlocked)  
+- `[ ]` Install the widget on your website (optional)
+
+Show a reminder box if the user has locked modules:
+
+Gold-bordered card:
+```
+Want to unlock more tools?
+Upgrade to Designer or Gallery anytime.
+```
+
+BUTTONS:
+
+Primary:
+`Go to Dashboard`
+
+Secondary text link:
+`Open Studio →`  (optional shortcut)
+
+---
+
+====================================================================
+# 5) UI DESIGN REQUIREMENTS
+
+### COLORS
+- Primary navy: #283593  
+- Gold: #D8B46A  
+- Soft grey: #DDE1E7  
+- White: #FFFFFF  
+
+### TYPOGRAPHY
+- Title: 22–26px, semi-bold  
+- Subtitle: 16px, medium  
+- Body: 14–15px  
+
+### CARDS
+```
+background: #FFFFFF;
+border: 1.5px solid #DDE1E7;
+border-radius: 12px;
+padding: 20px;
+box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+display: flex;
+gap: 10px;
+```
+
+### BUTTONS
+Primary:
+```
+background: #283593;
+color: white;
+border-radius: 8px;
+padding: 10px 20px;
+font-weight: 500;
+```
+
+Secondary (skip):
+```
+color: #283593;
+opacity: 0.7;
+text-decoration: underline;
+```
+
+### STEP INDICATORS
+```
+display: flex;
+gap: 6px;
+justify-content: center;
+margin-top: 16px;
+```
+Active dot: navy  
+Inactive dot: soft grey
+
+---
+
+====================================================================
+# 6) RESPONSIVE MOBILE RULES
+
+- Cards stack vertically  
+- Buttons full width  
+- Titles shrink to 20px  
+- Checklist uses larger tap targets (min 44px height)  
+- Step dots centered and slightly larger (12px)
+
+---
+
+====================================================================
+# 7) STOP CONDITIONS
+
+Onboarding Flow is considered COMPLETE when:
+
+✓ `/onboarding` route exists and loads the 3-step wizard  
+✓ User progresses between screens using Next  
+✓ Skip instantly marks onboarding as completed  
+✓ After final screen → redirect to `/dashboard`  
+✓ All screens match RoomVibe’s visual identity  
+✓ Mobile layout fully works  
+✓ Entitlement info is correctly reflected (no logic changes, just UI text)  
+✓ Onboarding only appears for first-time users (flag saved after completion)
+
+---
+
+====================================================================
+# 8) NOTES
+
+- Do NOT change existing entitlements logic  
+- This is UI/UX onboarding only  
+- The onboarding wizard must not block normal navigation after completion  

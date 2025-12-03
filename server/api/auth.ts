@@ -189,7 +189,7 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res: Response) => 
     }
 
     const result = await query(
-      'SELECT id, email, role, email_confirmed, created_at, is_admin, subscription_status, subscription_plan, artist_access, designer_access, gallery_access FROM users WHERE id = $1',
+      'SELECT id, email, role, email_confirmed, created_at, is_admin, subscription_status, subscription_plan, artist_access, designer_access, gallery_access, onboarding_completed FROM users WHERE id = $1',
       [req.user.id]
     );
 
@@ -242,6 +242,7 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res: Response) => 
         effectivePlan,
         planLimits,
         entitlements,
+        onboardingCompleted: user.onboarding_completed || false,
         usage: {
           artworks: artworkCount,
           projects: projectCount,
@@ -252,6 +253,29 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res: Response) => 
   } catch (error) {
     console.error('Get user error:', error);
     res.status(500).json({ error: 'Failed to get user info' });
+  }
+});
+
+router.post('/complete-onboarding', authenticateToken, async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    await query(
+      'UPDATE users SET onboarding_completed = TRUE WHERE id = $1',
+      [req.user.id]
+    );
+
+    console.log(`✅ Onboarding completed for user: ${req.user.email}`);
+
+    res.json({ 
+      success: true,
+      message: 'Onboarding completed' 
+    });
+  } catch (error) {
+    console.error('Complete onboarding error:', error);
+    res.status(500).json({ error: 'Failed to update onboarding status' });
   }
 });
 

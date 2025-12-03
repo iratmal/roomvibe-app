@@ -46,6 +46,11 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 - **Unified Widget System**: A single embeddable JavaScript widget (`public/widget.js`) that dynamically adapts its functionality (Artist, Designer, Gallery modes) based on the user's entitlements. The widget is modal-based with RoomVibe branding and offers mode-specific layouts and controls, including advanced features for Gallery mode.
 - **Gallery Exhibition Page**: Publicly accessible page for viewing published gallery collections with slideshow navigation and artwork details.
 - **Feature Locking by Plan**: Comprehensive access control enforced on both frontend and backend through dedicated configuration files and middleware, based on subscription plans and defined limits for artworks, wall photos, and projects.
+- **Onboarding Flow**: 3-screen intro wizard (`#/onboarding`) for first-time users:
+    - **Screen 1 - Welcome**: Three module cards (Artist, Designer, Gallery) explaining what each does.
+    - **Screen 2 - How It Works**: Three feature rows (Upload, Preview, Embed) with icons.
+    - **Screen 3 - Set Up Workspace**: Interactive checklist and gold-bordered upgrade reminder.
+    - Skip functionality and step dots indicator; onboarding_completed flag stored in database.
 - **Analytics & GDPR**: Google Analytics 4 and Hotjar integration, loaded conditionally based on cookie consent. Legal pages (Privacy Policy, Terms of Service, Upload Consent) are included.
 - **Artwork Enrichment**: Automated script for fetching product details and dimensions from Shopify.
 - **Real-Scale Rendering**: Achieves pixel-perfect artwork sizing using physical dimensions and standardized room wall heights.

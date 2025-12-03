@@ -28,6 +28,7 @@ import { UpgradePrompt } from "./components/UpgradePrompt";
 import { ComingSoonModal } from "./components/ComingSoonModal";
 import { ExportSuccessModal } from "./components/ExportSuccessModal";
 import { UpgradeNudge } from "./components/UpgradeNudge";
+import { OnboardingPage } from "./components/OnboardingPage";
 import { initGA4, resetGA4, GA4Events } from "./utils/analytics";
 import { initHotjar, resetHotjar } from "./utils/hotjar";
 
@@ -95,8 +96,10 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-white text-rv-text">
-      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/login" && normalizedHash !== "#/register" && normalizedHash !== "#/privacy" && normalizedHash !== "#/terms" && normalizedHash !== "#/upload-consent" && normalizedHash !== "#/pricing" && normalizedHash !== "#/billing" && !normalizedHash.startsWith("#/exhibition") && <TopNav />}
-      {normalizedHash === "#/pricing" ? (
+      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/login" && normalizedHash !== "#/register" && normalizedHash !== "#/privacy" && normalizedHash !== "#/terms" && normalizedHash !== "#/upload-consent" && normalizedHash !== "#/pricing" && normalizedHash !== "#/billing" && normalizedHash !== "#/onboarding" && !normalizedHash.startsWith("#/exhibition") && <TopNav />}
+      {normalizedHash === "#/onboarding" ? (
+        <OnboardingRouter />
+      ) : normalizedHash === "#/pricing" ? (
         <PricingPage />
       ) : normalizedHash === "#/billing" ? (
         <BillingPage />
@@ -135,7 +138,7 @@ function AppContent() {
       ) : (
         <HomePage />
       )}
-      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/login" && normalizedHash !== "#/register" && normalizedHash !== "#/privacy" && normalizedHash !== "#/terms" && normalizedHash !== "#/upload-consent" && normalizedHash !== "#/pricing" && normalizedHash !== "#/billing" && !normalizedHash.startsWith("#/exhibition") && <SiteFooter />}
+      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/login" && normalizedHash !== "#/register" && normalizedHash !== "#/privacy" && normalizedHash !== "#/terms" && normalizedHash !== "#/upload-consent" && normalizedHash !== "#/pricing" && normalizedHash !== "#/billing" && normalizedHash !== "#/onboarding" && !normalizedHash.startsWith("#/exhibition") && <SiteFooter />}
       <CookieConsentBanner />
     </div>
   );
@@ -167,6 +170,32 @@ function AuthPage({ mode }: { mode: 'login' | 'register' }) {
   );
 }
 
+function OnboardingRouter() {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-rv-textMuted">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    window.location.hash = '#/login';
+    return null;
+  }
+
+  const handleComplete = () => {
+    window.location.hash = '#/dashboard';
+  };
+
+  return <OnboardingPage onComplete={handleComplete} />;
+}
+
 function DashboardRouter() {
   const { user, loading, effectiveRole } = useAuth();
 
@@ -183,6 +212,12 @@ function DashboardRouter() {
 
   if (!user) {
     window.location.hash = '#/login';
+    return null;
+  }
+
+  // Redirect first-time users to onboarding (skip for admins)
+  if (!user.onboardingCompleted && effectiveRole !== 'admin') {
+    window.location.hash = '#/onboarding';
     return null;
   }
 
