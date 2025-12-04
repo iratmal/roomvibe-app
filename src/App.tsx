@@ -441,7 +441,7 @@ function Hero() {
       <div className="relative mx-auto flex max-w-6xl items-center py-24 px-6">
         <div className="max-w-xl">
           <h1 className="mb-5 text-4xl sm:text-5xl font-bold leading-tight text-[var(--roomvibe-navy)]">
-            See Art in Your Space — Instantly.
+            See Art in Your Space. Instantly.
           </h1>
 
           <p className="mb-8 text-lg text-[#333333]">

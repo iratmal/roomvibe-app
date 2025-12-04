@@ -1,0 +1,320 @@
+# AGENT TASK
+
+## 🔵 TITLE UPDATE (APPLY GLOBALLY)
+
+Replace the current hero heading:
+
+**See Art in Your Space — Instantly.**
+
+with the updated premium version:
+
+**See Art in Your Space. Instantly.**
+
+This applies to:
+
+* Homepage Hero section (desktop & mobile)
+* Any duplicated H1 in responsive layout
+* Any reused component or layout partial
+* Ensure period + spacing remain exactly as shown
+
+All other instructions remain below.
+
+---
+
+# AGENT TASK #4 — GLOBAL BRAND COLORS & BUTTON SYSTEM (ROOMVIBE)
+
+**Goal:** Apply a unified, consistent RoomVibe visual identity across the ENTIRE app.
+
+This task is focused on:
+
+* Global color system
+* Headings (H1/H2/H3) color
+* All primary & secondary buttons
+* Premium (gold) accents
+* Cleaning up ALL old blues/black buttons
+
+Follow these instructions EXACTLY. Do not introduce new colors.
+
+---
+
+# 🎨 1. ROOMVIBE BRAND COLORS (GLOBAL)
+
+Add the following CSS variables to your global stylesheet (e.g. `globals.css`, `index.css` or equivalent root CSS file that affects the whole app):
+
+```css
+:root {
+  /* PRIMARY BRAND COLOR – NAVY */
+  --roomvibe-navy: #0B1F2A;
+
+  /* PREMIUM ACCENT – GOLD */
+  --roomvibe-gold: #C9A24A;
+
+  /* BASE TEXT COLOR */
+  --roomvibe-text: #1A1A1A;
+
+  /* LIGHT BACKGROUND */
+  --roomvibe-bg: #FFFFFF;
+}
+
+body {
+  background-color: var(--roomvibe-bg);
+  color: var(--roomvibe-text);
+}
+
+h1, h2, h3 {
+  color: var(--roomvibe-navy);
+}
+```
+
+**Requirements:**
+
+* All section backgrounds should be white (`#FFFFFF`), except where already intentionally navy (e.g. footer) or very light grey for subtle cards.
+* Base text color is `#1A1A1A`.
+* All headings (H1, H2, H3) must be `#0B1F2A`.
+
+---
+
+# 🔘 2. GLOBAL BUTTON STYLES (APPLY EVERYWHERE)
+
+Create standard button classes in a global CSS file (or a shared Button component if you are using React/Tailwind). These must be used for **all buttons in the app**.
+
+```css
+.btn-primary {
+  background-color: var(--roomvibe-navy);
+  color: #FFFFFF;
+  border-radius: 8px;
+  padding: 14px 28px;
+  border: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.05);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--roomvibe-navy);
+  border-radius: 8px;
+  padding: 14px 28px;
+  border: 1.5px solid var(--roomvibe-navy);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-outline:hover {
+  background: rgba(11, 31, 42, 0.04);
+}
+
+/* PREMIUM (GOLD) BUTTON – ONLY FOR SPECIAL / PREMIUM FEATURES */
+.btn-premium {
+  background-color: var(--roomvibe-gold);
+  color: #0B1F2A;
+  border-radius: 8px;
+  padding: 14px 28px;
+  border: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-premium:hover {
+  filter: brightness(1.05);
+}
+```
+
+### THESE BUTTON CLASSES MUST BE USED FOR:
+
+**Homepage:**
+
+* "Start Free" (hero)
+* "Watch How It Works" (hero secondary)
+* "Start Visualizing" (hero/room widget)
+* "Start Free" (CTA section near footer)
+
+**Navigation:**
+
+* "Sign Up" (top right) → `.btn-primary`
+* Any prominent nav button should use `.btn-primary` or `.btn-outline`.
+
+**Footer:**
+
+* "Subscribe" button in the newsletter → `.btn-primary`
+
+**Other Pages (throughout the app):**
+
+* Pricing page CTAs (e.g. Choose plan, Start trial)
+* Dashboard primary actions (where buttons already exist)
+
+If a button refers to a **premium / gold-tier / special feature**, you may use `.btn-premium` instead.
+
+---
+
+# 🧹 3. REMOVE ALL OLD BLUES / BLACK BUTTON BACKGROUNDS
+
+Search the entire codebase for the following Tailwind and CSS patterns and **replace them** with the new system:
+
+### a) Tailwind classes to remove/replace
+
+Remove or replace these wherever they appear:
+
+* `bg-blue-500`, `bg-blue-600`, `bg-blue-700`, etc.
+* `bg-indigo-500`, `bg-indigo-600`, etc.
+* `bg-black`, `bg-gray-900` (when used for buttons)
+* `text-blue-500`, `text-blue-600`, etc. (for CTAs/headings)
+
+Replace with:
+
+* For filled buttons: use `.btn-primary` (or Tailwind equivalent `bg-[#0B1F2A] text-white rounded-lg px-7 py-3 font-semibold` if you must inline it)
+* For outline buttons: `.btn-outline`
+* For headings: `text-[var(--roomvibe-navy)]` or `text-[#0B1F2A]`
+
+### b) Custom CSS to remove/replace
+
+Search for any custom colors that are not part of:
+
+* `#0B1F2A` (navy)
+* `#C9A24A` (gold)
+* `#FFFFFF` (background)
+* `#1A1A1A` or neutral greys for text/borders
+
+Clean up legacy styles so that **no other blue/black button backgrounds remain**.
+
+---
+
+# 🧩 4. HEADINGS & TITLES (H1 / H2 / H3)
+
+Enforce consistent heading styling:
+
+### a) Color
+
+* All `h1, h2, h3` are `#0B1F2A` (via global CSS above).
+
+### b) Examples on homepage
+
+**Hero H1:**
+
+```tsx
+<h1 className="mb-5 text-5xl font-bold leading-tight text-[var(--roomvibe-navy)]">
+  See Art in Your Space — Instantly.
+</h1>
+```
+
+**Section titles (e.g. For artists, For designers, For galleries):**
+
+```tsx
+<h2 className="text-xl font-semibold text-[var(--roomvibe-navy)]">
+  For artists
+</h2>
+```
+
+**CTA block title:**
+
+```tsx
+<h2 className="text-3xl font-bold text-[var(--roomvibe-navy)]">
+  Ready to See Art in Your Space?
+</h2>
+```
+
+Ensure you are not using ALL CAPS like `FOR ARTISTS`. Use sentence-style capitalization: `For artists`, `For designers`, `For galleries`.
+
+---
+
+# ⭐ 5. PREMIUM GOLD ACCENTS
+
+Gold (`#C9A24A`) is ONLY for premium accents, such as:
+
+* Thin underline beneath section titles (e.g. user groups, pricing features)
+* Borders around premium / featured pricing plans
+* Small icons or highlight elements
+
+### Example: Underline below a title
+
+```tsx
+<div className="mt-1 mb-3 h-[2px] w-10 bg-[var(--roomvibe-gold)]" />
+```
+
+### Example: Premium pricing card border
+
+```tsx
+<div className="rounded-2xl border-2 border-[var(--roomvibe-gold)] bg-white p-8 shadow-sm">
+  {/* premium plan content */}
+</div>
+```
+
+Do NOT use gold as a general text color. Only as accent.
+
+---
+
+# 📂 6. PAGES / COMPONENTS TO CHECK & UPDATE
+
+You must review and update all of the following at minimum:
+
+* Homepage components:
+
+  * Hero section
+  * For artists / For designers / For galleries
+  * How it works
+  * Dashboard videos section
+  * CTA block
+  * Footer (newsletter button)
+
+* Navigation / header component:
+
+  * Ensure "Sign Up" uses `.btn-primary`
+  * Any other CTA-like buttons use `.btn-primary` / `.btn-outline`
+
+* Pricing page:
+
+  * Plan CTAs use new button styles
+  * Premium plan can use gold accent border or `.btn-premium` if desired
+
+* Any other pages with primary buttons:
+
+  * Studio entry point
+  * Dashboard key actions
+
+After this task, there must be **zero** leftover default blue/black button backgrounds.
+
+---
+
+# 🚫 DO NOT
+
+* Do NOT introduce new brand colors.
+* Do NOT change mobile vs desktop layout in this task.
+* Do NOT modify routing, authentication, or Stripe logic.
+* Do NOT redesign structure — this task is purely visual cleanup and color/typography consistency.
+
+---
+
+# ✅ COMPLETION CHECKLIST
+
+This task is complete when:
+
+* [ ] `:root` contains the RoomVibe color variables with `--roomvibe-navy: #0B1F2A` as the primary brand color.
+* [ ] All headings (H1/H2/H3) are navy.
+* [ ] All primary and secondary buttons use `.btn-primary` or `.btn-outline`.
+* [ ] Any premium-specific button (if used) uses `.btn-premium` with gold.
+* [ ] No `bg-blue-*`, `bg-indigo-*`, or button `bg-black/bg-gray-900` remain in the codebase.
+* [ ] Homepage hero, CTA, navigation Sign Up, and footer Subscribe all show navy buttons.
+* [ ] Backgrounds remain white or very light where intended, with navy and gold as the only main accent colors.
+
+When finished, the entire app should visually match this simple palette:
+
+* **Navy (#0B1F2A)** – headings, buttons, footer background, main CTAs
+* **Gold (#C9A24A)** – premium accents only
+* **White (#FFFFFF)** – section backgrounds
+* **Black/Charcoal (#1A1A1A)** – body text
+
+---
+
+**End of Task #4 – Global Brand Colors & Buttons**

@@ -5,6 +5,8 @@
 :root {
   --roomvibe-navy: #0B1F2A;
   --roomvibe-gold: #C9A24A;
+  --roomvibe-text: #1A1A1A;
+  --roomvibe-bg: #FFFFFF;
   --rv-primary: #283593;
   --rv-primary-hover: #1e2770;
   --rv-accent: #D8B46A;
@@ -22,8 +24,8 @@
 body {
   margin: 0;
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background-color: #ffffff;
-  color: var(--rv-text);
+  background-color: var(--roomvibe-bg);
+  color: var(--roomvibe-text);
   font-size: 16px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -86,4 +88,24 @@ input, textarea, select {
 
 .btn-outline:hover {
   background: rgba(11, 31, 42, 0.04);
+}
+
+.btn-premium {
+  background-color: var(--roomvibe-gold);
+  color: #0B1F2A;
+  border-radius: 8px;
+  padding: 14px 28px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.btn-premium:hover {
+  filter: brightness(1.05);
 }
