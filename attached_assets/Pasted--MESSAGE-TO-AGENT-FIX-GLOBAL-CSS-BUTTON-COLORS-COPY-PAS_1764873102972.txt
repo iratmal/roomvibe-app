@@ -1,0 +1,140 @@
+# MESSAGE TO AGENT — FIX GLOBAL CSS & BUTTON COLORS (COPY/PASTE SAFE)
+
+Please send this message **exactly as-is** to the agent. All code blocks are clean and safe for copy/paste.
+
+---
+
+## ✅ MESSAGE FOR AGENT
+
+Thanks for the detailed info. The `App.tsx` code for the Hero looks fine – the problem is not in the JSX but in the **global CSS** (colors and button styles).
+
+### What I am still seeing on the live homepage:
+
+* All homepage buttons are **still black**, not navy.
+* Headings and buttons are **not using the footer navy color** `#0B1F2A`.
+
+We need a unified RoomVibe brand color system:
+
+* **Primary navy:** `#0B1F2A` (for headings, primary buttons, CTAs, footer)
+* **Premium gold:** `#C9A24A` (for premium accents)
+* **Background:** white
+* **Body text:** black/charcoal
+
+---
+
+# 🔧 REQUIRED ACTIONS
+
+## 1️⃣ Update `src/index.css` (or the main global CSS file)
+
+Add these global variables **at the top of the file**:
+
+```css
+:root {
+  --roomvibe-navy: #0B1F2A;
+  --roomvibe-gold: #C9A24A;
+  --roomvibe-text: #1A1A1A;
+  --roomvibe-bg: #FFFFFF;
+}
+
+body {
+  background-color: var(--roomvibe-bg);
+  color: var(--roomvibe-text);
+}
+
+h1, h2, h3 {
+  color: var(--roomvibe-navy);
+}
+```
+
+---
+
+## 2️⃣ Replace ALL existing `.btn-primary` and `.btn-outline` definitions with these:
+
+```css
+.btn-primary {
+  background-color: var(--roomvibe-navy);
+  color: #FFFFFF;
+  border-radius: 8px;
+  padding: 14px 28px;
+  border: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.05);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--roomvibe-navy);
+  border-radius: 8px;
+  padding: 14px 28px;
+  border: 1.5px solid var(--roomvibe-navy);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-outline:hover {
+  background: rgba(11, 31, 42, 0.04);
+}
+```
+
+---
+
+## 3️⃣ Clean up conflicting Tailwind classes
+
+Please search for the following and **remove them** from all buttons (especially in the hero):
+
+* `bg-black`
+* `bg-gray-900`
+* `bg-blue-*`
+* `bg-indigo-*`
+* Any other hardcoded background colors on buttons
+
+Hero buttons must contain ONLY:
+
+```html
+className="btn-primary"
+```
+
+OR
+
+```html
+className="btn-outline"
+```
+
+No additional Tailwind color classes.
+
+---
+
+## 4️⃣ Ensure global CSS is imported
+
+In your main entry file (`src/main.tsx` or `src/index.tsx`), ensure this exists:
+
+```ts
+import './index.css';
+```
+
+If the file is not imported, **none of the global styles will apply**.
+
+---
+
+## 🎯 AFTER THESE CHANGES, THE HOMEPAGE MUST SHOW:
+
+* All buttons in **navy background** with white text
+* All headings in **navy #0B1F2A**
+* Clean white background
+* Black/charcoal body text
+
+Please implement these steps and send me a fresh screenshot of the homepage afterward.
+
+---
+
+# END OF MESSAGE
