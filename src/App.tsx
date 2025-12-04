@@ -323,10 +323,10 @@ function TopNav() {
             <img 
               src="/roomvibe-logo-transparent.png" 
               alt="RoomVibe" 
-              className="h-14 lg:h-16 w-auto"
+              className="h-16 lg:h-20 w-auto"
             />
           </a>
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
+          <nav className="hidden md:flex items-center gap-10 text-sm font-medium">
             <a href="#how" className="text-[#1A1A1A] hover:text-[#0A1C2F] transition-colors">
               How it works
             </a>
@@ -430,18 +430,18 @@ function HomePage() {
 
 function Hero() {
   return (
-    <section id="home" className="w-full bg-white py-16 lg:py-24">
+    <section id="home" className="w-full bg-white py-12 lg:py-16">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
           {/* Left Column - 55% */}
           <div className="w-full lg:w-[55%]">
-            <h1 className="text-4xl sm:text-5xl lg:text-[56px] font-bold text-[#1A1A1A] leading-tight tracking-tight mb-5">
+            <h1 className="text-4xl sm:text-5xl lg:text-[56px] font-bold text-[#1A1A1A] leading-tight tracking-tight mb-5 lg:mb-6">
               See Art in Your Space — Instantly.
             </h1>
-            <h2 className="text-lg sm:text-xl lg:text-[22px] text-[#333333] leading-relaxed mb-8 font-normal">
+            <h2 className="text-lg sm:text-xl lg:text-[22px] text-[#333333] leading-relaxed mb-7 lg:mb-8 font-normal">
               Turn every artwork into a real experience by letting your clients preview it on their own walls with one simple upload.
             </h2>
-            <div className="flex flex-wrap gap-3 mb-5">
+            <div className="flex flex-wrap gap-3 mb-4 lg:mb-5">
               <a
                 href="#/register"
                 className="inline-flex items-center justify-center px-7 py-3.5 bg-[#0A1C2F] text-white font-semibold rounded-lg hover:bg-[#0d2340] transition-colors shadow-sm"
@@ -460,14 +460,12 @@ function Hero() {
             </p>
           </div>
           {/* Right Column - 45% */}
-          <div className="w-full lg:w-[45%]">
-            <div className="relative rounded-xl overflow-hidden shadow-lg">
-              <img
-                src="/hero.png"
-                alt="RoomVibe Art Visualization Preview"
-                className="w-full h-auto"
-              />
-            </div>
+          <div className="w-full lg:w-[45%] flex items-center justify-center">
+            <img
+              src="/hero.png"
+              alt="RoomVibe Art Visualization Preview"
+              className="w-full h-auto rounded-2xl shadow-lg"
+            />
           </div>
         </div>
       </div>
@@ -503,19 +501,24 @@ function UserGroupsSection() {
   return (
     <section className="py-20 lg:py-24 bg-white">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 lg:gap-12">
           {groups.map((g, i) => (
-            <div key={i} className="text-left">
-              <h3 className="text-xl lg:text-[22px] font-bold text-[#0A1C2F] mb-3 tracking-tight">
+            <div 
+              key={i} 
+              className="bg-white border border-[#EAEAEA] rounded-2xl p-7 lg:p-8 shadow-sm text-left"
+            >
+              <h3 className="text-xl lg:text-[22px] font-bold text-[#0A1C2F] mb-2 tracking-tight">
                 {g.label}
               </h3>
+              {/* Gold underline accent */}
+              <div className="w-9 h-0.5 bg-[#C9A24A] mb-5"></div>
               <p className="text-lg font-semibold text-[#1A1A1A] mb-2 leading-snug">
                 {g.boldLine}
               </p>
-              <p className="text-base font-semibold text-[#333] mb-4 leading-relaxed">
+              <p className="text-base text-[#333] mb-4 leading-relaxed">
                 {g.valueLine}
               </p>
-              <p className="text-[15px] text-[#333] leading-relaxed">
+              <p className="text-[15px] text-[#555] leading-relaxed">
                 {g.supportingText}
               </p>
             </div>
@@ -2547,21 +2550,21 @@ function HowItWorks() {
   ];
   
   return (
-    <section id="how" className="py-20 lg:py-24 bg-white">
+    <section id="how" className="py-16 lg:py-20 bg-white">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
           {steps.map((s, i) => (
             <div 
               key={i} 
-              className="bg-[#FAFAFA] rounded-xl p-8 text-center"
+              className="bg-[#FAFAFA] rounded-2xl p-6 lg:p-8 text-center"
             >
-              <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-white text-[#0A1C2F] mb-5 shadow-sm">
+              <div className="inline-flex h-14 w-14 lg:h-16 lg:w-16 items-center justify-center rounded-full bg-white text-[#0A1C2F] mb-4 lg:mb-5 shadow-sm">
                 {s.icon}
               </div>
-              <h3 className="text-lg lg:text-xl font-semibold text-[#1A1A1A] mb-3 tracking-tight">
+              <h3 className="text-lg lg:text-xl font-semibold text-[#1A1A1A] mb-2 lg:mb-3 tracking-tight">
                 {s.title}
               </h3>
-              <p className="text-[15px] text-[#555] leading-relaxed">
+              <p className="text-sm lg:text-[15px] text-[#555555] leading-relaxed">
                 {s.desc}
               </p>
             </div>
@@ -2594,32 +2597,35 @@ function DashboardVideosSection() {
   ];
 
   return (
-    <section className="py-20 lg:py-24 bg-white">
+    <section className="py-16 lg:py-20 bg-white">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">
           {videos.map((v, i) => (
             <div key={i} className="flex flex-col">
-              <h3 className="text-lg lg:text-xl font-semibold text-[#1A1A1A] mb-2 tracking-tight">
-                {v.title}
-              </h3>
-              <p className="text-[15px] text-[#555] mb-4 leading-relaxed">
-                {v.description}
-              </p>
-              <div className="relative aspect-video rounded-lg overflow-hidden bg-[#0A1C2F]/10 group cursor-pointer">
+              {/* Thumbnail first */}
+              <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#0A1C2F]/10 group cursor-pointer shadow-md mb-4">
                 <img 
                   src={v.thumbnail} 
                   alt={v.title}
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-[#0A1C2F]/40 flex items-center justify-center group-hover:bg-[#0A1C2F]/50 transition-colors">
-                  <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-                    <svg className="w-7 h-7 text-[#0A1C2F] ml-1" viewBox="0 0 24 24" fill="currentColor">
+                  <div className="w-14 h-14 lg:w-16 lg:h-16 rounded-full bg-white/90 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                    <svg className="w-6 h-6 lg:w-7 lg:h-7 text-[#0A1C2F] ml-1" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M8 5v14l11-7-11-7z" />
                     </svg>
                   </div>
                 </div>
               </div>
-              <a href="#" className="mt-3 text-sm font-medium text-[#0A1C2F] hover:underline">
+              {/* Title */}
+              <h3 className="text-lg lg:text-xl font-semibold text-[#1A1A1A] mb-2 tracking-tight">
+                {v.title}
+              </h3>
+              {/* Description */}
+              <p className="text-sm lg:text-[15px] text-[#555] mb-3 leading-relaxed">
+                {v.description}
+              </p>
+              <a href="#" className="text-sm font-medium text-[#0A1C2F] hover:underline">
                 Watch Video →
               </a>
             </div>
@@ -2634,17 +2640,17 @@ function DashboardVideosSection() {
 
 function MidPageCTA() {
   return (
-    <section className="py-16 lg:py-20 bg-[#F9F9F9]">
+    <section className="py-16 bg-[#F9F9F9]">
       <div className="mx-auto max-w-7xl px-6 lg:px-8 text-center">
-        <h3 className="text-2xl sm:text-3xl lg:text-[32px] font-bold text-[#1A1A1A] mb-4 tracking-tight">
+        <h3 className="text-2xl sm:text-3xl lg:text-[32px] font-bold text-[#1A1A1A] mb-3 tracking-tight">
           Ready to See Art in Your Space?
         </h3>
-        <p className="text-lg text-[#555] mb-8">
+        <p className="text-base lg:text-lg text-[#555] mb-6">
           Start Free and try RoomVibe in seconds.
         </p>
         <a
           href="#/register"
-          className="inline-flex items-center justify-center px-8 py-4 bg-[#0A1C2F] text-white font-semibold rounded-lg hover:bg-[#0d2340] transition-colors shadow-sm text-base"
+          className="inline-flex items-center justify-center px-8 py-3.5 bg-[#0A1C2F] text-white font-semibold rounded-lg hover:bg-[#0d2340] transition-colors shadow-sm text-base"
         >
           Start Free
         </a>
@@ -2857,7 +2863,7 @@ function SiteFooter() {
 
   return (
     <footer className="bg-[#0A1C2F] text-white">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8 py-16 lg:py-20">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8 py-16 pb-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           {/* Column 1: Branding */}
           <div>
@@ -2969,12 +2975,12 @@ function SiteFooter() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email…"
-                  className="flex-1 px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/50 text-sm focus:outline-none focus:border-white/40 transition-colors"
+                  className="flex-1 px-4 py-2.5 rounded-lg bg-white border border-[#E1E1E1] text-[#1A1A1A] placeholder:text-gray-400 text-sm focus:outline-none focus:border-[#0A1C2F] transition-colors"
                   required
                 />
                 <button
                   type="submit"
-                  className="px-5 py-2.5 bg-white text-[#0A1C2F] font-semibold rounded-lg hover:bg-white/90 transition-colors text-sm"
+                  className="px-5 py-2.5 bg-[#0A1C2F] text-white font-semibold rounded-lg hover:bg-[#0d2340] transition-colors text-sm border border-[#0A1C2F]"
                 >
                   Subscribe
                 </button>

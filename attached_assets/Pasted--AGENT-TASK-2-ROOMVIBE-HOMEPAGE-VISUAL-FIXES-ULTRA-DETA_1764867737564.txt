@@ -1,0 +1,231 @@
+# AGENT TASK #2 — ROOMVIBE HOMEPAGE VISUAL FIXES (ULTRA-DETAILED)
+
+**Goal:** Apply all required visual, layout, spacing, and component updates to elevate the homepage to a premium, modern, luxury-grade RoomVibe look. This task focuses on **visual fixes**, **structure polishing**, **card layouts**, **button colors**, and **hero section corrections**. Mobile is NOT included in this task.
+
+---
+
+# ✅ SECTION 1 — HERO FIXES
+
+### 1. Fix Hero Image Layout
+
+* The hero image must sit **inside the right column**, not floating outside the grid.
+* Right column width: **45%**.
+* Image alignment: **vertically centered** relative to the text block.
+* Style the image:
+
+  * Border-radius: **16px**
+  * Box shadow: **shadow-lg**, soft and modern
+  * No card background behind it — image sits cleanly on white hero background.
+
+### 2. Adjust Hero Button Colors
+
+Replace current button color (appears black) with true RoomVibe Navy.
+
+**RoomVibe Navy HEX:** `#0A1C2F`
+
+Apply to:
+
+* Primary CTA background
+* Secondary CTA border
+* Newsletter button
+* Any other CTA across homepage
+
+### 3. Hero Spacing
+
+* Reduce unused white space above/below content.
+* H1 → H2 spacing: **20–24px**
+* H2 → Button row: **28–32px**
+* Button row → micro-benefits: **16–20px**
+
+---
+
+# ✅ SECTION 2 — USER GROUPS (ARTISTS / DESIGNERS / GALLERIES)
+
+### 1. Convert each group section into a **card layout**
+
+Each of the 3 columns must be wrapped in a soft, elegant card.
+
+Card style:
+
+* Background: `#FFFFFF`
+* Border: `1px solid #EAEAEA`
+* Border radius: `16px`
+* Padding: `28–32px`
+* Shadow: `shadow-sm`
+* Max-width per card: standard column width
+* Card spacing: **40–48px** between columns
+
+### 2. Add **gold premium underline** beneath each title
+
+**Accent Gold HEX:** `#C9A24A`
+
+Implementation:
+
+* Thin 2px line under “FOR ARTISTS”, "FOR DESIGNERS", "FOR GALLERIES"
+* Width of line: 32–40px
+* Centered relative to each title
+
+### 3. Typography updates
+
+* Titles: Inter Bold **20–22px**
+* Sub-head bold line: Inter Semibold **18px**
+* Body text: Inter Regular **15–16px** with line-height 1.6
+
+### 4. Improve vertical compression
+
+* Reduce white space between this section and the next.
+* Ideal top margin: **80–96px**
+* Ideal bottom margin: **80–96px**
+
+---
+
+# ✅ SECTION 3 — HOW IT WORKS (3-STEP SECTION)
+
+### 1. Convert steps into premium cards
+
+Each step must feel like a polished feature block.
+
+Card style:
+
+* Background: `#FAFAFA`
+* Border radius: `16px`
+* Padding: `24–32px`
+* Shadow: **none** (keep minimalistic)
+* Icon centered above title
+* Spacing between cards: **24–32px**
+
+### 2. Typography
+
+* Titles: Inter Semibold **18–20px**
+* Text: Inter Regular **14–15px** in #555555
+
+### 3. Reduce vertical spacing above this section
+
+Currently there is too much gap.
+
+Desired:
+
+* Section top margin: **64–80px**
+* Section bottom margin: **64–80px**
+
+---
+
+# ✅ SECTION 4 — VIDEO PREVIEW SECTION
+
+### 1. Thumbnail improvements
+
+Apply consistent styling:
+
+* Border radius: **16px**
+* Soft shadow: **shadow-md**
+* 16:9 ratio placeholder
+* Black overlay with centered play icon
+
+### 2. Text spacing adjustments
+
+* Reduce gap between thumbnail and title to **12–16px**
+* Reduce gap between title and description to **8–12px**
+
+---
+
+# ✅ SECTION 5 — MID-PAGE CTA BLOCK FIXES
+
+### 1. Button color correction
+
+Ensure primary button uses **exact RoomVibe Navy (#0A1C2F)**.
+
+### 2. Spacing adjustments
+
+* Section top/bottom padding: **64px**
+* Title → subtitle spacing: **8–12px**
+* Subtitle → button spacing: **24px**
+
+---
+
+# ✅ SECTION 6 — FOOTER FIXES
+
+### 1. Ensure newsletter subscribe button uses correct navy color
+
+* Background: `#0A1C2F`
+* Text: white
+
+### 2. Input field styling
+
+* Border: `1px solid #E1E1E1`
+* Radius: 8px
+
+### 3. Spacing normalization
+
+* Footer top padding: **64px**
+* Footer bottom padding: **48px**
+
+---
+
+# ✅ SECTION 7 — GLOBAL UI FIXES
+
+### 1. Header Logo Size
+
+* Increase logo size by **20–25%**
+* Maintain sharp resolution
+
+### 2. Navigation Spacing
+
+* Add **12–16px** more horizontal padding between nav items
+
+### 3. Font Weights
+
+Use more **Inter Medium** and **Semibold** across:
+
+* Titles
+* Sub-headlines
+* CTA labels
+
+---
+
+# FILES TO UPDATE
+
+* `/src/pages/Home.tsx` or equivalent
+* `/src/components/Hero.tsx`
+* `/src/components/UserGroups.tsx`
+* `/src/components/HowItWorks.tsx`
+* `/src/components/VideoSection.tsx`
+* `/src/components/CTASection.tsx`
+* `/src/components/Footer.tsx`
+* Global styles for colors & typography
+
+---
+
+# DO NOT MODIFY
+
+* Routing
+* Authentication
+* Dashboard pages
+* Stripe integration
+* Studio functionality
+* Any mobile layout (will be handled in Task #3)
+
+---
+
+# COMPLETION CRITERIA
+
+Task is complete once:
+
+* Hero image is properly placed and styled
+* All buttons use navy color
+* User group section uses card layout with gold accents
+* How It Works section looks premium and balanced
+* Video section styled consistently
+* Footer newsletter button corrected
+* Navigation and logo spacing improved
+* Desktop layout looks cohesive, premium, balanced, and consistent
+
+---
+
+# NEXT STEP
+
+After this is complete, the user will:
+
+1. Review full desktop version visually
+2. Trigger **Agent Task #3** for mobile optimization
+
+**End of Task #2**
