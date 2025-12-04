@@ -316,41 +316,41 @@ function TopNav() {
   const { user } = useAuth();
 
   return (
-    <header className="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/80 border-b border-rv-neutral">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-28 md:h-32 items-center justify-between">
+    <header className="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/95 border-b border-gray-100">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="flex h-20 lg:h-24 items-center justify-between">
           <a href="#home" className="flex items-center">
             <img 
               src="/roomvibe-logo-transparent.png" 
               alt="RoomVibe" 
-              className="h-24 md:h-28 w-auto"
+              className="h-14 lg:h-16 w-auto"
             />
           </a>
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-            <a href="#how" className="text-rv-text hover:text-rv-primary transition-colors">
+          <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
+            <a href="#how" className="text-[#1A1A1A] hover:text-[#0A1C2F] transition-colors">
               How it works
             </a>
-            <a href="#/pricing" className="text-rv-text hover:text-rv-primary transition-colors">
+            <a href="#/pricing" className="text-[#1A1A1A] hover:text-[#0A1C2F] transition-colors">
               Pricing
             </a>
-            <a href="#/studio" className="text-rv-text hover:text-rv-primary transition-colors">
+            <a href="#/studio" className="text-[#1A1A1A] hover:text-[#0A1C2F] transition-colors">
               Studio
             </a>
             {user ? (
               <>
-                <a href="#/dashboard" className="text-rv-text hover:text-rv-primary transition-colors">
+                <a href="#/dashboard" className="text-[#1A1A1A] hover:text-[#0A1C2F] transition-colors">
                   Dashboard
                 </a>
-                <span className="text-xs text-rv-textMuted">({user.role})</span>
+                <span className="text-xs text-gray-400">({user.role})</span>
               </>
             ) : (
               <>
-                <a href="#/login" className="text-rv-text hover:text-rv-primary transition-colors">
+                <a href="#/login" className="text-[#1A1A1A] hover:text-[#0A1C2F] transition-colors">
                   Login
                 </a>
                 <a
                   href="#/register"
-                  className="inline-flex items-center rounded-rvMd px-5 py-2.5 text-white font-semibold bg-rv-primary hover:bg-rv-primaryHover transition-all shadow-rvSoft hover:shadow-rvElevated"
+                  className="inline-flex items-center px-5 py-2.5 rounded-lg text-white font-semibold bg-[#0A1C2F] hover:bg-[#0d2340] transition-colors shadow-sm"
                 >
                   Sign Up
                 </a>
@@ -359,7 +359,7 @@ function TopNav() {
           </nav>
           <button
             aria-label="Open menu"
-            className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-rvSm border border-rv-neutral text-rv-primary hover:bg-rv-surface transition-colors"
+            className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 text-[#0A1C2F] hover:bg-gray-50 transition-colors"
             onClick={() => setOpen((v) => !v)}
           >
             <MenuIcon className="h-5 w-5" />
@@ -367,37 +367,35 @@ function TopNav() {
         </div>
       </div>
       {open && (
-        <div className="md:hidden border-t border-rv-neutral bg-white">
-          <div className="mx-auto max-w-7xl px-4 py-4 text-sm">
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col gap-2 font-medium">
-                <a onClick={() => setOpen(false)} href="#how" className="py-2 text-rv-text hover:text-rv-primary transition-colors">
-                  How it works
+        <div className="md:hidden border-t border-gray-100 bg-white">
+          <div className="mx-auto max-w-7xl px-6 py-4 text-sm">
+            <div className="flex flex-col gap-1 font-medium">
+              <a onClick={() => setOpen(false)} href="#how" className="py-3 text-[#1A1A1A] hover:text-[#0A1C2F] transition-colors">
+                How it works
+              </a>
+              <a onClick={() => setOpen(false)} href="#/pricing" className="py-3 text-[#1A1A1A] hover:text-[#0A1C2F] transition-colors">
+                Pricing
+              </a>
+              <a onClick={() => setOpen(false)} href="#/studio" className="py-3 text-[#1A1A1A] hover:text-[#0A1C2F] transition-colors">
+                Studio
+              </a>
+              {user ? (
+                <a onClick={() => setOpen(false)} href="#/dashboard" className="py-3 text-[#1A1A1A] hover:text-[#0A1C2F] transition-colors">
+                  Dashboard
                 </a>
-                <a onClick={() => setOpen(false)} href="#/pricing" className="py-2 text-rv-text hover:text-rv-primary transition-colors">
-                  Pricing
+              ) : (
+                <a onClick={() => setOpen(false)} href="#/login" className="py-3 text-[#1A1A1A] hover:text-[#0A1C2F] transition-colors">
+                  Login
                 </a>
-                <a onClick={() => setOpen(false)} href="#/studio" className="py-2 text-rv-text hover:text-rv-primary transition-colors">
-                  Studio
-                </a>
-                {user ? (
-                  <a onClick={() => setOpen(false)} href="#/dashboard" className="py-2 text-rv-text hover:text-rv-primary transition-colors">
-                    Dashboard
-                  </a>
-                ) : (
-                  <a onClick={() => setOpen(false)} href="#/login" className="py-2 text-rv-text hover:text-rv-primary transition-colors">
-                    Login
-                  </a>
-                )}
-              </div>
+              )}
             </div>
             {user ? (
-              <div className="mt-3 text-xs text-rv-textMuted">Logged in as {user.role}</div>
+              <div className="mt-3 text-xs text-gray-400">Logged in as {user.role}</div>
             ) : (
               <a
                 href="#/register"
                 onClick={() => setOpen(false)}
-                className="mt-4 inline-flex w-full items-center justify-center rounded-rvMd px-5 py-2.5 text-white font-semibold bg-rv-primary hover:bg-rv-primaryHover transition-all"
+                className="mt-4 inline-flex w-full items-center justify-center px-5 py-3 rounded-lg text-white font-semibold bg-[#0A1C2F] hover:bg-[#0d2340] transition-colors"
               >
                 Sign Up
               </a>
@@ -413,19 +411,17 @@ function TopNav() {
 
 function HomePage() {
   return (
-    <main className="flex flex-col">
-      <div className="order-1">
-        <Hero />
-      </div>
-      <div className="order-3 md:order-2">
-        <HowItWorks />
-      </div>
-      <div className="order-2 md:order-3">
-        <AudienceSection />
-      </div>
-      <div className="order-4">
-        <CTASection />
-      </div>
+    <main className="flex flex-col bg-white">
+      {/* Section 1: Hero */}
+      <Hero />
+      {/* Section 2: User Groups */}
+      <UserGroupsSection />
+      {/* Section 3: How It Works */}
+      <HowItWorks />
+      {/* Section 4: Dashboard Videos */}
+      <DashboardVideosSection />
+      {/* Section 5: Mid-Page CTA */}
+      <MidPageCTA />
     </main>
   );
 }
@@ -434,100 +430,94 @@ function HomePage() {
 
 function Hero() {
   return (
-    <section id="home" className="w-full">
-      <a href="#/studio" className="block w-full cursor-pointer">
-        <img
-          src="/hero.png"
-          alt="RoomVibe – Visualize Art on Your Walls"
-          className="w-full h-auto"
-        />
-      </a>
+    <section id="home" className="w-full bg-white py-16 lg:py-24">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+          {/* Left Column - 55% */}
+          <div className="w-full lg:w-[55%]">
+            <h1 className="text-4xl sm:text-5xl lg:text-[56px] font-bold text-[#1A1A1A] leading-tight tracking-tight mb-5">
+              See Art in Your Space — Instantly.
+            </h1>
+            <h2 className="text-lg sm:text-xl lg:text-[22px] text-[#333333] leading-relaxed mb-8 font-normal">
+              Turn every artwork into a real experience by letting your clients preview it on their own walls with one simple upload.
+            </h2>
+            <div className="flex flex-wrap gap-3 mb-5">
+              <a
+                href="#/register"
+                className="inline-flex items-center justify-center px-7 py-3.5 bg-[#0A1C2F] text-white font-semibold rounded-lg hover:bg-[#0d2340] transition-colors shadow-sm"
+              >
+                Start Free
+              </a>
+              <a
+                href="#how"
+                className="inline-flex items-center justify-center px-7 py-3.5 bg-transparent border-[1.5px] border-[#0A1C2F] text-[#0A1C2F] font-medium rounded-lg hover:bg-[#0A1C2F]/5 transition-colors"
+              >
+                Watch How It Works
+              </a>
+            </div>
+            <p className="text-[13px] sm:text-sm text-[#8D8D8D] font-medium">
+              No Photoshop · Realistic Mockups · For Artists, Designers & Galleries
+            </p>
+          </div>
+          {/* Right Column - 45% */}
+          <div className="w-full lg:w-[45%]">
+            <div className="relative rounded-xl overflow-hidden shadow-lg">
+              <img
+                src="/hero.png"
+                alt="RoomVibe Art Visualization Preview"
+                className="w-full h-auto"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
 
-/* ------------- Audience Icons ------------- */
 
-function ArtistIcon() {
-  return (
-    <svg className="w-10 h-10 md:w-12 md:h-12" viewBox="0 0 48 48" fill="none" stroke="#D8B46A" strokeWidth="1.5">
-      <circle cx="24" cy="24" r="18" />
-      <circle cx="18" cy="20" r="3" />
-      <circle cx="30" cy="20" r="3" />
-      <circle cx="24" cy="32" r="3" />
-      <circle cx="16" cy="28" r="2" />
-      <circle cx="32" cy="28" r="2" />
-    </svg>
-  );
-}
+/* ------------- User Groups Section (Artists/Designers/Galleries) ------------- */
 
-function DesignerIcon() {
-  return (
-    <svg className="w-10 h-10 md:w-12 md:h-12" viewBox="0 0 48 48" fill="none" stroke="#D8B46A" strokeWidth="1.5">
-      <path d="M12 36L24 6L36 36" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M16 28H32" strokeLinecap="round" />
-      <path d="M24 6L32 24" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function GalleryIcon() {
-  return (
-    <svg className="w-10 h-10 md:w-12 md:h-12" viewBox="0 0 48 48" fill="none" stroke="#D8B46A" strokeWidth="1.5">
-      <rect x="8" y="12" width="32" height="24" rx="2" />
-      <path d="M8 32L16 24L22 30L32 20L40 28" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="18" cy="20" r="3" />
-    </svg>
-  );
-}
-
-/* ------------- Audience Section (Artists/Designers/Galleries) ------------- */
-
-function AudienceSection() {
-  const audiences = [
+function UserGroupsSection() {
+  const groups = [
     {
-      icon: <ArtistIcon />,
-      title: "Artists",
-      line1: "Bring your art to life with true-to-size previews.",
-      line2: "Let customers see paintings directly on their walls.",
-      pricing: "From €19/mo",
+      label: "FOR ARTISTS",
+      boldLine: "Give your clients the power to see your artwork in their own space.",
+      valueLine: "With premium room mockups and a simple widget on your website, your art stops being an image — it becomes part of their life.",
+      supportingText: "Embed a 'View in Room' button on your online store. Let buyers visualize before purchasing — increasing trust and reducing hesitation."
     },
     {
-      icon: <DesignerIcon />,
-      title: "Designers",
-      line1: "Quickly test artworks in real project layouts.",
-      line2: "Create visuals that win client approval fast.",
-      pricing: "From €29/mo",
+      label: "FOR DESIGNERS",
+      boldLine: "Upload your client's wall photo and test artworks instantly.",
+      valueLine: "No more guessing — see exactly how each piece looks in the actual space before making a recommendation.",
+      supportingText: "Perfect for interior designers and consultants. Create stunning presentations in minutes and speed up your proposal workflow."
     },
     {
-      icon: <GalleryIcon />,
-      title: "Galleries",
-      line1: "Show collections in styled interior scenes.",
-      line2: "Help collectors choose faster with realism.",
-      pricing: "From €49/mo",
+      label: "FOR GALLERIES",
+      boldLine: "Create virtual exhibitions that collectors can explore from anywhere.",
+      valueLine: "Curate collections with polished room scenes and let viewers experience art as if they were walking through your gallery.",
+      supportingText: "Bring the gallery experience online. Perfect for showcasing collections to international clients without shipping a single piece."
     },
   ];
+
   return (
-    <section className="py-20 bg-[#F7F3EE]">
-      <div className="mx-auto max-w-[1280px] px-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-20 md:gap-32">
-          {audiences.map((a, i) => (
-            <div key={i} className="text-center">
-              <div className="flex justify-center mb-6 text-[#D8B46A]">
-                {a.icon}
-              </div>
-              <h3 className="text-2xl font-semibold text-[#1A2240] tracking-tight">
-                {a.title}
+    <section className="py-20 lg:py-24 bg-white">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 lg:gap-10">
+          {groups.map((g, i) => (
+            <div key={i} className="text-left">
+              <h3 className="text-xl lg:text-[22px] font-bold text-[#0A1C2F] mb-3 tracking-tight">
+                {g.label}
               </h3>
-              <p className="mt-3 text-[#333] leading-relaxed text-sm md:text-base">
-                {a.line1}
+              <p className="text-lg font-semibold text-[#1A1A1A] mb-2 leading-snug">
+                {g.boldLine}
               </p>
-              <p className="mt-1 text-[#333] leading-relaxed text-sm md:text-base">
-                {a.line2}
+              <p className="text-base font-semibold text-[#333] mb-4 leading-relaxed">
+                {g.valueLine}
               </p>
-              <a href="#/pricing" className="mt-5 inline-block text-[#1A2240] font-semibold hover:underline">
-                {a.pricing} · See Plans →
-              </a>
+              <p className="text-[15px] text-[#333] leading-relaxed">
+                {g.supportingText}
+              </p>
             </div>
           ))}
         </div>
@@ -2508,28 +2498,70 @@ function Studio() {
 
 /* ------------- How it works ------------- */
 
+function HowItWorksIcon({ type }: { type: 'upload' | 'add' | 'see' }) {
+  if (type === 'upload') {
+    return (
+      <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" strokeLinecap="round" strokeLinejoin="round" />
+        <polyline points="17 8 12 3 7 8" strokeLinecap="round" strokeLinejoin="round" />
+        <line x1="12" y1="3" x2="12" y2="15" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  if (type === 'add') {
+    return (
+      <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <rect x="3" y="3" width="18" height="18" rx="2" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
+        <path d="M21 15l-5-5L5 21" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+  return (
+    <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 16v-4" strokeLinecap="round" />
+      <path d="M12 8h.01" strokeLinecap="round" />
+      <path d="M9 9l3 3 3-3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function HowItWorks() {
   const steps = [
-    { icon: <RoomIcon />, title: "Pick a room", desc: "Choose from presets or upload your own wall." },
-    { icon: <ArtIcon />, title: "Select artwork", desc: "Browse paintings and instantly preview them." },
-    { icon: <RulerIcon />, title: "True-to-size", desc: "Artwork is scaled accurately to your wall." },
+    { 
+      icon: <HowItWorksIcon type="upload" />, 
+      title: "Upload Your Space", 
+      desc: "Clients take a quick photo of their wall — no measurements needed." 
+    },
+    { 
+      icon: <HowItWorksIcon type="add" />, 
+      title: "Add the Artwork", 
+      desc: "Place any piece into their real environment for instant realism." 
+    },
+    { 
+      icon: <HowItWorksIcon type="see" />, 
+      title: "See It. Feel It. Choose It.", 
+      desc: "A visualization that builds confidence and speeds decisions." 
+    },
   ];
+  
   return (
-    <section id="how" className="py-16 bg-white">
-      <div className="mx-auto max-w-[1280px] px-6">
-        <h2 className="text-3xl md:text-4xl font-semibold text-center mb-14 text-[#1A2240] tracking-tight">
-          How it works
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-16 max-w-[1000px] mx-auto">
+    <section id="how" className="py-20 lg:py-24 bg-white">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">
           {steps.map((s, i) => (
-            <div key={i} className="text-center space-y-4">
-              <div className="inline-flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-2xl bg-[#1A2240]/5 text-[#1A2240]">
+            <div 
+              key={i} 
+              className="bg-[#FAFAFA] rounded-xl p-8 text-center"
+            >
+              <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-white text-[#0A1C2F] mb-5 shadow-sm">
                 {s.icon}
               </div>
-              <h3 className="text-xl md:text-2xl font-semibold text-[#1A2240] tracking-tight">
+              <h3 className="text-lg lg:text-xl font-semibold text-[#1A1A1A] mb-3 tracking-tight">
                 {s.title}
               </h3>
-              <p className="text-[#666] leading-relaxed text-sm md:text-base">
+              <p className="text-[15px] text-[#555] leading-relaxed">
                 {s.desc}
               </p>
             </div>
@@ -2540,7 +2572,88 @@ function HowItWorks() {
   );
 }
 
-/* ------------- CTA Section ------------- */
+/* ------------- Dashboard Videos Section ------------- */
+
+function DashboardVideosSection() {
+  const videos = [
+    {
+      title: "Artist Dashboard Overview",
+      description: "See how artists manage their artworks and embed the visualization widget.",
+      thumbnail: "/hero.png"
+    },
+    {
+      title: "Designer Tools in Action",
+      description: "Watch how designers upload client spaces and create stunning presentations.",
+      thumbnail: "/hero.png"
+    },
+    {
+      title: "Gallery Virtual Exhibitions",
+      description: "Explore how galleries curate and publish online collections.",
+      thumbnail: "/hero.png"
+    },
+  ];
+
+  return (
+    <section className="py-20 lg:py-24 bg-white">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">
+          {videos.map((v, i) => (
+            <div key={i} className="flex flex-col">
+              <h3 className="text-lg lg:text-xl font-semibold text-[#1A1A1A] mb-2 tracking-tight">
+                {v.title}
+              </h3>
+              <p className="text-[15px] text-[#555] mb-4 leading-relaxed">
+                {v.description}
+              </p>
+              <div className="relative aspect-video rounded-lg overflow-hidden bg-[#0A1C2F]/10 group cursor-pointer">
+                <img 
+                  src={v.thumbnail} 
+                  alt={v.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-[#0A1C2F]/40 flex items-center justify-center group-hover:bg-[#0A1C2F]/50 transition-colors">
+                  <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                    <svg className="w-7 h-7 text-[#0A1C2F] ml-1" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M8 5v14l11-7-11-7z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <a href="#" className="mt-3 text-sm font-medium text-[#0A1C2F] hover:underline">
+                Watch Video →
+              </a>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------- Mid-Page CTA ------------- */
+
+function MidPageCTA() {
+  return (
+    <section className="py-16 lg:py-20 bg-[#F9F9F9]">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8 text-center">
+        <h3 className="text-2xl sm:text-3xl lg:text-[32px] font-bold text-[#1A1A1A] mb-4 tracking-tight">
+          Ready to See Art in Your Space?
+        </h3>
+        <p className="text-lg text-[#555] mb-8">
+          Start Free and try RoomVibe in seconds.
+        </p>
+        <a
+          href="#/register"
+          className="inline-flex items-center justify-center px-8 py-4 bg-[#0A1C2F] text-white font-semibold rounded-lg hover:bg-[#0d2340] transition-colors shadow-sm text-base"
+        >
+          Start Free
+        </a>
+      </div>
+    </section>
+  );
+}
+
+/* ------------- CTA Section (Legacy - kept for reference) ------------- */
 
 function CTASection() {
   return (
@@ -2731,36 +2844,145 @@ function CodeCard({ title, code }: { title: string; code: string }) {
 
 function SiteFooter() {
   const { resetConsent } = useCookieConsent();
+  const [email, setEmail] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email) {
+      setSubscribed(true);
+      setEmail('');
+    }
+  };
 
   return (
-    <footer className="mt-20 border-t border-rv-neutral bg-white">
-      <Container>
-        <div className="flex flex-col gap-4 py-10 md:flex-row md:items-center md:justify-between">
-          <div className="text-sm text-rv-textMuted font-medium">
-            © 2025 RoomVibe. All rights reserved.
+    <footer className="bg-[#0A1C2F] text-white">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8 py-16 lg:py-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
+          {/* Column 1: Branding */}
+          <div>
+            <img 
+              src="/roomvibe-logo-transparent.png" 
+              alt="RoomVibe" 
+              className="h-16 w-auto mb-4 brightness-0 invert"
+            />
+            <p className="text-white/80 text-sm mb-3">
+              Visualize Art in Your Space.
+            </p>
+            <p className="text-white/60 text-sm">
+              © 2025 RoomVibe
+            </p>
           </div>
-          <div className="flex flex-wrap gap-6 text-sm font-medium">
-            <a href="#/studio" className="text-rv-text hover:text-rv-primary transition-colors">
-              Studio
-            </a>
-            <a href="#/privacy" className="text-rv-text hover:text-rv-primary transition-colors">
-              Privacy
-            </a>
-            <a href="#/terms" className="text-rv-text hover:text-rv-primary transition-colors">
-              Terms
-            </a>
-            <a href="#/upload-consent" className="text-rv-text hover:text-rv-primary transition-colors">
-              Upload Consent
-            </a>
-            <button
-              onClick={resetConsent}
-              className="text-rv-primary hover:text-rv-primaryHover font-semibold underline transition-colors"
-            >
-              Cookie Settings
-            </button>
+
+          {/* Column 2: Product */}
+          <div>
+            <h4 className="font-semibold text-white mb-4 text-sm uppercase tracking-wide">
+              Product
+            </h4>
+            <ul className="space-y-3 text-sm">
+              <li>
+                <a href="#how" className="text-white/80 hover:text-white transition-colors">
+                  How It Works
+                </a>
+              </li>
+              <li>
+                <a href="#artists" className="text-white/80 hover:text-white transition-colors">
+                  For Artists
+                </a>
+              </li>
+              <li>
+                <a href="#designers" className="text-white/80 hover:text-white transition-colors">
+                  For Designers
+                </a>
+              </li>
+              <li>
+                <a href="#galleries" className="text-white/80 hover:text-white transition-colors">
+                  For Galleries
+                </a>
+              </li>
+              <li>
+                <a href="#/pricing" className="text-white/80 hover:text-white transition-colors">
+                  Pricing
+                </a>
+              </li>
+              <li>
+                <a href="#/register" className="text-white/80 hover:text-white transition-colors">
+                  Start Free
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 3: Company */}
+          <div>
+            <h4 className="font-semibold text-white mb-4 text-sm uppercase tracking-wide">
+              Company
+            </h4>
+            <ul className="space-y-3 text-sm">
+              <li>
+                <a href="#about" className="text-white/80 hover:text-white transition-colors">
+                  About RoomVibe
+                </a>
+              </li>
+              <li>
+                <a href="#contact" className="text-white/80 hover:text-white transition-colors">
+                  Contact
+                </a>
+              </li>
+              <li>
+                <a href="#/terms" className="text-white/80 hover:text-white transition-colors">
+                  Terms of Service
+                </a>
+              </li>
+              <li>
+                <a href="#/privacy" className="text-white/80 hover:text-white transition-colors">
+                  Privacy Policy
+                </a>
+              </li>
+              <li>
+                <button
+                  onClick={resetConsent}
+                  className="text-white/80 hover:text-white transition-colors text-left"
+                >
+                  Cookie Settings
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          {/* Column 4: Newsletter */}
+          <div>
+            <h4 className="font-semibold text-white mb-2 text-sm uppercase tracking-wide">
+              Stay Inspired. Stay Ahead.
+            </h4>
+            <p className="text-white/70 text-sm mb-4 leading-relaxed">
+              Get fresh updates from the worlds of art, design, and RoomVibe. Only good vibes — no spam, ever.
+            </p>
+            {subscribed ? (
+              <p className="text-[#C9A24A] font-medium text-sm">
+                Thanks for subscribing!
+              </p>
+            ) : (
+              <form onSubmit={handleSubscribe} className="flex gap-2">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email…"
+                  className="flex-1 px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/50 text-sm focus:outline-none focus:border-white/40 transition-colors"
+                  required
+                />
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 bg-white text-[#0A1C2F] font-semibold rounded-lg hover:bg-white/90 transition-colors text-sm"
+                >
+                  Subscribe
+                </button>
+              </form>
+            )}
           </div>
         </div>
-      </Container>
+      </div>
     </footer>
   );
 }

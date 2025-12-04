@@ -1,0 +1,267 @@
+# AGENT TASK #1 — ROOMVIBE HOMEPAGE REDESIGN (ULTRA-DETAILED IMPLEMENTATION BRIEF)
+
+**Goal:** Fully rebuild the RoomVibe homepage according to the new premium layout, copy, and visual identity. This task covers ONLY the desktop version. Mobile optimizations will follow after we review the desktop output.
+
+---
+
+## ✅ GENERAL GUIDELINES
+
+* Use **white background (#FFFFFF)** for all homepage sections (except footer).
+* Use **charcoal text (#1A1A1A)** for all body text.
+* Use **RoomVibe Navy (#0A1C2F)** for primary CTAs and footer.
+* Use **accent gold (#C9A24A)** sparingly for premium details (small icons or underline accents).
+* Typography: Inter font family (Bold, SemiBold, Medium, Regular).
+* Layout must follow the exact section order and spacing described below.
+* Do NOT adjust mobile layout yet — only implement desktop version.
+* Replace all placeholder images when the user provides final assets.
+
+---
+
+# SECTION 1 — HERO SECTION (DESKTOP)
+
+### **Left Column (55% width)**
+
+**H1:** `See Art in Your Space — Instantly.`
+
+* Font: Inter Bold 56–60px
+* Color: #1A1A1A
+* Margin-bottom: 16–20px
+
+**H2:** `Turn every artwork into a real experience by letting your clients preview it on their own walls with one simple upload.`
+
+* Font: Inter Regular/Medium 20–22px
+* Color: #333333
+* Margin-bottom: 28–32px
+
+**Primary CTA button:** `Start Free`
+
+* Background: RoomVibe Navy (#0A1C2F)
+* Text: White (#FFFFFF)
+* Padding: 14px 28px
+* Radius: 8px
+* Font-weight: Semibold
+* Margin-right: 12px
+
+**Secondary CTA button:** `Watch How It Works`
+
+* Background: transparent
+* Border: 1.5px solid #0A1C2F
+* Text color: #0A1C2F
+* Padding: 14px 28px
+* Radius: 8px
+* Font-weight: Medium
+
+**Micro-benefits (under CTAs):**
+
+* `No Photoshop` — `Realistic Mockups` — `For Artists, Designers & Galleries`
+* Font: Inter Medium 13–14px
+* Color: #8D8D8D
+* Margin-top: 18px
+
+### **Right Column (45% width)**
+
+* Insert mockup placeholder image.
+* Width: 100%
+* Rounded corners (lg)
+* Soft shadow
+* Center image vertically relative to H1 block.
+
+---
+
+# SECTION 2 — USER GROUPS (ARTISTS / DESIGNERS / GALLERIES)
+
+3 equal-width columns on desktop.
+Vertical stacking on mobile (later phase).
+Use generous spacing.
+
+### **COLUMN STRUCTURE FOR EACH GROUP**
+
+#### Title:
+
+* FOR ARTISTS / FOR DESIGNERS / FOR GALLERIES
+* Font: Inter Bold 20–22px
+* Margin-bottom: 12px
+
+#### Bold Opening Line:
+
+Example (Artists): `Give your clients the power to see your artwork in their own space.`
+
+* Font: Inter Semibold 18px
+* Margin-bottom: 8px
+
+#### Bold Value Line:
+
+Example (Artists): `With premium room mockups and a simple widget on your website, your art stops being an image — it becomes part of their life.`
+
+#### Supporting Copy (2 sentences):
+
+Use finalized English text provided by the user.
+
+* Font: Inter Regular 15–16px
+* Color: #333
+* Line-height: 1.6
+
+---
+
+# SECTION 3 — HOW IT WORKS (3 STEPS)
+
+Horizontal 3-column layout.
+Each block is a minimal white card.
+
+### STEP BLOCK STRUCTURE
+
+**Step 1 Title:** `Upload Your Space`
+Supporting text: `Clients take a quick photo of their wall — no measurements needed.`
+
+**Step 2 Title:** `Add the Artwork`
+Supporting text: `Place any piece into their real environment for instant realism.`
+
+**Step 3 Title:** `See It. Feel It. Choose It.`
+Supporting text: `A visualization that builds confidence and speeds decisions.`
+
+### Style:
+
+* Icons (simple line icons) above titles.
+* Titles: Inter Semibold 18–20px
+* Supporting text: Inter Regular 14–15px, #555
+* Card padding: 24–32px
+* Card background: #FAFAFA
+* Border-radius: 12px
+* Gap between cards: 24–32px
+
+---
+
+# SECTION 4 — DASHBOARD VIDEOS
+
+3-column layout.
+Each column contains:
+
+### Structure:
+
+**Title:**
+
+* Artist Dashboard Overview
+* Designer Tools in Action
+* Gallery Virtual Exhibitions
+
+**Description (1 sentence):**
+Use finalized English text.
+
+**Thumbnail Placeholder:**
+
+* 16:9 ratio
+* Full width
+* Rounded corners
+* Dark overlay with ▶ icon
+
+**Optional CTA:** `Watch Video`
+
+* Small text link under thumbnail
+
+---
+
+# SECTION 5 — MID-PAGE CTA BLOCK
+
+Centered block with clean whitespace.
+
+### Content:
+
+**H3:** `Ready to See Art in Your Space?`
+
+* Font: Inter Bold 28–32px
+
+**Subtext:** `Start Free and try RoomVibe in seconds.`
+
+* Font: Inter Regular 18px
+* Margin-bottom: 24px
+
+**Primary Button:** `Start Free`
+
+* Same styling as hero CTA
+
+### Background:
+
+* White or subtle light grey (#F9F9F9)
+* Padding top/bottom: 48–64px
+
+---
+
+# SECTION 6 — FOOTER (FINAL)
+
+Footer background: RoomVibe Navy (#0A1C2F)
+Footer text: White (#FFFFFF)
+
+### **Column 1 — Branding**
+
+* RoomVibe logo
+* Tagline: `Visualize Art in Your Space.`
+* © 2025 RoomVibe
+
+### **Column 2 — Product Links**
+
+* How It Works
+* For Artists
+* For Designers
+* For Galleries
+* Pricing
+* Start Free
+
+### **Column 3 — Company**
+
+* About RoomVibe
+* Contact
+* Terms of Service
+* Privacy Policy
+
+### **Column 4 — Newsletter**
+
+**Title:** `Stay Inspired. Stay Ahead.`
+**Copy:** `Get fresh updates from the worlds of art, design, and RoomVibe. Only good vibes — no spam, ever.`
+
+**Email input + button:**
+
+* Input placeholder: `Enter your email…`
+* Button: `Subscribe`
+* Button background: RoomVibe Navy
+* Text: White
+
+---
+
+# FILES TO EDIT
+
+* `/src/pages/Home.tsx` or equivalent homepage component
+* `/src/components/Hero.tsx`
+* `/src/components/UserGroups.tsx`
+* `/src/components/HowItWorks.tsx`
+* `/src/components/VideoSection.tsx`
+* `/src/components/Footer.tsx`
+* Add new components if needed for clarity
+
+---
+
+# DO NOT
+
+* Do not modify authentication.
+* Do not modify dashboard logic.
+* Do not change routes or Stripe files.
+* Do not adjust mobile responsiveness yet.
+
+---
+
+# COMPLETION CRITERIA
+
+Task is considered complete when:
+
+* Desktop homepage reflects the exact structure and copy provided.
+* All sections match spacing, colors, and typography rules.
+* Footer contains newsletter subscription form.
+* No layout overlaps.
+* No placeholder missing.
+
+---
+
+# AFTER COMPLETION
+
+User will review desktop version → then create a new ticket for mobile optimization.
+
+**End of Task #1**
