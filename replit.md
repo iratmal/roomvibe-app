@@ -10,9 +10,15 @@ I prefer simple language in explanations. I like functional programming paradigm
 The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 
 **UI/UX Decisions:**
-- **Color Scheme**: RoomVibe branding palette (Primary #283593, Accent #D8B46A, Neutral #DDE1E7, Text #1A1A1A).
-- **Typography**: Inter font family for all text.
-- **Homepage Layout**: Responsive design featuring a hero section, "How It Works", audience-specific sections, and a CTA.
+- **Color Scheme**: Homepage uses new premium palette (Navy #0A1C2F, Gold accent #C9A24A, Text #1A1A1A, White #FFFFFF). Studio retains original RoomVibe palette (Primary #283593, Accent #D8B46A).
+- **Typography**: Inter font family for all text (Bold, SemiBold, Medium, Regular).
+- **Homepage Layout (Redesigned Dec 2024)**: Premium 6-section desktop layout:
+    - **Hero**: 55%/45% two-column layout with H1 ("See Art in Your Space — Instantly."), H2 subheadline, dual CTAs (Start Free + Watch How It Works), micro-benefits, and mockup image.
+    - **User Groups**: 3-column grid for Artists/Designers/Galleries with label, bold line, value line, and supporting text.
+    - **How It Works**: 3 step cards on #FAFAFA background (Upload, Add, See) with icons and descriptions.
+    - **Dashboard Videos**: 3-column layout with 16:9 thumbnails, play overlay, and Watch Video links.
+    - **Mid-Page CTA**: Centered block on #F9F9F9 with "Ready to See Art in Your Space?" headline and Start Free button.
+    - **Footer**: Navy (#0A1C2F) background with 4 columns (Branding, Product, Company, Newsletter subscription form).
 - **Studio Layout**: A responsive, mobile-first, three-panel editor with dynamic canvas height and hidden navigation for iframe embedding. Polished UI with 44px minimum touch targets, gold-bordered premium buttons, and consistent RoomVibe branding throughout.
 - **Iconography**: Inline SVG components with gold accent.
 - **Artwork Interaction**: Drag-to-move with bounds, diagonal resizing with smart scaling, true physical scale rendering, and frame selection. Mobile touch handling differentiates between scroll and drag.
