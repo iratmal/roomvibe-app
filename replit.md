@@ -10,15 +10,16 @@ I prefer simple language in explanations. I like functional programming paradigm
 The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 
 **UI/UX Decisions:**
-- **Color Scheme**: Homepage uses new premium palette (Navy #0A1C2F, Gold accent #C9A24A, Text #1A1A1A, White #FFFFFF). Studio retains original RoomVibe palette (Primary #283593, Accent #D8B46A).
+- **Color Scheme**: Homepage uses premium palette (Primary Navy #0B1F2A, Gold accent #C9A24A, Text #1A1A1A, White #FFFFFF). Studio retains original RoomVibe palette (Primary #283593, Accent #D8B46A).
 - **Typography**: Inter font family for all text (Bold, SemiBold, Medium, Regular).
-- **Homepage Layout (Redesigned Dec 2024)**: Premium 6-section desktop layout:
-    - **Hero**: 55%/45% two-column layout with H1 ("See Art in Your Space — Instantly."), H2 subheadline, dual CTAs (Start Free + Watch How It Works), micro-benefits, and mockup image.
-    - **User Groups**: 3-column grid for Artists/Designers/Galleries with label, bold line, value line, and supporting text.
-    - **How It Works**: 3 step cards on #FAFAFA background (Upload, Add, See) with icons and descriptions.
-    - **Dashboard Videos**: 3-column layout with 16:9 thumbnails, play overlay, and Watch Video links.
-    - **Mid-Page CTA**: Centered block on #F9F9F9 with "Ready to See Art in Your Space?" headline and Start Free button.
-    - **Footer**: Navy (#0A1C2F) background with 4 columns (Branding, Product, Company, Newsletter subscription form).
+- **Homepage Layout (Redesigned Dec 2024)**: Premium 5-section desktop layout (section order: Hero → User Groups → Video Section → How It Works → CTA):
+    - **Hero**: 55%/45% two-column layout (max-w-1280px), H1/H2, dual CTAs (px-7 py-3.5, rounded-lg), micro-benefits. Image: max-w-460px, rounded-[16px], subtle shadow.
+    - **User Groups**: 3-column grid (gap-8), cards with border-[#EAEAEA], rounded-[16px], p-8, gold underline (w-40px h-2px #C9A24A). Section: mt-20 mb-20.
+    - **Video Section**: Moved ABOVE How It Works. 3-column grid (gap-8), 16:9 thumbnails with rounded-[16px], shadow-md, play overlay.
+    - **How It Works**: 3 step cards with bg-[#FAFAFA], rounded-[16px], p-8. Icons in w-14 h-14 rounded-full bg-[#F0F0F0]. Section: py-16.
+    - **Mid-Page CTA**: Centered block on #F9F9F9, py-16. Navy button bg-[#0B1F2A].
+    - **Footer**: Navy (#0B1F2A) background with 4 columns (Branding, Product, Company, Newsletter). Subscribe button with px-7 py-3.5.
+- **Header**: Logo h-20 lg:h-24, nav gap-12 spacing. Sign Up button uses navy #0B1F2A.
 - **Studio Layout**: A responsive, mobile-first, three-panel editor with dynamic canvas height and hidden navigation for iframe embedding. Polished UI with 44px minimum touch targets, gold-bordered premium buttons, and consistent RoomVibe branding throughout.
 - **Iconography**: Inline SVG components with gold accent.
 - **Artwork Interaction**: Drag-to-move with bounds, diagonal resizing with smart scaling, true physical scale rendering, and frame selection. Mobile touch handling differentiates between scroll and drag.
