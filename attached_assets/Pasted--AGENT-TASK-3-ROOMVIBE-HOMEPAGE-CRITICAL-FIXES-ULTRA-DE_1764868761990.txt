@@ -1,0 +1,292 @@
+# AGENT TASK #3 — ROOMVIBE HOMEPAGE CRITICAL FIXES (ULTRA-DETAILED)
+
+**Goal:** Apply critical layout, styling, spacing, and structural corrections to the homepage according to the final RoomVibe design system. This task focuses ONLY on desktop. Mobile fixes will be a separate task.
+
+This task overrides any previous styling. Follow the instructions EXACTLY as written.
+
+---
+
+# 🎨 IMPORTANT BRAND COLORS
+
+**Primary Navy (FOR ALL BUTTONS):** `#0B1F2A`  ← use this color everywhere.
+
+**Gold Accent:** `#C9A24A`  ← use only for underline decoration.
+
+**Text:** `#1A1A1A`
+
+**Light Grey Borders:** `#EAEAEA`
+
+---
+
+# ✅ SECTION 1 — HERO SECTION CRITICAL FIXES
+
+## 1. HERO LAYOUT FIX
+
+The hero image must be properly contained inside a structured two-column layout.
+
+**Correct structure:**
+
+```
+div.container (max-width: 1280px, mx-auto, px-6)
+ → div.flex (justify-between, items-center)
+   → LEFT COLUMN (55% width)
+   → RIGHT COLUMN (45% width)
+```
+
+### LEFT COLUMN CONTENT ORDER:
+
+1. H1 — "See Art in Your Space — Instantly."
+2. H2 — subtitle
+3. CTA buttons
+4. Micro-benefits
+
+### RIGHT COLUMN:
+
+Place the hero mockup image here.
+
+* Width: 100%
+* Max-width: 460px
+* Border-radius: 16px
+* Box-shadow: `0 8px 24px rgba(0,0,0,0.08)`
+* Object-fit: cover
+* Image must be vertically aligned with center of left content.
+
+### REMOVE ALL PREVIOUS HERO WRAPPERS.
+
+Use this layout only.
+
+---
+
+## 2. BUTTON COLOR FIX (CRITICAL)
+
+ALL CTA BUTTONS MUST USE:
+
+**Primary CTA (filled):**
+
+* Background: `#0B1F2A`
+* Text: white
+* Border-radius: 8px
+* Padding: 14px 28px
+
+**Secondary CTA (outline):**
+
+* Border: 1.5px solid `#0B1F2A`
+* Text color: `#0B1F2A`
+* Background: transparent
+* Border-radius: 8px
+
+Apply this to ALL:
+
+* Start Free
+* Watch How It Works
+* Start Visualizing
+* Newsletter Subscribe
+
+Do NOT use tailwind default "bg-black" or "bg-gray-900". Only use `#0B1F2A`.
+
+---
+
+## 3. HERO SPACING FIX
+
+* Reduce excessive white space.
+* H1 → H2: 20–24px
+* H2 → CTAs: 28–32px
+* CTAs → micro-benefits: 16–20px
+
+---
+
+# ✅ SECTION 2 — USER GROUP CARDS (FOR ARTISTS / DESIGNERS / GALLERIES)
+
+### Each card must follow this structure:
+
+```
+div.card
+- bg-white
+- border border-[#EAEAEA]
+- rounded-[16px]
+- shadow-sm
+- p-8 (32px)
+- flex flex-col gap-4
+```
+
+### INSIDE EACH CARD:
+
+* Title: Inter Bold 20–22px
+* Subheadline (bold line): Inter Semibold 18px
+* Body text: Inter Regular 15–16px, leading-relaxed
+* Gold underline:
+
+```
+div.w-[40px] h-[2px] bg-[#C9A24A] mt-1 mb-3
+```
+
+### GRID FIX:
+
+* 3 columns on desktop: `grid grid-cols-3 gap-8`
+* gap must be EXACTLY `32px`
+* Remove oversized margins.
+* Section margin-top and bottom: `mt-20 mb-20` (80px)
+
+---
+
+# ✅ SECTION 3 — VIDEO SECTION (MOVE ABOVE HOW IT WORKS)
+
+### REORDER SECTIONS (IMPORTANT)
+
+**The order must be:**
+
+1. Hero
+2. User Group Cards
+3. **Video Section** ← Move here
+4. **How It Works** ← Place after videos
+5. CTA block
+6. Footer
+
+### VIDEO THUMBNAIL STYLE:
+
+```
+rounded-[16px]
+shadow-md
+aspect-video (16:9)
+object-cover
+relative
+```
+
+Overlay play icon centered.
+
+Spacing fixes:
+
+* Title → description: 8–12px
+* Description → thumbnail: 16px
+* Cards gap: 32px
+
+---
+
+# ✅ SECTION 4 — HOW IT WORKS (REBUILD CARDS)
+
+### Move entire section BELOW videos.
+
+Each step card must use:
+
+```
+bg-[#FAFAFA]
+rounded-[16px]
+p-8
+shadow-none
+text-center
+flex flex-col items-center gap-3
+```
+
+Typography:
+
+* Title: Inter Semibold 18–20px
+* Description: Inter Regular 14–15px, #555
+
+Icons must be inside a circular soft-grey container:
+
+```
+w-14 h-14 rounded-full bg-[#F0F0F0] flex items-center justify-center
+```
+
+Spacing:
+
+* Section top: 64px
+* Section bottom: 64px
+* Card gap: 32px
+
+---
+
+# ✅ SECTION 5 — CTA BLOCK FIXES
+
+Apply navy button fix here too.
+
+Spacing:
+
+* Top padding: 64px
+* Bottom padding: 64px
+* Subtitle → button: 24px
+
+---
+
+# ✅ SECTION 6 — HEADER FIXES
+
+### 1. LOGO SIZE FIX
+
+Increase logo by **20–25%**.
+
+### 2. NAVIGATION SPACING FIX
+
+Add **12–16px** extra horizontal spacing between nav links.
+
+---
+
+# 🚫 DO NOT:
+
+* Do NOT modify mobile layout.
+* Do NOT change routing.
+* Do NOT change any dashboard logic.
+* Do NOT alter authentication.
+* Do NOT touch Stripe or pricing components.
+
+---
+
+# 📁 FILES TO UPDATE
+
+* `/src/pages/Home.tsx`
+* `/src/components/Hero.tsx`
+* `/src/components/UserGroups.tsx`
+* `/src/components/VideoSection.tsx`
+* `/src/components/HowItWorks.tsx`
+* `/src/components/CTASection.tsx`
+* `/src/components/Footer.tsx`
+* Global color variables if needed
+
+---
+
+# ✅ COMPLETION CRITERIA
+
+This task is complete when ALL of the following are true:
+
+### HERO
+
+* Hero image sits correctly inside right column
+* All CTAs use navy `#0B1F2A`
+* Spacing matches the spec
+
+### USER GROUPS
+
+* All 3 columns are clean, symmetric cards
+* Gold underline is present and correct
+* Spacing between sections fixed
+
+### VIDEO SECTION
+
+* Section moved ABOVE How It Works
+* Thumbnails styled as instructed
+
+### HOW IT WORKS
+
+* Section moved BELOW videos
+* Cards restyled correctly
+
+### HEADER
+
+* Logo is larger
+* Navigation spacing increased
+
+### GENERAL
+
+* No oversized margins anywhere
+* Desktop looks balanced, aligned, and premium
+
+---
+
+# NEXT STEP AFTER THIS TASK
+
+User will:
+
+1. Review full desktop output visually.
+2. Approve or request micro-adjustments.
+3. Then proceed to **Task #4 — Mobile Fixes**.
+
+**End of Task #3**

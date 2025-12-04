@@ -323,34 +323,34 @@ function TopNav() {
             <img 
               src="/roomvibe-logo-transparent.png" 
               alt="RoomVibe" 
-              className="h-16 lg:h-20 w-auto"
+              className="h-20 lg:h-24 w-auto"
             />
           </a>
-          <nav className="hidden md:flex items-center gap-10 text-sm font-medium">
-            <a href="#how" className="text-[#1A1A1A] hover:text-[#0A1C2F] transition-colors">
+          <nav className="hidden md:flex items-center gap-12 text-sm font-medium">
+            <a href="#how" className="text-[#1A1A1A] hover:text-[#0B1F2A] transition-colors">
               How it works
             </a>
-            <a href="#/pricing" className="text-[#1A1A1A] hover:text-[#0A1C2F] transition-colors">
+            <a href="#/pricing" className="text-[#1A1A1A] hover:text-[#0B1F2A] transition-colors">
               Pricing
             </a>
-            <a href="#/studio" className="text-[#1A1A1A] hover:text-[#0A1C2F] transition-colors">
+            <a href="#/studio" className="text-[#1A1A1A] hover:text-[#0B1F2A] transition-colors">
               Studio
             </a>
             {user ? (
               <>
-                <a href="#/dashboard" className="text-[#1A1A1A] hover:text-[#0A1C2F] transition-colors">
+                <a href="#/dashboard" className="text-[#1A1A1A] hover:text-[#0B1F2A] transition-colors">
                   Dashboard
                 </a>
                 <span className="text-xs text-gray-400">({user.role})</span>
               </>
             ) : (
               <>
-                <a href="#/login" className="text-[#1A1A1A] hover:text-[#0A1C2F] transition-colors">
+                <a href="#/login" className="text-[#1A1A1A] hover:text-[#0B1F2A] transition-colors">
                   Login
                 </a>
                 <a
                   href="#/register"
-                  className="inline-flex items-center px-5 py-2.5 rounded-lg text-white font-semibold bg-[#0A1C2F] hover:bg-[#0d2340] transition-colors shadow-sm"
+                  className="inline-flex items-center px-7 py-3.5 rounded-lg text-white font-semibold bg-[#0B1F2A] hover:bg-[#0a1a24] transition-colors"
                 >
                   Sign Up
                 </a>
@@ -359,7 +359,7 @@ function TopNav() {
           </nav>
           <button
             aria-label="Open menu"
-            className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 text-[#0A1C2F] hover:bg-gray-50 transition-colors"
+            className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 text-[#0B1F2A] hover:bg-gray-50 transition-colors"
             onClick={() => setOpen((v) => !v)}
           >
             <MenuIcon className="h-5 w-5" />
@@ -370,21 +370,21 @@ function TopNav() {
         <div className="md:hidden border-t border-gray-100 bg-white">
           <div className="mx-auto max-w-7xl px-6 py-4 text-sm">
             <div className="flex flex-col gap-1 font-medium">
-              <a onClick={() => setOpen(false)} href="#how" className="py-3 text-[#1A1A1A] hover:text-[#0A1C2F] transition-colors">
+              <a onClick={() => setOpen(false)} href="#how" className="py-3 text-[#1A1A1A] hover:text-[#0B1F2A] transition-colors">
                 How it works
               </a>
-              <a onClick={() => setOpen(false)} href="#/pricing" className="py-3 text-[#1A1A1A] hover:text-[#0A1C2F] transition-colors">
+              <a onClick={() => setOpen(false)} href="#/pricing" className="py-3 text-[#1A1A1A] hover:text-[#0B1F2A] transition-colors">
                 Pricing
               </a>
-              <a onClick={() => setOpen(false)} href="#/studio" className="py-3 text-[#1A1A1A] hover:text-[#0A1C2F] transition-colors">
+              <a onClick={() => setOpen(false)} href="#/studio" className="py-3 text-[#1A1A1A] hover:text-[#0B1F2A] transition-colors">
                 Studio
               </a>
               {user ? (
-                <a onClick={() => setOpen(false)} href="#/dashboard" className="py-3 text-[#1A1A1A] hover:text-[#0A1C2F] transition-colors">
+                <a onClick={() => setOpen(false)} href="#/dashboard" className="py-3 text-[#1A1A1A] hover:text-[#0B1F2A] transition-colors">
                   Dashboard
                 </a>
               ) : (
-                <a onClick={() => setOpen(false)} href="#/login" className="py-3 text-[#1A1A1A] hover:text-[#0A1C2F] transition-colors">
+                <a onClick={() => setOpen(false)} href="#/login" className="py-3 text-[#1A1A1A] hover:text-[#0B1F2A] transition-colors">
                   Login
                 </a>
               )}
@@ -395,7 +395,7 @@ function TopNav() {
               <a
                 href="#/register"
                 onClick={() => setOpen(false)}
-                className="mt-4 inline-flex w-full items-center justify-center px-5 py-3 rounded-lg text-white font-semibold bg-[#0A1C2F] hover:bg-[#0d2340] transition-colors"
+                className="mt-4 inline-flex w-full items-center justify-center px-7 py-3.5 rounded-lg text-white font-semibold bg-[#0B1F2A] hover:bg-[#0a1a24] transition-colors"
               >
                 Sign Up
               </a>
@@ -416,10 +416,10 @@ function HomePage() {
       <Hero />
       {/* Section 2: User Groups */}
       <UserGroupsSection />
-      {/* Section 3: How It Works */}
-      <HowItWorks />
-      {/* Section 4: Dashboard Videos */}
+      {/* Section 3: Video Section (moved above How It Works) */}
       <DashboardVideosSection />
+      {/* Section 4: How It Works */}
+      <HowItWorks />
       {/* Section 5: Mid-Page CTA */}
       <MidPageCTA />
     </main>
@@ -431,8 +431,8 @@ function HomePage() {
 function Hero() {
   return (
     <section id="home" className="w-full bg-white py-12 lg:py-16">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+      <div className="mx-auto max-w-[1280px] px-6">
+        <div className="flex flex-col lg:flex-row justify-between items-center gap-10 lg:gap-12">
           {/* Left Column - 55% */}
           <div className="w-full lg:w-[55%]">
             <h1 className="text-4xl sm:text-5xl lg:text-[56px] font-bold text-[#1A1A1A] leading-tight tracking-tight mb-5 lg:mb-6">
@@ -444,13 +444,13 @@ function Hero() {
             <div className="flex flex-wrap gap-3 mb-4 lg:mb-5">
               <a
                 href="#/register"
-                className="inline-flex items-center justify-center px-7 py-3.5 bg-[#0A1C2F] text-white font-semibold rounded-lg hover:bg-[#0d2340] transition-colors shadow-sm"
+                className="inline-flex items-center justify-center px-7 py-3.5 bg-[#0B1F2A] text-white font-semibold rounded-lg hover:bg-[#0a1a24] transition-colors"
               >
                 Start Free
               </a>
               <a
                 href="#how"
-                className="inline-flex items-center justify-center px-7 py-3.5 bg-transparent border-[1.5px] border-[#0A1C2F] text-[#0A1C2F] font-medium rounded-lg hover:bg-[#0A1C2F]/5 transition-colors"
+                className="inline-flex items-center justify-center px-7 py-3.5 bg-transparent border-[1.5px] border-[#0B1F2A] text-[#0B1F2A] font-medium rounded-lg hover:bg-[#0B1F2A]/5 transition-colors"
               >
                 Watch How It Works
               </a>
@@ -464,7 +464,8 @@ function Hero() {
             <img
               src="/hero.png"
               alt="RoomVibe Art Visualization Preview"
-              className="w-full h-auto rounded-2xl shadow-lg"
+              className="w-full max-w-[460px] h-auto rounded-[16px] object-cover"
+              style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}
             />
           </div>
         </div>
@@ -499,26 +500,26 @@ function UserGroupsSection() {
   ];
 
   return (
-    <section className="py-20 lg:py-24 bg-white">
+    <section className="mt-20 mb-20 bg-white">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 lg:gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {groups.map((g, i) => (
             <div 
               key={i} 
-              className="bg-white border border-[#EAEAEA] rounded-2xl p-7 lg:p-8 shadow-sm text-left"
+              className="bg-white border border-[#EAEAEA] rounded-[16px] p-8 shadow-sm flex flex-col gap-4"
             >
-              <h3 className="text-xl lg:text-[22px] font-bold text-[#0A1C2F] mb-2 tracking-tight">
+              <h3 className="text-xl lg:text-[22px] font-bold text-[#0B1F2A] tracking-tight">
                 {g.label}
               </h3>
               {/* Gold underline accent */}
-              <div className="w-9 h-0.5 bg-[#C9A24A] mb-5"></div>
-              <p className="text-lg font-semibold text-[#1A1A1A] mb-2 leading-snug">
+              <div className="w-[40px] h-[2px] bg-[#C9A24A] mt-1 mb-3"></div>
+              <p className="text-lg font-semibold text-[#1A1A1A] leading-snug">
                 {g.boldLine}
               </p>
-              <p className="text-base text-[#333] mb-4 leading-relaxed">
+              <p className="text-base text-[#333] leading-relaxed">
                 {g.valueLine}
               </p>
-              <p className="text-[15px] text-[#555] leading-relaxed">
+              <p className="text-[15px] lg:text-base text-[#555] leading-relaxed">
                 {g.supportingText}
               </p>
             </div>
@@ -2550,21 +2551,21 @@ function HowItWorks() {
   ];
   
   return (
-    <section id="how" className="py-16 lg:py-20 bg-white">
+    <section id="how" className="py-16 bg-white">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {steps.map((s, i) => (
             <div 
               key={i} 
-              className="bg-[#FAFAFA] rounded-2xl p-6 lg:p-8 text-center"
+              className="bg-[#FAFAFA] rounded-[16px] p-8 text-center flex flex-col items-center gap-3"
             >
-              <div className="inline-flex h-14 w-14 lg:h-16 lg:w-16 items-center justify-center rounded-full bg-white text-[#0A1C2F] mb-4 lg:mb-5 shadow-sm">
+              <div className="w-14 h-14 rounded-full bg-[#F0F0F0] flex items-center justify-center text-[#0B1F2A]">
                 {s.icon}
               </div>
-              <h3 className="text-lg lg:text-xl font-semibold text-[#1A1A1A] mb-2 lg:mb-3 tracking-tight">
+              <h3 className="text-lg lg:text-xl font-semibold text-[#1A1A1A] tracking-tight">
                 {s.title}
               </h3>
-              <p className="text-sm lg:text-[15px] text-[#555555] leading-relaxed">
+              <p className="text-sm lg:text-[15px] text-[#555] leading-relaxed">
                 {s.desc}
               </p>
             </div>
@@ -2597,21 +2598,21 @@ function DashboardVideosSection() {
   ];
 
   return (
-    <section className="py-16 lg:py-20 bg-white">
+    <section className="py-16 bg-white">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {videos.map((v, i) => (
             <div key={i} className="flex flex-col">
               {/* Thumbnail first */}
-              <div className="relative aspect-video rounded-2xl overflow-hidden bg-[#0A1C2F]/10 group cursor-pointer shadow-md mb-4">
+              <div className="relative aspect-video rounded-[16px] overflow-hidden bg-[#0B1F2A]/10 group cursor-pointer shadow-md mb-4">
                 <img 
                   src={v.thumbnail} 
                   alt={v.title}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-[#0A1C2F]/40 flex items-center justify-center group-hover:bg-[#0A1C2F]/50 transition-colors">
+                <div className="absolute inset-0 bg-[#0B1F2A]/40 flex items-center justify-center group-hover:bg-[#0B1F2A]/50 transition-colors">
                   <div className="w-14 h-14 lg:w-16 lg:h-16 rounded-full bg-white/90 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-                    <svg className="w-6 h-6 lg:w-7 lg:h-7 text-[#0A1C2F] ml-1" viewBox="0 0 24 24" fill="currentColor">
+                    <svg className="w-6 h-6 lg:w-7 lg:h-7 text-[#0B1F2A] ml-1" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M8 5v14l11-7-11-7z" />
                     </svg>
                   </div>
@@ -2622,10 +2623,10 @@ function DashboardVideosSection() {
                 {v.title}
               </h3>
               {/* Description */}
-              <p className="text-sm lg:text-[15px] text-[#555] mb-3 leading-relaxed">
+              <p className="text-sm lg:text-[15px] text-[#555] mb-4 leading-relaxed">
                 {v.description}
               </p>
-              <a href="#" className="text-sm font-medium text-[#0A1C2F] hover:underline">
+              <a href="#" className="text-sm font-medium text-[#0B1F2A] hover:underline">
                 Watch Video →
               </a>
             </div>
@@ -2650,7 +2651,7 @@ function MidPageCTA() {
         </p>
         <a
           href="#/register"
-          className="inline-flex items-center justify-center px-8 py-3.5 bg-[#0A1C2F] text-white font-semibold rounded-lg hover:bg-[#0d2340] transition-colors shadow-sm text-base"
+          className="inline-flex items-center justify-center px-7 py-3.5 bg-[#0B1F2A] text-white font-semibold rounded-lg hover:bg-[#0a1a24] transition-colors text-base"
         >
           Start Free
         </a>
@@ -2862,7 +2863,7 @@ function SiteFooter() {
   };
 
   return (
-    <footer className="bg-[#0A1C2F] text-white">
+    <footer className="bg-[#0B1F2A] text-white">
       <div className="mx-auto max-w-7xl px-6 lg:px-8 py-16 pb-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           {/* Column 1: Branding */}
@@ -2975,12 +2976,12 @@ function SiteFooter() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email…"
-                  className="flex-1 px-4 py-2.5 rounded-lg bg-white border border-[#E1E1E1] text-[#1A1A1A] placeholder:text-gray-400 text-sm focus:outline-none focus:border-[#0A1C2F] transition-colors"
+                  className="flex-1 px-4 py-2.5 rounded-lg bg-white border border-[#E1E1E1] text-[#1A1A1A] placeholder:text-gray-400 text-sm focus:outline-none focus:border-[#0B1F2A] transition-colors"
                   required
                 />
                 <button
                   type="submit"
-                  className="px-5 py-2.5 bg-[#0A1C2F] text-white font-semibold rounded-lg hover:bg-[#0d2340] transition-colors text-sm border border-[#0A1C2F]"
+                  className="px-7 py-3.5 bg-[#0B1F2A] text-white font-semibold rounded-lg hover:bg-[#0a1a24] transition-colors text-sm border border-white/20"
                 >
                   Subscribe
                 </button>
