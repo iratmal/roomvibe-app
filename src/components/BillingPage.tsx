@@ -203,7 +203,7 @@ export function BillingPage() {
 
       <main className="max-w-4xl mx-auto px-4 py-10 sm:py-12">
         <div className="mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-rv-primary mb-2">Billing & Subscriptions</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-[var(--roomvibe-navy)] mb-2">Billing & Subscriptions</h1>
           <p className="text-rv-textMuted">Manage your active modules and subscriptions</p>
         </div>
 
@@ -228,12 +228,12 @@ export function BillingPage() {
                   className="flex items-center gap-3 px-4 py-3 rounded-md"
                   style={{
                     backgroundColor: '#E8EBF7',
-                    borderLeft: '4px solid #283593',
+                    borderLeft: '4px solid #0B1F2A',
                   }}
                 >
-                  <CheckCircleIcon className="w-5 h-5 text-[#283593] flex-shrink-0" />
-                  <span className="font-medium text-[#283593]">{module.name}</span>
-                  <span className="ml-auto text-sm text-[#283593] font-medium px-2 py-0.5 bg-white/60 rounded">
+                  <CheckCircleIcon className="w-5 h-5 text-[#0B1F2A] flex-shrink-0" />
+                  <span className="font-medium text-[#0B1F2A]">{module.name}</span>
+                  <span className="ml-auto text-sm text-[#0B1F2A] font-medium px-2 py-0.5 bg-white/60 rounded">
                     Active
                   </span>
                 </div>
@@ -250,7 +250,7 @@ export function BillingPage() {
         {lockedModules.length > 0 && (
           <section className="mb-10">
             <h2 className="text-lg font-bold text-rv-text mb-4 flex items-center gap-2">
-              <LockIcon className="w-5 h-5 text-[#D8B46A]" />
+              <LockIcon className="w-5 h-5 text-[#C9A24A]" />
               Unlock More Tools
             </h2>
             
@@ -260,16 +260,16 @@ export function BillingPage() {
                   key={module.id}
                   className="p-4 sm:p-5 bg-white rounded-lg"
                   style={{ 
-                    border: '1.5px solid #D8B46A',
+                    border: '1.5px solid #C9A24A',
                     boxShadow: '0px 2px 6px rgba(0,0,0,0.05)' 
                   }}
                 >
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-3">
-                        <LockIcon className="w-5 h-5 text-[#D8B46A]" />
+                        <LockIcon className="w-5 h-5 text-[#C9A24A]" />
                         <h3 className="font-bold text-rv-text">{module.name}</h3>
-                        <span className="text-sm font-medium text-[#283593]">{module.price}</span>
+                        <span className="text-sm font-medium text-[#0B1F2A]">{module.price}</span>
                       </div>
                       <ul className="space-y-2 ml-0 sm:ml-8">
                         {module.features.map((feature, i) => (
@@ -289,8 +289,8 @@ export function BillingPage() {
                       disabled={checkoutLoading === module.id}
                       className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors w-full sm:w-auto disabled:opacity-50"
                       style={{
-                        border: '1.5px solid #D8B46A',
-                        color: '#283593',
+                        border: '1.5px solid #C9A24A',
+                        color: '#0B1F2A',
                         backgroundColor: 'white',
                       }}
                     >
@@ -318,11 +318,7 @@ export function BillingPage() {
             <button
               onClick={handleManageBilling}
               disabled={actionLoading}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors disabled:opacity-50"
-              style={{
-                backgroundColor: '#283593',
-                color: 'white',
-              }}
+              className="btn-primary text-sm py-2.5 px-4 disabled:opacity-50"
             >
               {actionLoading ? (
                 'Loading...'
@@ -338,12 +334,7 @@ export function BillingPage() {
             
             <a
               href="#/pricing"
-              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors hover:bg-gray-50"
-              style={{
-                border: '1.5px solid #283593',
-                color: '#283593',
-                backgroundColor: 'white',
-              }}
+              className="btn-outline text-sm py-2.5 px-4"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />

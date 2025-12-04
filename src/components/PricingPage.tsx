@@ -187,10 +187,7 @@ export function PricingPage() {
                   <a href="#/login" className="text-sm font-medium text-rv-text hover:text-rv-primary transition-colors">
                     Login
                   </a>
-                  <a
-                    href="#/register"
-                    className="inline-flex items-center rounded-lg px-4 py-2 text-sm text-white font-semibold bg-rv-primary hover:bg-rv-primaryHover transition-all"
-                  >
+                  <a href="#/register" className="btn-primary text-sm py-2 px-4">
                     Sign Up
                   </a>
                 </>
@@ -203,7 +200,7 @@ export function PricingPage() {
       <main className="py-12 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h1 className="text-3xl sm:text-4xl font-bold text-rv-primary tracking-tight mb-4">
+            <h1 className="text-3xl sm:text-4xl font-bold text-[var(--roomvibe-navy)] tracking-tight mb-4">
               Modular Plans for Every Creative
             </h1>
             <p className="text-lg text-rv-textMuted max-w-2xl mx-auto">
@@ -232,7 +229,7 @@ export function PricingPage() {
 
           {/* Comparison Table */}
           <div className="mt-16">
-            <h2 className="text-2xl font-bold text-rv-primary text-center mb-8">
+            <h2 className="text-2xl font-bold text-[var(--roomvibe-navy)] text-center mb-8">
               Feature Comparison
             </h2>
             <div className="overflow-x-auto">
@@ -240,10 +237,10 @@ export function PricingPage() {
                 <thead>
                   <tr className="border-b-2 border-rv-neutral">
                     <th className="text-left py-4 px-4 font-semibold text-rv-text">Feature</th>
-                    <th className="text-center py-4 px-3 font-semibold text-rv-primary">Artist</th>
-                    <th className="text-center py-4 px-3 font-semibold text-rv-primary">Designer</th>
-                    <th className="text-center py-4 px-3 font-semibold text-rv-primary">Gallery</th>
-                    <th className="text-center py-4 px-3 font-semibold text-[#D8B46A]">All-Access</th>
+                    <th className="text-center py-4 px-3 font-semibold text-[#0B1F2A]">Artist</th>
+                    <th className="text-center py-4 px-3 font-semibold text-[#0B1F2A]">Designer</th>
+                    <th className="text-center py-4 px-3 font-semibold text-[#0B1F2A]">Gallery</th>
+                    <th className="text-center py-4 px-3 font-semibold text-[#C9A24A]">All-Access</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -310,11 +307,11 @@ function PlanCard({ plan, isActive, isLoading, onSelect }: PlanCardProps) {
     <div
       className="relative flex flex-col bg-white"
       style={{
-        border: plan.recommended ? '1.5px solid #D8B46A' : '1.5px solid #DDE1E7',
+        border: plan.recommended ? '1.5px solid #C9A24A' : '1.5px solid #DDE1E7',
         borderRadius: '12px',
         padding: '26px',
         boxShadow: plan.recommended 
-          ? '0px 6px 16px rgba(216, 180, 106, 0.15)' 
+          ? '0px 6px 16px rgba(201, 162, 74, 0.15)' 
           : '0px 4px 10px rgba(0,0,0,0.04)',
       }}
     >
@@ -324,7 +321,7 @@ function PlanCard({ plan, isActive, isLoading, onSelect }: PlanCardProps) {
           <span 
             className="px-3 py-1 text-xs font-semibold rounded-full"
             style={{
-              backgroundColor: '#D8B46A',
+              backgroundColor: '#C9A24A',
               color: 'white',
             }}
           >
@@ -337,12 +334,12 @@ function PlanCard({ plan, isActive, isLoading, onSelect }: PlanCardProps) {
       <div className="mb-4">
         <h3 
           className="text-xl font-semibold"
-          style={{ color: '#283593' }}
+          style={{ color: '#0B1F2A' }}
         >
           {plan.name}
         </h3>
         <div className="mt-1 flex items-baseline gap-1">
-          <span className="text-2xl font-bold" style={{ color: '#283593' }}>
+          <span className="text-2xl font-bold" style={{ color: '#0B1F2A' }}>
             {plan.price}
           </span>
           <span className="text-rv-textMuted text-sm">/ month</span>
@@ -370,11 +367,11 @@ function PlanCard({ plan, isActive, isLoading, onSelect }: PlanCardProps) {
           className="mb-4 py-2 px-3 rounded-lg text-sm text-center flex items-center justify-center gap-2"
           style={{
             backgroundColor: '#E8EBF7',
-            color: '#283593',
+            color: '#0B1F2A',
             fontWeight: 600,
           }}
         >
-          <CheckCircleIcon className="w-4 h-4" color="#283593" />
+          <CheckCircleIcon className="w-4 h-4" color="#0B1F2A" />
           {plan.isAllAccess ? 'Active – All Modules Unlocked' : 'Active'}
         </div>
       )}
@@ -385,7 +382,7 @@ function PlanCard({ plan, isActive, isLoading, onSelect }: PlanCardProps) {
         disabled={isActive || isLoading}
         className="w-full py-3 px-4 rounded-lg font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         style={{
-          backgroundColor: isActive ? '#f3f4f6' : (plan.recommended ? '#D8B46A' : '#283593'),
+          backgroundColor: isActive ? '#f3f4f6' : (plan.recommended ? '#C9A24A' : '#0B1F2A'),
           color: isActive ? '#9ca3af' : 'white',
         }}
       >
@@ -400,7 +397,7 @@ function ComparisonCell({ value, isHighlighted }: { value: boolean | string; isH
     return (
       <span 
         className="text-sm font-medium"
-        style={{ color: isHighlighted ? '#D8B46A' : '#283593' }}
+        style={{ color: isHighlighted ? '#C9A24A' : '#0B1F2A' }}
       >
         {value}
       </span>
@@ -411,7 +408,7 @@ function ComparisonCell({ value, isHighlighted }: { value: boolean | string; isH
     return (
       <CheckCircleIcon 
         className="w-5 h-5 mx-auto" 
-        color={isHighlighted ? '#D8B46A' : '#22c55e'}
+        color={isHighlighted ? '#C9A24A' : '#22c55e'}
       />
     );
   }
