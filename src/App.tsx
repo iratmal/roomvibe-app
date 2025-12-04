@@ -348,10 +348,7 @@ function TopNav() {
                 <a href="#/login" className="text-[#1A1A1A] hover:text-[#0B1F2A] transition-colors">
                   Login
                 </a>
-                <a
-                  href="#/register"
-                  className="inline-flex items-center px-7 py-3.5 rounded-lg text-white font-semibold bg-[#0B1F2A] hover:bg-[#0a1a24] transition-colors"
-                >
+                <a href="#/register" className="btn-primary">
                   Sign Up
                 </a>
               </>
@@ -395,7 +392,7 @@ function TopNav() {
               <a
                 href="#/register"
                 onClick={() => setOpen(false)}
-                className="mt-4 inline-flex w-full items-center justify-center px-7 py-3.5 rounded-lg text-white font-semibold bg-[#0B1F2A] hover:bg-[#0a1a24] transition-colors"
+                className="btn-primary mt-4 w-full"
               >
                 Sign Up
               </a>
@@ -430,45 +427,47 @@ function HomePage() {
 
 function Hero() {
   return (
-    <section id="home" className="w-full bg-white py-12 lg:py-16">
-      <div className="mx-auto max-w-[1280px] px-6">
-        <div className="flex flex-col lg:flex-row justify-between items-center gap-10 lg:gap-12">
-          {/* Left Column - 55% */}
-          <div className="w-full lg:w-[55%]">
-            <h1 className="text-4xl sm:text-5xl lg:text-[56px] font-bold text-[#1A1A1A] leading-tight tracking-tight mb-5 lg:mb-6">
-              See Art in Your Space — Instantly.
-            </h1>
-            <h2 className="text-lg sm:text-xl lg:text-[22px] text-[#333333] leading-relaxed mb-7 lg:mb-8 font-normal">
-              Turn every artwork into a real experience by letting your clients preview it on their own walls with one simple upload.
-            </h2>
-            <div className="flex flex-wrap gap-3 mb-4 lg:mb-5">
-              <a
-                href="#/register"
-                className="inline-flex items-center justify-center px-7 py-3.5 bg-[#0B1F2A] text-white font-semibold rounded-lg hover:bg-[#0a1a24] transition-colors"
-              >
-                Start Free
-              </a>
-              <a
-                href="#how"
-                className="inline-flex items-center justify-center px-7 py-3.5 bg-transparent border-[1.5px] border-[#0B1F2A] text-[#0B1F2A] font-medium rounded-lg hover:bg-[#0B1F2A]/5 transition-colors"
-              >
-                Watch How It Works
-              </a>
-            </div>
-            <p className="text-[13px] sm:text-sm text-[#8D8D8D] font-medium">
-              No Photoshop · Realistic Mockups · For Artists, Designers & Galleries
-            </p>
+    <section id="home" className="relative overflow-hidden bg-white">
+      {/* Right side background image */}
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-1/2 hidden lg:block">
+        <img
+          src="/hero.png"
+          alt="RoomVibe preview"
+          className="h-full w-full object-cover"
+        />
+      </div>
+
+      {/* Left side content */}
+      <div className="relative mx-auto flex max-w-6xl items-center py-24 px-6">
+        <div className="max-w-xl">
+          <h1 className="mb-5 text-4xl sm:text-5xl font-bold leading-tight text-[var(--roomvibe-navy)]">
+            See Art in Your Space — Instantly.
+          </h1>
+
+          <p className="mb-8 text-lg text-[#333333]">
+            Turn every artwork into a real experience by letting your clients preview it
+            on their own walls with one simple upload.
+          </p>
+
+          <div className="mb-4 flex flex-wrap items-center gap-3">
+            <a href="#/register" className="btn-primary">Start Free</a>
+            <a href="#how" className="btn-outline">Watch How It Works</a>
           </div>
-          {/* Right Column - 45% */}
-          <div className="w-full lg:w-[45%] flex items-center justify-center">
-            <img
-              src="/hero.png"
-              alt="RoomVibe Art Visualization Preview"
-              className="w-full max-w-[460px] h-auto rounded-[16px] object-cover"
-              style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}
-            />
-          </div>
+
+          <p className="text-sm text-[#8D8D8D]">
+            No Photoshop · Realistic Mockups · For Artists, Designers & Galleries
+          </p>
         </div>
+      </div>
+
+      {/* Mobile hero image */}
+      <div className="lg:hidden px-6 pb-12">
+        <img
+          src="/hero.png"
+          alt="RoomVibe preview"
+          className="w-full h-auto rounded-[16px] object-cover"
+          style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}
+        />
       </div>
     </section>
   );
@@ -480,19 +479,19 @@ function Hero() {
 function UserGroupsSection() {
   const groups = [
     {
-      label: "FOR ARTISTS",
+      label: "For artists",
       boldLine: "Give your clients the power to see your artwork in their own space.",
       valueLine: "With premium room mockups and a simple widget on your website, your art stops being an image — it becomes part of their life.",
       supportingText: "Embed a 'View in Room' button on your online store. Let buyers visualize before purchasing — increasing trust and reducing hesitation."
     },
     {
-      label: "FOR DESIGNERS",
+      label: "For designers",
       boldLine: "Upload your client's wall photo and test artworks instantly.",
       valueLine: "No more guessing — see exactly how each piece looks in the actual space before making a recommendation.",
       supportingText: "Perfect for interior designers and consultants. Create stunning presentations in minutes and speed up your proposal workflow."
     },
     {
-      label: "FOR GALLERIES",
+      label: "For galleries",
       boldLine: "Create virtual exhibitions that collectors can explore from anywhere.",
       valueLine: "Curate collections with polished room scenes and let viewers experience art as if they were walking through your gallery.",
       supportingText: "Bring the gallery experience online. Perfect for showcasing collections to international clients without shipping a single piece."
@@ -508,7 +507,7 @@ function UserGroupsSection() {
               key={i} 
               className="bg-white border border-[#EAEAEA] rounded-[16px] p-8 shadow-sm flex flex-col gap-4"
             >
-              <h3 className="text-xl lg:text-[22px] font-bold text-[#0B1F2A] tracking-tight">
+              <h3 className="text-xl font-semibold text-[var(--roomvibe-navy)]">
                 {g.label}
               </h3>
               {/* Gold underline accent */}
@@ -2643,16 +2642,13 @@ function MidPageCTA() {
   return (
     <section className="py-16 bg-[#F9F9F9]">
       <div className="mx-auto max-w-7xl px-6 lg:px-8 text-center">
-        <h3 className="text-2xl sm:text-3xl lg:text-[32px] font-bold text-[#1A1A1A] mb-3 tracking-tight">
+        <h2 className="text-2xl sm:text-3xl font-bold text-[var(--roomvibe-navy)] mb-3 tracking-tight">
           Ready to See Art in Your Space?
-        </h3>
+        </h2>
         <p className="text-base lg:text-lg text-[#555] mb-6">
           Start Free and try RoomVibe in seconds.
         </p>
-        <a
-          href="#/register"
-          className="inline-flex items-center justify-center px-7 py-3.5 bg-[#0B1F2A] text-white font-semibold rounded-lg hover:bg-[#0a1a24] transition-colors text-base"
-        >
+        <a href="#/register" className="btn-primary mt-6">
           Start Free
         </a>
       </div>
@@ -2979,10 +2975,7 @@ function SiteFooter() {
                   className="flex-1 px-4 py-2.5 rounded-lg bg-white border border-[#E1E1E1] text-[#1A1A1A] placeholder:text-gray-400 text-sm focus:outline-none focus:border-[#0B1F2A] transition-colors"
                   required
                 />
-                <button
-                  type="submit"
-                  className="px-7 py-3.5 bg-[#0B1F2A] text-white font-semibold rounded-lg hover:bg-[#0a1a24] transition-colors text-sm border border-white/20"
-                >
+                <button type="submit" className="btn-primary text-sm">
                   Subscribe
                 </button>
               </form>

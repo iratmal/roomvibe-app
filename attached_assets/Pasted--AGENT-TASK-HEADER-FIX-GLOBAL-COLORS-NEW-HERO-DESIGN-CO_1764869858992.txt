@@ -1,0 +1,211 @@
+# AGENT TASK — HEADER FIX + GLOBAL COLORS + NEW HERO DESIGN (COPY/PASTE MESSAGE)
+
+Below is the exact, complete set of instructions and code you must apply.
+Please follow **every line exactly**. Do not use your own styles or decisions.
+This is a required implementation task.
+
+---
+
+# ✅ 1. GLOBAL BRAND COLORS — APPLY EVERYWHERE
+
+Add this to your global CSS (e.g., `globals.css` or `index.css`):
+
+```css
+:root {
+  --roomvibe-navy: #0B1F2A;   /* Primary brand color */
+  --roomvibe-gold: #C9A24A;   /* Accent underline color */
+}
+
+h1, h2, h3 {
+  color: var(--roomvibe-navy);
+}
+```
+
+All headings (H1, H2, H3) **must use navy #0B1F2A**.
+
+---
+
+# ✅ 2. BUTTON STYLING — ALL BUTTONS MUST USE THESE TWO STYLES
+
+Add these classes to your global CSS:
+
+```css
+.btn-primary {
+  background-color: var(--roomvibe-navy);
+  color: #FFFFFF;
+  border-radius: 8px;
+  padding: 14px 28px;
+  border: none;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.05);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--roomvibe-navy);
+  border-radius: 8px;
+  padding: 14px 28px;
+  border: 1.5px solid var(--roomvibe-navy);
+  font-weight: 500;
+}
+
+.btn-outline:hover {
+  background: rgba(11, 31, 42, 0.04);
+}
+```
+
+### APPLY THESE STYLES TO ALL BUTTONS:
+
+* **Start Free** (hero + CTA block)
+* **Watch How It Works**
+* **Start Visualizing** (in the hero card)
+* **Sign Up** (top right navigation)
+* **Subscribe** (footer newsletter)
+
+Remove any Tailwind defaults like `bg-black` or `bg-gray-900`.
+Only use `btn-primary` or `btn-outline`.
+
+---
+
+# ✅ 3. FIX THE HERO SECTION (REMOVE RIGHT CARD + USE BACKGROUND IMAGE)
+
+Delete the current hero layout completely.
+Replace the entire Hero component with the following new version:
+
+```tsx
+// Hero.tsx
+export function Hero() {
+  return (
+    <section className="relative overflow-hidden bg-white">
+
+      {/* Right side background image */}
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-1/2">
+        <img
+          src="/images/hero-room.jpg"   // <-- replace with existing hero image path
+          alt="RoomVibe preview"
+          className="h-full w-full object-cover"
+        />
+      </div>
+
+      {/* Left side content */}
+      <div className="relative mx-auto flex max-w-6xl items-center py-24 px-6">
+        <div className="max-w-xl">
+
+          <h1 className="mb-5 text-5xl font-bold leading-tight text-[var(--roomvibe-navy)]">
+            See Art in Your Space — Instantly.
+          </h1>
+
+          <p className="mb-8 text-lg text-[#333333]">
+            Turn every artwork into a real experience by letting your clients preview it
+            on their own walls with one simple upload.
+          </p>
+
+          <div className="mb-4 flex flex-wrap items-center gap-3">
+            <button className="btn-primary">Start Free</button>
+            <button className="btn-outline">Watch How It Works</button>
+          </div>
+
+          <p className="text-sm text-[#8D8D8D]">
+            No Photoshop · Realistic Mockups · For Artists, Designers & Galleries
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+```
+
+### REQUIRED VISUAL OUTCOME:
+
+* **NO right-side beige card.**
+* The room mockup image must fill the entire **right half** of the hero.
+* All text remains on the left, on a clean white background.
+* All buttons use the new navy button styles.
+* Titles are navy (#0B1F2A).
+
+---
+
+# ✅ 4. FIX USER GROUP SECTION TITLES
+
+Replace:
+
+```
+FOR ARTISTS
+FOR DESIGNERS
+FOR GALLERIES
+```
+
+with:
+
+```
+For artists
+For designers
+For galleries
+```
+
+And apply:
+
+```tsx
+className="text-xl font-semibold text-[var(--roomvibe-navy)]"
+```
+
+---
+
+# ✅ 5. FIX CTA BLOCK STYLING
+
+Apply navy to heading and button:
+
+```tsx
+<h2 className="text-3xl font-bold text-[var(--roomvibe-navy)]">
+  Ready to See Art in Your Space?
+</h2>
+
+<button className="btn-primary mt-6">Start Free</button>
+```
+
+---
+
+# 🚫 DO NOT CHANGE
+
+* Routing
+* Authentication
+* Dashboard components
+* Studio
+* Stripe integration
+* Mobile layout (will be done later)
+
+---
+
+# ✅ COMPLETION CRITERIA
+
+This task is complete when:
+
+### ✔ HERO
+
+* Right beige card is removed
+* Background image fills right half
+* Headings use navy #0B1F2A
+* Buttons use navy styles
+
+### ✔ USER GROUP TITLES
+
+* Converted to normal case
+* Styled in navy
+
+### ✔ CTA BLOCK
+
+* Title and button styled in navy
+
+### ✔ ALL BUTTONS SITE-WIDE
+
+* Use `btn-primary` or `btn-outline`
+* No dark/black Tailwind colors remain
+
+---
+
+# END OF TASK
+
+Please implement exactly as written.

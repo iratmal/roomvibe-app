@@ -3,6 +3,8 @@
 @tailwind utilities;
 
 :root {
+  --roomvibe-navy: #0B1F2A;
+  --roomvibe-gold: #C9A24A;
   --rv-primary: #283593;
   --rv-primary-hover: #1e2770;
   --rv-accent: #D8B46A;
@@ -28,10 +30,13 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+h1, h2, h3 {
+  color: var(--roomvibe-navy);
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-weight: 600;
-  color: var(--rv-primary);
   margin: 0;
   letter-spacing: -0.5px;
   line-height: 1.15;
@@ -43,4 +48,42 @@ button {
 
 input, textarea, select {
   font-family: 'Inter', sans-serif;
+}
+
+.btn-primary {
+  background-color: var(--roomvibe-navy);
+  color: #FFFFFF;
+  border-radius: 8px;
+  padding: 14px 28px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.05);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--roomvibe-navy);
+  border-radius: 8px;
+  padding: 14px 28px;
+  border: 1.5px solid var(--roomvibe-navy);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.btn-outline:hover {
+  background: rgba(11, 31, 42, 0.04);
 }
