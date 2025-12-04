@@ -380,11 +380,13 @@ function PlanCard({ plan, isActive, isLoading, onSelect }: PlanCardProps) {
       <button
         onClick={onSelect}
         disabled={isActive || isLoading}
-        className="w-full py-3 px-4 rounded-lg font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-        style={{
-          backgroundColor: isActive ? '#f3f4f6' : (plan.recommended ? '#C9A24A' : '#0B1F2A'),
-          color: isActive ? '#9ca3af' : 'white',
-        }}
+        className={`w-full ${
+          isActive 
+            ? 'py-3 px-4 rounded-lg font-semibold text-sm bg-gray-100 text-gray-400 cursor-not-allowed' 
+            : plan.recommended 
+              ? 'btn-premium text-sm' 
+              : 'btn-primary text-sm'
+        } disabled:opacity-50`}
       >
         {isLoading ? 'Loading...' : (isActive ? 'Already Active' : plan.buttonText)}
       </button>

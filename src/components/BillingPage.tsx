@@ -287,12 +287,7 @@ export function BillingPage() {
                     <button
                       onClick={() => handleUpgrade(module.id)}
                       disabled={checkoutLoading === module.id}
-                      className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors w-full sm:w-auto disabled:opacity-50"
-                      style={{
-                        border: '1.5px solid #C9A24A',
-                        color: '#0B1F2A',
-                        backgroundColor: 'white',
-                      }}
+                      className="btn-outline-gold text-sm py-2.5 px-4 w-full sm:w-auto disabled:opacity-50"
                     >
                       {checkoutLoading === module.id ? (
                         'Loading...'

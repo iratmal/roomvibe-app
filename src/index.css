@@ -109,3 +109,23 @@ input, textarea, select {
 .btn-premium:hover {
   filter: brightness(1.05);
 }
+
+.btn-outline-gold {
+  background: transparent;
+  color: var(--roomvibe-navy);
+  border-radius: 8px;
+  padding: 14px 28px;
+  border: 1.5px solid var(--roomvibe-gold);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.btn-outline-gold:hover {
+  background: rgba(201, 162, 74, 0.08);
+}
