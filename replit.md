@@ -10,17 +10,17 @@ I prefer simple language in explanations. I like functional programming paradigm
 The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 
 **UI/UX Decisions:**
-- **Color Scheme**: Global brand palette (Primary Navy #0B1F2A, Hover #071520, Gold accent #C9A24A, Text #1A1A1A, White #FFFFFF) applied consistently across all pages including Studio, dashboards, and marketing pages. Semantic colors preserved for role differentiation (purple=Artist, indigo=Designer, green=Gallery, amber=warnings).
+- **Color Scheme**: Global brand palette (Primary #264C61, Hover #1D3A4A, Gold accent #C9A24A, Text #1A1A1A, White #FFFFFF) applied consistently across all pages including Studio, dashboards, and marketing pages. Semantic colors preserved for role differentiation (purple=Artist, indigo=Designer, green=Gallery, amber=warnings).
 - **Typography**: Inter font family for all text (Bold, SemiBold, Medium, Regular).
-- **Global CSS System (Dec 2024)**: CSS variables in index.css (--roomvibe-navy #0B1F2A, --roomvibe-gold #C9A24A, --roomvibe-text #1A1A1A, --roomvibe-bg #FFFFFF). Reusable button classes (.btn-primary, .btn-outline, .btn-premium, .btn-outline-gold) for consistent styling across all pages.
+- **Global CSS System (Dec 2024)**: CSS variables in index.css (--rv-primary #264C61, --rv-primaryHover #1D3A4A, --roomvibe-navy #264C61, --roomvibe-gold #C9A24A, --roomvibe-text #1A1A1A, --roomvibe-bg #FFFFFF). Reusable button classes (.btn-primary, .btn-outline, .btn-premium, .btn-outline-gold) for consistent styling across all pages.
 - **Homepage Layout (Redesigned Dec 2024)**: Premium 5-section desktop layout (section order: Hero → User Groups → Video Section → How It Works → CTA):
     - **Hero**: Split-screen design with background image on right half (absolute w-1/2), left content on white with max-w-xl, py-24. Uses btn-primary/btn-outline classes.
     - **User Groups**: 3-column grid (gap-8), cards with border-[#EAEAEA], rounded-[16px], p-8, gold underline (w-40px h-2px #C9A24A). Titles: sentence case ("For artists"), font-semibold, var(--roomvibe-navy). Section: mt-20 mb-20.
     - **Video Section**: Moved ABOVE How It Works. 3-column grid (gap-8), 16:9 thumbnails with rounded-[16px], shadow-md, play overlay.
     - **How It Works**: 3 step cards with bg-[#FAFAFA], rounded-[16px], p-8. Icons in w-14 h-14 rounded-full bg-[#F0F0F0]. Section: py-16.
     - **Mid-Page CTA**: Centered block on #F9F9F9, py-16. Uses h2 with var(--roomvibe-navy) and btn-primary class.
-    - **Footer**: Navy (#0B1F2A) background with 4 columns (Branding, Product, Company, Newsletter). Subscribe button uses btn-primary class.
-- **Header**: Logo h-20 lg:h-24, nav gap-12 spacing. Sign Up button uses navy #0B1F2A.
+    - **Footer**: Primary (#264C61) background with 4 columns (Branding, Product, Company, Newsletter). Subscribe button uses btn-primary class.
+- **Header**: Logo h-20 lg:h-24, nav gap-12 spacing. Sign Up button uses primary #264C61.
 - **Studio Layout**: A responsive, mobile-first, three-panel editor with dynamic canvas height and hidden navigation for iframe embedding. Polished UI with 44px minimum touch targets, gold-bordered premium buttons, and consistent RoomVibe branding throughout.
 - **Iconography**: Inline SVG components with gold accent.
 - **Artwork Interaction**: Drag-to-move with bounds, diagonal resizing with smart scaling, true physical scale rendering, and frame selection. Mobile touch handling differentiates between scroll and drag.
@@ -44,10 +44,10 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
     - **Designer** (€29/mo): Premium rooms, high-res export, PDF export, Designer Studio. Uses btn-primary.
     - **Gallery** (€49/mo): Virtual exhibitions, Gallery Hub, multi-art walls. Uses btn-primary.
     - **All-Access** (€79/mo): All modules included with RECOMMENDED gold badge (#C9A24A). Uses btn-premium.
-    - Feature comparison table with navy (#0B1F2A) and gold (#C9A24A) text colors.
+    - Feature comparison table with primary (#264C61) and gold (#C9A24A) text colors.
     - Entitlement-based Active badges shown above disabled buttons when plan is active.
 - **Billing Page**: Dedicated billing management page (`#/billing`) with 3-section layout:
-    - **Active Modules**: Navy pill cards showing current entitlements (background #E8EBF7, border-left #0B1F2A).
+    - **Active Modules**: Primary pill cards showing current entitlements (background #E8EBF7, border-left #264C61).
     - **Available Plans**: Gold-bordered upgrade cards (1.5px solid #C9A24A) with btn-outline-gold unlock buttons.
     - **Billing Management**: btn-primary "Manage Billing" button (Stripe portal) and btn-outline "View All Plans" button.
 - **Multi-Entitlement System**: Users can accumulate and retain access to multiple modules (Artist, Designer, Gallery) via subscriptions. Entitlements are additively granted and revoked upon subscription changes. Admin users automatically possess all entitlements.
