@@ -1,0 +1,91 @@
+ZADATAK – FINALNI PREMIUM DIZAJN SEKCIJE "FOR ARTISTS / FOR DESIGNERS / FOR GALLERIES" 
+S UKLJUČENIM OUTLINE GOLD IKONAMA
+
+Molim te implementiraj sljedeći kompletni vizualni identitet kartica:
+
+-------------------------------------------------------------------
+1) OUTLINE GOLD IKONE
+
+Iznad naslova svake kartice dodaj malu zlatnu outline ikonu:
+
+- For Artists → ikona “easel” ili “frame” u outline stilu
+- For Designers → ikona “ruler” ili “layout grid” u outline stilu
+- For Galleries → ikona “gallery wall” ili “spotlight frame” u outline stilu
+
+Stil ikona:
+- boja: #D4AF37 (ili rgba(212,175,55,0.9) ako treba)
+- veličina: 32px (visina i širina)
+- debljina linije: 2px
+- margin-bottom: 16px
+- align: center (ikona mora biti centrirana iznad naslova)
+
+Možeš koristiti bilo koji već dostupni icon library u projektu ili dodati jednostavne SVG outline ikone.
+
+-------------------------------------------------------------------
+2) PREMIUM CARD STYLING (sve tri kartice)
+
+Kartica stil:
+- background: #FFFFFF
+- border: 1.5px solid rgba(212,175,55,0.6)
+- border-radius: 22px
+- padding: 40px 32px
+- box-shadow: 0px 4px 16px rgba(0,0,0,0.05)
+- display: flex
+- flex-direction: column
+- gap: 16px
+- min-height: 100% (kartice moraju biti jednake visine)
+
+-------------------------------------------------------------------
+3) NASLOV U KARTICI
+
+Naslov je npr. "For Artists", "For Designers", "For Galleries"
+
+Stil:
+- color: var(--rv-primary)   /* #264C61 */
+- font-size: 24px
+- font-weight: 700
+- text-align: center
+- margin-bottom: 12px
+
+Ispod naslova dodaj zlatnu liniju:
+- width: 100px
+- height: 3px
+- background: rgba(212,175,55,0.8)
+- margin: 0 auto 24px auto
+- border-radius: 3px
+
+-------------------------------------------------------------------
+4) TEKST
+
+Bold prva rečenica:
+- font-weight: 600
+- color: var(--rv-primary)
+- margin-bottom: 12px
+
+Body text:
+- color: #4B5563
+- font-size: 16px
+- line-height: 1.55
+
+-------------------------------------------------------------------
+5) LAYOUT SEKCIJE
+
+Desktop:
+- 3 kartice u jednom redu
+- gap: 40px između kartica
+- kartice se istežu tako da su jednake visine
+- max-width cijele sekcije: 1200px do 1320px, centrirano
+
+Mobile:
+- jedna kartica po redu
+- full width minus padding: 16px sa svake strane
+- gap: 24px
+- ikona ostaje centrirana iznad naslova
+
+-------------------------------------------------------------------
+6) Ukloni sve stare bordere, underline linije i stilove koji se sukobljavaju.
+
+7) Po završetku:
+- pošalji screenshot desktop prikaza kartica
+- pošalji screenshot mobile prikaza
+- javi mi file/komponentu gdje si implementirao ikone i layout

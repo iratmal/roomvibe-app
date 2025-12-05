@@ -477,20 +477,59 @@ function Hero() {
 
 /* ------------- User Groups Section (Artists/Designers/Galleries) ------------- */
 
+function EaselIcon() {
+  return (
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 19l4-14h8l4 14" />
+      <path d="M8 5h8" />
+      <path d="M6 19h12" />
+      <path d="M12 5v14" />
+      <rect x="7" y="8" width="10" height="6" rx="1" />
+    </svg>
+  );
+}
+
+function RulerIcon() {
+  return (
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21.3 8.7l-8.6-8.6c-.4-.4-1-.4-1.4 0L2.7 8.7c-.4.4-.4 1 0 1.4l8.6 8.6c.4.4 1 .4 1.4 0l8.6-8.6c.4-.4.4-1 0-1.4z" />
+      <path d="M7.5 7.5L12 12" />
+      <path d="M10.5 4.5l2 2" />
+      <path d="M13.5 7.5l2 2" />
+      <path d="M4.5 10.5l2 2" />
+      <path d="M7.5 13.5l2 2" />
+    </svg>
+  );
+}
+
+function GalleryIcon() {
+  return (
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="9" rx="1" />
+      <rect x="14" y="3" width="7" height="5" rx="1" />
+      <rect x="14" y="12" width="7" height="9" rx="1" />
+      <rect x="3" y="16" width="7" height="5" rx="1" />
+    </svg>
+  );
+}
+
 function UserGroupsSection() {
   const groups = [
     {
       label: "For Artists",
+      icon: <EaselIcon />,
       subtitle: "Give your clients the power to see your art in their own space.",
       bodyText: "Add a simple View in Your Room widget to your website and let buyers preview your artwork on their walls before they purchase. No more I am not sure how it will look, they see it instantly, true to size, in their home.\n\nWith premium room mockups and realistic visualizations, your artwork stops being just an image. It becomes part of their life. Increase trust, reduce hesitation, and convert more collectors with ease."
     },
     {
       label: "For Designers",
+      icon: <RulerIcon />,
       subtitle: "Upload your client's wall photo and test artworks instantly.",
       bodyText: "No more guessing, see exactly how each piece will look in the actual space before making your recommendation. Try different sizes and artwork options in seconds.\n\nPerfect for interior designers and consultants who want to present polished concepts fast. Impress clients with professional mockups made in under three seconds."
     },
     {
       label: "For Galleries",
+      icon: <GalleryIcon />,
       subtitle: "Bring your gallery experience online and open your doors to the world.",
       bodyText: "Traditional offline viewing is no longer enough. Create virtual exhibitions, let collectors preview artworks in curated interiors, and allow international buyers to engage with your collection from anywhere.\n\nStay ahead of the trend, offer a modern and immersive gallery experience without shipping a single piece. Present your artists work in rooms that elevate every collection."
     },
@@ -499,7 +538,7 @@ function UserGroupsSection() {
   return (
     <section className="mt-20 mb-20 bg-white">
       <div className="mx-auto max-w-[1280px] px-4 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10 items-stretch">
           {groups.map((g, i) => (
             <div 
               key={i} 
@@ -507,14 +546,18 @@ function UserGroupsSection() {
               style={{
                 border: '1.5px solid rgba(212, 175, 55, 0.6)',
                 boxShadow: '0px 4px 16px rgba(0, 0, 0, 0.05)',
-                padding: '40px 32px'
+                padding: '40px 32px',
+                minHeight: '100%'
               }}
             >
-              <h3 className="text-[24px] font-bold text-[var(--rv-primary)] mb-3">
+              <div className="flex justify-center mb-4">
+                {g.icon}
+              </div>
+              <h3 className="text-[24px] font-bold text-[var(--rv-primary)] text-center mb-3">
                 {g.label}
               </h3>
               <div 
-                className="mb-6"
+                className="mx-auto mb-6"
                 style={{
                   width: '100px',
                   height: '3px',
@@ -2932,16 +2975,6 @@ function ArtIcon(props: React.SVGProps<SVGSVGElement>) {
       <rect x="3" y="3" width="18" height="18" rx="2" />
       <circle cx="8.5" cy="8.5" r="1.5" />
       <path d="M21 15l-5-5L5 21" />
-    </svg>
-  );
-}
-function RulerIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" {...props}>
-      <path d="M3 17l11-11 4 4L7 21H3v-4z" />
-      <path d="M14 6l4 4" />
-      <path d="M12 8l2 2" />
-      <path d="M10 10l2 2" />
     </svg>
   );
 }
