@@ -1,0 +1,119 @@
+ZADATAK – AŽURIRATI COPY I DIZAJN ZA "FOR ARTISTS / FOR DESIGNERS / FOR GALLERIES" SEKCIJU NA HOMEPAGEU
+
+1) COPY – zamijeni postojeći tekst za tri stupca sljedećim:
+
+FOR ARTISTS
+
+Title:
+"For artists"
+
+Subtitle (bold prvi red):
+"Give your clients the power to see your art in their own space."
+
+Body text:
+"Add a simple “View in Your Room” widget to your website and let buyers preview your artwork on their walls before they purchase. No more “I’m not sure how it will look,” they see it instantly, true to size, in their home.
+
+With premium room mockups and realistic visualizations, your artwork stops being just an image. It becomes part of their life. Increase trust, reduce hesitation, and convert more collectors with ease."
+
+
+FOR DESIGNERS
+
+Title:
+"For designers"
+
+Subtitle (bold prvi red):
+"Upload your client's wall photo and test artworks instantly."
+
+Body text:
+"No more guessing, see exactly how each piece will look in the actual space before making your recommendation. Try different sizes, orientations, and artwork options in seconds.
+
+Perfect for interior designers and consultants who want to present polished concepts fast. Impress clients with professional mockups made in under three seconds."
+
+
+FOR GALLERIES
+
+Title:
+"For galleries"
+
+Subtitle (bold prvi red):
+"Bring your gallery experience online and open your doors to the world."
+
+Body text:
+"Traditional offline viewing is no longer enough. Create virtual exhibitions, let collectors preview artworks in curated interiors, and allow international buyers to engage with your collection from anywhere.
+
+Stay ahead of the trend, offer a modern and immersive gallery experience without shipping a single piece. Present your artists' work in rooms that elevate every collection."
+
+
+2) DIZAJN – tri stupca kao premium kartice
+
+Želim da ova tri bloka izgledaju kao tri elegantne “cards” u jednom redu na desktopu.
+
+Layout:
+- Desktop: 3 stupca u jednom redu (npr. CSS grid s 3 kolone ili flex s gapovima).
+- Mobile: 1 stupac (kartice ispod jedna druge, s lijepim razmakom).
+
+Svaka kartica neka ima:
+- zaobljene rubove (border-radius, npr. 16px ili 20px)
+- padding unutra (npr. 24–32px)
+- jednak vertikalni razmak između naslova, podnaslova i paragrafa.
+
+3) BOJE I STILOVI
+
+Primarna boja (već imamo):
+  --rv-primary: #264C61;
+
+Dodaj novu zlatnu boju:
+  --rv-accent-gold: #D4AF37;
+
+Na svakoj od tri kartice:
+
+- Border:
+  border: 1px solid var(--rv-accent-gold);
+
+- Naslov ("For artists", "For designers", "For galleries"):
+  color: var(--rv-primary);
+  font-weight: 600 ili 700;
+  malo veći font-size od body teksta.
+
+- Podnaslov (prvi boldani red unutar teksta):
+  može biti <p> ili <strong> unutar paragrafa,
+  font-weight: bold,
+  color: var(--rv-primary);
+
+- Tijelo teksta:
+  standardna neutralna boja teksta (siva koju već koristimo za body tekst, npr. #4B5563 ili postojeća tailwind neutral).
+
+4) DEKORATIVNE CRTE
+
+Dodaj suptilne “zlatne” dekorativne linije da sve izgleda premium, ali ne prenapadno:
+
+- Iznad tri kartice (na vrhu sekcije), možeš staviti mali zlatni underline ispod naslova sekcije,
+  npr. mala horizontalna crta centrirana:
+    width: 60–80px;
+    height: 2px;
+    background: var(--rv-accent-gold);
+    margin: 0 auto 24px auto;
+
+- Unutar svake kartice, možeš:
+  ili:
+    - staviti malu zlatnu crtu ispod naslova kartice,
+  ili:
+    - suptilan top-border u zlatnoj boji,
+  što god je jednostavnije u postojećem layoutu, ali da dizajnerski povezuje kartice s footer/brand estetikom.
+
+5) RESPONSIVE
+
+Na mobilnim uređajima:
+- kartice neka budu full-width s margin/padding tako da ne idu do samog ruba ekrana,
+- razmak između kartica (gap) neka bude barem 16–24px.
+
+Na desktopu:
+- neka postoji dovoljno horiz. razmaka (gap) između stupaca da ne izgledaju zbijeno.
+
+6) Boje naslova i bordera na ovoj sekciji moraju biti:
+- naslovi: var(--rv-primary) (#264C61)
+- border i dekorativne crte: var(--rv-accent-gold) (#D4AF37)
+
+Na kraju:
+- pošalji mi info u kojem fileu/komponenti je ova sekcija,
+- i jedan screenshot kako ta 3 stupca izgledaju na desktopu i na mobilnom breakpointu.

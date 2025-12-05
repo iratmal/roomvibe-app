@@ -481,46 +481,39 @@ function UserGroupsSection() {
   const groups = [
     {
       label: "For artists",
-      boldLine: "Give your clients the power to see your artwork in their own space.",
-      valueLine: "With premium room mockups and a simple widget on your website, your art stops being an image — it becomes part of their life.",
-      supportingText: "Embed a 'View in Room' button on your online store. Let buyers visualize before purchasing — increasing trust and reducing hesitation."
+      subtitle: "Give your clients the power to see your art in their own space.",
+      bodyText: "Add a simple \"View in Your Room\" widget to your website and let buyers preview your artwork on their walls before they purchase. No more \"I'm not sure how it will look,\" they see it instantly, true to size, in their home.\n\nWith premium room mockups and realistic visualizations, your artwork stops being just an image. It becomes part of their life. Increase trust, reduce hesitation, and convert more collectors with ease."
     },
     {
       label: "For designers",
-      boldLine: "Upload your client's wall photo and test artworks instantly.",
-      valueLine: "No more guessing — see exactly how each piece looks in the actual space before making a recommendation.",
-      supportingText: "Perfect for interior designers and consultants. Create stunning presentations in minutes and speed up your proposal workflow."
+      subtitle: "Upload your client's wall photo and test artworks instantly.",
+      bodyText: "No more guessing, see exactly how each piece will look in the actual space before making your recommendation. Try different sizes, orientations, and artwork options in seconds.\n\nPerfect for interior designers and consultants who want to present polished concepts fast. Impress clients with professional mockups made in under three seconds."
     },
     {
       label: "For galleries",
-      boldLine: "Create virtual exhibitions that collectors can explore from anywhere.",
-      valueLine: "Curate collections with polished room scenes and let viewers experience art as if they were walking through your gallery.",
-      supportingText: "Bring the gallery experience online. Perfect for showcasing collections to international clients without shipping a single piece."
+      subtitle: "Bring your gallery experience online and open your doors to the world.",
+      bodyText: "Traditional offline viewing is no longer enough. Create virtual exhibitions, let collectors preview artworks in curated interiors, and allow international buyers to engage with your collection from anywhere.\n\nStay ahead of the trend, offer a modern and immersive gallery experience without shipping a single piece. Present your artists' work in rooms that elevate every collection."
     },
   ];
 
   return (
     <section className="mt-20 mb-20 bg-white">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {groups.map((g, i) => (
             <div 
               key={i} 
-              className="bg-white border border-[#EAEAEA] rounded-[16px] p-8 shadow-sm flex flex-col gap-4"
+              className="bg-white border border-[var(--rv-accent-gold)] rounded-[20px] p-6 lg:p-8 flex flex-col"
             >
-              <h3 className="text-xl font-semibold text-[var(--roomvibe-navy)]">
+              <h3 className="text-xl font-bold text-[var(--rv-primary)]">
                 {g.label}
               </h3>
-              {/* Gold underline accent */}
-              <div className="w-[40px] h-[2px] bg-[#C9A24A] mt-1 mb-3"></div>
-              <p className="text-lg font-semibold text-[#1A1A1A] leading-snug">
-                {g.boldLine}
+              <div className="w-[60px] h-[2px] bg-[var(--rv-accent-gold)] mt-3 mb-5"></div>
+              <p className="text-base lg:text-lg font-bold text-[var(--rv-primary)] leading-snug mb-4">
+                {g.subtitle}
               </p>
-              <p className="text-base text-[#333] leading-relaxed">
-                {g.valueLine}
-              </p>
-              <p className="text-[15px] lg:text-base text-[#555] leading-relaxed">
-                {g.supportingText}
+              <p className="text-[15px] lg:text-base text-[#4B5563] leading-relaxed whitespace-pre-line">
+                {g.bodyText}
               </p>
             </div>
           ))}
