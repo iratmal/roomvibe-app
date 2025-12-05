@@ -338,19 +338,19 @@ export function ArtistDashboard() {
 
         {/* Usage indicator for free users */}
         {maxArtworks !== -1 && (
-          <div className={`mb-6 p-4 rounded-rvMd border ${isAtLimit ? 'bg-amber-50 border-amber-200' : 'bg-blue-50 border-blue-200'}`}>
+          <div className={`mb-6 p-4 rounded-rvMd border ${isAtLimit ? 'bg-amber-50 border-amber-200' : 'bg-rv-primary/5 border-rv-primary/20'}`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isAtLimit ? 'bg-amber-100' : 'bg-blue-100'}`}>
-                  <svg className={`w-5 h-5 ${isAtLimit ? 'text-amber-600' : 'text-blue-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isAtLimit ? 'bg-amber-100' : 'bg-rv-primary/10'}`}>
+                  <svg className={`w-5 h-5 ${isAtLimit ? 'text-amber-600' : 'text-rv-primary'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </div>
                 <div>
-                  <p className={`font-semibold ${isAtLimit ? 'text-amber-700' : 'text-blue-700'}`}>
+                  <p className={`font-semibold ${isAtLimit ? 'text-amber-700' : 'text-rv-primary'}`}>
                     Artwork Upload Limit
                   </p>
-                  <p className={`text-sm ${isAtLimit ? 'text-amber-600' : 'text-blue-600'}`}>
+                  <p className={`text-sm ${isAtLimit ? 'text-amber-600' : 'text-rv-primary/80'}`}>
                     {artworks.length}/{maxArtworks} artwork{maxArtworks !== 1 ? 's' : ''} uploaded
                     {isFreePlan && ' (Free plan)'}
                   </p>
@@ -610,7 +610,7 @@ export function ArtistDashboard() {
           )}
         </div>
 
-        <div className="mb-10 p-6 bg-blue-50 rounded-rvLg border border-blue-200">
+        <div className="mb-10 p-6 bg-rv-primary/5 rounded-rvLg border border-rv-primary/20">
           <h2 className="text-2xl font-bold mb-2 text-rv-primary">Website Integration</h2>
           <p className="text-sm text-rv-textMuted mb-6">
             Add the RoomVibe widget to your website so visitors can view your artwork in their own room.

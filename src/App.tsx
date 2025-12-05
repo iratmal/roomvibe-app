@@ -177,7 +177,7 @@ function OnboardingRouter() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-rv-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-rv-textMuted">Loading...</p>
         </div>
       </div>
@@ -203,7 +203,7 @@ function DashboardRouter() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-rv-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-rv-textMuted">Loading dashboard...</p>
         </div>
       </div>
@@ -255,7 +255,7 @@ function RoleDashboardRouter({ requiredRole }: { requiredRole: string }) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-rv-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-rv-textMuted">Loading dashboard...</p>
         </div>
       </div>

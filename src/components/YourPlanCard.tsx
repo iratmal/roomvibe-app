@@ -26,7 +26,7 @@ const PLAN_DISPLAYS: Record<string, PlanDisplay> = {
   },
   artist: {
     badge: 'Artist',
-    badgeColor: 'bg-blue-100 text-blue-800',
+    badgeColor: 'bg-rv-primary/10 text-rv-primary',
     description: 'For artists who want professional mockups and high-quality exports.',
     bullets: ['Up to 50 artworks', 'Premium mockup rooms'],
   },
