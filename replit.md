@@ -10,7 +10,7 @@ I prefer simple language in explanations. I like functional programming paradigm
 The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 
 **UI/UX Decisions:**
-- **Color Scheme**: Homepage uses premium palette (Primary Navy #0B1F2A, Gold accent #C9A24A, Text #1A1A1A, White #FFFFFF). Studio retains original RoomVibe palette (Primary #283593, Accent #D8B46A).
+- **Color Scheme**: Global brand palette (Primary Navy #0B1F2A, Hover #071520, Gold accent #C9A24A, Text #1A1A1A, White #FFFFFF) applied consistently across all pages including Studio, dashboards, and marketing pages. Semantic colors preserved for role differentiation (purple=Artist, indigo=Designer, green=Gallery, amber=warnings).
 - **Typography**: Inter font family for all text (Bold, SemiBold, Medium, Regular).
 - **Global CSS System (Dec 2024)**: CSS variables in index.css (--roomvibe-navy #0B1F2A, --roomvibe-gold #C9A24A, --roomvibe-text #1A1A1A, --roomvibe-bg #FFFFFF). Reusable button classes (.btn-primary, .btn-outline, .btn-premium, .btn-outline-gold) for consistent styling across all pages.
 - **Homepage Layout (Redesigned Dec 2024)**: Premium 5-section desktop layout (section order: Hero → User Groups → Video Section → How It Works → CTA):
