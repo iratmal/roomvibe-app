@@ -1815,7 +1815,6 @@ function Studio() {
                   } bg-white shadow-sm hover:shadow-md transition-all`}
                 >
                   <img src={p.photo} alt={p.name} className="h-20 w-full object-cover" />
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5 text-[10px] text-white font-medium">{p.name}</div>
                 </button>
               ))}
             </div>

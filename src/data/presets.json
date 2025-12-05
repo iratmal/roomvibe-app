@@ -1,9 +1,9 @@
 [
   {
-    "id": "room01",
+    "id": "free_01",
     "name": "Room 1",
-    "photo": "/rooms/room01.png",
-    "mask": "/rooms/room01_mask.png",
+    "category": "cafe",
+    "photo": "/rooms/cafe/cafe12.jpeg",
     "safeArea": {
       "x": 0.5,
       "y": 0.38,
@@ -12,10 +12,10 @@
     }
   },
   {
-    "id": "room02",
+    "id": "free_02",
     "name": "Room 2",
-    "photo": "/rooms/room02.png",
-    "mask": "/rooms/room02_mask.png",
+    "category": "cafe",
+    "photo": "/rooms/cafe/cafe9.jpeg",
     "safeArea": {
       "x": 0.5,
       "y": 0.38,
@@ -24,10 +24,10 @@
     }
   },
   {
-    "id": "room03",
+    "id": "free_03",
     "name": "Room 3",
-    "photo": "/rooms/room03.png",
-    "mask": "/rooms/room03_mask.png",
+    "category": "cafe",
+    "photo": "/rooms/cafe/cafe8.jpeg",
     "safeArea": {
       "x": 0.5,
       "y": 0.38,
@@ -36,10 +36,10 @@
     }
   },
   {
-    "id": "room04",
+    "id": "free_04",
     "name": "Room 4",
-    "photo": "/rooms/room04.png",
-    "mask": "/rooms/room04_mask.png",
+    "category": "cafe",
+    "photo": "/rooms/cafe/cafe25.jpeg",
     "safeArea": {
       "x": 0.5,
       "y": 0.38,
@@ -48,10 +48,10 @@
     }
   },
   {
-    "id": "room05",
+    "id": "free_05",
     "name": "Room 5",
-    "photo": "/rooms/room05.png",
-    "mask": "/rooms/room05_mask.png",
+    "category": "bedroom",
+    "photo": "/rooms/bedroom/bedroom3.jpeg",
     "safeArea": {
       "x": 0.5,
       "y": 0.38,
@@ -60,10 +60,10 @@
     }
   },
   {
-    "id": "room06",
+    "id": "free_06",
     "name": "Room 6",
-    "photo": "/rooms/room06.png",
-    "mask": "/rooms/room06_mask.png",
+    "category": "bedroom",
+    "photo": "/rooms/bedroom/bedroom4.jpeg",
     "safeArea": {
       "x": 0.5,
       "y": 0.38,
@@ -72,10 +72,10 @@
     }
   },
   {
-    "id": "room07",
+    "id": "free_07",
     "name": "Room 7",
-    "photo": "/rooms/room07.png",
-    "mask": "/rooms/room07_mask.png",
+    "category": "bedroom",
+    "photo": "/rooms/bedroom/bedroom17.jpeg",
     "safeArea": {
       "x": 0.5,
       "y": 0.38,
@@ -84,10 +84,10 @@
     }
   },
   {
-    "id": "room08",
+    "id": "free_08",
     "name": "Room 8",
-    "photo": "/rooms/room08.png",
-    "mask": "/rooms/room08_mask.png",
+    "category": "bedroom",
+    "photo": "/rooms/bedroom/bedroom16.jpeg",
     "safeArea": {
       "x": 0.5,
       "y": 0.38,
@@ -96,10 +96,10 @@
     }
   },
   {
-    "id": "room09",
+    "id": "free_09",
     "name": "Room 9",
-    "photo": "/rooms/room09.png",
-    "mask": "/rooms/room09_mask.png",
+    "category": "bathroom",
+    "photo": "/rooms/bathroom/bathroom13.jpeg",
     "safeArea": {
       "x": 0.5,
       "y": 0.38,
@@ -108,10 +108,10 @@
     }
   },
   {
-    "id": "room10",
+    "id": "free_10",
     "name": "Room 10",
-    "photo": "/rooms/room10.png",
-    "mask": "/rooms/room10_mask.png",
+    "category": "bathroom",
+    "photo": "/rooms/bathroom/bathroom12.jpeg",
     "safeArea": {
       "x": 0.5,
       "y": 0.38,
