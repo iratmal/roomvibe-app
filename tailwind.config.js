@@ -5,8 +5,8 @@ export default {
     extend: {
       colors: {
         rv: {
-          primary: "#0B1F2A",
-          primaryHover: "#071520",
+          primary: "#264C61",
+          primaryHover: "#1D3A4A",
           accent: "#D8B46A",
           neutral: "#DDE1E7",
           bg: "#FFFFFF",
@@ -27,8 +27,8 @@ export default {
         rvLg: "16px",
       },
       boxShadow: {
-        rvSoft: "0 10px 30px rgba(11, 31, 42, 0.08)",
-        rvElevated: "0 14px 40px rgba(11, 31, 42, 0.15)",
+        rvSoft: "0 10px 30px rgba(38, 76, 97, 0.08)",
+        rvElevated: "0 14px 40px rgba(38, 76, 97, 0.15)",
       },
     },
   },

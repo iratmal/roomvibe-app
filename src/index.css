@@ -3,12 +3,12 @@
 @tailwind utilities;
 
 :root {
-  --roomvibe-navy: #0B1F2A;
+  --roomvibe-navy: #264C61;
   --roomvibe-gold: #C9A24A;
   --roomvibe-text: #1A1A1A;
   --roomvibe-bg: #FFFFFF;
-  --rv-primary: #0B1F2A;
-  --rv-primary-hover: #071520;
+  --rv-primary: #264C61;
+  --rv-primary-hover: #1D3A4A;
   --rv-accent: #D8B46A;
   --rv-neutral: #DDE1E7;
   --rv-text: #1A1A1A;
@@ -33,7 +33,7 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  color: var(--roomvibe-navy);
+  color: var(--rv-primary);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-weight: 600;
   margin: 0;
@@ -50,14 +50,14 @@ input, textarea, select {
 }
 
 .btn-primary {
-  background-color: var(--roomvibe-navy);
+  background-color: var(--rv-primary);
   color: #FFFFFF;
   border-radius: 8px;
   padding: 14px 28px;
   border: none;
   font-weight: 600;
   cursor: pointer;
-  transition: filter 0.2s ease;
+  transition: background-color 0.2s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -65,15 +65,15 @@ input, textarea, select {
 }
 
 .btn-primary:hover {
-  filter: brightness(1.05);
+  background-color: var(--rv-primary-hover);
 }
 
 .btn-outline {
   background: transparent;
-  color: var(--roomvibe-navy);
+  color: var(--rv-primary);
   border-radius: 8px;
   padding: 14px 28px;
-  border: 1.5px solid var(--roomvibe-navy);
+  border: 1.5px solid var(--rv-primary);
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s ease;
@@ -84,12 +84,12 @@ input, textarea, select {
 }
 
 .btn-outline:hover {
-  background: rgba(11, 31, 42, 0.04);
+  background: rgba(38, 76, 97, 0.04);
 }
 
 .btn-premium {
   background-color: var(--roomvibe-gold);
-  color: #0B1F2A;
+  color: var(--rv-primary);
   border-radius: 8px;
   padding: 14px 28px;
   border: none;
@@ -109,7 +109,7 @@ input, textarea, select {
 
 .btn-outline-gold {
   background: transparent;
-  color: var(--roomvibe-navy);
+  color: var(--rv-primary);
   border-radius: 8px;
   padding: 14px 28px;
   border: 1.5px solid var(--roomvibe-gold);
