@@ -650,25 +650,12 @@ function StudioHeader() {
 
 /* ------------- Studio (Canvy-style editor) ------------- */
 
-// Real wall dimensions in centimeters for room scaling
-// Default wall height is 270cm - consistent across all rooms for true-to-size rendering
-// All FREE and Premium rooms use the default 270cm unless specifically overridden
-const ROOM_WALL_HEIGHTS_CM: Record<string, number> = {
-  // All rooms use default 270cm wall height for consistent artwork scaling
-  // Add room-specific overrides here only if needed for special calibration
-};
-
-const ROOM_WALL_WIDTHS_CM: Record<string, number> = {
-  // Default aspect ratio ~4:3 (360cm width for 270cm height)
-  // Add room-specific overrides here only if needed
-};
-
-// Precomputed px/cm ratios for rooms with specific calibration requirements
-// Currently empty - all rooms use dynamic calibration based on canvas height and wall height
-// Can add room-specific overrides here if needed for special cases
-const ROOM_PX_PER_CM_OVERRIDE: Record<string, number> = {
-  // Example: room04: 2.07
-};
+// Per-scene scaling configuration
+// wallWidthCm: physical width of visible wall in centimeters (default: 400cm)
+// wallWidthPx: width of visible wall in pixels (from scene data)
+// Formula: pxPerCm = (canvasWidthPx / imageWidthPx) * (wallWidthPx / wallWidthCm)
+const DEFAULT_WALL_WIDTH_CM = 400;  // Standard room wall width in cm
+const REFERENCE_IMAGE_WIDTH = 1500; // Approximate image resolution for scaling
 
 // Frame configuration system with 12 professional frame styles
 type FrameConfig = {
@@ -970,33 +957,45 @@ function Studio() {
     }
   }, [artId, art]);
 
-  // Calculate px/cm ratio based on canvas height and room wall height (viewport-independent)
-  // Uses precomputed ratios for rooms with specific calibration requirements (e.g., Room 4)
+  // State for tracking active scene's image dimensions
+  const [activeImageNaturalWidth, setActiveImageNaturalWidth] = useState<number>(REFERENCE_IMAGE_WIDTH);
+  
+  // Get wallWidthPx from active scene (FREE preset or Premium room via userPhoto)
+  const getActiveWallWidthPx = (): number => {
+    // Check if we have a FREE scene selected
+    if (scene?.wallWidthPx) {
+      return scene.wallWidthPx;
+    }
+    // Check if we have a Premium room selected (userPhoto contains the image path)
+    if (userPhoto && userPhoto.startsWith('/rooms/')) {
+      const premiumRoom = premiumRooms.find(r => r.image === userPhoto);
+      if (premiumRoom?.wallWidthPx) {
+        return premiumRoom.wallWidthPx;
+      }
+    }
+    // Default fallback
+    return 1000;
+  };
+
+  // Calculate px/cm ratio using per-scene wallWidthPx for true-to-size rendering
+  // Formula: pxPerCm = displayedImageWidthPx * (wallWidthPx / (imageNaturalWidthPx * wallWidthCm))
   useEffect(() => {
     if (!canvasRef.current) return;
     
-    // Check for precomputed override first (for rooms with specific furniture calibration)
-    if (ROOM_PX_PER_CM_OVERRIDE[sceneId]) {
-      const ratio = ROOM_PX_PER_CM_OVERRIDE[sceneId];
-      setPxPerCm(ratio);
-      
-      if (import.meta.env.DEV) {
-        console.log(`[Real-Scale] Room ${sceneId}: Using precomputed ratio = ${ratio.toFixed(2)} px/cm (calibrated for furniture proportions)`);
-      }
-      return;
-    }
+    const canvasWidthPx = canvasRef.current.clientWidth;
+    const wallWidthPx = getActiveWallWidthPx();
     
-    // Default: Calculate from canvas height and wall height
-    const wallHeightCm = ROOM_WALL_HEIGHTS_CM[sceneId] || 270;
-    const canvasHeightPx = canvasRef.current.clientHeight;
-    const ratio = canvasHeightPx / wallHeightCm;
+    // Calculate the ratio: how many screen pixels per cm of physical wall
+    // displayedImageWidthPx ≈ canvasWidthPx (image fills canvas)
+    // Formula: pxPerCm = canvasWidthPx * (wallWidthPx / (naturalWidth * wallWidthCm))
+    const ratio = canvasWidthPx * wallWidthPx / (activeImageNaturalWidth * DEFAULT_WALL_WIDTH_CM);
     
     setPxPerCm(ratio);
     
     if (import.meta.env.DEV) {
-      console.log(`[Real-Scale] Room ${sceneId}: ${wallHeightCm}cm wall height = ${canvasHeightPx}px, ratio = ${ratio.toFixed(2)} px/cm`);
+      console.log(`[Real-Scale] Scene: wallWidthPx=${wallWidthPx}, canvasWidth=${canvasWidthPx}px, naturalWidth=${activeImageNaturalWidth}px, pxPerCm=${ratio.toFixed(3)}`);
     }
-  }, [sceneId, canvasRef.current?.clientHeight]);
+  }, [sceneId, userPhoto, activeImageNaturalWidth, canvasRef.current?.clientWidth]);
 
   const fileRef = useRef<HTMLInputElement | null>(null);
 
@@ -1931,9 +1930,21 @@ function Studio() {
                 onClick={handleCanvasClick}
               >
                 {userPhoto ? (
-                  <img src={userPhoto} alt="Your wall" className="absolute inset-0 h-full w-full object-cover" style={{ pointerEvents: 'none' }} />
+                  <img 
+                    src={userPhoto} 
+                    alt="Your wall" 
+                    className="absolute inset-0 h-full w-full object-cover" 
+                    style={{ pointerEvents: 'none' }}
+                    onLoad={(e) => setActiveImageNaturalWidth((e.target as HTMLImageElement).naturalWidth || REFERENCE_IMAGE_WIDTH)}
+                  />
                 ) : scene ? (
-                  <img src={scene.photo} alt={scene.name} className="absolute inset-0 h-full w-full object-cover" style={{ pointerEvents: 'none' }} />
+                  <img 
+                    src={scene.photo} 
+                    alt={scene.name} 
+                    className="absolute inset-0 h-full w-full object-cover" 
+                    style={{ pointerEvents: 'none' }}
+                    onLoad={(e) => setActiveImageNaturalWidth((e.target as HTMLImageElement).naturalWidth || REFERENCE_IMAGE_WIDTH)}
+                  />
                 ) : (
                   /* Upload mode: Show upload prompt when no room selected */
                   <div 
