@@ -498,18 +498,31 @@ function UserGroupsSection() {
 
   return (
     <section className="mt-20 mb-20 bg-white">
-      <div className="mx-auto max-w-[1280px] px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
+      <div className="mx-auto max-w-[1280px] px-4 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10">
           {groups.map((g, i) => (
             <div 
               key={i} 
-              className="bg-white border border-[#D4AF37] rounded-[16px] p-6 lg:p-8 flex flex-col gap-4"
+              className="bg-white rounded-[22px] flex flex-col"
+              style={{
+                border: '1.5px solid rgba(212, 175, 55, 0.6)',
+                boxShadow: '0px 4px 16px rgba(0, 0, 0, 0.05)',
+                padding: '40px 32px'
+              }}
             >
-              <h3 className="text-[20px] lg:text-[22px] font-semibold text-[var(--rv-primary)] mb-2">
+              <h3 className="text-[24px] font-bold text-[var(--rv-primary)] mb-3">
                 {g.label}
               </h3>
-              <div className="w-[80px] h-[2px] bg-[#D4AF37] rounded-[2px] mb-5"></div>
-              <p className="text-base font-semibold text-[var(--rv-primary)] mb-2 leading-snug">
+              <div 
+                className="mb-6"
+                style={{
+                  width: '100px',
+                  height: '3px',
+                  background: 'rgba(212, 175, 55, 0.8)',
+                  borderRadius: '3px'
+                }}
+              ></div>
+              <p className="text-base font-semibold text-[var(--rv-primary)] mb-3 leading-snug">
                 {g.subtitle}
               </p>
               <p className="text-base text-[#4B5563] leading-[1.55] whitespace-pre-line">
