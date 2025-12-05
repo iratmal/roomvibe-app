@@ -650,12 +650,9 @@ function StudioHeader() {
 
 /* ------------- Studio (Canvy-style editor) ------------- */
 
-// Per-scene scaling configuration
-// wallWidthCm: physical width of visible wall in centimeters (default: 400cm)
-// wallWidthPx: width of visible wall in pixels (from scene data)
-// Formula: pxPerCm = (canvasWidthPx / imageWidthPx) * (wallWidthPx / wallWidthCm)
-const DEFAULT_WALL_WIDTH_CM = 400;  // Standard room wall width in cm
-const REFERENCE_IMAGE_WIDTH = 1500; // Approximate image resolution for scaling
+// Real-scale rendering: Standard room wall height is 270cm
+// Formula: pxPerCm = canvasHeightPx / 270
+const DEFAULT_WALL_HEIGHT_CM = 270;
 
 // Frame configuration system with 12 professional frame styles
 type FrameConfig = {
@@ -957,45 +954,20 @@ function Studio() {
     }
   }, [artId, art]);
 
-  // State for tracking active scene's image dimensions
-  const [activeImageNaturalWidth, setActiveImageNaturalWidth] = useState<number>(REFERENCE_IMAGE_WIDTH);
-  
-  // Get wallWidthPx from active scene (FREE preset or Premium room via userPhoto)
-  const getActiveWallWidthPx = (): number => {
-    // Check if we have a FREE scene selected
-    if (scene?.wallWidthPx) {
-      return scene.wallWidthPx;
-    }
-    // Check if we have a Premium room selected (userPhoto contains the image path)
-    if (userPhoto && userPhoto.startsWith('/rooms/')) {
-      const premiumRoom = premiumRooms.find(r => r.image === userPhoto);
-      if (premiumRoom?.wallWidthPx) {
-        return premiumRoom.wallWidthPx;
-      }
-    }
-    // Default fallback
-    return 1000;
-  };
-
-  // Calculate px/cm ratio using per-scene wallWidthPx for true-to-size rendering
-  // Formula: pxPerCm = displayedImageWidthPx * (wallWidthPx / (imageNaturalWidthPx * wallWidthCm))
+  // Calculate px/cm ratio for true-to-size rendering
+  // Uses canvas HEIGHT and standard wall height (270cm) for consistent scaling
   useEffect(() => {
     if (!canvasRef.current) return;
     
-    const canvasWidthPx = canvasRef.current.clientWidth;
-    const wallWidthPx = getActiveWallWidthPx();
-    
-    // Calculate the ratio: how many screen pixels per cm of physical wall
-    // displayedImageWidthPx ≈ canvasWidthPx (image fills canvas)
-    // Formula: pxPerCm = canvasWidthPx * (wallWidthPx / (naturalWidth * wallWidthCm))
-    const ratio = canvasWidthPx * wallWidthPx / (activeImageNaturalWidth * DEFAULT_WALL_WIDTH_CM);
+    const canvasHeightPx = canvasRef.current.clientHeight;
+    const ratio = canvasHeightPx / DEFAULT_WALL_HEIGHT_CM;
     
     setPxPerCm(ratio);
     
     if (import.meta.env.DEV) {
-      console.log(`[Real-Scale] Scene: wallWidthPx=${wallWidthPx}, canvasWidth=${canvasWidthPx}px, naturalWidth=${activeImageNaturalWidth}px, pxPerCm=${ratio.toFixed(3)}`);
+      console.log(`[Real-Scale] canvasHeight=${canvasHeightPx}px, wallHeight=${DEFAULT_WALL_HEIGHT_CM}cm, pxPerCm=${ratio.toFixed(3)}`);
     }
-  }, [sceneId, userPhoto, activeImageNaturalWidth, canvasRef.current?.clientWidth]);
+  }, [sceneId, userPhoto, canvasRef.current?.clientHeight]);
 
   const fileRef = useRef<HTMLInputElement | null>(null);
 
@@ -1930,21 +1902,9 @@ function Studio() {
                 onClick={handleCanvasClick}
               >
                 {userPhoto ? (
-                  <img 
-                    src={userPhoto} 
-                    alt="Your wall" 
-                    className="absolute inset-0 h-full w-full object-cover" 
-                    style={{ pointerEvents: 'none' }}
-                    onLoad={(e) => setActiveImageNaturalWidth((e.target as HTMLImageElement).naturalWidth || REFERENCE_IMAGE_WIDTH)}
-                  />
+                  <img src={userPhoto} alt="Your wall" className="absolute inset-0 h-full w-full object-cover" style={{ pointerEvents: 'none' }} />
                 ) : scene ? (
-                  <img 
-                    src={scene.photo} 
-                    alt={scene.name} 
-                    className="absolute inset-0 h-full w-full object-cover" 
-                    style={{ pointerEvents: 'none' }}
-                    onLoad={(e) => setActiveImageNaturalWidth((e.target as HTMLImageElement).naturalWidth || REFERENCE_IMAGE_WIDTH)}
-                  />
+                  <img src={scene.photo} alt={scene.name} className="absolute inset-0 h-full w-full object-cover" style={{ pointerEvents: 'none' }} />
                 ) : (
                   /* Upload mode: Show upload prompt when no room selected */
                   <div 
