@@ -650,32 +650,17 @@ function StudioHeader() {
 
 /* ------------- Studio (Canvy-style editor) ------------- */
 
-// Real wall dimensions in centimeters for each room preset
-// These represent the actual physical wall dimensions visible in each room's photo
+// Real wall dimensions in centimeters for room scaling
+// Default wall height is 270cm - consistent across all rooms for true-to-size rendering
+// All FREE and Premium rooms use the default 270cm unless specifically overridden
 const ROOM_WALL_HEIGHTS_CM: Record<string, number> = {
-  room01: 270,
-  room02: 270,
-  room03: 270,
-  room04: 300, // Increased to make artworks ~10% smaller relative to furniture (vs 270 in other rooms)
-  room05: 270,
-  room06: 270,
-  room07: 270,
-  room08: 270,
-  room09: 270,
-  room10: 270,
+  // All rooms use default 270cm wall height for consistent artwork scaling
+  // Add room-specific overrides here only if needed for special calibration
 };
 
 const ROOM_WALL_WIDTHS_CM: Record<string, number> = {
-  room01: 360, // Default aspect ratio ~4:3
-  room02: 360,
-  room03: 360,
-  room04: 435, // Adjusted to make artworks appear smaller relative to furniture
-  room05: 360,
-  room06: 360,
-  room07: 360,
-  room08: 360,
-  room09: 360,
-  room10: 360,
+  // Default aspect ratio ~4:3 (360cm width for 270cm height)
+  // Add room-specific overrides here only if needed
 };
 
 // Precomputed px/cm ratios for rooms with specific calibration requirements
