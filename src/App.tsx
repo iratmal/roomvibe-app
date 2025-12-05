@@ -2726,7 +2726,7 @@ export default function Demo() {
 
             <div className="mt-4 text-sm text-slate-600">
               By embedding RoomVibe on a Shopify store, you also accept the{" "}
-              <a className="text-slate-900 underline" href="https://www.shopify.com/legal/cookies" target="_blank" rel="noreferrer">
+              <a className="text-rv-primary underline" href="https://www.shopify.com/legal/cookies" target="_blank" rel="noreferrer">
                 Shopify Cookie Policy
               </a>
               .
@@ -2761,7 +2761,7 @@ function PrivacyPage() {
             <p>
               Cookies: we use essential cookies/localStorage for widget functionality; analytics/marketing only with consent. Shopify stores use Shopify’s
               cookie framework.{" "}
-              <a className="text-slate-900 underline" href="https://www.shopify.com/legal/cookies" target="_blank" rel="noreferrer">
+              <a className="text-rv-primary underline" href="https://www.shopify.com/legal/cookies" target="_blank" rel="noreferrer">
                 View Shopify Cookie Policy
               </a>
               .
@@ -2786,7 +2786,7 @@ function CodeCard({ title, code }: { title: string; code: string }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
+        <h3 className="text-sm font-semibold text-rv-primary">{title}</h3>
         <button
           onClick={async () => {
             try {
@@ -3018,7 +3018,7 @@ function Logo(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" {...props}>
       <rect x="3" y="5" width="18" height="14" rx="3" className="fill-white" />
-      <rect x="6" y="8" width="12" height="8" rx="2" className="fill-current text-slate-900" />
+      <rect x="6" y="8" width="12" height="8" rx="2" className="fill-current text-rv-primary" />
     </svg>
   );
 }
