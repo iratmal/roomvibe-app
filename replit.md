@@ -31,7 +31,7 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 - **Studio Mode**:
     - **Interface**: Left panel for scene browsing, center canvas for artwork visualization, and a right panel for controls (artwork, size, frame selection). Mobile prioritizes canvas, then controls, then room list.
     - **Artwork Access**: Free users are limited to a placeholder artwork, with an upgrade path for full artwork selection. Paid users have full access.
-    - **Premium Room Library**: Tiered access to a library of premium room scenes based on subscription plan.
+    - **Premium Room Library (Updated Dec 2024)**: 70 premium room scenes across 3 categories (Bathroom: 14, Bedroom: 24, Cafe: 32). Located in `public/rooms/{category}/` with data in `src/data/premiumRooms.ts`. Tiered access based on subscription plan.
     - **Export Features**: Supports image (regular 1200px, high-res 3000px) and PDF exports with plan-based restrictions and watermarking for free users. Upgrade nudges are integrated into the export flow.
 - **Role-Based Dashboards**:
     - **Artist Dashboard**: CRUD for artwork management, including image uploads and website widget embedding.
