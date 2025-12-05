@@ -480,17 +480,17 @@ function Hero() {
 function UserGroupsSection() {
   const groups = [
     {
-      label: "For artists",
+      label: "For Artists",
       subtitle: "Give your clients the power to see your art in their own space.",
       bodyText: "Add a simple View in Your Room widget to your website and let buyers preview your artwork on their walls before they purchase. No more I am not sure how it will look, they see it instantly, true to size, in their home.\n\nWith premium room mockups and realistic visualizations, your artwork stops being just an image. It becomes part of their life. Increase trust, reduce hesitation, and convert more collectors with ease."
     },
     {
-      label: "For designers",
+      label: "For Designers",
       subtitle: "Upload your client's wall photo and test artworks instantly.",
-      bodyText: "No more guessing, see exactly how each piece will look in the actual space before making your recommendation. Try different sizes, orientations, and artwork options in seconds.\n\nPerfect for interior designers and consultants who want to present polished concepts fast. Impress clients with professional mockups made in under three seconds."
+      bodyText: "No more guessing, see exactly how each piece will look in the actual space before making your recommendation. Try different sizes and artwork options in seconds.\n\nPerfect for interior designers and consultants who want to present polished concepts fast. Impress clients with professional mockups made in under three seconds."
     },
     {
-      label: "For galleries",
+      label: "For Galleries",
       subtitle: "Bring your gallery experience online and open your doors to the world.",
       bodyText: "Traditional offline viewing is no longer enough. Create virtual exhibitions, let collectors preview artworks in curated interiors, and allow international buyers to engage with your collection from anywhere.\n\nStay ahead of the trend, offer a modern and immersive gallery experience without shipping a single piece. Present your artists work in rooms that elevate every collection."
     },
