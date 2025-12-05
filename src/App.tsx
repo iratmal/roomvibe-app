@@ -835,7 +835,7 @@ function Studio() {
   const [isUploadMode, setIsUploadMode] = useState<boolean>(initialState.isUploadMode);
 
   const [artworksState, setArtworksState] = useState<any[]>(localArtworks as any);
-  const [artId, setArtId] = useState<string>("light-my-fire-140-70-cm-roomvibe");
+  const [artId, setArtId] = useState<string>("whispers-of-the-ring-100-120-cm-roomvibe");
   const artIdRef = useRef<string>(artId);
   const [isLoadingArtwork, setIsLoadingArtwork] = useState<boolean>(false);
 
