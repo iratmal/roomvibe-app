@@ -1865,7 +1865,9 @@ function Studio() {
                           setUpgradeModalMessage(message);
                           setShowUpgradeModal(true);
                         } else {
-                          setShowComingSoonModal(true);
+                          // Select this premium room as background
+                          setUserPhoto(room.image);
+                          setSceneId('');
                         }
                       }}
                       className={`group relative overflow-hidden rounded-rvMd bg-white shadow-sm hover:shadow-md transition-all ${
@@ -1873,15 +1875,10 @@ function Studio() {
                       }`}
                       style={{ border: isLocked ? '1.5px solid #D8B46A' : '1px solid #DDE1E7' }}
                     >
-                      <div className="h-20 w-full bg-gradient-to-br from-[#F7F3EE] to-[#E8E4DF] flex items-center justify-center">
-                        <div className="text-[#D8B46A]/30">
-                          <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                            <rect x="3" y="3" width="18" height="18" rx="2" />
-                            <path d="M3 9h18" />
-                            <path d="M9 21V9" />
-                          </svg>
-                        </div>
-                      </div>
+                      <div 
+                        className="h-20 w-full bg-cover bg-center bg-[#F7F3EE]"
+                        style={{ backgroundImage: `url(${room.image})` }}
+                      />
                       
                       {/* Locked overlay with gold-styled lock */}
                       {isLocked && (
