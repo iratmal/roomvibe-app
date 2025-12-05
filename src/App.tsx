@@ -954,18 +954,37 @@ function Studio() {
     }
   }, [artId, art]);
 
+  // Get scaleFactor from active scene (FREE preset or Premium room via userPhoto)
+  const getActiveScaleFactor = (): number => {
+    // Check if we have a FREE scene selected
+    if (scene?.scaleFactor) {
+      return scene.scaleFactor;
+    }
+    // Check if we have a Premium room selected (userPhoto contains the image path)
+    if (userPhoto && userPhoto.startsWith('/rooms/')) {
+      const premiumRoom = premiumRooms.find(r => r.image === userPhoto);
+      if (premiumRoom?.scaleFactor) {
+        return premiumRoom.scaleFactor;
+      }
+    }
+    // Default: no scaling adjustment
+    return 1.0;
+  };
+
   // Calculate px/cm ratio for true-to-size rendering
-  // Uses canvas HEIGHT and standard wall height (270cm) for consistent scaling
+  // Uses canvas HEIGHT and standard wall height (270cm), then applies per-scene scaleFactor
   useEffect(() => {
     if (!canvasRef.current) return;
     
     const canvasHeightPx = canvasRef.current.clientHeight;
-    const ratio = canvasHeightPx / DEFAULT_WALL_HEIGHT_CM;
+    const basePxPerCm = canvasHeightPx / DEFAULT_WALL_HEIGHT_CM;
+    const sceneScale = getActiveScaleFactor();
+    const ratio = basePxPerCm * sceneScale;
     
     setPxPerCm(ratio);
     
     if (import.meta.env.DEV) {
-      console.log(`[Real-Scale] canvasHeight=${canvasHeightPx}px, wallHeight=${DEFAULT_WALL_HEIGHT_CM}cm, pxPerCm=${ratio.toFixed(3)}`);
+      console.log(`[Real-Scale] canvasHeight=${canvasHeightPx}px, wallHeight=${DEFAULT_WALL_HEIGHT_CM}cm, scaleFactor=${sceneScale}, pxPerCm=${ratio.toFixed(3)}`);
     }
   }, [sceneId, userPhoto, canvasRef.current?.clientHeight]);
 

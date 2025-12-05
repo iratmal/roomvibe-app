@@ -4,6 +4,7 @@ export type PremiumRoom = {
   name: string;
   image: string;
   wallWidthPx: number;
+  scaleFactor?: number;  // Optional per-scene scale multiplier (default: 1.0)
 };
 
 export const premiumRooms: PremiumRoom[] = [
