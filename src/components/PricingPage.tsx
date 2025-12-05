@@ -237,9 +237,9 @@ export function PricingPage() {
                 <thead>
                   <tr className="border-b-2 border-rv-neutral">
                     <th className="text-left py-4 px-4 font-semibold text-rv-text">Feature</th>
-                    <th className="text-center py-4 px-3 font-semibold text-[#0B1F2A]">Artist</th>
-                    <th className="text-center py-4 px-3 font-semibold text-[#0B1F2A]">Designer</th>
-                    <th className="text-center py-4 px-3 font-semibold text-[#0B1F2A]">Gallery</th>
+                    <th className="text-center py-4 px-3 font-semibold text-[#264C61]">Artist</th>
+                    <th className="text-center py-4 px-3 font-semibold text-[#264C61]">Designer</th>
+                    <th className="text-center py-4 px-3 font-semibold text-[#264C61]">Gallery</th>
                     <th className="text-center py-4 px-3 font-semibold text-[#C9A24A]">All-Access</th>
                   </tr>
                 </thead>
@@ -334,12 +334,12 @@ function PlanCard({ plan, isActive, isLoading, onSelect }: PlanCardProps) {
       <div className="mb-4">
         <h3 
           className="text-xl font-semibold"
-          style={{ color: '#0B1F2A' }}
+          style={{ color: '#264C61' }}
         >
           {plan.name}
         </h3>
         <div className="mt-1 flex items-baseline gap-1">
-          <span className="text-2xl font-bold" style={{ color: '#0B1F2A' }}>
+          <span className="text-2xl font-bold" style={{ color: '#264C61' }}>
             {plan.price}
           </span>
           <span className="text-rv-textMuted text-sm">/ month</span>
@@ -367,11 +367,11 @@ function PlanCard({ plan, isActive, isLoading, onSelect }: PlanCardProps) {
           className="mb-4 py-2 px-3 rounded-lg text-sm text-center flex items-center justify-center gap-2"
           style={{
             backgroundColor: '#E8EBF7',
-            color: '#0B1F2A',
+            color: '#264C61',
             fontWeight: 600,
           }}
         >
-          <CheckCircleIcon className="w-4 h-4" color="#0B1F2A" />
+          <CheckCircleIcon className="w-4 h-4" color="#264C61" />
           {plan.isAllAccess ? 'Active – All Modules Unlocked' : 'Active'}
         </div>
       )}
@@ -399,7 +399,7 @@ function ComparisonCell({ value, isHighlighted }: { value: boolean | string; isH
     return (
       <span 
         className="text-sm font-medium"
-        style={{ color: isHighlighted ? '#C9A24A' : '#0B1F2A' }}
+        style={{ color: isHighlighted ? '#C9A24A' : '#264C61' }}
       >
         {value}
       </span>

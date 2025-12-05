@@ -110,7 +110,7 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
           <button
             onClick={handleSkip}
             className="text-sm font-medium underline transition-colors"
-            style={{ color: '#0B1F2A', opacity: 0.7 }}
+            style={{ color: '#264C61', opacity: 0.7 }}
           >
             Skip onboarding
           </button>
@@ -126,7 +126,7 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
               <button
                 onClick={handleNext}
                 className="w-full py-3 text-white font-medium rounded-lg transition-colors"
-                style={{ backgroundColor: '#0B1F2A' }}
+                style={{ backgroundColor: '#264C61' }}
               >
                 Next →
               </button>
@@ -135,14 +135,14 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
                 <button
                   onClick={handleFinish}
                   className="w-full py-3 text-white font-medium rounded-lg transition-colors"
-                  style={{ backgroundColor: '#0B1F2A' }}
+                  style={{ backgroundColor: '#264C61' }}
                 >
                   Go to Dashboard
                 </button>
                 <button
                   onClick={handleGoToStudio}
                   className="w-full py-2 font-medium transition-colors text-center"
-                  style={{ color: '#0B1F2A' }}
+                  style={{ color: '#264C61' }}
                 >
                   Open Studio →
                 </button>
@@ -165,7 +165,7 @@ function StepIndicator({ currentStep, totalSteps }: { currentStep: number; total
           key={index}
           className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full transition-colors"
           style={{
-            backgroundColor: index === currentStep ? '#0B1F2A' : '#DDE1E7',
+            backgroundColor: index === currentStep ? '#264C61' : '#DDE1E7',
           }}
         />
       ))}
@@ -343,7 +343,7 @@ function Screen3({ hasLockedModules }: { hasLockedModules: boolean }) {
             <div
               className="w-5 h-5 sm:w-6 sm:h-6 rounded flex items-center justify-center flex-shrink-0 transition-colors"
               style={{
-                backgroundColor: item.checked ? '#0B1F2A' : 'transparent',
+                backgroundColor: item.checked ? '#264C61' : 'transparent',
                 border: item.checked ? 'none' : '2px solid #DDE1E7',
               }}
             >

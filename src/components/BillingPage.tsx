@@ -228,12 +228,12 @@ export function BillingPage() {
                   className="flex items-center gap-3 px-4 py-3 rounded-md"
                   style={{
                     backgroundColor: '#E8EBF7',
-                    borderLeft: '4px solid #0B1F2A',
+                    borderLeft: '4px solid #264C61',
                   }}
                 >
-                  <CheckCircleIcon className="w-5 h-5 text-[#0B1F2A] flex-shrink-0" />
-                  <span className="font-medium text-[#0B1F2A]">{module.name}</span>
-                  <span className="ml-auto text-sm text-[#0B1F2A] font-medium px-2 py-0.5 bg-white/60 rounded">
+                  <CheckCircleIcon className="w-5 h-5 text-[#264C61] flex-shrink-0" />
+                  <span className="font-medium text-[#264C61]">{module.name}</span>
+                  <span className="ml-auto text-sm text-[#264C61] font-medium px-2 py-0.5 bg-white/60 rounded">
                     Active
                   </span>
                 </div>
@@ -269,7 +269,7 @@ export function BillingPage() {
                       <div className="flex items-center gap-3 mb-3">
                         <LockIcon className="w-5 h-5 text-[#C9A24A]" />
                         <h3 className="font-bold text-rv-text">{module.name}</h3>
-                        <span className="text-sm font-medium text-[#0B1F2A]">{module.price}</span>
+                        <span className="text-sm font-medium text-[#264C61]">{module.price}</span>
                       </div>
                       <ul className="space-y-2 ml-0 sm:ml-8">
                         {module.features.map((feature, i) => (

@@ -327,25 +327,25 @@ function TopNav() {
             />
           </a>
           <nav className="hidden md:flex items-center gap-12 text-sm font-medium">
-            <a href="#how" className="text-[#1A1A1A] hover:text-[#0B1F2A] transition-colors">
+            <a href="#how" className="text-[#1A1A1A] hover:text-[#264C61] transition-colors">
               How it works
             </a>
-            <a href="#/pricing" className="text-[#1A1A1A] hover:text-[#0B1F2A] transition-colors">
+            <a href="#/pricing" className="text-[#1A1A1A] hover:text-[#264C61] transition-colors">
               Pricing
             </a>
-            <a href="#/studio" className="text-[#1A1A1A] hover:text-[#0B1F2A] transition-colors">
+            <a href="#/studio" className="text-[#1A1A1A] hover:text-[#264C61] transition-colors">
               Studio
             </a>
             {user ? (
               <>
-                <a href="#/dashboard" className="text-[#1A1A1A] hover:text-[#0B1F2A] transition-colors">
+                <a href="#/dashboard" className="text-[#1A1A1A] hover:text-[#264C61] transition-colors">
                   Dashboard
                 </a>
                 <span className="text-xs text-gray-400">({user.role})</span>
               </>
             ) : (
               <>
-                <a href="#/login" className="text-[#1A1A1A] hover:text-[#0B1F2A] transition-colors">
+                <a href="#/login" className="text-[#1A1A1A] hover:text-[#264C61] transition-colors">
                   Login
                 </a>
                 <a href="#/register" className="btn-primary">
@@ -356,7 +356,7 @@ function TopNav() {
           </nav>
           <button
             aria-label="Open menu"
-            className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 text-[#0B1F2A] hover:bg-gray-50 transition-colors"
+            className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 text-[#264C61] hover:bg-gray-50 transition-colors"
             onClick={() => setOpen((v) => !v)}
           >
             <MenuIcon className="h-5 w-5" />
@@ -367,21 +367,21 @@ function TopNav() {
         <div className="md:hidden border-t border-gray-100 bg-white">
           <div className="mx-auto max-w-7xl px-6 py-4 text-sm">
             <div className="flex flex-col gap-1 font-medium">
-              <a onClick={() => setOpen(false)} href="#how" className="py-3 text-[#1A1A1A] hover:text-[#0B1F2A] transition-colors">
+              <a onClick={() => setOpen(false)} href="#how" className="py-3 text-[#1A1A1A] hover:text-[#264C61] transition-colors">
                 How it works
               </a>
-              <a onClick={() => setOpen(false)} href="#/pricing" className="py-3 text-[#1A1A1A] hover:text-[#0B1F2A] transition-colors">
+              <a onClick={() => setOpen(false)} href="#/pricing" className="py-3 text-[#1A1A1A] hover:text-[#264C61] transition-colors">
                 Pricing
               </a>
-              <a onClick={() => setOpen(false)} href="#/studio" className="py-3 text-[#1A1A1A] hover:text-[#0B1F2A] transition-colors">
+              <a onClick={() => setOpen(false)} href="#/studio" className="py-3 text-[#1A1A1A] hover:text-[#264C61] transition-colors">
                 Studio
               </a>
               {user ? (
-                <a onClick={() => setOpen(false)} href="#/dashboard" className="py-3 text-[#1A1A1A] hover:text-[#0B1F2A] transition-colors">
+                <a onClick={() => setOpen(false)} href="#/dashboard" className="py-3 text-[#1A1A1A] hover:text-[#264C61] transition-colors">
                   Dashboard
                 </a>
               ) : (
-                <a onClick={() => setOpen(false)} href="#/login" className="py-3 text-[#1A1A1A] hover:text-[#0B1F2A] transition-colors">
+                <a onClick={() => setOpen(false)} href="#/login" className="py-3 text-[#1A1A1A] hover:text-[#264C61] transition-colors">
                   Login
                 </a>
               )}
@@ -634,7 +634,7 @@ function StudioHeader() {
           </a>
           <a
             href="#/dashboard"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 bg-[#0B1F2A] text-white text-[13px] md:text-sm font-medium rounded-md md:rounded-lg hover:bg-[#071520] transition-colors min-h-[44px] sm:min-h-0"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 bg-[#264C61] text-white text-[13px] md:text-sm font-medium rounded-md md:rounded-lg hover:bg-[#1D3A4A] transition-colors min-h-[44px] sm:min-h-0"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
               <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -1867,7 +1867,7 @@ function Studio() {
                       )}
                       
                       <div className={`absolute bottom-0 left-0 right-0 px-2 py-1.5 text-[10px] font-medium ${
-                        isLocked ? "bg-[#0B1F2A]/80 text-white" : "bg-gradient-to-t from-[#D8B46A]/80 to-[#D8B46A]/60 text-white"
+                        isLocked ? "bg-[#264C61]/80 text-white" : "bg-gradient-to-t from-[#D8B46A]/80 to-[#D8B46A]/60 text-white"
                       }`}>
                         {room.name}
                       </div>
@@ -2311,8 +2311,8 @@ function Studio() {
                 <button
                   onClick={() => exportToImage(false)}
                   disabled={isExporting}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white rounded-lg text-sm font-medium text-[#0B1F2A] transition-all disabled:opacity-50 hover:bg-[rgba(11,31,42,0.06)]"
-                  style={{ border: '1.5px solid #0B1F2A' }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white rounded-lg text-sm font-medium text-[#264C61] transition-all disabled:opacity-50 hover:bg-[rgba(38,76,97,0.06)]"
+                  style={{ border: '1.5px solid #264C61' }}
                 >
                   {isExporting && exportType === 'image' ? (
                     <svg className="w-[18px] h-[18px] animate-spin" fill="none" viewBox="0 0 24 24">
@@ -2336,7 +2336,7 @@ function Studio() {
                 <button
                   onClick={() => exportToImage(true)}
                   disabled={isExporting}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white rounded-lg text-sm font-medium text-[#0B1F2A] transition-all disabled:opacity-50 hover:bg-[rgba(11,31,42,0.06)]"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white rounded-lg text-sm font-medium text-[#264C61] transition-all disabled:opacity-50 hover:bg-[rgba(38,76,97,0.06)]"
                   style={{ border: '1.5px solid #D8B46A' }}
                 >
                   {isExporting && exportType === 'image' ? (
@@ -2365,7 +2365,7 @@ function Studio() {
                 <button
                   onClick={exportToPdf}
                   disabled={isExporting}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white rounded-lg text-sm font-medium text-[#0B1F2A] transition-all disabled:opacity-50 hover:bg-[rgba(11,31,42,0.06)]"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white rounded-lg text-sm font-medium text-[#264C61] transition-all disabled:opacity-50 hover:bg-[rgba(38,76,97,0.06)]"
                   style={{ border: '1.5px solid #D8B46A' }}
                 >
                   {isExporting && exportType === 'pdf' ? (
@@ -2396,7 +2396,7 @@ function Studio() {
                     setUpgradeModalMessage("Upgrade to remove watermarks and unlock high-resolution exports, PDF proposals, and more professional features."); 
                     setShowUpgradeModal(true); 
                   }}
-                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-[#0B1F2A] transition-all hover:bg-[rgba(11,31,42,0.06)]"
+                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-[#264C61] transition-all hover:bg-[rgba(38,76,97,0.06)]"
                   style={{ border: '1.5px solid #D8B46A' }}
                 >
                   Unlock High-Resolution Export → Upgrade
@@ -2410,7 +2410,7 @@ function Studio() {
                     setUpgradeModalMessage("Upgrade to Designer to unlock high-resolution 3000px exports, PDF proposals, and custom branding.");
                     setShowUpgradeModal(true);
                   }}
-                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-[#0B1F2A] transition-all hover:bg-[rgba(11,31,42,0.06)]"
+                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-[#264C61] transition-all hover:bg-[rgba(38,76,97,0.06)]"
                   style={{ border: '1.5px solid #D8B46A' }}
                 >
                   Unlock High-Resolution → Upgrade to Designer
@@ -2529,7 +2529,7 @@ function HowItWorks() {
               key={i} 
               className="bg-[#FAFAFA] rounded-[16px] p-8 text-center flex flex-col items-center gap-3"
             >
-              <div className="w-14 h-14 rounded-full bg-[#F0F0F0] flex items-center justify-center text-[#0B1F2A]">
+              <div className="w-14 h-14 rounded-full bg-[#F0F0F0] flex items-center justify-center text-[#264C61]">
                 {s.icon}
               </div>
               <h3 className="text-lg lg:text-xl font-semibold text-[#1A1A1A] tracking-tight">
@@ -2574,15 +2574,15 @@ function DashboardVideosSection() {
           {videos.map((v, i) => (
             <div key={i} className="flex flex-col">
               {/* Thumbnail first */}
-              <div className="relative aspect-video rounded-[16px] overflow-hidden bg-[#0B1F2A]/10 group cursor-pointer shadow-md mb-4">
+              <div className="relative aspect-video rounded-[16px] overflow-hidden bg-[#264C61]/10 group cursor-pointer shadow-md mb-4">
                 <img 
                   src={v.thumbnail} 
                   alt={v.title}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-[#0B1F2A]/40 flex items-center justify-center group-hover:bg-[#0B1F2A]/50 transition-colors">
+                <div className="absolute inset-0 bg-[#264C61]/40 flex items-center justify-center group-hover:bg-[#264C61]/50 transition-colors">
                   <div className="w-14 h-14 lg:w-16 lg:h-16 rounded-full bg-white/90 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-                    <svg className="w-6 h-6 lg:w-7 lg:h-7 text-[#0B1F2A] ml-1" viewBox="0 0 24 24" fill="currentColor">
+                    <svg className="w-6 h-6 lg:w-7 lg:h-7 text-[#264C61] ml-1" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M8 5v14l11-7-11-7z" />
                     </svg>
                   </div>
@@ -2596,7 +2596,7 @@ function DashboardVideosSection() {
               <p className="text-sm lg:text-[15px] text-[#555] mb-4 leading-relaxed">
                 {v.description}
               </p>
-              <a href="#" className="text-sm font-medium text-[#0B1F2A] hover:underline">
+              <a href="#" className="text-sm font-medium text-[#264C61] hover:underline">
                 Watch Video →
               </a>
             </div>
@@ -2830,7 +2830,7 @@ function SiteFooter() {
   };
 
   return (
-    <footer className="bg-[#0B1F2A] text-white">
+    <footer className="bg-[#264C61] text-white">
       <div className="mx-auto max-w-7xl px-6 lg:px-8 py-16 pb-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
           {/* Column 1: Branding */}
@@ -2943,7 +2943,7 @@ function SiteFooter() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email…"
-                  className="flex-1 px-4 py-2.5 rounded-lg bg-white border border-[#E1E1E1] text-[#1A1A1A] placeholder:text-gray-400 text-sm focus:outline-none focus:border-[#0B1F2A] transition-colors"
+                  className="flex-1 px-4 py-2.5 rounded-lg bg-white border border-[#E1E1E1] text-[#1A1A1A] placeholder:text-gray-400 text-sm focus:outline-none focus:border-[#264C61] transition-colors"
                   required
                 />
                 <button type="submit" className="btn-primary text-sm">
