@@ -790,9 +790,9 @@ function Studio() {
   const hasHighResExport = planLimits.highResExport;
   const hasPdfExport = planLimits.pdfProposals;
   
-  // Placeholder artwork for free users - first artwork in the catalog
-  const placeholderArtwork = (localArtworks as any[])[0];
-  const placeholderArtId = placeholderArtwork?.id || 'light-my-fire-140-70-cm-roomvibe';
+  // Placeholder artwork for free users - "Whispers of the Ring"
+  const placeholderArtwork = (localArtworks as any[]).find((a: any) => a.id === 'whispers-of-the-ring-100-120-cm-roomvibe') || (localArtworks as any[])[0];
+  const placeholderArtId = 'whispers-of-the-ring-100-120-cm-roomvibe';
   
   // Check URL params for widget mode or designer mode
   const getInitialState = (): { sceneId: string; isUploadMode: boolean; designerRoomImage: string | null } => {
