@@ -69,12 +69,12 @@ function ChangePasswordGallery() {
   return (
     <div className="p-6 bg-slate-50 rounded-xl border border-slate-100">
       <div className="flex items-center gap-3 mb-5">
-        <div className="w-10 h-10 rounded-full bg-[#283593]/10 flex items-center justify-center">
-          <svg className="w-5 h-5 text-[#283593]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="w-10 h-10 rounded-full bg-[#0B1F2A]/10 flex items-center justify-center">
+          <svg className="w-5 h-5 text-[#0B1F2A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
           </svg>
         </div>
-        <h3 className="text-lg font-semibold text-[#283593]" style={{ fontFamily: 'Inter, sans-serif' }}>
+        <h3 className="text-lg font-semibold text-[#0B1F2A]" style={{ fontFamily: 'Inter, sans-serif' }}>
           Change Password
         </h3>
       </div>
@@ -94,7 +94,7 @@ function ChangePasswordGallery() {
             type="password"
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
-            className="w-full px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#283593] bg-white text-sm"
+            className="w-full px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B1F2A] bg-white text-sm"
             required
           />
         </div>
@@ -104,7 +104,7 @@ function ChangePasswordGallery() {
             type="password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            className="w-full px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#283593] bg-white text-sm"
+            className="w-full px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B1F2A] bg-white text-sm"
             required
           />
         </div>
@@ -114,14 +114,14 @@ function ChangePasswordGallery() {
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#283593] bg-white text-sm"
+            className="w-full px-3 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0B1F2A] bg-white text-sm"
             required
           />
         </div>
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full py-2.5 bg-[#283593] text-white rounded-lg hover:bg-[#1a237e] transition-all font-semibold text-sm disabled:opacity-50"
+          className="w-full py-2.5 bg-[#0B1F2A] text-white rounded-lg hover:bg-[#071520] transition-all font-semibold text-sm disabled:opacity-50"
         >
           {isLoading ? 'Changing...' : 'Change Password'}
         </button>
@@ -288,7 +288,7 @@ export function GalleryDashboard() {
         {/* Header Section */}
         <div className="flex justify-between items-start mb-12 pb-8 border-b border-slate-200">
           <div>
-            <h1 className="text-4xl md:text-5xl font-semibold mb-3 text-[#283593] tracking-tight" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <h1 className="text-4xl md:text-5xl font-semibold mb-3 text-[#0B1F2A] tracking-tight" style={{ fontFamily: 'Inter, sans-serif' }}>
               Gallery Dashboard
             </h1>
             <p className="text-lg text-slate-500" style={{ fontFamily: 'Inter, sans-serif' }}>
@@ -298,7 +298,7 @@ export function GalleryDashboard() {
           <div className="flex items-center gap-3">
             <a
               href="#/studio"
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#283593] text-white text-sm font-semibold rounded-lg hover:bg-[#1a237e] transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#0B1F2A] text-white text-sm font-semibold rounded-lg hover:bg-[#071520] transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -328,7 +328,7 @@ export function GalleryDashboard() {
         )}
 
         <div className="mb-12 p-8 bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100">
-          <h2 className="text-2xl font-semibold mb-2 text-[#283593]" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <h2 className="text-2xl font-semibold mb-2 text-[#0B1F2A]" style={{ fontFamily: 'Inter, sans-serif' }}>
             Create New Collection
           </h2>
           <p className="text-sm text-slate-400 mb-8">Curate artworks into themed exhibitions</p>
@@ -351,7 +351,7 @@ export function GalleryDashboard() {
                     name="title"
                     value={formData.title}
                     onChange={handleInputChange}
-                    className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] focus:border-transparent transition-all bg-slate-50 hover:bg-white"
+                    className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B1F2A] focus:border-transparent transition-all bg-slate-50 hover:bg-white"
                     placeholder="e.g., Contemporary Art Collection 2024"
                     required
                   />
@@ -374,7 +374,7 @@ export function GalleryDashboard() {
                     name="subtitle"
                     value={formData.subtitle}
                     onChange={handleInputChange}
-                    className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] focus:border-transparent transition-all bg-slate-50 hover:bg-white"
+                    className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B1F2A] focus:border-transparent transition-all bg-slate-50 hover:bg-white"
                     placeholder="e.g., Modern Abstracts & Landscapes"
                   />
                 </div>
@@ -397,7 +397,7 @@ export function GalleryDashboard() {
                   value={formData.description}
                   onChange={handleInputChange}
                   rows={3}
-                  className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] focus:border-transparent transition-all bg-slate-50 hover:bg-white resize-none"
+                  className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B1F2A] focus:border-transparent transition-all bg-slate-50 hover:bg-white resize-none"
                   placeholder="Tell visitors about this collection..."
                 />
               </div>
@@ -418,7 +418,7 @@ export function GalleryDashboard() {
                   name="status"
                   value={formData.status}
                   onChange={handleInputChange}
-                  className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] focus:border-transparent transition-all bg-slate-50 hover:bg-white appearance-none cursor-pointer"
+                  className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B1F2A] focus:border-transparent transition-all bg-slate-50 hover:bg-white appearance-none cursor-pointer"
                 >
                   <option value="draft">Draft</option>
                   <option value="published">Published</option>
@@ -435,7 +435,7 @@ export function GalleryDashboard() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full md:w-auto md:min-w-[200px] md:mx-auto md:block px-8 py-3.5 bg-[#283593] text-white rounded-xl hover:bg-[#1a237e] transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#283593]/25 hover:shadow-xl hover:shadow-[#283593]/30"
+                className="w-full md:w-auto md:min-w-[200px] md:mx-auto md:block px-8 py-3.5 bg-[#0B1F2A] text-white rounded-xl hover:bg-[#071520] transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#0B1F2A]/25 hover:shadow-xl hover:shadow-[#0B1F2A]/30"
                 style={{ fontFamily: 'Inter, sans-serif' }}
               >
                 {loading ? 'Creating...' : 'Create Collection'}
@@ -445,7 +445,7 @@ export function GalleryDashboard() {
         </div>
 
         <div className="mb-12">
-          <h2 className="text-2xl font-semibold mb-6 text-[#283593]" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <h2 className="text-2xl font-semibold mb-6 text-[#0B1F2A]" style={{ fontFamily: 'Inter, sans-serif' }}>
             My Collections ({collections.length})
           </h2>
 
@@ -475,15 +475,15 @@ export function GalleryDashboard() {
                   key={collection.id}
                   className="bg-white border border-slate-100 rounded-2xl hover:shadow-lg hover:shadow-slate-200/50 transition-all group overflow-hidden"
                 >
-                  <div className="h-32 bg-gradient-to-br from-[#283593]/10 to-[#D8B46A]/10 flex items-center justify-center">
-                    <svg className="w-16 h-16 text-[#283593]/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="h-32 bg-gradient-to-br from-[#0B1F2A]/10 to-[#D8B46A]/10 flex items-center justify-center">
+                    <svg className="w-16 h-16 text-[#0B1F2A]/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                     </svg>
                   </div>
                   
                   <div className="p-6">
                     <div className="flex items-start justify-between mb-3">
-                      <h3 className="text-xl font-semibold text-[#283593] group-hover:text-[#1a237e] transition-colors line-clamp-1" style={{ fontFamily: 'Inter, sans-serif' }}>
+                      <h3 className="text-xl font-semibold text-[#0B1F2A] group-hover:text-[#071520] transition-colors line-clamp-1" style={{ fontFamily: 'Inter, sans-serif' }}>
                         {collection.title}
                       </h3>
                       <span className={`flex-shrink-0 ml-2 px-2.5 py-0.5 text-xs font-semibold rounded-full ${
@@ -518,7 +518,7 @@ export function GalleryDashboard() {
                     <div className="flex gap-3 pt-2">
                       <button
                         onClick={() => handleViewCollection(collection.id)}
-                        className="flex-1 px-4 py-2.5 text-sm bg-[#283593] text-white rounded-xl hover:bg-[#1a237e] transition-all font-semibold shadow-sm"
+                        className="flex-1 px-4 py-2.5 text-sm bg-[#0B1F2A] text-white rounded-xl hover:bg-[#071520] transition-all font-semibold shadow-sm"
                         style={{ fontFamily: 'Inter, sans-serif' }}
                       >
                         View Collection
@@ -564,12 +564,12 @@ export function GalleryDashboard() {
         <div className="grid gap-6 md:grid-cols-2">
           <div className="p-6 bg-slate-50 rounded-xl border border-slate-100">
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-full bg-[#283593]/10 flex items-center justify-center">
-                <svg className="w-5 h-5 text-[#283593]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-10 h-10 rounded-full bg-[#0B1F2A]/10 flex items-center justify-center">
+                <svg className="w-5 h-5 text-[#0B1F2A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-[#283593]" style={{ fontFamily: 'Inter, sans-serif' }}>
+              <h3 className="text-lg font-semibold text-[#0B1F2A]" style={{ fontFamily: 'Inter, sans-serif' }}>
                 Account Details
               </h3>
             </div>
@@ -580,7 +580,7 @@ export function GalleryDashboard() {
               </div>
               <div className="flex items-center justify-between py-2 border-b border-slate-200">
                 <span className="font-medium text-slate-600" style={{ fontFamily: 'Inter, sans-serif' }}>Role</span>
-                <span className="px-2.5 py-0.5 bg-[#283593]/10 text-[#283593] text-xs font-semibold rounded-full">Gallery</span>
+                <span className="px-2.5 py-0.5 bg-[#0B1F2A]/10 text-[#0B1F2A] text-xs font-semibold rounded-full">Gallery</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-slate-200">
                 <span className="font-medium text-slate-600" style={{ fontFamily: 'Inter, sans-serif' }}>Status</span>

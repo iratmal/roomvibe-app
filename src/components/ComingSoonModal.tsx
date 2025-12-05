@@ -29,7 +29,7 @@ export function ComingSoonModal({ message, onClose }: ComingSoonModalProps) {
             </svg>
           </div>
           
-          <h3 className="text-xl font-semibold text-[#283593] mb-2">
+          <h3 className="text-xl font-semibold text-[#0B1F2A] mb-2">
             Coming Soon
           </h3>
           
@@ -39,7 +39,7 @@ export function ComingSoonModal({ message, onClose }: ComingSoonModalProps) {
           
           <button
             onClick={onClose}
-            className="w-full py-3 px-4 bg-[#283593] text-white font-semibold rounded-lg hover:bg-[#1e2a6e] transition-colors"
+            className="w-full py-3 px-4 bg-[#0B1F2A] text-white font-semibold rounded-lg hover:bg-[#071520] transition-colors"
           >
             Got it
           </button>

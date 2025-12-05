@@ -343,7 +343,7 @@ export default function CollectionDetail() {
     return (
       <div className="min-h-screen bg-[#f7f8fa] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#283593] mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0B1F2A] mx-auto"></div>
           <p className="mt-4 text-slate-500">Loading collection...</p>
         </div>
       </div>
@@ -357,7 +357,7 @@ export default function CollectionDetail() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <button
             onClick={handleBackToCollections}
-            className="mb-6 flex items-center gap-2 text-[#283593] hover:text-[#1a237e] transition-colors font-semibold"
+            className="mb-6 flex items-center gap-2 text-[#0B1F2A] hover:text-[#071520] transition-colors font-semibold"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -388,7 +388,7 @@ export default function CollectionDetail() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-16">
         <button
           onClick={handleBackToCollections}
-          className="mb-6 flex items-center gap-2 text-[#283593] hover:text-[#1a237e] transition-colors font-semibold"
+          className="mb-6 flex items-center gap-2 text-[#0B1F2A] hover:text-[#071520] transition-colors font-semibold"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -419,7 +419,7 @@ export default function CollectionDetail() {
             </span>
           </div>
           
-          <h1 className="text-3xl md:text-4xl font-semibold text-[#283593] mb-3 pr-28" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <h1 className="text-3xl md:text-4xl font-semibold text-[#0B1F2A] mb-3 pr-28" style={{ fontFamily: 'Inter, sans-serif' }}>
             {collection.title}
           </h1>
           
@@ -456,7 +456,7 @@ export default function CollectionDetail() {
             <select
               value={statusUpdate}
               onChange={(e) => setStatusUpdate(e.target.value as 'draft' | 'published')}
-              className="px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all text-sm"
+              className="px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B1F2A] bg-slate-50 hover:bg-white transition-all text-sm"
               disabled={statusLoading}
             >
               <option value="draft">Draft</option>
@@ -465,7 +465,7 @@ export default function CollectionDetail() {
             <button
               onClick={handleUpdateStatus}
               disabled={statusLoading || statusUpdate === collection.status}
-              className="px-6 py-2.5 bg-[#283593] text-white rounded-xl hover:bg-[#1a237e] transition-all font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+              className="px-6 py-2.5 bg-[#0B1F2A] text-white rounded-xl hover:bg-[#071520] transition-all font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
             >
               {statusLoading ? 'Updating...' : 'Update Status'}
             </button>
@@ -473,7 +473,7 @@ export default function CollectionDetail() {
         </div>
 
         <div className="mb-10 p-8 bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100">
-          <h2 className="text-2xl font-semibold mb-2 text-[#283593]" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <h2 className="text-2xl font-semibold mb-2 text-[#0B1F2A]" style={{ fontFamily: 'Inter, sans-serif' }}>
             Add Artwork to Collection
           </h2>
           <p className="text-sm text-slate-400 mb-8">Upload artworks to include in this exhibition</p>
@@ -490,7 +490,7 @@ export default function CollectionDetail() {
                     name="title"
                     value={formData.title}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all"
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B1F2A] bg-slate-50 hover:bg-white transition-all"
                     placeholder="e.g., Sunset Over Mountains"
                     required
                   />
@@ -505,7 +505,7 @@ export default function CollectionDetail() {
                     name="artistName"
                     value={formData.artistName}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all"
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B1F2A] bg-slate-50 hover:bg-white transition-all"
                     placeholder="e.g., Jane Doe"
                     required
                   />
@@ -522,7 +522,7 @@ export default function CollectionDetail() {
                       name="widthValue"
                       value={formData.widthValue}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all"
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B1F2A] bg-slate-50 hover:bg-white transition-all"
                       placeholder="70"
                       required
                     />
@@ -538,7 +538,7 @@ export default function CollectionDetail() {
                       name="heightValue"
                       value={formData.heightValue}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all"
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B1F2A] bg-slate-50 hover:bg-white transition-all"
                       placeholder="100"
                       required
                     />
@@ -550,7 +550,7 @@ export default function CollectionDetail() {
                       name="dimensionUnit"
                       value={formData.dimensionUnit}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all appearance-none cursor-pointer"
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B1F2A] bg-slate-50 hover:bg-white transition-all appearance-none cursor-pointer"
                     >
                       <option value="cm">cm</option>
                       <option value="in">in</option>
@@ -567,7 +567,7 @@ export default function CollectionDetail() {
                       name="priceAmount"
                       value={formData.priceAmount}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all"
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B1F2A] bg-slate-50 hover:bg-white transition-all"
                       placeholder="1500"
                     />
                   </div>
@@ -578,7 +578,7 @@ export default function CollectionDetail() {
                       name="priceCurrency"
                       value={formData.priceCurrency}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all appearance-none cursor-pointer"
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B1F2A] bg-slate-50 hover:bg-white transition-all appearance-none cursor-pointer"
                     >
                       <option value="EUR">EUR</option>
                       <option value="USD">USD</option>
@@ -593,7 +593,7 @@ export default function CollectionDetail() {
                   <label className="block text-sm font-semibold text-slate-700 mb-2">
                     Artwork Image <span className="text-red-500">*</span>
                   </label>
-                  <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center hover:border-[#283593]/50 transition-colors bg-slate-50">
+                  <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center hover:border-[#0B1F2A]/50 transition-colors bg-slate-50">
                     <input
                       type="file"
                       id="artwork-image"
@@ -625,7 +625,7 @@ export default function CollectionDetail() {
                     name="buyUrl"
                     value={formData.buyUrl}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all"
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B1F2A] bg-slate-50 hover:bg-white transition-all"
                     placeholder="https://example.com/artwork/123"
                   />
                 </div>
@@ -633,7 +633,7 @@ export default function CollectionDetail() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full px-6 py-3.5 bg-[#283593] text-white rounded-xl hover:bg-[#1a237e] transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#283593]/25"
+                  className="w-full px-6 py-3.5 bg-[#0B1F2A] text-white rounded-xl hover:bg-[#071520] transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#0B1F2A]/25"
                   style={{ fontFamily: 'Inter, sans-serif' }}
                 >
                   {loading ? 'Adding...' : 'Add Artwork to Collection'}
@@ -644,7 +644,7 @@ export default function CollectionDetail() {
         </div>
 
         <div>
-          <h2 className="text-2xl font-semibold mb-6 text-[#283593]" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <h2 className="text-2xl font-semibold mb-6 text-[#0B1F2A]" style={{ fontFamily: 'Inter, sans-serif' }}>
             Artworks in this Collection ({artworks.length})
           </h2>
 
@@ -685,7 +685,7 @@ export default function CollectionDetail() {
                   </div>
                   
                   <div className="p-5">
-                    <h3 className="text-lg font-semibold text-[#283593] mb-1 line-clamp-1" style={{ fontFamily: 'Inter, sans-serif' }}>
+                    <h3 className="text-lg font-semibold text-[#0B1F2A] mb-1 line-clamp-1" style={{ fontFamily: 'Inter, sans-serif' }}>
                       {artwork.title}
                     </h3>
                     <p className="text-sm text-slate-500 mb-3">by {artwork.artist_name}</p>
@@ -695,7 +695,7 @@ export default function CollectionDetail() {
                         {artwork.width_value} × {artwork.height_value} {artwork.dimension_unit}
                       </span>
                       {artwork.price_amount && (
-                        <span className="font-semibold text-[#283593]">
+                        <span className="font-semibold text-[#0B1F2A]">
                           {artwork.price_currency} {Number(artwork.price_amount).toFixed(2)}
                         </span>
                       )}

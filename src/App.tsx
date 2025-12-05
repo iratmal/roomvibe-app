@@ -634,7 +634,7 @@ function StudioHeader() {
           </a>
           <a
             href="#/dashboard"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 bg-[#283593] text-white text-[13px] md:text-sm font-medium rounded-md md:rounded-lg hover:bg-[#1e2a6e] transition-colors min-h-[44px] sm:min-h-0"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 bg-[#0B1F2A] text-white text-[13px] md:text-sm font-medium rounded-md md:rounded-lg hover:bg-[#071520] transition-colors min-h-[44px] sm:min-h-0"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
               <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -1867,7 +1867,7 @@ function Studio() {
                       )}
                       
                       <div className={`absolute bottom-0 left-0 right-0 px-2 py-1.5 text-[10px] font-medium ${
-                        isLocked ? "bg-[#283593]/80 text-white" : "bg-gradient-to-t from-[#D8B46A]/80 to-[#D8B46A]/60 text-white"
+                        isLocked ? "bg-[#0B1F2A]/80 text-white" : "bg-gradient-to-t from-[#D8B46A]/80 to-[#D8B46A]/60 text-white"
                       }`}>
                         {room.name}
                       </div>
@@ -2311,8 +2311,8 @@ function Studio() {
                 <button
                   onClick={() => exportToImage(false)}
                   disabled={isExporting}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white rounded-lg text-sm font-medium text-[#283593] transition-all disabled:opacity-50 hover:bg-[rgba(40,53,147,0.06)]"
-                  style={{ border: '1.5px solid #283593' }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white rounded-lg text-sm font-medium text-[#0B1F2A] transition-all disabled:opacity-50 hover:bg-[rgba(11,31,42,0.06)]"
+                  style={{ border: '1.5px solid #0B1F2A' }}
                 >
                   {isExporting && exportType === 'image' ? (
                     <svg className="w-[18px] h-[18px] animate-spin" fill="none" viewBox="0 0 24 24">
@@ -2336,7 +2336,7 @@ function Studio() {
                 <button
                   onClick={() => exportToImage(true)}
                   disabled={isExporting}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white rounded-lg text-sm font-medium text-[#283593] transition-all disabled:opacity-50 hover:bg-[rgba(40,53,147,0.06)]"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white rounded-lg text-sm font-medium text-[#0B1F2A] transition-all disabled:opacity-50 hover:bg-[rgba(11,31,42,0.06)]"
                   style={{ border: '1.5px solid #D8B46A' }}
                 >
                   {isExporting && exportType === 'image' ? (
@@ -2365,7 +2365,7 @@ function Studio() {
                 <button
                   onClick={exportToPdf}
                   disabled={isExporting}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white rounded-lg text-sm font-medium text-[#283593] transition-all disabled:opacity-50 hover:bg-[rgba(40,53,147,0.06)]"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white rounded-lg text-sm font-medium text-[#0B1F2A] transition-all disabled:opacity-50 hover:bg-[rgba(11,31,42,0.06)]"
                   style={{ border: '1.5px solid #D8B46A' }}
                 >
                   {isExporting && exportType === 'pdf' ? (
@@ -2396,7 +2396,7 @@ function Studio() {
                     setUpgradeModalMessage("Upgrade to remove watermarks and unlock high-resolution exports, PDF proposals, and more professional features."); 
                     setShowUpgradeModal(true); 
                   }}
-                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-[#283593] transition-all hover:bg-[rgba(40,53,147,0.06)]"
+                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-[#0B1F2A] transition-all hover:bg-[rgba(11,31,42,0.06)]"
                   style={{ border: '1.5px solid #D8B46A' }}
                 >
                   Unlock High-Resolution Export → Upgrade
@@ -2410,7 +2410,7 @@ function Studio() {
                     setUpgradeModalMessage("Upgrade to Designer to unlock high-resolution 3000px exports, PDF proposals, and custom branding.");
                     setShowUpgradeModal(true);
                   }}
-                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-[#283593] transition-all hover:bg-[rgba(40,53,147,0.06)]"
+                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-[#0B1F2A] transition-all hover:bg-[rgba(11,31,42,0.06)]"
                   style={{ border: '1.5px solid #D8B46A' }}
                 >
                   Unlock High-Resolution → Upgrade to Designer

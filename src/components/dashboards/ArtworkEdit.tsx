@@ -184,7 +184,7 @@ export default function ArtworkEdit() {
     return (
       <div className="min-h-screen bg-[#f7f8fa] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#283593] mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0B1F2A] mx-auto"></div>
           <p className="mt-4 text-slate-500">Loading artwork...</p>
         </div>
       </div>
@@ -198,7 +198,7 @@ export default function ArtworkEdit() {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <button
             onClick={handleCancel}
-            className="mb-6 flex items-center gap-2 text-[#283593] hover:text-[#1a237e] transition-colors font-semibold"
+            className="mb-6 flex items-center gap-2 text-[#0B1F2A] hover:text-[#071520] transition-colors font-semibold"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -229,7 +229,7 @@ export default function ArtworkEdit() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-16">
         <button
           onClick={handleCancel}
-          className="mb-6 flex items-center gap-2 text-[#283593] hover:text-[#1a237e] transition-colors font-semibold"
+          className="mb-6 flex items-center gap-2 text-[#0B1F2A] hover:text-[#071520] transition-colors font-semibold"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -250,7 +250,7 @@ export default function ArtworkEdit() {
         )}
 
         <div className="p-8 bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100">
-          <h1 className="text-3xl font-semibold text-[#283593] mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <h1 className="text-3xl font-semibold text-[#0B1F2A] mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
             Edit Artwork
           </h1>
           <p className="text-sm text-slate-400 mb-8">Update artwork details</p>
@@ -279,7 +279,7 @@ export default function ArtworkEdit() {
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B1F2A] bg-slate-50 hover:bg-white transition-all"
                   placeholder="e.g., Sunset Over Mountains"
                   required
                 />
@@ -294,7 +294,7 @@ export default function ArtworkEdit() {
                   name="artistName"
                   value={formData.artistName}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B1F2A] bg-slate-50 hover:bg-white transition-all"
                   placeholder="e.g., Jane Doe"
                   required
                 />
@@ -312,7 +312,7 @@ export default function ArtworkEdit() {
                   name="widthValue"
                   value={formData.widthValue}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B1F2A] bg-slate-50 hover:bg-white transition-all"
                   placeholder="70"
                   required
                 />
@@ -328,7 +328,7 @@ export default function ArtworkEdit() {
                   name="heightValue"
                   value={formData.heightValue}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B1F2A] bg-slate-50 hover:bg-white transition-all"
                   placeholder="100"
                   required
                 />
@@ -340,7 +340,7 @@ export default function ArtworkEdit() {
                   name="dimensionUnit"
                   value={formData.dimensionUnit}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all appearance-none cursor-pointer"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B1F2A] bg-slate-50 hover:bg-white transition-all appearance-none cursor-pointer"
                 >
                   <option value="cm">cm</option>
                   <option value="in">in</option>
@@ -357,7 +357,7 @@ export default function ArtworkEdit() {
                   name="priceAmount"
                   value={formData.priceAmount}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B1F2A] bg-slate-50 hover:bg-white transition-all"
                   placeholder="1500"
                 />
               </div>
@@ -368,7 +368,7 @@ export default function ArtworkEdit() {
                   name="priceCurrency"
                   value={formData.priceCurrency}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all appearance-none cursor-pointer"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B1F2A] bg-slate-50 hover:bg-white transition-all appearance-none cursor-pointer"
                 >
                   <option value="EUR">EUR</option>
                   <option value="USD">USD</option>
@@ -384,7 +384,7 @@ export default function ArtworkEdit() {
                 name="buyUrl"
                 value={formData.buyUrl}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#283593] bg-slate-50 hover:bg-white transition-all"
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#0B1F2A] bg-slate-50 hover:bg-white transition-all"
                 placeholder="https://example.com/artwork/123"
               />
             </div>
@@ -393,7 +393,7 @@ export default function ArtworkEdit() {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 px-6 py-3.5 bg-[#283593] text-white rounded-xl hover:bg-[#1a237e] transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#283593]/25"
+                className="flex-1 px-6 py-3.5 bg-[#0B1F2A] text-white rounded-xl hover:bg-[#071520] transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#0B1F2A]/25"
                 style={{ fontFamily: 'Inter, sans-serif' }}
               >
                 {loading ? 'Saving...' : 'Save Changes'}
