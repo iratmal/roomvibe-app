@@ -482,7 +482,7 @@ function UserGroupsSection() {
     {
       label: "For artists",
       subtitle: "Give your clients the power to see your art in their own space.",
-      bodyText: "Add a simple \"View in Your Room\" widget to your website and let buyers preview your artwork on their walls before they purchase. No more \"I'm not sure how it will look,\" they see it instantly, true to size, in their home.\n\nWith premium room mockups and realistic visualizations, your artwork stops being just an image. It becomes part of their life. Increase trust, reduce hesitation, and convert more collectors with ease."
+      bodyText: "Add a simple View in Your Room widget to your website and let buyers preview your artwork on their walls before they purchase. No more I am not sure how it will look, they see it instantly, true to size, in their home.\n\nWith premium room mockups and realistic visualizations, your artwork stops being just an image. It becomes part of their life. Increase trust, reduce hesitation, and convert more collectors with ease."
     },
     {
       label: "For designers",
@@ -492,27 +492,27 @@ function UserGroupsSection() {
     {
       label: "For galleries",
       subtitle: "Bring your gallery experience online and open your doors to the world.",
-      bodyText: "Traditional offline viewing is no longer enough. Create virtual exhibitions, let collectors preview artworks in curated interiors, and allow international buyers to engage with your collection from anywhere.\n\nStay ahead of the trend, offer a modern and immersive gallery experience without shipping a single piece. Present your artists' work in rooms that elevate every collection."
+      bodyText: "Traditional offline viewing is no longer enough. Create virtual exhibitions, let collectors preview artworks in curated interiors, and allow international buyers to engage with your collection from anywhere.\n\nStay ahead of the trend, offer a modern and immersive gallery experience without shipping a single piece. Present your artists work in rooms that elevate every collection."
     },
   ];
 
   return (
     <section className="mt-20 mb-20 bg-white">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+      <div className="mx-auto max-w-[1280px] px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
           {groups.map((g, i) => (
             <div 
               key={i} 
-              className="bg-white border border-[var(--rv-accent-gold)] rounded-[20px] p-6 lg:p-8 flex flex-col"
+              className="bg-white border border-[#D4AF37] rounded-[16px] p-6 lg:p-8 flex flex-col gap-4"
             >
-              <h3 className="text-xl font-bold text-[var(--rv-primary)]">
+              <h3 className="text-[20px] lg:text-[22px] font-semibold text-[var(--rv-primary)] mb-2">
                 {g.label}
               </h3>
-              <div className="w-[60px] h-[2px] bg-[var(--rv-accent-gold)] mt-3 mb-5"></div>
-              <p className="text-base lg:text-lg font-bold text-[var(--rv-primary)] leading-snug mb-4">
+              <div className="w-[80px] h-[2px] bg-[#D4AF37] rounded-[2px] mb-5"></div>
+              <p className="text-base font-semibold text-[var(--rv-primary)] mb-2 leading-snug">
                 {g.subtitle}
               </p>
-              <p className="text-[15px] lg:text-base text-[#4B5563] leading-relaxed whitespace-pre-line">
+              <p className="text-base text-[#4B5563] leading-[1.55] whitespace-pre-line">
                 {g.bodyText}
               </p>
             </div>

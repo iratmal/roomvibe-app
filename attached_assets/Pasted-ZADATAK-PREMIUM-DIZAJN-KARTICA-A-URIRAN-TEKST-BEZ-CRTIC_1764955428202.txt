@@ -1,0 +1,109 @@
+ZADATAK – PREMIUM DIZAJN KARTICA + AŽURIRAN TEKST (BEZ CRTICA) ZA SEKCIJU "FOR ARTISTS / FOR DESIGNERS / FOR GALLERIES"
+
+Molim te da implementiraš sljedeće promjene na homepageu:
+
+1) ZAMIJENI COPY U TRI KARTICE sljedećim tekstovima:
+
+-----------------------------------
+FOR ARTISTS
+
+Title:
+"For artists"
+
+Subtitle (bold prva rečenica):
+"Give your clients the power to see your art in their own space."
+
+Body text:
+"Add a simple View in Your Room widget to your website and let buyers preview your artwork on their walls before they purchase. No more I am not sure how it will look, they see it instantly, true to size, in their home.
+
+With premium room mockups and realistic visualizations, your artwork stops being just an image. It becomes part of their life. Increase trust, reduce hesitation, and convert more collectors with ease."
+-----------------------------------
+
+FOR DESIGNERS
+
+Title:
+"For designers"
+
+Subtitle (bold prva rečenica):
+"Upload your client's wall photo and test artworks instantly."
+
+Body text:
+"No more guessing, see exactly how each piece will look in the actual space before making your recommendation. Try different sizes, orientations, and artwork options in seconds.
+
+Perfect for interior designers and consultants who want to present polished concepts fast. Impress clients with professional mockups made in under three seconds."
+-----------------------------------
+
+FOR GALLERIES
+
+Title:
+"For galleries"
+
+Subtitle (bold prva rečenica):
+"Bring your gallery experience online and open your doors to the world."
+
+Body text:
+"Traditional offline viewing is no longer enough. Create virtual exhibitions, let collectors preview artworks in curated interiors, and allow international buyers to engage with your collection from anywhere.
+
+Stay ahead of the trend, offer a modern and immersive gallery experience without shipping a single piece. Present your artists work in rooms that elevate every collection."
+-----------------------------------
+
+
+VAŽNO:
+- Nigdje u tekstovima ne smije biti crtica. 
+- Sve je napisano isključivo s točkama i zarezima.
+
+2) PREMIUM DIZAJN KARTICA
+
+Svaka od tri kartice treba izgledati kao premium RoomVibe card:
+
+- background: #FFFFFF
+- border: 1px solid #D4AF37   /* zlatni border */
+- border-radius: 16px
+- padding: 32px na desktopu, 24px na mobilnom
+- unutar kartice koristi gap od 16px
+
+3) NASLOVI U KARTICAMA
+
+Naslov ("For artists", "For designers", "For galleries"):
+
+- color: var(--rv-primary)  /* #264C61 */
+- font-weight: 600
+- font-size: 20px do 22px
+- margin-bottom: 8px
+
+Ispod naslova dodaj zlatnu dekorativnu liniju:
+- width: 80px
+- height: 2px
+- background: #D4AF37
+- border-radius: 2px
+- margin-bottom: 20px
+
+4) BOLD PRVA REČENICA
+
+- neka bude <strong> ili klasa font-semibold
+- color: var(--rv-primary)
+- margin-bottom: 8px
+
+5) BODY TEXT
+
+- color: #4B5563
+- line-height: 1.55
+
+6) LAYOUT SEKCIJE
+
+Desktop:
+- tri kartice u jednom redu
+- gap: 32px
+- max-width sekcije: 1200px do 1320px, centrirano
+
+Mobile:
+- jedna kartica po redu
+- gap: 16px do 24px
+- padding lijevo i desno da ne idu do ruba ekrana
+
+7) UKLONI SVE POSTOJEĆE STILOVE koji se kose sa ovim, posebno postojeći tanki gold underline koji se nalazi iznad teksta.
+
+8) Po završetku:
+- pošalji screenshot prikaza kartica za desktop
+- pošalji screenshot prikaza kartica za mobile
+- javi mi file ili komponentu gdje je implementiran novi layout i stilovi
