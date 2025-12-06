@@ -429,24 +429,19 @@ function HomePage() {
 function Hero() {
   return (
     <section id="home" className="relative overflow-hidden bg-white">
-      <div className="relative mx-auto max-w-4xl py-24 px-6 text-center">
-        <h1 className="mb-5 text-4xl sm:text-5xl font-bold leading-tight text-[var(--roomvibe-navy)]">
+      <div className="relative mx-auto max-w-4xl pt-16 pb-20 px-6 text-center">
+        <h1 className="mb-4 text-4xl sm:text-5xl font-bold leading-tight text-[var(--roomvibe-navy)]">
           See Art in Your Space. Instantly.
         </h1>
 
-        <p className="mb-8 text-lg text-[#333333] max-w-2xl mx-auto">
-          Turn every artwork into a real experience by letting your clients preview it
-          on their own walls with one simple upload.
+        <p className="mb-6 text-lg text-[#333333] max-w-2xl mx-auto">
+          Upload a photo of your space and preview any artwork instantly, true to size.
         </p>
 
-        <div className="mb-4 flex flex-wrap items-center justify-center gap-3">
+        <div className="flex flex-wrap items-center justify-center gap-3">
           <a href="#/register" className="btn-primary">Start Free</a>
           <a href="#how" className="btn-outline">Watch How It Works</a>
         </div>
-
-        <p className="text-sm text-[#8D8D8D]">
-          No Photoshop · Realistic Mockups · For Artists, Designers & Galleries
-        </p>
       </div>
     </section>
   );
