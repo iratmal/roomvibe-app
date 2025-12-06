@@ -118,18 +118,18 @@ export function Footer() {
                 Thanks for subscribing!
               </p>
             ) : (
-              <form onSubmit={handleSubscribe} className="flex gap-2 sm:gap-3 items-center">
+              <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email…"
-                  className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-white border border-[#E1E1E1] text-[#1A1A1A] placeholder:text-gray-400 text-xs sm:text-sm focus:outline-none focus:border-[#264C61] transition-colors min-h-[40px] sm:min-h-[44px]"
+                  className="w-full sm:flex-1 px-3 sm:px-4 py-2.5 sm:py-2.5 rounded-lg bg-white border border-[#E1E1E1] text-[#1A1A1A] placeholder:text-gray-400 text-sm sm:text-sm focus:outline-none focus:border-[#264C61] transition-colors min-h-[44px] sm:min-h-[44px]"
                   required
                 />
                 <button 
                   type="submit" 
-                  className="inline-flex items-center justify-center text-xs sm:text-sm font-semibold text-white rounded-lg cursor-pointer transition-all duration-200 ease-in-out min-h-[40px] sm:min-h-[44px] px-4 sm:px-6 bg-[#1E3C4D] hover:bg-[#162D3A] hover:shadow-md whitespace-nowrap"
+                  className="w-full sm:w-auto inline-flex items-center justify-center text-sm sm:text-sm font-semibold text-white rounded-lg cursor-pointer transition-all duration-200 ease-in-out min-h-[44px] sm:min-h-[44px] px-4 sm:px-6 bg-[#1E3C4D] hover:bg-[#162D3A] hover:shadow-md whitespace-nowrap"
                 >
                   Subscribe
                 </button>

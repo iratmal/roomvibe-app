@@ -1,0 +1,172 @@
+✅ TASK ZA REPLIT AGENTA (ZA CANVAS)
+🚨 VAŽNO — NE DIRATI DESKTOP VERZIJU!
+🚨 NE MIJENJATI NIŠTA U DESKTOP LAYOUTU!
+🚨 SVE IZMJENE RADITI ISKLJUČIVO ZA MOBILE BREAKPOINT (< 768px)!
+✅ GOAL
+
+Ispraviti mobile layout na RoomVibe homepage-u tako da sve sekcije izgledaju čisto, poravnato i bez preklapanja.
+Desktop verzija je savršena i NE SMIJE SE MIJENJATI.
+
+🗂 Files to edit
+
+src/components/Hero.tsx
+
+src/components/HowItWorks.tsx
+
+src/components/Sections/ForArtists.tsx (i ostale For Designers / For Galleries)
+
+src/components/Sections/DemoVideos.tsx
+
+src/components/Footer.tsx
+
+src/pages/index.tsx (ako je potrebna korekcija wrapper spacinga)
+
+📱 SCOPE — MOBILE FIXES (ONLY)
+-------------------------------------------------------------------
+⭐ 1) HERO — Popraviti pozicioniranje slike, teksta i gumba
+-------------------------------------------------------------------
+🔧 Issues:
+
+Preveliki padding-top na mobile → hero starta prenisko.
+
+CTA gumbi se preklapaju sa slikom.
+
+Naslov i podnaslov preblizu slike.
+
+Slika previsoka u mobile prikazu.
+
+✅ Required fixes:
+
+Smanjiti padding-top za mobile na pt-6 (≈ 24px).
+
+Povećati razmak ispod naslova (mb-5 → mb-8).
+
+CTA gumbi na mobile idu ispod slike, u vertikalnom layoutu, svaki full-width.
+
+Smanjiti hero image height na mobile za ~25% (max-h-[260px] ili slično).
+
+Osigurati da ništa ne prelazi preko headera pri scrollu.
+
+NAPOMENA: Desktop hero verziju NE DIRATI.
+
+-------------------------------------------------------------------
+⭐ 2) Sticky Header problem — reže sadržaj
+-------------------------------------------------------------------
+🔧 Issues:
+
+Header prelazi preko sadržaja i reže gornji dio sekcija.
+
+✅ Required fixes:
+
+Dodati globalni top padding nakon headera samo na mobile:
+pt-[64px] na main containeru.
+
+Header visina treba biti fiksna (56–64px) za mobile.
+
+NAPOMENA: Desktop header ostaje kakav jest.
+
+-------------------------------------------------------------------
+⭐ 3) HOW IT WORKS — video cards
+-------------------------------------------------------------------
+🔧 Issues:
+
+Video preview djelomično sakriven ispod headera.
+
+Border radius nije ujednačen.
+
+Preveliki vertikalni razmaci.
+
+✅ Required fixes:
+
+Dodati mt-6 na prvu karticu.
+
+Postaviti uniformni rounded-xl na sve kartice.
+
+Ograničiti visinu videa na mobile (max-h-[240px]).
+
+Dodati vertikalni razmak mb-6 između kartica.
+
+-------------------------------------------------------------------
+⭐ 4) For Artists / Designers / Galleries cards
+-------------------------------------------------------------------
+🔧 Issues:
+
+Preblizu headeru.
+
+Preveliki padding.
+
+Tekst ponekad vizualno bježi prema vrhu.
+
+✅ Required fixes:
+
+Dodati mt-8 na prvu karticu.
+
+Smanjiti padding na p-5.
+
+Povećati razmak između ikone i naslova (mt-4).
+
+NAPOMENA: Desktop spacing ostaje isti.
+
+-------------------------------------------------------------------
+⭐ 5) Demo video sekcija — spacing i layout
+-------------------------------------------------------------------
+🔧 Issues:
+
+Video kartice previsoke.
+
+Nedovoljno razmaka između kartica.
+
+✅ Required fixes:
+
+Postaviti max-h-[240px] za mobile.
+
+Dodati mb-8 između prve i druge kartice.
+
+Osigurati da se tekst naslova sekcije ne lijepi uz header (dodati mt-6).
+
+-------------------------------------------------------------------
+⭐ 6) Footer — responsive poravnanja
+-------------------------------------------------------------------
+🔧 Issues:
+
+Newsletter input i gumb nisu aligned za mobile.
+
+Preveliki bottom padding.
+
+Prevelik naslov newslettera.
+
+✅ Required fixes:
+
+Mobile layout newslettera → input 100% width, gumb ispod, 100% width.
+
+Smanjiti naslov na text-base.
+
+Bottom padding postaviti na pb-8.
+
+NAPOMENA: Desktop footer se NE MIJENJA.
+
+🚫 OUT OF SCOPE (ZABRANJENO DIRATI)
+
+Desktop layout (hero, spacing, buttons, images).
+
+Desktop typography i grid.
+
+Desktop header / menu behavior.
+
+Bilo kakva promjena u logici Studija, stranica, ili API poziva.
+
+Uvoz novih komponenti ili refaktor (nije dopušteno).
+
+🧪 DONE WHEN
+
+Mobile verzija izgleda čisto, ništa se ne preklapa.
+
+CTA gumbi su ispravno raspoređeni ispod slike.
+
+Header više ne reže sadržaj.
+
+Kartice imaju ujednačen radius i padding.
+
+Footer se prikazuje savršeno na mobilnom.
+
+Desktop verzija ostaje 100% nepromijenjena.

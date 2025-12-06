@@ -409,7 +409,7 @@ function TopNav() {
 
 function HomePage() {
   return (
-    <main className="flex flex-col bg-white">
+    <main className="flex flex-col bg-white pt-16 sm:pt-0">
       {/* Section 1: Hero */}
       <Hero />
       {/* Section 2: User Groups */}
@@ -439,22 +439,22 @@ function Hero() {
       />
       
       {/* Content overlay */}
-      <div className="relative mx-auto max-w-7xl px-6 sm:px-12 lg:px-16 lg:pr-24">
-        <div className="min-h-[600px] sm:min-h-[700px] lg:min-h-[800px] flex flex-col justify-start pt-16 sm:pt-24 lg:pt-28 pb-32 sm:pb-40 lg:pb-44">
-          <div className="max-w-md lg:max-w-lg">
-            <h1 className="mb-5 sm:mb-6 text-3xl sm:text-4xl lg:text-[52px] font-bold leading-[1.3] lg:leading-[1.1] text-[#1A2B3C]">
+      <div className="relative mx-auto max-w-7xl px-5 sm:px-12 lg:px-16 lg:pr-24">
+        <div className="min-h-[480px] sm:min-h-[700px] lg:min-h-[800px] flex flex-col justify-start pt-6 sm:pt-24 lg:pt-28 pb-20 sm:pb-40 lg:pb-44">
+          <div className="max-w-[320px] sm:max-w-md lg:max-w-lg">
+            <h1 className="mb-4 sm:mb-6 text-[26px] sm:text-4xl lg:text-[52px] font-bold leading-[1.25] sm:leading-[1.3] lg:leading-[1.1] text-[#1A2B3C]">
               See Art in Your<br /> Space. Instantly.
             </h1>
 
-            <p className="mb-4 sm:mb-5 text-base sm:text-lg leading-[1.5] lg:leading-[1.4] text-[#1A2B3C]/80 max-w-sm">
+            <p className="mb-6 sm:mb-5 text-[15px] sm:text-lg leading-[1.45] sm:leading-[1.5] lg:leading-[1.4] text-[#1A2B3C]/80 max-w-[280px] sm:max-w-sm">
               Preview any artwork on any wall in seconds, with one simple upload.
             </p>
 
-            <div className="flex flex-row items-center gap-3 sm:gap-4">
-              <a href="#/register" className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white bg-[#1A2B3C] rounded-lg hover:bg-[#0F1D2A] transition-colors">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+              <a href="#/register" className="inline-flex items-center justify-center px-6 sm:px-8 py-3.5 sm:py-4 text-[15px] sm:text-base font-semibold text-white bg-[#1A2B3C] rounded-lg hover:bg-[#0F1D2A] transition-colors w-full sm:w-auto">
                 Start Free
               </a>
-              <a href="#how" className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-[#1A2B3C] bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+              <a href="#how" className="inline-flex items-center justify-center px-6 sm:px-8 py-3.5 sm:py-4 text-[15px] sm:text-base font-semibold text-[#1A2B3C] bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors w-full sm:w-auto">
                 How It Works
               </a>
             </div>
@@ -527,23 +527,23 @@ function UserGroupsSection() {
   ];
 
   return (
-    <section className="mt-8 sm:mt-20 mb-8 sm:mb-20 bg-white">
+    <section className="mt-6 sm:mt-20 mb-6 sm:mb-20 bg-white">
       <div className="mx-auto max-w-[1280px] px-4 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-8 lg:gap-10 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8 lg:gap-10 items-stretch">
           {groups.map((g, i) => (
             <div 
               key={i} 
-              className="bg-white rounded-[14px] sm:rounded-[22px] flex flex-col p-5 sm:p-8 lg:p-10"
+              className="bg-white rounded-xl sm:rounded-[22px] flex flex-col p-5 sm:p-8 lg:p-10"
               style={{
                 border: '1px solid rgba(212, 175, 55, 0.5)',
                 boxShadow: '0px 4px 16px rgba(0, 0, 0, 0.05)',
                 minHeight: '100%'
               }}
             >
-              <div className="flex justify-center mb-2 sm:mb-4">
+              <div className="flex justify-center mb-3 sm:mb-4">
                 {g.icon}
               </div>
-              <h3 className="text-[24px] font-bold text-[var(--rv-primary)] text-center mb-3">
+              <h3 className="text-xl sm:text-[24px] font-bold text-[var(--rv-primary)] text-center mb-3">
                 {g.label}
               </h3>
               <div 
@@ -2561,16 +2561,16 @@ function HowItWorks() {
   ];
   
   return (
-    <section id="how" className="py-10 sm:py-16 bg-white">
+    <section id="how" className="py-8 sm:py-16 bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8">
           {steps.map((s, i) => (
             <div 
               key={i} 
-              className="bg-[#FAFAFA] rounded-[14px] sm:rounded-[16px] p-5 sm:p-8 text-center flex flex-col items-center gap-2 sm:gap-3"
+              className="bg-[#FAFAFA] rounded-xl sm:rounded-[16px] p-5 sm:p-8 text-center flex flex-col items-center gap-2 sm:gap-3"
             >
-              <div className="w-16 h-16 sm:w-14 sm:h-14 rounded-full bg-[#F0F0F0] flex items-center justify-center text-[#264C61]">
-                <span className="scale-110 sm:scale-100">{s.icon}</span>
+              <div className="w-14 h-14 sm:w-14 sm:h-14 rounded-full bg-[#F0F0F0] flex items-center justify-center text-[#264C61]">
+                <span className="scale-100">{s.icon}</span>
               </div>
               <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-[#1A1A1A] tracking-tight">
                 {s.title}
@@ -2608,13 +2608,13 @@ function DashboardVideosSection() {
   ];
 
   return (
-    <section className="py-10 sm:py-16 bg-white">
+    <section className="py-8 sm:py-16 bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8 items-stretch">
           {videos.map((v, i) => (
             <div key={i} className="flex flex-col">
               {/* Thumbnail */}
-              <div className="relative aspect-video rounded-[14px] sm:rounded-[16px] overflow-hidden bg-[#264C61]/10 group cursor-pointer shadow-md mb-3 sm:mb-4">
+              <div className="relative aspect-video max-h-[220px] sm:max-h-none rounded-xl sm:rounded-[16px] overflow-hidden bg-[#264C61]/10 group cursor-pointer shadow-md mb-3 sm:mb-4">
                 <img 
                   src={v.thumbnail} 
                   alt={v.title}
