@@ -428,30 +428,30 @@ function HomePage() {
 
 function Hero() {
   return (
-    <section id="home" className="relative w-full overflow-hidden">
-      {/* Full-width background image - Serenity hero, no gradients or darkening */}
+    <section id="home" className="relative w-full overflow-hidden" style={{ backgroundColor: '#f5f3ef' }}>
+      {/* Full-width background image - contained to show full artwork without cropping */}
       <div 
-        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
+        className="absolute inset-0 w-full h-full bg-contain bg-right-bottom bg-no-repeat"
         style={{ backgroundImage: "url('/serenity-hero.png')" }}
       />
       
       {/* Content overlay */}
       <div className="relative mx-auto max-w-7xl px-6 sm:px-12 lg:px-16">
-        <div className="min-h-[500px] sm:min-h-[580px] lg:min-h-[640px] flex flex-col justify-start pt-14 sm:pt-20 lg:pt-24 pb-28 sm:pb-36 lg:pb-40">
+        <div className="min-h-[520px] sm:min-h-[600px] lg:min-h-[680px] flex flex-col justify-start pt-16 sm:pt-24 lg:pt-28 pb-32 sm:pb-40 lg:pb-44">
           <div className="max-w-md lg:max-w-lg">
-            <h1 className="mb-5 sm:mb-6 text-3xl sm:text-4xl lg:text-[50px] font-bold leading-[1.3] text-[#1A2B3C]">
+            <h1 className="mb-6 sm:mb-7 text-3xl sm:text-4xl lg:text-[52px] font-bold leading-[1.2] text-[#1A2B3C]">
               See Art in Your<br /> Space. Instantly.
             </h1>
 
-            <p className="mb-7 sm:mb-9 text-base sm:text-lg leading-relaxed text-[#1A2B3C]/80 max-w-sm">
+            <p className="mb-8 sm:mb-10 text-base sm:text-lg leading-relaxed text-[#1A2B3C]/80 max-w-sm">
               Preview any artwork on any wall in seconds, with one simple upload.
             </p>
 
             <div className="flex flex-row items-center gap-3 sm:gap-4">
-              <a href="#/register" className="inline-flex items-center justify-center px-7 py-3.5 text-[15px] font-semibold text-white bg-[#1A2B3C] rounded-lg hover:bg-[#0F1D2A] transition-colors">
+              <a href="#/register" className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-white bg-[#1A2B3C] rounded-lg hover:bg-[#0F1D2A] transition-colors">
                 Start Free
               </a>
-              <a href="#how" className="inline-flex items-center justify-center px-7 py-3.5 text-[15px] font-semibold text-[#1A2B3C] bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+              <a href="#how" className="inline-flex items-center justify-center px-8 py-4 text-base font-semibold text-[#1A2B3C] bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                 How It Works
               </a>
             </div>
