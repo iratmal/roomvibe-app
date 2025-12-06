@@ -111,23 +111,32 @@ export function Footer() {
               Stay Inspired. Stay Ahead.
             </h4>
             <p className="text-white/70 text-sm mb-4 leading-relaxed">
-              Get fresh updates from the worlds of art, design, and RoomVibe. Only good vibes — no spam, ever.
+              Get fresh updates from the worlds of art, design, and RoomVibe. Only good vibes, no spam, ever.
             </p>
             {subscribed ? (
               <p className="text-[#C9A24A] font-medium text-sm">
                 Thanks for subscribing!
               </p>
             ) : (
-              <form onSubmit={handleSubscribe} className="flex gap-2">
+              <form onSubmit={handleSubscribe} className="flex gap-2 items-center">
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email…"
-                  className="flex-1 px-4 py-2.5 rounded-lg bg-white border border-[#E1E1E1] text-[#1A1A1A] placeholder:text-gray-400 text-sm focus:outline-none focus:border-[#264C61] transition-colors"
+                  className="flex-1 px-4 py-2.5 rounded-lg bg-white border border-[#E1E1E1] text-[#1A1A1A] placeholder:text-gray-400 text-sm focus:outline-none focus:border-[#264C61] transition-colors min-h-[44px]"
                   required
                 />
-                <button type="submit" className="btn-primary text-sm">
+                <button 
+                  type="submit" 
+                  className="text-sm font-semibold text-white rounded-lg cursor-pointer transition-all duration-200 ease-in-out min-h-[44px]"
+                  style={{
+                    backgroundColor: 'var(--rv-primary)',
+                    padding: '12px 20px'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1e3c4d'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--rv-primary)'}
+                >
                   Subscribe
                 </button>
               </form>
