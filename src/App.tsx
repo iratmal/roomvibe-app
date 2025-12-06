@@ -2548,17 +2548,17 @@ function HowItWorks() {
     { 
       icon: <HowItWorksIcon type="upload" />, 
       title: "Upload Your Space", 
-      desc: "Clients take a quick photo of their wall — no measurements needed." 
+      desc: "Take a quick photo of your wall, or upload one from your device. No measuring needed, just capture the space." 
     },
     { 
       icon: <HowItWorksIcon type="add" />, 
       title: "Add the Artwork", 
-      desc: "Place any piece into their real environment for instant realism." 
+      desc: "Upload your artwork image, choose the size and frame, and place it on the wall in seconds. Test different pieces until the room feels just right." 
     },
     { 
       icon: <HowItWorksIcon type="see" />, 
       title: "See It. Feel It. Choose It.", 
-      desc: "A visualization that builds confidence and speeds decisions." 
+      desc: "Compare options side by side, share realistic previews and make decisions with confidence. Buyers see exactly how the art fits the room before saying yes." 
     },
   ];
   
