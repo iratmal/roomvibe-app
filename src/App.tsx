@@ -320,7 +320,7 @@ function TopNav() {
     <header className="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/95 border-b border-gray-100">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="flex h-20 lg:h-24 items-center justify-between">
-          <a href="#home" className="flex items-center">
+          <a href="#/" className="flex items-center">
             <img 
               src="/roomvibe-logo-transparent.png" 
               alt="RoomVibe" 
@@ -428,8 +428,8 @@ function HomePage() {
 
 function Hero() {
   return (
-    <section id="home" className="relative w-full overflow-hidden" style={{ backgroundColor: '#faf8f5' }}>
-      {/* Full-width background image - cover with right focus */}
+    <section id="home" className="relative w-full overflow-hidden" style={{ backgroundColor: '#faf9f7' }}>
+      {/* Full-width background image - lightened wall */}
       <div 
         className="absolute inset-0 w-full h-full bg-cover bg-no-repeat"
         style={{ 
@@ -442,7 +442,7 @@ function Hero() {
       <div className="relative mx-auto max-w-7xl px-6 sm:px-12 lg:px-16">
         <div className="min-h-[600px] sm:min-h-[700px] lg:min-h-[800px] flex flex-col justify-start pt-16 sm:pt-24 lg:pt-28 pb-32 sm:pb-40 lg:pb-44">
           <div className="max-w-md lg:max-w-lg">
-            <h1 className="mb-6 sm:mb-7 text-3xl sm:text-4xl lg:text-[52px] font-bold leading-[1.35] text-[#1A2B3C]">
+            <h1 className="mb-6 sm:mb-7 text-3xl sm:text-4xl lg:text-[52px] font-bold leading-[1.5] text-[#1A2B3C]">
               See Art in Your<br /> Space. Instantly.
             </h1>
 
