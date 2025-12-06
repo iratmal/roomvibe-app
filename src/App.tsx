@@ -440,14 +440,14 @@ function Hero() {
       
       {/* Content overlay */}
       <div className="relative mx-auto max-w-7xl px-5 sm:px-12 lg:px-16 lg:pr-24">
-        <div className="min-h-0 md:min-h-[700px] lg:min-h-[800px] flex flex-col justify-start pt-3 md:pt-24 lg:pt-28 pb-3 md:pb-40 lg:pb-44">
+        <div className="min-h-0 md:min-h-[700px] lg:min-h-[800px] flex flex-col justify-start pt-2 md:pt-24 lg:pt-28 pb-0 md:pb-40 lg:pb-44">
           {/* Text content */}
           <div className="max-w-full md:max-w-md lg:max-w-lg">
-            <h1 className="mb-3 md:mb-6 text-2xl md:text-4xl lg:text-[52px] font-bold leading-[1.25] md:leading-[1.3] lg:leading-[1.1] text-[#1A2B3C]">
+            <h1 className="mb-2 md:mb-6 text-2xl md:text-4xl lg:text-[52px] font-bold leading-[1.25] md:leading-[1.3] lg:leading-[1.1] text-[#1A2B3C]">
               See Art in Your<br /> Space. Instantly.
             </h1>
 
-            <p className="mb-3 md:mb-5 text-[15px] md:text-lg leading-[1.45] md:leading-[1.5] lg:leading-[1.4] text-[#1A2B3C]/80 max-w-[320px] md:max-w-sm">
+            <p className="mb-2 md:mb-5 text-[15px] md:text-lg leading-[1.45] md:leading-[1.5] lg:leading-[1.4] text-[#1A2B3C]/80 max-w-[320px] md:max-w-sm">
               Preview any artwork on any wall in seconds, with one simple upload.
             </p>
 
@@ -463,18 +463,18 @@ function Hero() {
           </div>
           
           {/* Mobile hero image with overlaid buttons - MOBILE ONLY */}
-          <div className="md:hidden mt-3 relative">
+          <div className="md:hidden mt-2 relative">
             <img 
               src="/serenity-hero-extended.png" 
               alt="Art visualization preview" 
-              className="w-full max-h-[280px] object-cover object-right rounded-lg"
+              className="w-full max-h-[300px] object-cover object-right"
             />
-            {/* Buttons positioned on left side of image (wall area) */}
-            <div className="absolute left-4 bottom-6 flex flex-col gap-3">
-              <a href="#/register" className="inline-flex items-center justify-center px-5 py-3 text-[14px] font-semibold text-white bg-[#1A2B3C] rounded-lg hover:bg-[#0F1D2A] transition-colors shadow-lg">
+            {/* Buttons positioned on left side of image (wall area) - TOP, horizontal row */}
+            <div className="absolute left-3 top-4 flex flex-row gap-2">
+              <a href="#/register" className="inline-flex items-center justify-center px-4 py-2.5 text-[13px] font-semibold text-white bg-[#1A2B3C] rounded-lg hover:bg-[#0F1D2A] transition-colors shadow-lg">
                 Start Free
               </a>
-              <a href="#how" className="inline-flex items-center justify-center px-5 py-3 text-[14px] font-semibold text-[#1A2B3C] bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-lg">
+              <a href="#how" className="inline-flex items-center justify-center px-4 py-2.5 text-[13px] font-semibold text-[#1A2B3C] bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-lg">
                 How It Works
               </a>
             </div>
@@ -547,7 +547,7 @@ function UserGroupsSection() {
   ];
 
   return (
-    <section className="mt-8 sm:mt-20 mb-6 sm:mb-20 bg-white">
+    <section className="mt-3 sm:mt-20 mb-6 sm:mb-20 bg-white">
       <div className="mx-auto max-w-[1280px] px-4 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8 lg:gap-10 items-stretch">
           {groups.map((g, i) => (
