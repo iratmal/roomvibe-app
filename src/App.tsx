@@ -429,18 +429,18 @@ function HomePage() {
 function Hero() {
   return (
     <section id="home" className="relative w-full overflow-hidden">
-      {/* Full-width background image */}
+      {/* Full-width background image - contain to show full scene */}
       <div 
-        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('/hero_clean.png')" }}
+        className="absolute inset-0 w-full h-full bg-contain bg-right-bottom bg-no-repeat"
+        style={{ backgroundImage: "url('/hero_clean.png')", backgroundColor: '#f8f7f5' }}
       />
       
       {/* Subtle gradient overlay for text readability (left side only) */}
-      <div className="absolute inset-0 bg-gradient-to-r from-white/60 via-white/30 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-white/70 via-white/40 to-transparent" />
       
-      {/* Content */}
+      {/* Content - positioned higher with more space below */}
       <div className="relative mx-auto max-w-7xl px-6 sm:px-12 lg:px-16">
-        <div className="min-h-[500px] sm:min-h-[560px] lg:min-h-[600px] flex flex-col justify-center py-12 sm:py-16">
+        <div className="min-h-[520px] sm:min-h-[580px] lg:min-h-[640px] flex flex-col justify-start pt-16 sm:pt-20 lg:pt-24 pb-24 sm:pb-32 lg:pb-40">
           <div className="max-w-lg">
             <h1 className="mb-5 text-4xl sm:text-5xl lg:text-[56px] font-bold leading-[1.15] text-[#0B1F2A]">
               See Art in Your<br className="hidden sm:block" /> Space. Instantly.
