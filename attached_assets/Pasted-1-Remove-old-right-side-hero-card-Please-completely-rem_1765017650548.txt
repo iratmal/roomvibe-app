@@ -1,0 +1,90 @@
+1. Remove old right-side hero card
+
+Please completely remove the existing right-hand hero card (the one with the artwork and sofa from the previous layout).
+The hero section must now be a full-width background image with text on the left.
+
+2. Add new full-width hero background image
+
+Please replace the entire hero section background with this image:
+
+📎 hero.png
+(You can upload this file now.)
+
+Instructions:
+
+The image should span edge-to-edge full width of the browser window.
+
+No margins, no padding on the sides.
+
+Height should adapt responsively but keep the artwork + sofa fully visible on desktop.
+
+On mobile: crop vertically but keep the artwork and sofa recognizable.
+
+3. Update hero headline and subtitle
+
+Replace all hero text with the following:
+
+Headline:
+
+See Art in Your Space. Instantly.
+
+Subtitle:
+
+Preview any artwork on any wall in seconds, with one simple upload.
+
+Formatting:
+
+Headline color: #0B1F2A
+
+Subtitle color: #0B1F2A at 85% opacity (to improve readability and reduce glare)
+
+Increase line-height slightly for both headline and subtitle for premium spacing.
+
+4. Improve text readability on hero background
+
+To ensure that text stands out clearly on the new full-width image, add:
+
+a very soft, subtle white-to-transparent gradient behind the text (left side only)
+OR
+
+increase text shadow / contrast minimally.
+
+Important:
+This must be extremely subtle.
+We want the hero to look clean and premium — NOT washed out or greyed.
+
+5. Update buttons
+
+Leave the two CTA buttons but ensure:
+
+Start Free button uses the primary RoomVibe color #264C61
+
+Hover state is the existing darker shade
+
+Buttons spacing remains consistent with the new layout
+
+Buttons should sit slightly lower so they align visually with the sofa
+
+6. Layout spacing adjustments
+
+Move hero text block slightly higher (~40px) so the composition breathes better.
+
+Ensure the artwork in the hero background appears perfectly centered above the sofa (as in the hero.png image).
+
+Maintain at least 15% vertical breathing room on top and bottom.
+
+7. Mobile responsiveness
+
+On mobile:
+
+Background image should center around the sofa + artwork.
+
+Text block should remain above the fold.
+
+Buttons should stack vertically.
+
+Maintain readability and spacing.
+
+8. Use Fast Mode & confirm when done
+
+After completing the update, please show me a preview of the updated homepage hero section.

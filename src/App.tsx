@@ -428,19 +428,33 @@ function HomePage() {
 
 function Hero() {
   return (
-    <section id="home" className="relative overflow-hidden bg-white">
-      <div className="relative mx-auto max-w-4xl pt-16 pb-20 px-6 text-center">
-        <h1 className="mb-4 text-4xl sm:text-5xl font-bold leading-tight text-[var(--roomvibe-navy)]">
-          See Art in Your Space. Instantly.
-        </h1>
+    <section id="home" className="relative w-full overflow-hidden">
+      {/* Full-width background image */}
+      <div 
+        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/hero.png')" }}
+      />
+      
+      {/* Subtle gradient overlay for text readability (left side only) */}
+      <div className="absolute inset-0 bg-gradient-to-r from-white/70 via-white/40 to-transparent" />
+      
+      {/* Content */}
+      <div className="relative mx-auto max-w-7xl px-6 sm:px-12 lg:px-16">
+        <div className="min-h-[500px] sm:min-h-[560px] lg:min-h-[600px] flex flex-col justify-center py-12 sm:py-16">
+          <div className="max-w-lg">
+            <h1 className="mb-5 text-4xl sm:text-5xl lg:text-[56px] font-bold leading-[1.1] text-[#0B1F2A]">
+              See Art in Your<br className="hidden sm:block" /> Space. Instantly.
+            </h1>
 
-        <p className="mb-6 text-lg text-[#333333] max-w-2xl mx-auto">
-          Upload a photo of your space and preview any artwork instantly, true to size.
-        </p>
+            <p className="mb-8 text-lg sm:text-xl leading-relaxed text-[#0B1F2A]/85 max-w-md">
+              Preview any artwork on any wall in seconds, with one simple upload.
+            </p>
 
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <a href="#/register" className="btn-primary">Start Free</a>
-          <a href="#how" className="btn-outline">Watch How It Works</a>
+            <div className="flex flex-col sm:flex-row items-start gap-3 mt-4">
+              <a href="#/register" className="btn-primary">Start Free</a>
+              <a href="#how" className="btn-outline bg-white/80 backdrop-blur-sm">Watch How It Works</a>
+            </div>
+          </div>
         </div>
       </div>
     </section>
