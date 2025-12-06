@@ -429,17 +429,21 @@ function HomePage() {
 function Hero() {
   return (
     <section id="home" className="relative w-full overflow-hidden">
-      {/* Full-width background image */}
+      {/* Full-width background image - slightly zoomed out for breathing room */}
       <div 
-        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('/hero-room-mordor-clean.png')" }}
+        className="absolute inset-0 w-full h-full bg-no-repeat"
+        style={{ 
+          backgroundImage: "url('/hero-room-mordor-clean.png')",
+          backgroundSize: '95%',
+          backgroundPosition: 'right bottom'
+        }}
       />
       
       {/* Content overlay */}
       <div className="relative mx-auto max-w-7xl px-6 sm:px-12 lg:px-16">
         <div className="min-h-[480px] sm:min-h-[560px] lg:min-h-[600px] flex flex-col justify-start pt-12 sm:pt-16 lg:pt-20 pb-24 sm:pb-32 lg:pb-36">
           <div className="max-w-md lg:max-w-lg">
-            <h1 className="mb-4 sm:mb-5 text-3xl sm:text-4xl lg:text-[48px] font-bold leading-[1.1] text-[#1A2B3C]">
+            <h1 className="mb-4 sm:mb-5 text-3xl sm:text-4xl lg:text-[48px] font-bold leading-[1.2] text-[#1A2B3C]">
               See Art in Your<br /> Space. Instantly.
             </h1>
 
@@ -455,15 +459,6 @@ function Hero() {
                 Watch How it Works
               </a>
             </div>
-          </div>
-          
-          {/* Centered play button */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <a href="#how" className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:scale-105 transition-transform cursor-pointer">
-              <svg className="w-6 h-6 sm:w-8 sm:h-8 text-[#1A2B3C] ml-1" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M8 5v14l11-7-11-7z" />
-              </svg>
-            </a>
           </div>
         </div>
       </div>
