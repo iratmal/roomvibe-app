@@ -429,46 +429,24 @@ function HomePage() {
 function Hero() {
   return (
     <section id="home" className="relative overflow-hidden bg-white">
-      {/* Right side background image */}
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-1/2 hidden lg:block">
-        <img
-          src="/hero.png"
-          alt="RoomVibe preview"
-          className="h-full w-full object-cover"
-        />
-      </div>
+      <div className="relative mx-auto max-w-4xl py-24 px-6 text-center">
+        <h1 className="mb-5 text-4xl sm:text-5xl font-bold leading-tight text-[var(--roomvibe-navy)]">
+          See Art in Your Space. Instantly.
+        </h1>
 
-      {/* Left side content */}
-      <div className="relative mx-auto flex max-w-6xl items-center py-24 px-6">
-        <div className="max-w-xl">
-          <h1 className="mb-5 text-4xl sm:text-5xl font-bold leading-tight text-[var(--roomvibe-navy)]">
-            See Art in Your Space. Instantly.
-          </h1>
+        <p className="mb-8 text-lg text-[#333333] max-w-2xl mx-auto">
+          Turn every artwork into a real experience by letting your clients preview it
+          on their own walls with one simple upload.
+        </p>
 
-          <p className="mb-8 text-lg text-[#333333]">
-            Turn every artwork into a real experience by letting your clients preview it
-            on their own walls with one simple upload.
-          </p>
-
-          <div className="mb-4 flex flex-wrap items-center gap-3">
-            <a href="#/register" className="btn-primary">Start Free</a>
-            <a href="#how" className="btn-outline">Watch How It Works</a>
-          </div>
-
-          <p className="text-sm text-[#8D8D8D]">
-            No Photoshop · Realistic Mockups · For Artists, Designers & Galleries
-          </p>
+        <div className="mb-4 flex flex-wrap items-center justify-center gap-3">
+          <a href="#/register" className="btn-primary">Start Free</a>
+          <a href="#how" className="btn-outline">Watch How It Works</a>
         </div>
-      </div>
 
-      {/* Mobile hero image */}
-      <div className="lg:hidden px-6 pb-12">
-        <img
-          src="/hero.png"
-          alt="RoomVibe preview"
-          className="w-full h-auto rounded-[16px] object-cover"
-          style={{ boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}
-        />
+        <p className="text-sm text-[#8D8D8D]">
+          No Photoshop · Realistic Mockups · For Artists, Designers & Galleries
+        </p>
       </div>
     </section>
   );
