@@ -429,10 +429,10 @@ function HomePage() {
 function Hero() {
   return (
     <section id="home" className="relative w-full overflow-hidden" style={{ backgroundColor: '#f8f7f5' }}>
-      {/* Full-width background image - desktop: original positioning, mobile: adjusted */}
+      {/* Full-width background image - desktop: centered, mobile: adjusted */}
       <div 
-        className="absolute inset-0 w-full h-full bg-contain bg-right-bottom bg-no-repeat"
-        style={{ backgroundImage: "url('/hero_clean.png')" }}
+        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/hero-room-mordor-clean.png')" }}
       />
       
       {/* Soft fade on left edge of image only - NO bottom blur */}
