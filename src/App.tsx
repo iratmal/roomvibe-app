@@ -429,35 +429,33 @@ function HomePage() {
 function Hero() {
   return (
     <section id="home" className="relative w-full overflow-hidden" style={{ backgroundColor: '#f8f7f5' }}>
-      {/* Full-width background image - contain to show full scene */}
+      {/* Full-width background image - desktop: original positioning, mobile: adjusted */}
       <div 
-        className="absolute inset-0 w-full h-full bg-contain bg-right-bottom sm:bg-center bg-no-repeat"
+        className="absolute inset-0 w-full h-full bg-contain bg-right-bottom bg-no-repeat"
         style={{ backgroundImage: "url('/hero_clean.png')" }}
       />
       
-      {/* Soft fade on left edge of image - stronger on mobile for text readability */}
+      {/* Soft fade on left edge of image only - NO bottom blur */}
       <div 
         className="absolute inset-0 pointer-events-none"
         style={{ 
           background: 'linear-gradient(to right, #f8f7f5 0%, #f8f7f5 25%, rgba(248,247,245,0.95) 35%, rgba(248,247,245,0.7) 45%, rgba(248,247,245,0.3) 55%, transparent 70%)'
         }}
       />
-      {/* Additional mobile overlay for better text readability */}
-      <div className="absolute inset-0 pointer-events-none sm:hidden bg-gradient-to-b from-[#f8f7f5] via-[#f8f7f5]/80 to-transparent" />
       
-      {/* Content - positioned higher with more space below */}
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-12 lg:px-16">
-        <div className="min-h-[420px] sm:min-h-[580px] lg:min-h-[640px] flex flex-col justify-start pt-8 sm:pt-20 lg:pt-24 pb-32 sm:pb-32 lg:pb-40">
+      {/* Content - DESKTOP: original spacing preserved, MOBILE: adjusted */}
+      <div className="relative mx-auto max-w-7xl px-6 sm:px-12 lg:px-16">
+        <div className="min-h-[520px] sm:min-h-[580px] lg:min-h-[640px] flex flex-col justify-start pt-16 sm:pt-20 lg:pt-24 pb-24 sm:pb-32 lg:pb-40">
           <div className="max-w-lg">
-            <h1 className="mb-4 sm:mb-5 text-3xl sm:text-5xl lg:text-[56px] font-bold leading-[1.15] text-[#0B1F2A]">
-              See Art in Your Space. Instantly.
+            <h1 className="mb-5 text-4xl sm:text-5xl lg:text-[56px] font-bold leading-[1.15] text-[#0B1F2A]">
+              See Art in Your<br className="hidden sm:block" /> Space. Instantly.
             </h1>
 
-            <p className="mb-6 sm:mb-8 text-base sm:text-xl leading-relaxed text-[#0B1F2A]/85 max-w-md">
+            <p className="mb-8 text-lg sm:text-xl leading-relaxed text-[#0B1F2A]/85 max-w-md">
               Preview any artwork on any wall in seconds, with one simple upload.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-start gap-3">
+            <div className="flex flex-col sm:flex-row items-start gap-3 mt-4">
               <a href="#/register" className="btn-primary">Start Free</a>
               <a href="#how" className="btn-outline bg-white/80 backdrop-blur-sm">How It Works</a>
             </div>
