@@ -365,9 +365,9 @@ function TopNav() {
         </div>
       </div>
       {open && (
-        <div className="md:hidden border-t border-gray-100 bg-white">
-          <div className="mx-auto max-w-7xl px-6 py-4 text-sm">
-            <div className="flex flex-col gap-1 font-medium">
+        <div className="md:hidden border-t border-gray-100 bg-white shadow-lg absolute left-0 right-0 top-full z-50">
+          <div className="mx-auto max-w-7xl px-6 py-6 text-sm">
+            <div className="flex flex-col gap-2 font-medium">
               <a onClick={() => setOpen(false)} href="#how" className="py-3 text-[#1A1A1A] hover:text-[#264C61] transition-colors">
                 How it works
               </a>
@@ -431,31 +431,33 @@ function Hero() {
     <section id="home" className="relative w-full overflow-hidden" style={{ backgroundColor: '#f8f7f5' }}>
       {/* Full-width background image - contain to show full scene */}
       <div 
-        className="absolute inset-0 w-full h-full bg-contain bg-right-bottom bg-no-repeat"
+        className="absolute inset-0 w-full h-full bg-contain bg-right-bottom sm:bg-center bg-no-repeat"
         style={{ backgroundImage: "url('/hero_clean.png')" }}
       />
       
-      {/* Soft fade on left edge of image - blends image into background */}
+      {/* Soft fade on left edge of image - stronger on mobile for text readability */}
       <div 
         className="absolute inset-0 pointer-events-none"
         style={{ 
           background: 'linear-gradient(to right, #f8f7f5 0%, #f8f7f5 25%, rgba(248,247,245,0.95) 35%, rgba(248,247,245,0.7) 45%, rgba(248,247,245,0.3) 55%, transparent 70%)'
         }}
       />
+      {/* Additional mobile overlay for better text readability */}
+      <div className="absolute inset-0 pointer-events-none sm:hidden bg-gradient-to-b from-[#f8f7f5] via-[#f8f7f5]/80 to-transparent" />
       
       {/* Content - positioned higher with more space below */}
-      <div className="relative mx-auto max-w-7xl px-6 sm:px-12 lg:px-16">
-        <div className="min-h-[520px] sm:min-h-[580px] lg:min-h-[640px] flex flex-col justify-start pt-16 sm:pt-20 lg:pt-24 pb-24 sm:pb-32 lg:pb-40">
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-12 lg:px-16">
+        <div className="min-h-[420px] sm:min-h-[580px] lg:min-h-[640px] flex flex-col justify-start pt-8 sm:pt-20 lg:pt-24 pb-32 sm:pb-32 lg:pb-40">
           <div className="max-w-lg">
-            <h1 className="mb-5 text-4xl sm:text-5xl lg:text-[56px] font-bold leading-[1.15] text-[#0B1F2A]">
-              See Art in Your<br className="hidden sm:block" /> Space. Instantly.
+            <h1 className="mb-4 sm:mb-5 text-3xl sm:text-5xl lg:text-[56px] font-bold leading-[1.15] text-[#0B1F2A]">
+              See Art in Your Space. Instantly.
             </h1>
 
-            <p className="mb-8 text-lg sm:text-xl leading-relaxed text-[#0B1F2A]/85 max-w-md">
+            <p className="mb-6 sm:mb-8 text-base sm:text-xl leading-relaxed text-[#0B1F2A]/85 max-w-md">
               Preview any artwork on any wall in seconds, with one simple upload.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-start gap-3 mt-4">
+            <div className="flex flex-col sm:flex-row items-start gap-3">
               <a href="#/register" className="btn-primary">Start Free</a>
               <a href="#how" className="btn-outline bg-white/80 backdrop-blur-sm">How It Works</a>
             </div>
@@ -528,17 +530,16 @@ function UserGroupsSection() {
   ];
 
   return (
-    <section className="mt-20 mb-20 bg-white">
+    <section className="mt-12 sm:mt-20 mb-12 sm:mb-20 bg-white">
       <div className="mx-auto max-w-[1280px] px-4 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-10 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10 items-stretch">
           {groups.map((g, i) => (
             <div 
               key={i} 
-              className="bg-white rounded-[22px] flex flex-col"
+              className="bg-white rounded-[16px] sm:rounded-[22px] flex flex-col p-6 sm:p-8 lg:p-10"
               style={{
-                border: '1.5px solid rgba(212, 175, 55, 0.6)',
+                border: '1px solid rgba(212, 175, 55, 0.5)',
                 boxShadow: '0px 4px 16px rgba(0, 0, 0, 0.05)',
-                padding: '40px 32px',
                 minHeight: '100%'
               }}
             >
