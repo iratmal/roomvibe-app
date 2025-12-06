@@ -457,7 +457,7 @@ function Hero() {
 
             <div className="flex flex-col sm:flex-row items-start gap-3 mt-4">
               <a href="#/register" className="btn-primary">Start Free</a>
-              <a href="#how" className="btn-outline bg-white/80 backdrop-blur-sm">Watch How It Works</a>
+              <a href="#how" className="btn-outline bg-white/80 backdrop-blur-sm">How It Works</a>
             </div>
           </div>
         </div>
