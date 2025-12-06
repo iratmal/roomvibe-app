@@ -527,7 +527,7 @@ function UserGroupsSection() {
   ];
 
   return (
-    <section className="mt-6 sm:mt-20 mb-6 sm:mb-20 bg-white">
+    <section className="mt-8 sm:mt-20 mb-6 sm:mb-20 bg-white">
       <div className="mx-auto max-w-[1280px] px-4 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8 lg:gap-10 items-stretch">
           {groups.map((g, i) => (
@@ -540,7 +540,7 @@ function UserGroupsSection() {
                 minHeight: '100%'
               }}
             >
-              <div className="flex justify-center mb-3 sm:mb-4">
+              <div className="flex justify-center mb-4 sm:mb-4">
                 {g.icon}
               </div>
               <h3 className="text-xl sm:text-[24px] font-bold text-[var(--rv-primary)] text-center mb-3">
@@ -2563,11 +2563,11 @@ function HowItWorks() {
   return (
     <section id="how" className="py-8 sm:py-16 bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
           {steps.map((s, i) => (
             <div 
               key={i} 
-              className="bg-[#FAFAFA] rounded-xl sm:rounded-[16px] p-5 sm:p-8 text-center flex flex-col items-center gap-2 sm:gap-3"
+              className={`bg-[#FAFAFA] rounded-xl sm:rounded-[16px] p-5 sm:p-8 text-center flex flex-col items-center gap-2 sm:gap-3 ${i === 0 ? 'mt-6 sm:mt-0' : ''}`}
             >
               <div className="w-14 h-14 sm:w-14 sm:h-14 rounded-full bg-[#F0F0F0] flex items-center justify-center text-[#264C61]">
                 <span className="scale-100">{s.icon}</span>
@@ -2608,13 +2608,13 @@ function DashboardVideosSection() {
   ];
 
   return (
-    <section className="py-8 sm:py-16 bg-white">
+    <section className="mt-8 sm:mt-0 py-8 sm:py-16 bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-8 items-stretch">
           {videos.map((v, i) => (
             <div key={i} className="flex flex-col">
               {/* Thumbnail */}
-              <div className="relative aspect-video max-h-[220px] sm:max-h-none rounded-xl sm:rounded-[16px] overflow-hidden bg-[#264C61]/10 group cursor-pointer shadow-md mb-3 sm:mb-4">
+              <div className="relative aspect-video max-h-[240px] sm:max-h-none rounded-xl sm:rounded-[16px] overflow-hidden bg-[#264C61]/10 group cursor-pointer shadow-md mb-3 sm:mb-4">
                 <img 
                   src={v.thumbnail} 
                   alt={v.title}

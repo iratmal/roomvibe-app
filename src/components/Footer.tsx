@@ -16,7 +16,7 @@ export function Footer() {
 
   return (
     <footer className="bg-[#264C61] text-white mt-8 sm:mt-16">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-16 pb-6 sm:pb-12">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-16 pb-8 sm:pb-12">
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-8">
           <div className="col-span-2 sm:col-span-1">
             <img 
@@ -107,7 +107,7 @@ export function Footer() {
           </div>
 
           <div className="col-span-2 sm:col-span-2 lg:col-span-1">
-            <h4 className="font-semibold text-white mb-2 text-xs sm:text-sm uppercase tracking-wide">
+            <h4 className="font-semibold text-white mb-2 text-base sm:text-sm uppercase tracking-wide">
               Stay Inspired. Stay Ahead.
             </h4>
             <p className="text-white/70 text-xs sm:text-sm mb-3 sm:mb-4 leading-relaxed">
@@ -118,7 +118,7 @@ export function Footer() {
                 Thanks for subscribing!
               </p>
             ) : (
-              <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 sm:gap-3">
                 <input
                   type="email"
                   value={email}
