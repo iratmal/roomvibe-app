@@ -150,6 +150,10 @@ function AppContent() {
 function AuthPage({ mode }: { mode: 'login' | 'register' }) {
   const [currentMode, setCurrentMode] = useState(mode);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const handleSuccess = () => {
     window.location.hash = '#/dashboard';
   };
