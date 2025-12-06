@@ -428,15 +428,20 @@ function HomePage() {
 
 function Hero() {
   return (
-    <section id="home" className="relative w-full overflow-hidden">
+    <section id="home" className="relative w-full overflow-hidden" style={{ backgroundColor: '#f8f7f5' }}>
       {/* Full-width background image - contain to show full scene */}
       <div 
         className="absolute inset-0 w-full h-full bg-contain bg-right-bottom bg-no-repeat"
-        style={{ backgroundImage: "url('/hero_clean.png')", backgroundColor: '#f8f7f5' }}
+        style={{ backgroundImage: "url('/hero_clean.png')" }}
       />
       
-      {/* Subtle gradient overlay for text readability (left side only) */}
-      <div className="absolute inset-0 bg-gradient-to-r from-white/70 via-white/40 to-transparent" />
+      {/* Soft fade on left edge of image - blends image into background */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{ 
+          background: 'linear-gradient(to right, #f8f7f5 0%, #f8f7f5 20%, rgba(248,247,245,0.8) 30%, rgba(248,247,245,0.3) 45%, transparent 60%)'
+        }}
+      />
       
       {/* Content - positioned higher with more space below */}
       <div className="relative mx-auto max-w-7xl px-6 sm:px-12 lg:px-16">
