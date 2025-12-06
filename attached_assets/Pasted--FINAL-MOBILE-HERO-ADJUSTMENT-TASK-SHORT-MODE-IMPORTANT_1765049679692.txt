@@ -1,0 +1,69 @@
+✅ FINAL MOBILE HERO ADJUSTMENT TASK (SHORT MODE)
+🚨 **IMPORTANT: DO NOT CHANGE ANYTHING IN THE DESKTOP VERSION.
+
+ALL CHANGES ARE MOBILE-ONLY (<768px).** 🚨
+
+🎯 Goal
+
+Improve mobile hero layout by reducing white space above and below the hero section and repositioning the CTA buttons onto the image area (left side), as shown on the user’s marked screenshot.
+
+🗂 Files
+
+Hero.tsx (main change), index.tsx (hero wrapper spacing)
+
+📱 MOBILE FIXES (ONLY)
+⭐ 1) Reduce White Space Above & Below Hero
+
+Reduce top padding of hero wrapper on mobile: pt-3 or similar.
+
+Reduce bottom padding of hero wrapper on mobile: pb-3 or similar.
+
+Ensure hero image and content remain centered and clean.
+
+⭐ 2) Move CTA Buttons Onto the Image (Left Side)
+
+🚨 Desktop hero must remain unchanged. Only mobile hero layout is modified.
+
+On mobile (<768px):
+
+Position CTA buttons inside the hero image container, anchored to the left side of the image, vertically stacked or inline (whichever looks better).
+
+Buttons must sit roughly in the area marked by the user (left side of the artwork but still over the white wall, not covering the painting).
+
+Use a absolute or relative positioned wrapper inside the hero image block.
+
+Ensure buttons do NOT overlap the painting itself — only the wall area.
+
+Buttons should remain medium-sized (px-5 py-3) instead of full-width.
+
+Add gentle spacing (gap-3) between buttons.
+
+⭐ 3) Adjust Mobile Spacing for Hero Text
+
+Ensure heading + subheading remain above the image.
+
+Reduce spacing between text and image to remove excess white area.
+
+⭐ 4) Ensure No Overlaps With Header
+
+The repositioned CTA buttons must not collide with the sticky header.
+
+Maintain safe spacing (at least mt-4 under the header).
+
+🚫 OUT OF SCOPE
+
+Any desktop styling, layout, spacing, button positioning, or hero dimensions.
+
+Any functionality changes.
+
+Any Studio or internal pages.
+
+✅ DONE WHEN
+
+Buttons appear on top of the image (left wall area), clean and readable.
+
+White space above and below hero is reduced.
+
+Nothing overlaps the header.
+
+Desktop hero remains pixel-perfect and unchanged.
