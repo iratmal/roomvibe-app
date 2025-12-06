@@ -429,21 +429,29 @@ function HomePage() {
 function Hero() {
   return (
     <section id="home" className="relative w-full overflow-hidden">
-      {/* Full-width background image - slightly zoomed out for breathing room */}
+      {/* Full-width background image - zoomed out for full artwork visibility */}
       <div 
         className="absolute inset-0 w-full h-full bg-no-repeat"
         style={{ 
           backgroundImage: "url('/hero-room-mordor-clean.png')",
-          backgroundSize: '95%',
-          backgroundPosition: 'right bottom'
+          backgroundSize: '85%',
+          backgroundPosition: 'right center'
+        }}
+      />
+      
+      {/* Soft gradient fade on left for text readability */}
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{ 
+          background: 'linear-gradient(to right, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.8) 20%, rgba(255,255,255,0.4) 35%, transparent 50%)'
         }}
       />
       
       {/* Content overlay */}
       <div className="relative mx-auto max-w-7xl px-6 sm:px-12 lg:px-16">
-        <div className="min-h-[480px] sm:min-h-[560px] lg:min-h-[600px] flex flex-col justify-start pt-12 sm:pt-16 lg:pt-20 pb-24 sm:pb-32 lg:pb-36">
+        <div className="min-h-[480px] sm:min-h-[560px] lg:min-h-[620px] flex flex-col justify-start pt-12 sm:pt-16 lg:pt-20 pb-24 sm:pb-32 lg:pb-36">
           <div className="max-w-md lg:max-w-lg">
-            <h1 className="mb-4 sm:mb-5 text-3xl sm:text-4xl lg:text-[48px] font-bold leading-[1.2] text-[#1A2B3C]">
+            <h1 className="mb-4 sm:mb-5 text-3xl sm:text-4xl lg:text-[48px] font-bold leading-[1.25] text-[#1A2B3C]">
               See Art in Your<br /> Space. Instantly.
             </h1>
 
@@ -452,11 +460,11 @@ function Hero() {
             </p>
 
             <div className="flex flex-row items-center gap-3">
-              <a href="#/register" className="inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-white bg-[#1A2B3C] rounded-lg hover:bg-[#0F1D2A] transition-colors">
+              <a href="#/register" className="inline-flex items-center justify-center px-6 py-3 text-sm font-semibold text-white bg-[#1A2B3C] rounded-lg hover:bg-[#0F1D2A] transition-colors">
                 Start Free
               </a>
-              <a href="#how" className="inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-[#1A2B3C] bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                Watch How it Works
+              <a href="#how" className="inline-flex items-center justify-center px-6 py-3 text-sm font-semibold text-[#1A2B3C] bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                How It Works
               </a>
             </div>
           </div>
