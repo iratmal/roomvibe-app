@@ -428,18 +428,21 @@ function HomePage() {
 
 function Hero() {
   return (
-    <section id="home" className="relative w-full overflow-hidden" style={{ backgroundColor: '#f5f0e8' }}>
-      {/* Full-width background image - extended upward for seamless display */}
+    <section id="home" className="relative w-full overflow-hidden" style={{ backgroundColor: '#faf8f5' }}>
+      {/* Full-width background image - cover with right focus */}
       <div 
-        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('/serenity-hero-extended.png')" }}
+        className="absolute inset-0 w-full h-full bg-cover bg-no-repeat"
+        style={{ 
+          backgroundImage: "url('/serenity-hero-extended.png')",
+          backgroundPosition: 'right 20% center'
+        }}
       />
       
       {/* Content overlay */}
       <div className="relative mx-auto max-w-7xl px-6 sm:px-12 lg:px-16">
-        <div className="min-h-[520px] sm:min-h-[600px] lg:min-h-[680px] flex flex-col justify-start pt-16 sm:pt-24 lg:pt-28 pb-32 sm:pb-40 lg:pb-44">
+        <div className="min-h-[600px] sm:min-h-[700px] lg:min-h-[800px] flex flex-col justify-start pt-16 sm:pt-24 lg:pt-28 pb-32 sm:pb-40 lg:pb-44">
           <div className="max-w-md lg:max-w-lg">
-            <h1 className="mb-6 sm:mb-7 text-3xl sm:text-4xl lg:text-[52px] font-bold leading-[1.2] text-[#1A2B3C]">
+            <h1 className="mb-6 sm:mb-7 text-3xl sm:text-4xl lg:text-[52px] font-bold leading-[1.35] text-[#1A2B3C]">
               See Art in Your<br /> Space. Instantly.
             </h1>
 
