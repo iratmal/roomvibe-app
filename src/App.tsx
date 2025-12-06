@@ -432,17 +432,17 @@ function Hero() {
       {/* Full-width background image */}
       <div 
         className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('/hero.png')" }}
+        style={{ backgroundImage: "url('/hero_clean.png')" }}
       />
       
       {/* Subtle gradient overlay for text readability (left side only) */}
-      <div className="absolute inset-0 bg-gradient-to-r from-white/70 via-white/40 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-white/60 via-white/30 to-transparent" />
       
       {/* Content */}
       <div className="relative mx-auto max-w-7xl px-6 sm:px-12 lg:px-16">
         <div className="min-h-[500px] sm:min-h-[560px] lg:min-h-[600px] flex flex-col justify-center py-12 sm:py-16">
           <div className="max-w-lg">
-            <h1 className="mb-5 text-4xl sm:text-5xl lg:text-[56px] font-bold leading-[1.1] text-[#0B1F2A]">
+            <h1 className="mb-5 text-4xl sm:text-5xl lg:text-[56px] font-bold leading-[1.15] text-[#0B1F2A]">
               See Art in Your<br className="hidden sm:block" /> Space. Instantly.
             </h1>
 
