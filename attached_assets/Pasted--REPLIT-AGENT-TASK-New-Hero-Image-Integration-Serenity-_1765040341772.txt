@@ -1,0 +1,94 @@
+✅ REPLIT AGENT TASK — New Hero Image Integration (Serenity Version)
+
+(Fast Mode recommended — small but precise UI task)
+
+Goal:
+
+Implement the new full-width HERO layout using the provided Serenity hero image, with correct spacing for the text on the left, and WITHOUT touching any existing text, copy or buttons.
+
+1️⃣ Replace the HERO background image
+
+Use the supplied image: Serenity_Hero.jpg (the one I will upload right after I send you this task).
+
+The hero must match the proportions of the thumbnail version we liked:
+
+Art on the right side
+
+Couch fully visible
+
+White wall and floor extended significantly to the left for the text block.
+
+Important:
+Do NOT darken the image.
+Do NOT apply gradients.
+Do NOT zoom into the art.
+Use the image exactly as supplied.
+
+2️⃣ Layout requirements
+Left side (text area)
+
+Keep ALL existing text and CTA buttons exactly as they are.
+
+Do NOT change colors, font size or positioning logic.
+
+Ensure the text sits fully on the white wall area with enough space around it.
+
+Spacing adjustments:
+
+Increase line-height slightly on the headline (See Art in Your Space. Instantly.).
+
+Increase vertical spacing between the headline, subheadline and buttons.
+
+Buttons
+
+Make both buttons slightly larger (padding + font size + border radius untouched).
+
+Keep exact colors from design system.
+
+Ensure labels remain:
+
+Start Free
+
+How It Works (fix if it accidentally reverts to “Watch How It Works”)
+
+3️⃣ Remove unwanted elements
+
+Remove the play button overlay completely from the hero image.
+
+4️⃣ Final image fit
+
+The right side of the image must show the painting, couch, and plant cleanly.
+
+The left side must have extended white wall + floor to support the hero text block.
+
+If necessary, adjust the hero container height so the composition feels balanced, but do not crop the artwork.
+
+5️⃣ Files to Modify
+
+Use @filename targeting for precision:
+
+src/components/Hero.tsx
+
+src/components/HeroImage.tsx (if exists)
+
+src/styles/hero.css or Tailwind classes in the JSX
+
+6️⃣ After implementing:
+
+Please verify:
+
+Hero text does not overlap with the artwork.
+
+Responsive layout works (mobile + tablet + desktop).
+
+Buttons remain horizontally aligned on desktop and stack correctly on mobile.
+
+Image is crisp and not darkened.
+
+✔️ Allowed tools
+
+Fast Mode (recommended)
+
+No design changes besides spacing and hero image fit
+
+Do NOT alter global styles or other components
