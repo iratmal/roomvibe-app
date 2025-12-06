@@ -118,7 +118,7 @@ export function Footer() {
                 Thanks for subscribing!
               </p>
             ) : (
-              <form onSubmit={handleSubscribe} className="flex gap-2 items-center">
+              <form onSubmit={handleSubscribe} className="flex gap-3 items-center">
                 <input
                   type="email"
                   value={email}
@@ -129,13 +129,11 @@ export function Footer() {
                 />
                 <button 
                   type="submit" 
-                  className="text-sm font-semibold text-white rounded-lg cursor-pointer transition-all duration-200 ease-in-out min-h-[44px]"
+                  className="inline-flex items-center justify-center text-sm font-semibold text-white rounded-lg cursor-pointer transition-colors duration-200 ease-in-out min-h-[44px] border-none hover:bg-[#1E3C4D]"
                   style={{
                     backgroundColor: 'var(--rv-primary)',
-                    padding: '12px 20px'
+                    padding: '12px 24px'
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#1e3c4d'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--rv-primary)'}
                 >
                   Subscribe
                 </button>
