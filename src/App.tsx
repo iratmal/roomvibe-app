@@ -428,11 +428,11 @@ function HomePage() {
 
 function Hero() {
   return (
-    <section id="home" className="relative w-full overflow-hidden" style={{ backgroundColor: '#f5f3ef' }}>
-      {/* Full-width background image - contained to show full artwork without cropping */}
+    <section id="home" className="relative w-full overflow-hidden" style={{ backgroundColor: '#f5f0e8' }}>
+      {/* Full-width background image - extended upward for seamless display */}
       <div 
-        className="absolute inset-0 w-full h-full bg-contain bg-right-bottom bg-no-repeat"
-        style={{ backgroundImage: "url('/serenity-hero.png')" }}
+        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/serenity-hero-extended.png')" }}
       />
       
       {/* Content overlay */}

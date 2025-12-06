@@ -72,12 +72,12 @@ localPort = 38829
 externalPort = 3003
 
 [[ports]]
-localPort = 39367
-externalPort = 6000
-
-[[ports]]
 localPort = 41371
 externalPort = 3000
+
+[[ports]]
+localPort = 45895
+externalPort = 6000
 
 [[ports]]
 localPort = 46455
@@ -90,7 +90,7 @@ run = ["npm", "start"]
 
 [nix]
 channel = "stable-25_05"
-packages = ["unzip", "jq"]
+packages = ["unzip", "jq", "imagemagick"]
 
 [userenv]
 
