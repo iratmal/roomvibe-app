@@ -439,7 +439,7 @@ function Hero() {
       <div 
         className="absolute inset-0 pointer-events-none"
         style={{ 
-          background: 'linear-gradient(to right, #f8f7f5 0%, #f8f7f5 20%, rgba(248,247,245,0.8) 30%, rgba(248,247,245,0.3) 45%, transparent 60%)'
+          background: 'linear-gradient(to right, #f8f7f5 0%, #f8f7f5 25%, rgba(248,247,245,0.95) 35%, rgba(248,247,245,0.7) 45%, rgba(248,247,245,0.3) 55%, transparent 70%)'
         }}
       />
       
