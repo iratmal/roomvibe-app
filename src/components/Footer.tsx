@@ -129,7 +129,7 @@ export function Footer() {
                 />
                 <button 
                   type="submit" 
-                  className="inline-flex items-center justify-center text-sm font-semibold text-white rounded-lg cursor-pointer transition-all duration-200 ease-in-out min-h-[44px] bg-[#1E3C4D] border border-[#D4AF37] hover:bg-[#162D3A] hover:shadow-md"
+                  className="inline-flex items-center justify-center text-sm font-semibold text-white rounded-lg cursor-pointer transition-all duration-200 ease-in-out min-h-[44px] bg-[#264C61] hover:bg-[#1E3C4D] hover:shadow-md"
                   style={{
                     padding: '12px 24px'
                   }}
