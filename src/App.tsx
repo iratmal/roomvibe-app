@@ -429,9 +429,9 @@ function HomePage() {
 function Hero() {
   return (
     <section id="home" className="relative w-full overflow-hidden" style={{ backgroundColor: '#faf9f7' }}>
-      {/* Full-width background image - lightened wall, artwork aligned with sofa */}
+      {/* Full-width background image - DESKTOP ONLY */}
       <div 
-        className="absolute inset-0 w-full h-full bg-cover bg-no-repeat"
+        className="hidden md:block absolute inset-0 w-full h-full bg-cover bg-no-repeat"
         style={{ 
           backgroundImage: "url('/serenity-hero-extended.png')",
           backgroundPosition: 'right 10% center'
@@ -440,24 +440,34 @@ function Hero() {
       
       {/* Content overlay */}
       <div className="relative mx-auto max-w-7xl px-5 sm:px-12 lg:px-16 lg:pr-24">
-        <div className="min-h-[480px] sm:min-h-[700px] lg:min-h-[800px] flex flex-col justify-start pt-6 sm:pt-24 lg:pt-28 pb-20 sm:pb-40 lg:pb-44">
-          <div className="max-w-[320px] sm:max-w-md lg:max-w-lg">
-            <h1 className="mb-4 sm:mb-6 text-[26px] sm:text-4xl lg:text-[52px] font-bold leading-[1.25] sm:leading-[1.3] lg:leading-[1.1] text-[#1A2B3C]">
+        <div className="min-h-0 md:min-h-[700px] lg:min-h-[800px] flex flex-col justify-start pt-6 md:pt-24 lg:pt-28 pb-8 md:pb-40 lg:pb-44">
+          <div className="max-w-full md:max-w-md lg:max-w-lg">
+            <h1 className="mb-4 md:mb-6 text-2xl md:text-4xl lg:text-[52px] font-bold leading-[1.25] md:leading-[1.3] lg:leading-[1.1] text-[#1A2B3C]">
               See Art in Your<br /> Space. Instantly.
             </h1>
 
-            <p className="mb-6 sm:mb-5 text-[15px] sm:text-lg leading-[1.45] sm:leading-[1.5] lg:leading-[1.4] text-[#1A2B3C]/80 max-w-[280px] sm:max-w-sm">
+            <p className="mb-5 md:mb-5 text-[15px] md:text-lg leading-[1.45] md:leading-[1.5] lg:leading-[1.4] text-[#1A2B3C]/80 max-w-[320px] md:max-w-sm">
               Preview any artwork on any wall in seconds, with one simple upload.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-              <a href="#/register" className="inline-flex items-center justify-center px-6 sm:px-8 py-3.5 sm:py-4 text-[15px] sm:text-base font-semibold text-white bg-[#1A2B3C] rounded-lg hover:bg-[#0F1D2A] transition-colors w-full sm:w-auto">
+            {/* Buttons - left-aligned auto-width on mobile, row on desktop */}
+            <div className="flex flex-wrap justify-start gap-3 md:flex-row md:items-center md:gap-4">
+              <a href="#/register" className="inline-flex items-center justify-center px-6 py-3 md:px-8 md:py-4 text-[15px] md:text-base font-semibold text-white bg-[#1A2B3C] rounded-lg hover:bg-[#0F1D2A] transition-colors">
                 Start Free
               </a>
-              <a href="#how" className="inline-flex items-center justify-center px-6 sm:px-8 py-3.5 sm:py-4 text-[15px] sm:text-base font-semibold text-[#1A2B3C] bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors w-full sm:w-auto">
+              <a href="#how" className="inline-flex items-center justify-center px-6 py-3 md:px-8 md:py-4 text-[15px] md:text-base font-semibold text-[#1A2B3C] bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                 How It Works
               </a>
             </div>
+          </div>
+          
+          {/* Mobile hero image - MOBILE ONLY */}
+          <div className="md:hidden mt-6 flex justify-center">
+            <img 
+              src="/serenity-hero-extended.png" 
+              alt="Art visualization preview" 
+              className="w-full max-w-[360px] max-h-[260px] object-cover object-center rounded-lg"
+            />
           </div>
         </div>
       </div>
