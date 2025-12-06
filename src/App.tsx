@@ -429,41 +429,29 @@ function HomePage() {
 function Hero() {
   return (
     <section id="home" className="relative w-full overflow-hidden">
-      {/* Full-width background image - zoomed out for full artwork visibility */}
+      {/* Full-width background image - Serenity hero, no gradients or darkening */}
       <div 
-        className="absolute inset-0 w-full h-full bg-no-repeat"
-        style={{ 
-          backgroundImage: "url('/hero-room-mordor-clean.png')",
-          backgroundSize: '85%',
-          backgroundPosition: 'right center'
-        }}
-      />
-      
-      {/* Soft gradient fade on left for text readability */}
-      <div 
-        className="absolute inset-0 pointer-events-none"
-        style={{ 
-          background: 'linear-gradient(to right, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.8) 20%, rgba(255,255,255,0.4) 35%, transparent 50%)'
-        }}
+        className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/serenity-hero.png')" }}
       />
       
       {/* Content overlay */}
       <div className="relative mx-auto max-w-7xl px-6 sm:px-12 lg:px-16">
-        <div className="min-h-[480px] sm:min-h-[560px] lg:min-h-[620px] flex flex-col justify-start pt-12 sm:pt-16 lg:pt-20 pb-24 sm:pb-32 lg:pb-36">
+        <div className="min-h-[500px] sm:min-h-[580px] lg:min-h-[640px] flex flex-col justify-start pt-14 sm:pt-20 lg:pt-24 pb-28 sm:pb-36 lg:pb-40">
           <div className="max-w-md lg:max-w-lg">
-            <h1 className="mb-4 sm:mb-5 text-3xl sm:text-4xl lg:text-[48px] font-bold leading-[1.25] text-[#1A2B3C]">
+            <h1 className="mb-5 sm:mb-6 text-3xl sm:text-4xl lg:text-[50px] font-bold leading-[1.3] text-[#1A2B3C]">
               See Art in Your<br /> Space. Instantly.
             </h1>
 
-            <p className="mb-6 sm:mb-8 text-base sm:text-lg leading-relaxed text-[#1A2B3C]/80 max-w-sm">
+            <p className="mb-7 sm:mb-9 text-base sm:text-lg leading-relaxed text-[#1A2B3C]/80 max-w-sm">
               Preview any artwork on any wall in seconds, with one simple upload.
             </p>
 
-            <div className="flex flex-row items-center gap-3">
-              <a href="#/register" className="inline-flex items-center justify-center px-6 py-3 text-sm font-semibold text-white bg-[#1A2B3C] rounded-lg hover:bg-[#0F1D2A] transition-colors">
+            <div className="flex flex-row items-center gap-3 sm:gap-4">
+              <a href="#/register" className="inline-flex items-center justify-center px-7 py-3.5 text-[15px] font-semibold text-white bg-[#1A2B3C] rounded-lg hover:bg-[#0F1D2A] transition-colors">
                 Start Free
               </a>
-              <a href="#how" className="inline-flex items-center justify-center px-6 py-3 text-sm font-semibold text-[#1A2B3C] bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+              <a href="#how" className="inline-flex items-center justify-center px-7 py-3.5 text-[15px] font-semibold text-[#1A2B3C] bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                 How It Works
               </a>
             </div>
