@@ -2612,10 +2612,10 @@ function DashboardVideosSection() {
   return (
     <section className="py-16 bg-white">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
           {videos.map((v, i) => (
             <div key={i} className="flex flex-col">
-              {/* Thumbnail first */}
+              {/* Thumbnail */}
               <div className="relative aspect-video rounded-[16px] overflow-hidden bg-[#264C61]/10 group cursor-pointer shadow-md mb-4">
                 <img 
                   src={v.thumbnail} 
@@ -2635,12 +2635,9 @@ function DashboardVideosSection() {
                 {v.title}
               </h3>
               {/* Description */}
-              <p className="text-sm lg:text-[15px] text-[#555] mb-4 leading-relaxed">
+              <p className="text-sm lg:text-[15px] text-[#555] leading-relaxed">
                 {v.description}
               </p>
-              <a href="#" className="text-sm font-medium text-[#264C61] hover:underline">
-                Watch Video →
-              </a>
             </div>
           ))}
         </div>
