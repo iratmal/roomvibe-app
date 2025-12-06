@@ -443,19 +443,19 @@ function Hero() {
         }}
       />
       
-      {/* Content - DESKTOP: original spacing preserved, MOBILE: adjusted */}
-      <div className="relative mx-auto max-w-7xl px-6 sm:px-12 lg:px-16">
-        <div className="min-h-[520px] sm:min-h-[580px] lg:min-h-[640px] flex flex-col justify-start pt-16 sm:pt-20 lg:pt-24 pb-24 sm:pb-32 lg:pb-40">
+      {/* Content - DESKTOP: original spacing preserved, MOBILE: compact */}
+      <div className="relative mx-auto max-w-7xl px-5 sm:px-12 lg:px-16">
+        <div className="min-h-[380px] sm:min-h-[580px] lg:min-h-[640px] flex flex-col justify-start pt-10 sm:pt-20 lg:pt-24 pb-16 sm:pb-32 lg:pb-40">
           <div className="max-w-lg">
-            <h1 className="mb-5 text-4xl sm:text-5xl lg:text-[56px] font-bold leading-[1.15] text-[#0B1F2A]">
+            <h1 className="mb-3 sm:mb-5 text-[28px] sm:text-5xl lg:text-[56px] font-bold leading-[1.15] text-[#0B1F2A]">
               See Art in Your<br className="hidden sm:block" /> Space. Instantly.
             </h1>
 
-            <p className="mb-8 text-lg sm:text-xl leading-relaxed text-[#0B1F2A]/85 max-w-md">
+            <p className="mb-4 sm:mb-8 text-base sm:text-xl leading-relaxed text-[#0B1F2A]/85 max-w-md">
               Preview any artwork on any wall in seconds, with one simple upload.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-start gap-3 mt-4">
+            <div className="flex flex-col sm:flex-row items-start gap-2 sm:gap-3 sm:mt-4">
               <a href="#/register" className="btn-primary">Start Free</a>
               <a href="#how" className="btn-outline bg-white/80 backdrop-blur-sm">How It Works</a>
             </div>
@@ -528,20 +528,20 @@ function UserGroupsSection() {
   ];
 
   return (
-    <section className="mt-12 sm:mt-20 mb-12 sm:mb-20 bg-white">
+    <section className="mt-8 sm:mt-20 mb-8 sm:mb-20 bg-white">
       <div className="mx-auto max-w-[1280px] px-4 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-8 lg:gap-10 items-stretch">
           {groups.map((g, i) => (
             <div 
               key={i} 
-              className="bg-white rounded-[16px] sm:rounded-[22px] flex flex-col p-6 sm:p-8 lg:p-10"
+              className="bg-white rounded-[14px] sm:rounded-[22px] flex flex-col p-5 sm:p-8 lg:p-10"
               style={{
                 border: '1px solid rgba(212, 175, 55, 0.5)',
                 boxShadow: '0px 4px 16px rgba(0, 0, 0, 0.05)',
                 minHeight: '100%'
               }}
             >
-              <div className="flex justify-center mb-4">
+              <div className="flex justify-center mb-2 sm:mb-4">
                 {g.icon}
               </div>
               <h3 className="text-[24px] font-bold text-[var(--rv-primary)] text-center mb-3">
@@ -2562,18 +2562,18 @@ function HowItWorks() {
   ];
   
   return (
-    <section id="how" className="py-16 bg-white">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <section id="how" className="py-10 sm:py-16 bg-white">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8">
           {steps.map((s, i) => (
             <div 
               key={i} 
-              className="bg-[#FAFAFA] rounded-[16px] p-8 text-center flex flex-col items-center gap-3"
+              className="bg-[#FAFAFA] rounded-[14px] sm:rounded-[16px] p-5 sm:p-8 text-center flex flex-col items-center gap-2 sm:gap-3"
             >
-              <div className="w-14 h-14 rounded-full bg-[#F0F0F0] flex items-center justify-center text-[#264C61]">
-                {s.icon}
+              <div className="w-16 h-16 sm:w-14 sm:h-14 rounded-full bg-[#F0F0F0] flex items-center justify-center text-[#264C61]">
+                <span className="scale-110 sm:scale-100">{s.icon}</span>
               </div>
-              <h3 className="text-lg lg:text-xl font-semibold text-[#1A1A1A] tracking-tight">
+              <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-[#1A1A1A] tracking-tight">
                 {s.title}
               </h3>
               <p className="text-sm lg:text-[15px] text-[#555] leading-relaxed">
@@ -2609,28 +2609,28 @@ function DashboardVideosSection() {
   ];
 
   return (
-    <section className="py-16 bg-white">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+    <section className="py-10 sm:py-16 bg-white">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 items-stretch">
           {videos.map((v, i) => (
             <div key={i} className="flex flex-col">
               {/* Thumbnail */}
-              <div className="relative aspect-video rounded-[16px] overflow-hidden bg-[#264C61]/10 group cursor-pointer shadow-md mb-4">
+              <div className="relative aspect-video rounded-[14px] sm:rounded-[16px] overflow-hidden bg-[#264C61]/10 group cursor-pointer shadow-md mb-3 sm:mb-4">
                 <img 
                   src={v.thumbnail} 
                   alt={v.title}
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-[#264C61]/40 flex items-center justify-center group-hover:bg-[#264C61]/50 transition-colors">
-                  <div className="w-14 h-14 lg:w-16 lg:h-16 rounded-full bg-white/90 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-                    <svg className="w-6 h-6 lg:w-7 lg:h-7 text-[#264C61] ml-1" viewBox="0 0 24 24" fill="currentColor">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-full bg-white/90 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-[#264C61] ml-0.5" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M8 5v14l11-7-11-7z" />
                     </svg>
                   </div>
                 </div>
               </div>
               {/* Title */}
-              <h3 className="text-lg lg:text-xl font-semibold text-[#1A1A1A] mb-2 tracking-tight">
+              <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-[#1A1A1A] mb-1 sm:mb-2 tracking-tight">
                 {v.title}
               </h3>
               {/* Description */}
@@ -2649,15 +2649,15 @@ function DashboardVideosSection() {
 
 function MidPageCTA() {
   return (
-    <section className="py-16 bg-[#F9F9F9]">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8 text-center">
-        <h2 className="text-2xl sm:text-3xl font-bold text-[var(--roomvibe-navy)] mb-3 tracking-tight">
+    <section className="py-10 sm:py-16 bg-[#F9F9F9]">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[var(--roomvibe-navy)] mb-2 sm:mb-3 tracking-tight">
           Ready to See Art in Your Space?
         </h2>
-        <p className="text-base lg:text-lg text-[#555] mb-6">
+        <p className="text-sm sm:text-base lg:text-lg text-[#555] mb-4 sm:mb-6">
           Start Free and try RoomVibe in seconds.
         </p>
-        <a href="#/register" className="btn-primary mt-6">
+        <a href="#/register" className="btn-primary">
           Start Free
         </a>
       </div>

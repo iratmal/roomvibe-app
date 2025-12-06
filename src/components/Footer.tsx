@@ -15,28 +15,28 @@ export function Footer() {
   };
 
   return (
-    <footer className="bg-[#264C61] text-white mt-10 sm:mt-16">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 sm:py-16 pb-8 sm:pb-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
-          <div>
+    <footer className="bg-[#264C61] text-white mt-8 sm:mt-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-16 pb-6 sm:pb-12">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 lg:gap-8">
+          <div className="col-span-2 sm:col-span-1">
             <img 
               src="/roomvibe-logo-transparent.png" 
               alt="RoomVibe" 
-              className="h-16 w-auto mb-4 brightness-0 invert"
+              className="h-12 sm:h-16 w-auto mb-2 sm:mb-4 brightness-0 invert"
             />
-            <p className="text-white/80 text-sm mb-3">
+            <p className="text-white/80 text-xs sm:text-sm mb-2 sm:mb-3">
               Visualize Art in Your Space.
             </p>
-            <p className="text-white/60 text-sm">
+            <p className="text-white/60 text-xs sm:text-sm">
               © 2025 RoomVibe
             </p>
           </div>
 
           <div>
-            <h4 className="font-semibold text-white mb-4 text-sm uppercase tracking-wide">
+            <h4 className="font-semibold text-white mb-3 sm:mb-4 text-xs sm:text-sm uppercase tracking-wide">
               Product
             </h4>
-            <ul className="space-y-3 text-sm">
+            <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
               <li>
                 <a href="#how" className="text-white/80 hover:text-white transition-colors">
                   How It Works
@@ -71,10 +71,10 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold text-white mb-4 text-sm uppercase tracking-wide">
+            <h4 className="font-semibold text-white mb-3 sm:mb-4 text-xs sm:text-sm uppercase tracking-wide">
               Company
             </h4>
-            <ul className="space-y-3 text-sm">
+            <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
               <li>
                 <a href="#about" className="text-white/80 hover:text-white transition-colors">
                   About RoomVibe
@@ -106,33 +106,30 @@ export function Footer() {
             </ul>
           </div>
 
-          <div>
-            <h4 className="font-semibold text-white mb-2 text-sm uppercase tracking-wide">
+          <div className="col-span-2 sm:col-span-2 lg:col-span-1">
+            <h4 className="font-semibold text-white mb-2 text-xs sm:text-sm uppercase tracking-wide">
               Stay Inspired. Stay Ahead.
             </h4>
-            <p className="text-white/70 text-sm mb-4 leading-relaxed">
+            <p className="text-white/70 text-xs sm:text-sm mb-3 sm:mb-4 leading-relaxed">
               Get fresh updates from the worlds of art, design, and RoomVibe. Only good vibes, no spam, ever.
             </p>
             {subscribed ? (
-              <p className="text-[#C9A24A] font-medium text-sm">
+              <p className="text-[#C9A24A] font-medium text-xs sm:text-sm">
                 Thanks for subscribing!
               </p>
             ) : (
-              <form onSubmit={handleSubscribe} className="flex gap-3 items-center">
+              <form onSubmit={handleSubscribe} className="flex gap-2 sm:gap-3 items-center">
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email…"
-                  className="flex-1 px-4 py-2.5 rounded-lg bg-white border border-[#E1E1E1] text-[#1A1A1A] placeholder:text-gray-400 text-sm focus:outline-none focus:border-[#264C61] transition-colors min-h-[44px]"
+                  className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-white border border-[#E1E1E1] text-[#1A1A1A] placeholder:text-gray-400 text-xs sm:text-sm focus:outline-none focus:border-[#264C61] transition-colors min-h-[40px] sm:min-h-[44px]"
                   required
                 />
                 <button 
                   type="submit" 
-                  className="inline-flex items-center justify-center text-sm font-semibold text-white rounded-lg cursor-pointer transition-all duration-200 ease-in-out min-h-[44px] bg-[#1E3C4D] hover:bg-[#162D3A] hover:shadow-md"
-                  style={{
-                    padding: '12px 24px'
-                  }}
+                  className="inline-flex items-center justify-center text-xs sm:text-sm font-semibold text-white rounded-lg cursor-pointer transition-all duration-200 ease-in-out min-h-[40px] sm:min-h-[44px] px-4 sm:px-6 bg-[#1E3C4D] hover:bg-[#162D3A] hover:shadow-md whitespace-nowrap"
                 >
                   Subscribe
                 </button>
