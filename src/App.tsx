@@ -442,7 +442,7 @@ function Hero() {
       <div className="relative mx-auto max-w-7xl px-6 sm:px-12 lg:px-16 lg:pr-24">
         <div className="min-h-[600px] sm:min-h-[700px] lg:min-h-[800px] flex flex-col justify-start pt-20 sm:pt-28 lg:pt-36 pb-32 sm:pb-40 lg:pb-44">
           <div className="max-w-md lg:max-w-lg">
-            <h1 className="mb-6 sm:mb-7 text-3xl sm:text-4xl lg:text-[52px] font-bold leading-[1.8] lg:leading-[2.2] text-[#1A2B3C]">
+            <h1 className="mb-6 sm:mb-7 text-3xl sm:text-4xl lg:text-[52px] font-bold leading-[1.4] lg:leading-[1.5] text-[#1A2B3C]">
               See Art in Your<br /> Space. Instantly.
             </h1>
 
