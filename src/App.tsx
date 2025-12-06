@@ -428,37 +428,42 @@ function HomePage() {
 
 function Hero() {
   return (
-    <section id="home" className="relative w-full overflow-hidden" style={{ backgroundColor: '#f8f7f5' }}>
-      {/* Full-width background image - desktop: centered, mobile: adjusted */}
+    <section id="home" className="relative w-full overflow-hidden">
+      {/* Full-width background image */}
       <div 
         className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: "url('/hero-room-mordor-clean.png')" }}
       />
       
-      {/* Soft fade on left edge of image only - NO bottom blur */}
-      <div 
-        className="absolute inset-0 pointer-events-none"
-        style={{ 
-          background: 'linear-gradient(to right, #f8f7f5 0%, #f8f7f5 25%, rgba(248,247,245,0.95) 35%, rgba(248,247,245,0.7) 45%, rgba(248,247,245,0.3) 55%, transparent 70%)'
-        }}
-      />
-      
-      {/* Content - DESKTOP: original spacing preserved, MOBILE: compact */}
-      <div className="relative mx-auto max-w-7xl px-5 sm:px-12 lg:px-16">
-        <div className="min-h-[380px] sm:min-h-[580px] lg:min-h-[640px] flex flex-col justify-start pt-10 sm:pt-20 lg:pt-24 pb-16 sm:pb-32 lg:pb-40">
-          <div className="max-w-lg">
-            <h1 className="mb-3 sm:mb-5 text-[28px] sm:text-5xl lg:text-[56px] font-bold leading-[1.15] text-[#0B1F2A]">
-              See Art in Your<br className="hidden sm:block" /> Space. Instantly.
+      {/* Content overlay */}
+      <div className="relative mx-auto max-w-7xl px-6 sm:px-12 lg:px-16">
+        <div className="min-h-[480px] sm:min-h-[560px] lg:min-h-[600px] flex flex-col justify-start pt-12 sm:pt-16 lg:pt-20 pb-24 sm:pb-32 lg:pb-36">
+          <div className="max-w-md lg:max-w-lg">
+            <h1 className="mb-4 sm:mb-5 text-3xl sm:text-4xl lg:text-[48px] font-bold leading-[1.1] text-[#1A2B3C]">
+              See Art in Your<br /> Space. Instantly.
             </h1>
 
-            <p className="mb-4 sm:mb-8 text-base sm:text-xl leading-relaxed text-[#0B1F2A]/85 max-w-md">
+            <p className="mb-6 sm:mb-8 text-base sm:text-lg leading-relaxed text-[#1A2B3C]/80 max-w-sm">
               Preview any artwork on any wall in seconds, with one simple upload.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-start gap-2 sm:gap-3 sm:mt-4">
-              <a href="#/register" className="btn-primary">Start Free</a>
-              <a href="#how" className="btn-outline bg-white/80 backdrop-blur-sm">How It Works</a>
+            <div className="flex flex-row items-center gap-3">
+              <a href="#/register" className="inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-white bg-[#1A2B3C] rounded-lg hover:bg-[#0F1D2A] transition-colors">
+                Start Free
+              </a>
+              <a href="#how" className="inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-[#1A2B3C] bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                Watch How it Works
+              </a>
             </div>
+          </div>
+          
+          {/* Centered play button */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <a href="#how" className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg hover:scale-105 transition-transform cursor-pointer">
+              <svg className="w-6 h-6 sm:w-8 sm:h-8 text-[#1A2B3C] ml-1" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7-11-7z" />
+              </svg>
+            </a>
           </div>
         </div>
       </div>
