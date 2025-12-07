@@ -1,0 +1,116 @@
+# TASK – Complete Update of Pricing Cards + Feature Comparison Table
+
+**Goal:**
+Perform a coordinated update of the **pricing card texts** AND the **feature comparison table** on the `/pricing` page, so that both components are fully aligned and reflect the corrected logic between Artist, Designer, Gallery, and All-Access plans.
+
+This task replaces all previous pricing/table tasks. Implement *this version only*.
+
+---
+
+# ✅ PART 1 — Update Pricing Cards (Artist, Designer, Gallery, All-Access)
+
+Update ONLY the textual content in each plan’s card. Do not change UI layout, styling, checkouts, or Stripe logic.
+
+---
+
+## 🎨 **ARTIST PLAN (€9/mo)**
+
+Replace entire text block with:
+
+* Upload up to **50 artworks**
+* Access to **30+ standard mockup rooms** (Living, Bedroom, Kitchen, Kids, Neutral Walls)
+* Basic download export
+* Frame styling controls
+* Widget embed for your website
+* Buy button integration (Shopify, WooCommerce, Wix)
+
+---
+
+## 🟦 **DESIGNER PLAN (€29/mo)**
+
+Replace entire text block with:
+
+* Upload up to **100 artworks**
+* Access to **100+ premium mockup rooms**
+* High-resolution export (3000px+)
+* PDF export
+* Designer Studio tools
+* Mockup downloads
+* Unlimited previews
+
+---
+
+## 🟩 **GALLERY PLAN (€49/mo)**
+
+Replace entire text block with:
+
+* Upload **unlimited artworks**
+* Access to **100+ premium mockup rooms**
+* Multi-art wall presentations
+* Virtual exhibition rooms (up to **3 active exhibitions**)
+* Gallery Hub
+* Exhibition PDF export (**20 per month**)
+* Public exhibition share links
+
+---
+
+## 🟨 **ALL-ACCESS PLAN (€79/mo)**
+
+Replace entire text block with:
+
+* Upload **unlimited artworks**
+* Access to **all 100+ premium mockup rooms**, including **future premium room packs**
+* Artist, Designer & Gallery modules included
+* Unlimited PDF export
+* Unlimited virtual exhibitions
+* Priority support
+* Early access to new features
+* Best price for full access
+
+---
+
+# ✅ PART 2 — Update Feature Comparison Table
+
+Replace the content of the table so it matches the following EXACT version. Maintain existing checkmark and dash styling.
+
+---
+
+## **Feature Comparison — Final Version**
+
+| **Feature**                      | **Artist** | **Designer** | **Gallery**        | **All-Access**            |
+| -------------------------------- | ---------- | ------------ | ------------------ | ------------------------- |
+| **Artwork upload limit**         | 50         | 100          | Unlimited          | Unlimited                 |
+| **Standard rooms (30+ rooms)**   | ✔          | ✔            | ✔                  | ✔                         |
+| **Premium rooms (100+ rooms)**   | —          | ✔            | ✔                  | ✔ (includes future packs) |
+| **High-resolution export**       | —          | ✔            | ✔                  | ✔                         |
+| **PDF export**                   | —          | ✔            | ✔ (20/month)       | ✔ (unlimited)             |
+| **Virtual exhibitions**          | —          | —            | ✔ (up to 3 active) | ✔ (unlimited)             |
+| **Designer Studio tools**        | —          | ✔            | —                  | ✔                         |
+| **Multi-art wall presentations** | —          | —            | ✔                  | ✔                         |
+| **Widget embed**                 | ✔          | ✔            | ✔                  | ✔                         |
+| **Buy button integration**       | ✔          | ✔            | ✔                  | ✔                         |
+| **Public gallery pages**         | —          | —            | ✔                  | ✔                         |
+| **Priority support**             | —          | —            | —                  | ✔                         |
+| **Early access to new features** | —          | —            | —                  | ✔                         |
+
+---
+
+# 📌 Implementation Notes
+
+* Modify ONLY text/copy inside pricing cards and the comparison table.
+* Do not alter card layout, spacing, colors, icons, or grid structure.
+* Do not modify any Stripe or billing logic.
+* Do not change URLs, CTA buttons, or checkout flows.
+* Ensure spacing stays clean and visually aligned after text replacement.
+
+---
+
+# ✔ Stop Condition
+
+The pricing cards display **exactly** the updated texts above, and the feature comparison table matches the updated version 1:1. No visual or logical inconsistencies remain.
+
+---
+
+# ⚡ Mode Preference
+
+This is a textual UI update → **use Fast Mode if available.**
