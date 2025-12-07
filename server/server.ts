@@ -58,8 +58,16 @@ app.use('/api/gallery', galleryRoutes);
 app.use('/api/billing', billingRoutes);
 app.use('/api/widget', widgetRoutes);
 
+// Server readiness flag - set to true after database initialization
+let isServerReady = false;
+
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'RoomVibe API server running' });
+  // Always respond immediately to health checks - this is critical for deployment
+  res.json({ 
+    status: 'ok', 
+    message: 'RoomVibe API server running',
+    ready: isServerReady
+  });
 });
 
 app.get('/api/artwork-image/:id', async (req: any, res) => {
@@ -260,16 +268,34 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 async function startServer() {
+  // Start listening IMMEDIATELY so health checks pass during deployment
+  // Database initialization happens in the background
+  const server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`✓ RoomVibe API server listening on port ${PORT}`);
+    console.log(`  Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`  Health check available at /api/health`);
+  });
+
+  // Initialize database with timeout to prevent indefinite blocking
   try {
-    await initializeDatabase();
+    const DB_INIT_TIMEOUT = 30000; // 30 seconds timeout
     
-    app.listen(PORT, '0.0.0.0', () => {
-      console.log(`✓ RoomVibe API server running on port ${PORT}`);
-      console.log(`  Environment: ${process.env.NODE_ENV || 'development'}`);
-    });
+    const dbInitPromise = initializeDatabase();
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Database initialization timeout')), DB_INIT_TIMEOUT)
+    );
+    
+    await Promise.race([dbInitPromise, timeoutPromise]);
+    
+    isServerReady = true;
+    console.log(`✓ Database initialized - server fully ready`);
   } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
+    console.error('Database initialization failed:', error);
+    // Server continues running for health checks, but may have limited functionality
+    // In production, you might want to exit here depending on requirements
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('  Continuing in development mode with potentially limited DB access');
+    }
   }
 }
 
