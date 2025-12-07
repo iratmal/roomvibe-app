@@ -102,6 +102,7 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
   };
 
   const hasLockedModules = !hasEntitlement('artist_access') || !hasEntitlement('designer_access') || !hasEntitlement('gallery_access');
+  const hasDesignerOrGalleryAccess = hasEntitlement('designer_access') || hasEntitlement('gallery_access');
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white p-4">
@@ -119,7 +120,12 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
         <div className="bg-white rounded-xl" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
           {currentStep === 0 && <Screen1 />}
           {currentStep === 1 && <Screen2 />}
-          {currentStep === 2 && <Screen3 hasLockedModules={hasLockedModules} />}
+          {currentStep === 2 && (
+            <Screen3 
+              hasLockedModules={hasLockedModules} 
+              hasDesignerOrGalleryAccess={hasDesignerOrGalleryAccess}
+            />
+          )}
           
           <div className="px-6 pb-6">
             {currentStep < 2 ? (
@@ -297,24 +303,40 @@ function Screen2() {
 interface ChecklistItem {
   id: string;
   label: string;
-  checked: boolean;
+  completed: boolean;
 }
 
-function Screen3({ hasLockedModules }: { hasLockedModules: boolean }) {
-  const [checklist, setChecklist] = useState<ChecklistItem[]>([
-    { id: '1', label: 'Upload your first artwork', checked: false },
-    { id: '2', label: 'Try the Studio (visualize art in different rooms)', checked: false },
-    { id: '3', label: 'Explore Designer Tools or Gallery Tools (if unlocked)', checked: false },
-    { id: '4', label: 'Install the widget on your website (optional)', checked: false },
-  ]);
-
-  const toggleItem = (id: string) => {
-    setChecklist(prev =>
-      prev.map(item =>
-        item.id === id ? { ...item, checked: !item.checked } : item
-      )
-    );
+interface Screen3Props {
+  hasLockedModules: boolean;
+  onboardingProgress?: {
+    hasUploadedArtwork?: boolean;
+    hasOpenedStudio?: boolean;
+    hasExploredTools?: boolean;
+    hasViewedWidget?: boolean;
   };
+  hasDesignerOrGalleryAccess?: boolean;
+}
+
+function Screen3({ hasLockedModules, onboardingProgress = {}, hasDesignerOrGalleryAccess = false }: Screen3Props) {
+  const {
+    hasUploadedArtwork = false,
+    hasOpenedStudio = false,
+    hasExploredTools = false,
+    hasViewedWidget = false,
+  } = onboardingProgress;
+
+  const checklist: ChecklistItem[] = [
+    { id: '1', label: 'Upload your first artwork', completed: hasUploadedArtwork },
+    { id: '2', label: 'Try the Studio (visualize art in different rooms)', completed: hasOpenedStudio },
+    { 
+      id: '3', 
+      label: hasDesignerOrGalleryAccess 
+        ? 'Explore Designer Tools or Gallery Tools' 
+        : 'Explore Designer Tools or Gallery Tools (unlock with upgrade)',
+      completed: hasDesignerOrGalleryAccess ? hasExploredTools : false 
+    },
+    { id: '4', label: 'Install the widget on your website (optional)', completed: hasViewedWidget },
+  ];
 
   return (
     <div className="p-6 sm:p-8">
@@ -329,36 +351,32 @@ function Screen3({ hasLockedModules }: { hasLockedModules: boolean }) {
 
       <div className="flex flex-col gap-2 sm:gap-3 mb-5">
         {checklist.map((item) => (
-          <button
+          <div
             key={item.id}
-            onClick={() => toggleItem(item.id)}
-            className="flex items-center gap-3 p-3 sm:p-4 text-left transition-colors w-full"
+            className="flex items-center gap-3 p-3 sm:p-4 w-full"
             style={{
-              backgroundColor: item.checked ? '#f0f4f8' : '#FFFFFF',
-              border: '1.5px solid #DDE1E7',
+              backgroundColor: item.completed ? '#f0f7ff' : '#FFFFFF',
+              border: item.completed ? '1.5px solid #264C61' : '1.5px solid #DDE1E7',
               borderRadius: '10px',
               minHeight: '44px',
             }}
           >
             <div
-              className="w-5 h-5 sm:w-6 sm:h-6 rounded flex items-center justify-center flex-shrink-0 transition-colors"
+              className="w-5 h-5 sm:w-6 sm:h-6 rounded flex items-center justify-center flex-shrink-0"
               style={{
-                backgroundColor: item.checked ? '#264C61' : 'transparent',
-                border: item.checked ? 'none' : '2px solid #DDE1E7',
+                backgroundColor: item.completed ? '#264C61' : 'transparent',
+                border: item.completed ? 'none' : '2px solid #DDE1E7',
               }}
             >
-              {item.checked && <CheckIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />}
+              {item.completed && <CheckIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />}
             </div>
             <span
               className="text-sm sm:text-base"
-              style={{
-                color: item.checked ? '#666' : '#1A1A1A',
-                textDecoration: item.checked ? 'line-through' : 'none',
-              }}
+              style={{ color: '#1A1A1A' }}
             >
               {item.label}
             </span>
-          </button>
+          </div>
         ))}
       </div>
 

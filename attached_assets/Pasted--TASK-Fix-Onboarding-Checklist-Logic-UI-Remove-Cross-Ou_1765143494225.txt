@@ -1,0 +1,121 @@
+# TASK – Fix Onboarding Checklist Logic & UI (Remove Cross-Out, Make Steps Auto-Complete)
+
+**Goal:**
+Improve the onboarding checklist so that items behave like a real progress tracker, not manual toggles. Completed steps should NOT show crossed-out text, should NOT be manually clickable, and must auto-complete based on user actions.
+
+This task corrects UI, UX, and state logic for the onboarding flow on `/onboarding`.
+
+---
+
+## PROBLEMS TO FIX
+
+1. **Checklist items are manually clickable** → They should *not* be. Users should not toggle progress.
+2. **Completed items are shown with crossed-out text** → Visually incorrect. Cross-out implies “disabled” or “invalid,” not “completed.”
+3. **Checklist is not tied to real user actions** → Uploading artwork does not automatically complete the item.
+
+---
+
+## DESIRED BEHAVIOR
+
+### ✔ Completed steps:
+
+* Show a blue checkmark (as now)
+* Keep normal text (no line-through)
+* Optional: light background highlight (completed-state)
+* **Not clickable**
+
+### ✔ Incomplete steps:
+
+* Empty checkbox icon
+* Normal text
+* Not clickable (informational only)
+
+### ✔ Steps auto-complete when the user performs actual actions:
+
+* **Step 1: “Upload your first artwork”** → Complete when user uploads at least one artwork.
+* **Step 2: “Try the Studio”** → Complete when user opens the Studio at least once.
+* **Step 3: “Explore Designer Tools or Gallery Tools (if unlocked)”** → Complete only if the user has a plan that unlocks the tools AND visits that section.
+* **Step 4: “Install the widget on your website (optional)”** → Complete when user views or copies widget code.
+
+Checkboxes should reflect real system state, not toggles.
+
+---
+
+## SCOPE — DO ONLY THIS
+
+### 1. Remove manual toggle behavior
+
+* Replace interactive checkbox elements with **non-clickable status indicators**.
+* Ensure clicking the entire row does nothing.
+* Status must be controlled only by onboarding state (e.g. DB flag, user progress store, etc.).
+
+### 2. Remove crossed-out (line-through) text
+
+* Eliminate any CSS applying `text-decoration: line-through` or opacity changes.
+* Keep text fully readable.
+
+### 3. Apply “completed” visual style
+
+* When step is completed:
+
+  * Show the blue checkmark icon
+  * Use subtle highlight background (optional but recommended)
+  * Keep text normal weight
+
+### 4. Connect steps with real events
+
+Implement logic so onboarding steps update automatically:
+
+* `hasUploadedArtwork = artworks.length > 0`
+* `hasOpenedStudio = true` if user navigated to `/studio`
+* `hasExploredTools = true` if user visited Designer or Gallery module AND their plan supports it
+* `hasInstalledWidget = true` if user opens the Widget embed page or copies embed code
+
+Store progress in user DB or persistent store already used in onboarding.
+
+### 5. Prevent regressions
+
+* Once a step is marked complete, it should stay complete.
+* Do NOT allow user to "unclick" progress.
+
+---
+
+## TESTING CHECKLIST
+
+### Artist User
+
+* Step 1 completes after first artwork upload.
+* Step 2 completes after first Studio visit.
+* Step 3 stays incomplete (Artist has no Designer/Gallery tools).
+* Step 4 optional.
+
+### Designer User
+
+* Steps 1 & 2 auto-complete normally.
+* Step 3 completes after opening Designer Tools.
+
+### Gallery User
+
+* Step 3 completes after opening Gallery Tools.
+
+### All-Access User
+
+* Step 3 completes after opening either Designer or Gallery tools.
+
+### No step crosses out text.
+
+---
+
+## MODE PREFERENCE
+
+Use **Fast Mode** (UI + small logic adjustments).
+
+---
+
+## STOP CONDITION
+
+* Checklist steps no longer toggle manually.
+* No text is crossed out.
+* Steps complete only when real actions happen.
+* Completed steps have correct visual appearance.
+* Onboarding UX feels natural, accurate, and consistent.
