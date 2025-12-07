@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import localArtworks from "./data/artworks.json";
 import presets from "./data/presets.json";
-import { premiumRooms, type PremiumRoom } from "./data/premiumRooms";
+import { premiumRooms, getCategoryDisplayName, type PremiumRoom } from "./data/premiumRooms";
 import { PLAN_LIMITS, type PlanType } from "./config/planLimits";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { CookieConsentProvider, useCookieConsent } from "./context/CookieConsentContext";
@@ -843,6 +843,19 @@ function Studio() {
   
   // Coming soon modal for premium rooms without images
   const [showComingSoonModal, setShowComingSoonModal] = useState<boolean>(false);
+  
+  // Category filter for premium rooms
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const categories = ["all", "bathroom", "bedroom", "cafe", "kids", "kitchen", "livingroom"] as const;
+  
+  // Filter rooms by selected category
+  const filteredPremiumRooms = selectedCategory === "all" 
+    ? premiumRooms 
+    : premiumRooms.filter(room => room.category === selectedCategory);
+  
+  const filteredPresets = selectedCategory === "all"
+    ? (presets as any[])
+    : (presets as any[]).filter((p: any) => p.category === selectedCategory);
   
   // Export state
   const [isExporting, setIsExporting] = useState<boolean>(false);
@@ -1856,8 +1869,28 @@ function Studio() {
                 Home
               </a>
             </div>
+            
+            {/* Category Filter Pills */}
+            <div className="mb-4 flex flex-wrap gap-1.5">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-2.5 py-1 text-[10px] font-medium rounded-full transition-all ${
+                    selectedCategory === cat
+                      ? "bg-[#264C61] text-white"
+                      : "bg-rv-surface text-rv-textMuted hover:bg-rv-neutral/50"
+                  }`}
+                >
+                  {cat === "all" ? "All" : getCategoryDisplayName(cat)}
+                </button>
+              ))}
+            </div>
+            
+            {/* Unified Room Grid - Free presets first, then premium rooms */}
             <div className="grid grid-cols-2 gap-2.5">
-              {(presets as any).map((p: any) => (
+              {/* Free Presets */}
+              {filteredPresets.map((p: any) => (
                 <button
                   key={p.id}
                   onClick={() => {
@@ -1871,90 +1904,96 @@ function Studio() {
                   <img src={p.photo} alt={p.name} className="h-20 w-full object-cover" />
                 </button>
               ))}
-            </div>
-
-            {/* Premium Rooms Section */}
-            <div className="mt-5 pt-4 border-t border-rv-neutral/60">
-              <div className="mb-4 flex items-center justify-between">
-                <div className="text-xs font-semibold text-[#D8B46A] uppercase tracking-wide flex items-center gap-1.5">
-                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                  </svg>
-                  Premium
-                </div>
-                <div className="flex items-center gap-2">
-                  {!hasUnlimitedPremiumRooms && (
-                    <span className="text-[10px] text-rv-textMuted font-medium">
-                      {maxPremiumRooms}/{premiumRooms.length}
-                    </span>
-                  )}
-                  {/* Badge for artist users to unlock more rooms */}
-                  {isArtistPlan && (
-                    <UpgradeNudge
-                      message="Pro"
-                      variant="badge"
-                      onClick={() => {
-                        setUpgradeModalMessage("Upgrade to Designer to access all 100+ premium rooms.");
+              
+              {/* Premium Rooms */}
+              {filteredPremiumRooms.map((room) => {
+                const originalIndex = premiumRooms.findIndex(r => r.id === room.id);
+                const isLocked = !hasUnlimitedPremiumRooms && originalIndex >= maxPremiumRooms;
+                
+                return (
+                  <button
+                    key={room.id}
+                    onClick={() => {
+                      if (isLocked) {
+                        const message = effectivePlan === 'user'
+                          ? "Upgrade to Artist to access more premium rooms (30 rooms)."
+                          : effectivePlan === 'artist'
+                          ? "Upgrade to Designer to access all 100+ premium rooms."
+                          : "Upgrade to access more premium rooms.";
+                        setUpgradeModalMessage(message);
                         setShowUpgradeModal(true);
-                      }}
+                      } else {
+                        // Select this premium room as background
+                        setUserPhoto(room.image);
+                        setSceneId('');
+                      }
+                    }}
+                    className={`group relative overflow-hidden rounded-rvMd bg-white shadow-sm hover:shadow-md transition-all ${
+                      isLocked ? "opacity-70" : ""
+                    }`}
+                    style={{ border: isLocked ? '1.5px solid #D8B46A' : '1px solid #DDE1E7' }}
+                  >
+                    <div 
+                      className="h-20 w-full bg-cover bg-center bg-[#F7F3EE]"
+                      style={{ backgroundImage: `url(${room.image})` }}
                     />
-                  )}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-2.5">
-                {premiumRooms.map((room, index) => {
-                  const isLocked = !hasUnlimitedPremiumRooms && index >= maxPremiumRooms;
-                  
-                  return (
-                    <button
-                      key={room.id}
-                      onClick={() => {
-                        if (isLocked) {
-                          const message = effectivePlan === 'user'
-                            ? "Upgrade to Artist to access more premium rooms (30 rooms)."
-                            : effectivePlan === 'artist'
-                            ? "Upgrade to Designer to access all 100+ premium rooms."
-                            : "Upgrade to access more premium rooms.";
-                          setUpgradeModalMessage(message);
-                          setShowUpgradeModal(true);
-                        } else {
-                          // Select this premium room as background
-                          setUserPhoto(room.image);
-                          setSceneId('');
-                        }
-                      }}
-                      className={`group relative overflow-hidden rounded-rvMd bg-white shadow-sm hover:shadow-md transition-all ${
-                        isLocked ? "opacity-70" : ""
-                      }`}
-                      style={{ border: isLocked ? '1.5px solid #D8B46A' : '1px solid #DDE1E7' }}
-                    >
-                      <div 
-                        className="h-20 w-full bg-cover bg-center bg-[#F7F3EE]"
-                        style={{ backgroundImage: `url(${room.image})` }}
-                      />
-                      
-                      {/* Locked overlay with gold-styled lock */}
-                      {isLocked && (
-                        <div className="absolute top-2 right-2">
-                          <div className="bg-[#D8B46A] rounded-full p-1.5 shadow-sm">
-                            <svg className="h-3 w-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                            </svg>
-                          </div>
-                        </div>
-                      )}
-                      
-                      <div className={`absolute bottom-0 left-0 right-0 px-2 py-1.5 text-[10px] font-medium ${
-                        isLocked ? "bg-[#264C61]/80 text-white" : "bg-gradient-to-t from-[#D8B46A]/80 to-[#D8B46A]/60 text-white"
-                      }`}>
-                        {room.name}
+                    
+                    {/* Premium star badge */}
+                    <div className="absolute top-1.5 left-1.5">
+                      <div className="bg-[#D8B46A] rounded-full p-1 shadow-sm">
+                        <svg className="h-2 w-2 text-white" viewBox="0 0 24 24" fill="currentColor">
+                          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                        </svg>
                       </div>
-                    </button>
-                  );
-                })}
-              </div>
+                    </div>
+                    
+                    {/* Locked overlay with gold-styled lock */}
+                    {isLocked && (
+                      <div className="absolute top-1.5 right-1.5">
+                        <div className="bg-[#D8B46A] rounded-full p-1 shadow-sm">
+                          <svg className="h-2 w-2 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                          </svg>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className={`absolute bottom-0 left-0 right-0 px-2 py-1 text-[9px] font-medium ${
+                      isLocked ? "bg-[#264C61]/80 text-white" : "bg-gradient-to-t from-[#D8B46A]/80 to-[#D8B46A]/60 text-white"
+                    }`}>
+                      {room.name}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
+            
+            {/* Empty state when no rooms match filter */}
+            {filteredPresets.length === 0 && filteredPremiumRooms.length === 0 && (
+              <div className="py-8 text-center text-[11px] text-rv-textMuted">
+                No rooms found in {getCategoryDisplayName(selectedCategory)}
+              </div>
+            )}
+            
+            {/* Upgrade hint for non-unlimited users */}
+            {!hasUnlimitedPremiumRooms && selectedCategory === "all" && (
+              <div className="mt-4 pt-3 border-t border-rv-neutral/40 flex items-center justify-between">
+                <span className="text-[10px] text-rv-textMuted">
+                  {maxPremiumRooms} of {premiumRooms.length} premium rooms unlocked
+                </span>
+                {isArtistPlan && (
+                  <UpgradeNudge
+                    message="Unlock All"
+                    variant="badge"
+                    onClick={() => {
+                      setUpgradeModalMessage("Upgrade to Designer to access all 160+ premium rooms.");
+                      setShowUpgradeModal(true);
+                    }}
+                  />
+                )}
+              </div>
+            )}
           </aside>
 
           {/* Center: Canvas - Shown first on mobile (order-1), middle on desktop (lg:order-2) */}

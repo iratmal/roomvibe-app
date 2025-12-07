@@ -1,0 +1,157 @@
+🧩 TASK 3 – Category linkovi iznad scena (Bathroom, Bedroom, Café, Kids, Kitchen, Living)
+
+Goal:
+Add a simple category navigation above the scenes list in RoomVibe Studio so that the user can quickly jump between room types: Bathroom, Bedroom, Café, Kids Room, Kitchen, Living Room.
+Scenes in the left sidebar should be grouped by category and still scrollable, but navigation links allow fast access to each group.
+
+Context
+
+Screen: RoomVibe Studio (route /studio)
+
+Layout:
+
+Left: list of Scenes (room thumbnails) – currently one long list.
+
+Center: room preview.
+
+Right: artwork/frame panel.
+
+Desired UX:
+
+Above the scenes list (below the “RoomVibe Studio · Upload a wall photo” header), there should be a horizontal row of category links/pills:
+
+All
+
+Bathroom
+
+Bedroom
+
+Café
+
+Kids Room
+
+Kitchen
+
+Living Room
+
+Below those links the scenes remain in a single scrollable list but are grouped by category so the user can visually see which scenes belong to which type.
+
+Clicking a category link:
+
+scrolls the scenes list to the first room of that category (smooth scroll),
+
+OR filters the list to show only that category — whichever is simpler/cleaner to implement, but keep behaviour consistent.
+
+Scope – do ONLY this
+
+Ensure rooms have a category field
+
+In the rooms data model (e.g. src/data/rooms.ts or similar), ensure that each room has a category property that maps to one of:
+
+"bathroom"
+
+"bedroom"
+
+"cafe"
+
+"kids"
+
+"kitchen"
+
+"living"
+
+If categories already exist in a different form (e.g. type), reuse them – don’t introduce duplicate fields if not needed.
+
+Add category navigation UI above scenes
+
+In the component that renders the scenes sidebar (e.g. StudioScenesSidebar.tsx or similar), add a horizontal list of clickable category pills/links right above the scenes grid/list.
+
+Labels to show in the UI:
+
+All
+
+Bathroom
+
+Bedroom
+
+Café
+
+Kids Room
+
+Kitchen
+
+Living Room
+
+Visually keep it in the existing RoomVibe style:
+
+simple text buttons/pills with a subtle active state (e.g. underline or background),
+
+minimalistic, no heavy redesign.
+
+Group scenes by category in the list
+
+Below the category links, render scenes grouped by category.
+Example approach:
+
+Optional small heading for each category (e.g. “Bathroom”, “Bedroom”) followed by its scenes.
+
+Or internal grouping used only for scrolling/filtering but still displaying as one list.
+
+Respect existing ordering of scenes within each category.
+
+Implement category behaviour
+
+Default state: All is selected, showing all scenes (grouped, but continuous scroll).
+
+When user clicks a category link:
+
+Option A (preferred if easy): scroll the scenes container to the first scene of that category (smoothly).
+
+Option B: filter the list to show only scenes from that category, with an easy way to go back to All.
+
+Make sure active category is visually highlighted.
+
+Responsive behaviour
+
+On desktop, category links can be in a single row.
+
+On smaller screens, if needed, allow the pill row to scroll horizontally.
+
+Do not break the existing studio layout.
+
+Preserve existing functionality
+
+Clicking a scene must still switch the room as before.
+
+Premium label / section (if exists) should continue to work correctly.
+
+No changes to the center canvas or right panel.
+
+Do NOT
+
+Do not change copy/text elsewhere in the Studio.
+
+Do not touch billing, roles, or navigation outside the Studio page.
+
+Do not refactor unrelated components or state management.
+
+Do not change how artworks are rendered or scaled (that’s covered in a separate task).
+
+Stop condition
+
+The Studio sidebar shows category links above the scenes.
+
+Scenes are logically grouped by category.
+
+Clicking any category link reliably:
+
+either scrolls to that category’s scenes, or
+
+filters the grid to that category,
+
+And the All link restores/view or scrolls to the full list.
+
+All rooms remain selectable and work as before.
+
+Mode preference:
+This is a UI layout + small UX improvement → use Fast Mode if available.
