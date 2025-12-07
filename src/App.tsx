@@ -2270,7 +2270,7 @@ function Studio() {
           </section>
 
           {/* Right: Controls - Shown second on mobile (order-2), last on desktop (lg:order-3) */}
-          <aside className="order-2 lg:order-3 col-span-12 lg:col-span-3 rounded-rvLg border border-rv-neutral bg-white shadow-rvSoft p-4 lg:p-5 h-auto lg:h-[78vh] overflow-auto space-y-5">
+          <aside className="order-2 lg:order-3 col-span-12 lg:col-span-3 rounded-rvLg border border-rv-neutral bg-white shadow-rvSoft p-4 lg:p-5 min-h-[200px] h-auto lg:h-[78vh] overflow-auto space-y-5">
             <div className="text-xs font-semibold text-rv-textMuted uppercase tracking-wide">Artwork</div>
             
             {/* Free users: Show limited artwork gallery with lock */}
