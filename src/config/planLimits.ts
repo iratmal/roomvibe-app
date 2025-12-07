@@ -1,4 +1,6 @@
-export type PlanType = 'user' | 'artist' | 'designer' | 'gallery' | 'allaccess' | 'admin';
+export type PlanType = 'free' | 'user' | 'artist' | 'designer' | 'gallery' | 'allaccess' | 'admin';
+
+export type RoomTier = 'basic10' | 'standard30' | 'all';
 
 export interface PlanLimits {
   maxArtworks: number;
@@ -6,6 +8,7 @@ export interface PlanLimits {
   maxProjects: number;
   maxMockupRooms: number;
   maxPremiumRooms: number;
+  roomTier: RoomTier;
   rooms: 'standard' | 'all';
   premiumRoomsAccess: boolean;
   futureRooms: boolean;
@@ -26,12 +29,38 @@ export interface PlanLimits {
 }
 
 export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
-  user: {
-    maxArtworks: 1,
+  free: {
+    maxArtworks: 3,
     maxWallPhotos: 1,
     maxProjects: 1,
-    maxMockupRooms: 5,
+    maxMockupRooms: 10,
     maxPremiumRooms: 0,
+    roomTier: 'basic10',
+    rooms: 'standard',
+    premiumRoomsAccess: false,
+    futureRooms: false,
+    highResExport: false,
+    pdfExport: false,
+    pdfMonthlyLimit: 0,
+    designerTools: false,
+    galleryTools: false,
+    exhibitions: 0,
+    clientFolders: false,
+    galleryDashboard: false,
+    multiArtistCollections: false,
+    customBranding: false,
+    pdfProposals: false,
+    publicGalleryPages: false,
+    prioritySupport: false,
+    earlyAccess: false,
+  },
+  user: {
+    maxArtworks: 3,
+    maxWallPhotos: 1,
+    maxProjects: 1,
+    maxMockupRooms: 10,
+    maxPremiumRooms: 0,
+    roomTier: 'basic10',
     rooms: 'standard',
     premiumRoomsAccess: false,
     futureRooms: false,
@@ -54,8 +83,9 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     maxArtworks: 50,
     maxWallPhotos: 100,
     maxProjects: 100,
-    maxMockupRooms: -1,
+    maxMockupRooms: 30,
     maxPremiumRooms: 0,
+    roomTier: 'standard30',
     rooms: 'standard',
     premiumRoomsAccess: false,
     futureRooms: false,
@@ -80,6 +110,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     maxProjects: -1,
     maxMockupRooms: -1,
     maxPremiumRooms: -1,
+    roomTier: 'all',
     rooms: 'all',
     premiumRoomsAccess: true,
     futureRooms: false,
@@ -104,6 +135,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     maxProjects: -1,
     maxMockupRooms: -1,
     maxPremiumRooms: -1,
+    roomTier: 'all',
     rooms: 'all',
     premiumRoomsAccess: true,
     futureRooms: false,
@@ -128,6 +160,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     maxProjects: -1,
     maxMockupRooms: -1,
     maxPremiumRooms: -1,
+    roomTier: 'all',
     rooms: 'all',
     premiumRoomsAccess: true,
     futureRooms: true,
@@ -152,6 +185,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     maxProjects: -1,
     maxMockupRooms: -1,
     maxPremiumRooms: -1,
+    roomTier: 'all',
     rooms: 'all',
     premiumRoomsAccess: true,
     futureRooms: true,
@@ -173,6 +207,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
 };
 
 export const PLAN_HIERARCHY: Record<PlanType, number> = {
+  free: 0,
   user: 0,
   artist: 1,
   designer: 2,
@@ -182,6 +217,7 @@ export const PLAN_HIERARCHY: Record<PlanType, number> = {
 };
 
 export const PLAN_NAMES: Record<PlanType, string> = {
+  free: 'Free',
   user: 'Free',
   artist: 'Artist',
   designer: 'Designer',
@@ -191,6 +227,7 @@ export const PLAN_NAMES: Record<PlanType, string> = {
 };
 
 export const PLAN_PRICES: Record<PlanType, string> = {
+  free: 'Free',
   user: 'Free',
   artist: '€9/month',
   designer: '€29/month',

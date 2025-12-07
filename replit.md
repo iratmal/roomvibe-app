@@ -38,14 +38,15 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
     - **Designer Dashboard**: Project management and custom room image uploads.
     - **Gallery Dashboard**: Collection management for online exhibitions.
     - All non-admin users access a unified dashboard with sidebar navigation and module-specific content. Sidebar features grouped sections (Artist Tools, Designer Tools, Gallery Tools), locked modules show "Upgrade to unlock X Tools" subtext, and uses polished spacing (12px 18px padding, 20px icons, 10px gaps).
-- **Stripe Subscriptions**: Full integration for four plans (Free, Artist, Designer, Gallery) handling checkout, customer portal, and webhook events to manage user roles and entitlements.
-- **Pricing Page**: Modular pricing page (`#/pricing`) with 4 plan cards using new brand colors:
-    - **Artist** (€9/mo): Standard rooms, widget embed, buy button integration. Uses btn-primary.
-    - **Designer** (€29/mo): Premium rooms, high-res export, PDF export, Designer Studio. Uses btn-primary.
-    - **Gallery** (€49/mo): Virtual exhibitions, Gallery Hub, multi-art walls. Uses btn-primary.
-    - **All-Access** (€79/mo): All modules included with RECOMMENDED gold badge (#C9A24A). Uses btn-premium.
-    - Feature comparison table with primary (#264C61) and gold (#C9A24A) text colors.
-    - Entitlement-based Active badges shown above disabled buttons when plan is active.
+- **Stripe Subscriptions**: Full integration for five plans (Free, Artist, Designer, Gallery, All-Access) handling checkout, customer portal, and webhook events to manage user roles and entitlements.
+- **Plan Tiers & Room Access (Updated Dec 2024)**:
+    - **Free/User** (€0): 3 artworks, 10 basic rooms, basic export, watermarked downloads
+    - **Artist** (€9/mo): 50 artworks, up to 30 standard rooms, widget embed, buy button integration
+    - **Designer** (€29/mo): 100 artworks, 100+ premium rooms, high-res export, PDF export, Designer Studio
+    - **Gallery** (€49/mo): Unlimited artworks, 100+ premium rooms, 3 active exhibitions, 20 PDF/month
+    - **All-Access** (€79/mo): Unlimited everything, future premium packs, priority support
+- **Room Tier System**: `roomTier` property in plan limits: 'basic10' (Free), 'standard30' (Artist), 'all' (Designer+)
+- **Pricing Page**: Modular pricing page (`#/pricing`) with 4 plan cards using new brand colors. Feature comparison table with primary (#264C61) and gold (#C9A24A) text colors. Entitlement-based Active badges shown above disabled buttons when plan is active.
 - **Billing Page**: Dedicated billing management page (`#/billing`) with 3-section layout:
     - **Active Modules**: Primary pill cards showing current entitlements (background #E8EBF7, border-left #264C61).
     - **Available Plans**: Gold-bordered upgrade cards (1.5px solid #C9A24A) with btn-outline-gold unlock buttons.
@@ -54,6 +55,7 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 - **Unified Widget System**: A single embeddable JavaScript widget (`public/widget.js`) that dynamically adapts its functionality (Artist, Designer, Gallery modes) based on the user's entitlements. The widget is modal-based with RoomVibe branding and offers mode-specific layouts and controls, including advanced features for Gallery mode.
 - **Gallery Exhibition Page**: Publicly accessible page for viewing published gallery collections with slideshow navigation and artwork details.
 - **Feature Locking by Plan**: Comprehensive access control enforced on both frontend and backend through dedicated configuration files and middleware, based on subscription plans and defined limits for artworks, wall photos, and projects.
+- **Hybrid Upgrade Flow (Dec 2024)**: Linear upgrade recommendations in modals (Free→Artist→Designer→Gallery→All-Access based on feature requested), but pricing page allows any upgrade. Upgrade logic in `src/utils/upgradeLogic.ts` with `getRecommendedUpgradePlan()` function.
 - **Onboarding Flow**: 3-screen intro wizard (`#/onboarding`) for first-time users:
     - **Screen 1 - Welcome**: Three module cards (Artist, Designer, Gallery) explaining what each does.
     - **Screen 2 - How It Works**: Three feature rows (Upload, Preview, Embed) with icons.

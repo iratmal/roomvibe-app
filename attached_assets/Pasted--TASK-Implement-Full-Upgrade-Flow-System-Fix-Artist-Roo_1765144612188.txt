@@ -1,0 +1,230 @@
+# TASK – Implement Full Upgrade Flow System + Fix Artist Room Count (30 rooms)
+
+This task defines the **complete upgrade-path logic**, including support for the new **Free plan**, and corrects the Artist plan description (from "30+ rooms" to **"up to 30 rooms"**). All logic applies across the app: upgrade modals, dashboards, feature gating, and pricing page.
+
+---
+
+# ✅ PART 1 — Add FREE PLAN to the system
+
+## **FREE PLAN (0 €/month)**
+
+Implement new internal plan key: `free`.
+
+### Free Plan Capabilities:
+
+* **Access to 10 basic mockup rooms** (the first 10 visible in Studio)
+* **Upload up to 3 artworks**
+* **Basic download export (low-res)**
+* **Frame styling controls (optional)**
+* **No premium rooms**
+* **No standard 30 rooms**
+* **No Designer tools**
+* **No Gallery tools**
+* **No exhibitions**
+
+Add `free` to plan config and enforce all limits.
+
+---
+
+# ✅ PART 2 — Fix Artist Plan Room Count
+
+Replace all occurrences of:
+
+* ❌ "Access to 30+ standard mockup rooms"
+
+with:
+
+* ✅ "Access to up to 30 standard mockup rooms"
+
+This applies to:
+
+* Pricing cards
+* Feature comparison table
+* Dashboard messages
+* Upgrade modal descriptions
+
+---
+
+# ✅ PART 3 — Implement HYBRID UPGRADE FLOW
+
+The new upgrade logic must follow **two rules**:
+
+---
+
+## RULE A — Upgrade modal uses *linear* recommended plan
+
+### Meaning:
+
+When a user triggers a locked feature, the modal recommends **the next logical higher plan**, not all plans.
+
+### Linear path:
+
+```
+FREE → ARTIST → DESIGNER → GALLERY → ALL-ACCESS
+```
+
+### Examples:
+
+* Free user → clicks premium rooms → Recommend: **Artist**
+* Artist user → clicks premium rooms → Recommend: **Designer**
+* Designer user → clicks Gallery Tools → Recommend: **Gallery**
+* Gallery user → hits exhibitions limit → Recommend: **All-Access**
+* All-Access user → never sees upgrade modal
+
+---
+
+## RULE B — Pricing page allows ANY upgrade (non-linear)
+
+On `/pricing`, the user may purchase **any plan**, regardless of current plan.
+
+Examples:
+
+* Free → buy All-Access (allowed)
+* Artist → buy Gallery directly (allowed)
+* Designer → buy All-Access directly (allowed)
+
+This is standard in SaaS.
+
+---
+
+# ✅ PART 4 — Implement Upgrade Recommendation Logic
+
+Create helper:
+
+```ts
+function getNextRecommendedPlan(currentPlan, featureRequested) {
+  const upgradePath = {
+    free: {
+      premiumRooms: "artist",
+      highRes: "artist",
+      pdfExport: "artist",
+      designerTools: "designer",
+      galleryTools: "gallery",
+      exhibitions: "gallery",
+    },
+    artist: {
+      premiumRooms: "designer",
+      highRes: "designer",
+      pdfExport: "designer",
+      designerTools: "designer",
+      galleryTools: "gallery",
+      exhibitions: "gallery",
+    },
+    designer: {
+      galleryTools: "gallery",
+      exhibitions: "gallery",
+      unlimitedExhibitions: "allaccess",
+      unlimitedPDF: "allaccess",
+      futurePremiumPacks: "allaccess",
+    },
+    gallery: {
+      designerTools: "allaccess",
+      unlimitedExhibitions: "allaccess",
+      unlimitedPDF: "allaccess",
+      futurePremiumPacks: "allaccess",
+    },
+    allaccess: {}
+  };
+
+  return upgradePath[currentPlan][featureRequested] ?? null;
+}
+```
+
+### Modal behavior:
+
+* Use this function to determine **Recommended Plan**.
+* Never recommend the user’s current plan.
+* Never recommend a *lower* plan.
+* Never show upgrade modal to All-Access.
+
+---
+
+# ✅ PART 5 — Update Upgrade Modal Text
+
+Generic text should automatically reference the correct recommended plan.
+
+Example:
+
+```
+Upgrade Required
+Premium mockup rooms are available on the Designer plan and above.
+```
+
+Replace "Designer" dynamically with the recommended plan.
+
+---
+
+# ✅ PART 6 — Update PLAN_LIMITS with new Free plan + corrected Artist rooms
+
+Add to plan config:
+
+```ts
+free: {
+  upload: 3,
+  rooms: "basic10",
+  premiumRooms: false,
+  highRes: false,
+  pdf: false,
+  designerTools: false,
+  galleryTools: false,
+  exhibitions: 0,
+}
+```
+
+Modify `artist`:
+
+```ts
+artist: {
+  upload: 50,
+  rooms: "standard30",   // not 30+
+  premiumRooms: false,
+  ...
+}
+```
+
+Ensure Studio uses these values for room filtering.
+
+---
+
+# ✅ PART 7 — Testing Requirements
+
+### FREE
+
+* Only 10 rooms visible.
+* 3 uploads max.
+* Premium rooms → modal recommends **Artist**.
+
+### ARTIST
+
+* 30 rooms visible.
+* Premium rooms → modal recommends **Designer**.
+
+### DESIGNER
+
+* 100+ rooms visible.
+* Gallery tools locked → modal recommends **Gallery**.
+
+### GALLERY
+
+* After 3 exhibitions → modal recommends **All-Access**.
+
+### ALL-ACCESS
+
+* Never sees upgrade modal.
+* Has full access.
+
+---
+
+# MODE PREFERENCE
+
+**Fast Mode** (logic + UI copy updates).
+
+---
+
+# STOP CONDITION
+
+* Free plan exists and works.
+* Artist plan shows **30 rooms**, not 30+.
+* Upgrade modal recommends correct plan at every tier.
+* Pricing page allows full free-choice upgrades.
+* All dashboard and Studio restrictions follow new plan structure.
