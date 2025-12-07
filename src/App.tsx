@@ -1871,15 +1871,15 @@ function Studio() {
             </div>
             
             {/* Category Filter Pills */}
-            <div className="mb-4 flex flex-wrap gap-1.5">
+            <div className="mb-5 flex flex-nowrap gap-2 overflow-x-auto pb-1 scrollbar-hide">
               {categories.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-2.5 py-1 text-[10px] font-medium rounded-full transition-all ${
+                  className={`flex-shrink-0 px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all shadow-sm ${
                     selectedCategory === cat
-                      ? "bg-[#264C61] text-white"
-                      : "bg-rv-surface text-rv-textMuted hover:bg-rv-neutral/50"
+                      ? "bg-[#264C61] text-white shadow-md"
+                      : "bg-white text-[#264C61] border-2 border-[#264C61]/20 hover:border-[#264C61]/50 hover:bg-[#264C61]/5"
                   }`}
                 >
                   {cat === "all" ? "All" : getCategoryDisplayName(cat)}
