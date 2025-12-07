@@ -915,17 +915,8 @@ function Studio() {
   const [userPhoto, setUserPhoto] = useState<string | null>(initialState.designerRoomImage);
   const [isUploadMode, setIsUploadMode] = useState<boolean>(initialState.isUploadMode);
 
-  // Initialize artworks with placeholder artwork first to prevent flash of wrong artwork
-  const [artworksState, setArtworksState] = useState<any[]>(() => {
-    const allArtworks = localArtworks as any[];
-    const placeholderIndex = allArtworks.findIndex((a: any) => a.id === 'whispers-of-the-ring-100-120-cm-roomvibe');
-    if (placeholderIndex > 0) {
-      const reordered = [...allArtworks];
-      const [placeholder] = reordered.splice(placeholderIndex, 1);
-      return [placeholder, ...reordered];
-    }
-    return allArtworks;
-  });
+  // Artworks array - "Whispers of the Ring" is already first in artworks.json
+  const [artworksState, setArtworksState] = useState<any[]>(localArtworks as any[]);
   const [artId, setArtId] = useState<string>("whispers-of-the-ring-100-120-cm-roomvibe");
   const artIdRef = useRef<string>(artId);
   const [isLoadingArtwork, setIsLoadingArtwork] = useState<boolean>(false);

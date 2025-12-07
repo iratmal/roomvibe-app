@@ -1,5 +1,13 @@
 [
   {
+    "id": "whispers-of-the-ring-100-120-cm-roomvibe",
+    "title": "Whispers of the Ring",
+    "buyUrl": "https://irenart.studio/collections/original-artwork-2/products/whispers-of-the-ring",
+    "widthCm": 100,
+    "heightCm": 120,
+    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/WhispersoftheRing_476e5d5f-61fd-4844-977b-39d030d7ed1e.jpg?v=1763400747"
+  },
+  {
     "id": "light-my-fire-140-70-cm-roomvibe",
     "title": "Light my fire",
     "buyUrl": "https://irenart.studio/collections/original-artwork-2/products/light-my-fire-acrylic-on-canvas-140-x-70-cm",
@@ -222,14 +230,6 @@
     "widthCm": 150,
     "heightCm": 100,
     "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/Theboat_40070739-ef22-49ec-b206-a2ddff0dcc67.jpg?v=1763400904"
-  },
-  {
-    "id": "whispers-of-the-ring-100-120-cm-roomvibe",
-    "title": "Whispers of the Ring",
-    "buyUrl": "https://irenart.studio/collections/original-artwork-2/products/whispers-of-the-ring",
-    "widthCm": 100,
-    "heightCm": 120,
-    "overlayImageUrl": "https://cdn.shopify.com/s/files/1/0787/0477/1421/files/WhispersoftheRing_476e5d5f-61fd-4844-977b-39d030d7ed1e.jpg?v=1763400747"
   },
   {
     "id": "coastline-100-60-cm-roomvibe",

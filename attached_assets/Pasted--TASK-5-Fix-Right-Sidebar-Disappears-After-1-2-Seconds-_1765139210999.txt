@@ -1,0 +1,102 @@
+# TASK 5 – Fix: Right Sidebar Disappears After 1–2 Seconds + Wrong Artwork Flash
+
+**Goal:**
+Ensure that the right-hand sidebar (Artwork / Frame controls) remains visible and stable after the Studio loads.
+Fix the issue where the wrong artwork (e.g., “Light My Fire”) briefly appears before switching to the correct artwork (“Whispers of the Ring”).
+Sidebar must remain permanently visible, non-collapsing, and always show the correct selected artwork.
+
+---
+
+## Context
+
+* Screen: **Artist Dashboard → Studio (RoomVibe Studio)**
+* Current behaviour:
+
+  * On initial load, the sidebar briefly shows the correct artwork.
+  * Then it flashes a **wrong artwork** ("Light My Fire").
+  * After 1–2 seconds, the entire sidebar disappears or collapses.
+  * A broken layout appears with a static thumbnail in the wrong place.
+
+This indicates issues with:
+
+* Artwork state hydration,
+* Default artwork override,
+* Conditional rendering tied to user role / subscription / permissions,
+* A layout or CSS collapse.
+
+---
+
+## Scope — do ONLY this
+
+### 1. Fix initial artwork selection
+
+* Ensure the Studio does **not** set any default artwork after load.
+* The artwork passed from Artist Dashboard must remain the selected artwork.
+* Remove fallback defaults such as:
+
+  ```js
+  selectedArtwork = artworks[0]
+  ```
+
+  if it runs before real artwork loads.
+* Ensure sidebar uses **the exact same selectedArtwork** value as the canvas.
+
+### 2. Fix the wrong-artwork flash
+
+* Identify where “Light My Fire” is coming from.
+* This is likely caused by:
+
+  * a default state assignment,
+  * or the store loading empty → default → then switching.
+* Replace this behaviour with a **stable loading state** that does NOT override the selected artwork.
+
+### 3. Fix sidebar disappearing / collapsing
+
+* Inspect the sidebar container logic:
+
+  * Ensure no conditional like:
+
+    ```jsx
+    {userRole === 'artist' && selectedArtwork && <Sidebar />}
+    ```
+
+    which may evaluate to false mid-render.
+  * Ensure subscription gating does not hide the sidebar.
+* Ensure sidebar container has:
+
+  * fixed width,
+  * proper flex alignment,
+  * no overflow or z-index issues,
+  * no hydration mismatches.
+
+### 4. Test flow
+
+From Artist Dashboard → open Studio with any artwork.
+Verify:
+
+* Sidebar loads once and remains visible.
+* Artwork displayed in sidebar is always the correct one.
+* No flicker, no collapse, no layout jump.
+
+---
+
+## Do NOT
+
+* Do not redesign sidebar.
+* Do not modify frame or artwork scaling.
+* Do not alter category links or scenes.
+* Do not refactor unrelated dashboard components.
+
+---
+
+## Stop Condition
+
+* Sidebar no longer disappears.
+* No wrong artwork flash.
+* Sidebar stays permanently visible and always matches the selected artwork.
+
+---
+
+## Mode Preference
+
+Use **Fast Mode**.
