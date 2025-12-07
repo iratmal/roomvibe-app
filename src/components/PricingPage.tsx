@@ -93,19 +93,20 @@ const PLANS: PlanConfig[] = [
 ];
 
 const COMPARISON_FEATURES = [
-  { name: 'Artwork upload limit', artist: '50', designer: '100', gallery: 'Unlimited', allaccess: 'Unlimited' },
-  { name: 'Standard rooms (up to 30 rooms)', artist: true, designer: true, gallery: true, allaccess: true },
-  { name: 'Premium rooms (100+ rooms)', artist: false, designer: true, gallery: true, allaccess: '✔ (includes future packs)' },
-  { name: 'High-resolution export', artist: false, designer: true, gallery: true, allaccess: true },
-  { name: 'PDF export', artist: false, designer: true, gallery: '✔ (20/month)', allaccess: '✔ (unlimited)' },
-  { name: 'Virtual exhibitions', artist: false, designer: false, gallery: '✔ (up to 3 active)', allaccess: '✔ (unlimited)' },
-  { name: 'Designer Studio tools', artist: false, designer: true, gallery: false, allaccess: true },
-  { name: 'Multi-art wall presentations', artist: false, designer: false, gallery: true, allaccess: true },
-  { name: 'Widget embed', artist: true, designer: true, gallery: true, allaccess: true },
-  { name: 'Buy button integration', artist: true, designer: true, gallery: true, allaccess: true },
-  { name: 'Public gallery pages', artist: false, designer: false, gallery: true, allaccess: true },
-  { name: 'Priority support', artist: false, designer: false, gallery: false, allaccess: true },
-  { name: 'Early access to new features', artist: false, designer: false, gallery: false, allaccess: true },
+  { name: 'Artwork upload limit', free: '3', artist: '50', designer: '100', gallery: 'Unlimited', allaccess: 'Unlimited' },
+  { name: 'Basic rooms (10 rooms)', free: true, artist: true, designer: true, gallery: true, allaccess: true },
+  { name: 'Standard rooms (up to 30 rooms)', free: false, artist: true, designer: true, gallery: true, allaccess: true },
+  { name: 'Premium rooms (100+ rooms)', free: false, artist: false, designer: true, gallery: true, allaccess: '✔ (incl. future packs)' },
+  { name: 'High-resolution export (3000px+)', free: false, artist: false, designer: true, gallery: true, allaccess: true },
+  { name: 'PDF export', free: false, artist: false, designer: true, gallery: '✔ (20/month)', allaccess: '✔ (unlimited)' },
+  { name: 'Virtual exhibitions', free: false, artist: false, designer: false, gallery: '✔ (up to 3 active)', allaccess: '✔ (unlimited)' },
+  { name: 'Designer Studio tools', free: false, artist: false, designer: true, gallery: false, allaccess: true },
+  { name: 'Gallery Hub & multi-art walls', free: false, artist: false, designer: false, gallery: true, allaccess: true },
+  { name: 'Widget embed', free: true, artist: true, designer: true, gallery: true, allaccess: true },
+  { name: 'Buy button integration', free: true, artist: true, designer: true, gallery: true, allaccess: true },
+  { name: 'Public gallery pages', free: false, artist: false, designer: false, gallery: true, allaccess: true },
+  { name: 'Priority support', free: false, artist: false, designer: false, gallery: false, allaccess: true },
+  { name: 'Early access to new features', free: false, artist: false, designer: false, gallery: false, allaccess: true },
 ];
 
 function CheckCircleIcon({ className = "w-5 h-5", color }: { className?: string; color?: string }) {
@@ -246,6 +247,7 @@ export function PricingPage() {
                 <thead>
                   <tr className="border-b-2 border-rv-neutral">
                     <th className="text-left py-4 px-4 font-semibold text-rv-text">Feature</th>
+                    <th className="text-center py-4 px-3 font-semibold text-gray-500">Free</th>
                     <th className="text-center py-4 px-3 font-semibold text-[#264C61]">Artist</th>
                     <th className="text-center py-4 px-3 font-semibold text-[#264C61]">Designer</th>
                     <th className="text-center py-4 px-3 font-semibold text-[#264C61]">Gallery</th>
@@ -256,6 +258,9 @@ export function PricingPage() {
                   {COMPARISON_FEATURES.map((feature, idx) => (
                     <tr key={idx} className="border-b border-rv-neutral/50">
                       <td className="py-3 px-4 text-sm text-rv-text">{feature.name}</td>
+                      <td className="py-3 px-3 text-center">
+                        <ComparisonCell value={feature.free} />
+                      </td>
                       <td className="py-3 px-3 text-center">
                         <ComparisonCell value={feature.artist} />
                       </td>

@@ -1,0 +1,93 @@
+# TASK – Update Feature Comparison Table (Add Free Plan + Fix Artist Rooms)
+
+**Goal:**
+Update the Feature Comparison table on the `/pricing` page to:
+
+1. Add the new **Free Plan** column.
+2. Correct the Artist plan rooms from **"30+ rooms"** to **"up to 30 rooms"**.
+3. Ensure ALL cells match the new, accurate feature distribution.
+
+This task updates only the **Feature Comparison Table UI**, NOT pricing cards (already updated).
+
+---
+
+# ✅ PART 1 — Add NEW "FREE" Column to the Table
+
+The Free plan must appear as the **first column** after the Feature names.
+
+### **FREE PLAN FEATURES:**
+
+* Artwork upload limit: **3**
+* Basic rooms: **10 basic rooms** (the first 10 rooms visible in Studio)
+* Standard rooms (30 rooms): **not included**
+* Premium rooms (100+): **not included**
+* High-resolution export: **no**
+* PDF export: **no**
+* Virtual exhibitions: **no**
+* Designer tools: **no**
+* Gallery tools: **no**
+* Widget embed: **yes**
+* Buy button integration: **yes**
+* Public gallery pages: **no**
+* Priority support: **no**
+* Early access to new features: **no**
+
+---
+
+# ✅ PART 2 — FIX Artist Plan Text: "30 rooms"
+
+Replace all Artist table references:
+
+* ❌ **Standard rooms (30+ rooms)**
+
+with:
+
+* ✅ **Standard rooms (up to 30 rooms)**
+
+---
+
+# ✅ PART 3 — Replace Entire Table Content With the Following
+
+### **FINAL FEATURE COMPARISON TABLE (Add exactly as written)**
+
+| **Feature**                          | **Free** | **Artist** | **Designer** | **Gallery**        | **All-Access**         |
+| ------------------------------------ | -------- | ---------- | ------------ | ------------------ | ---------------------- |
+| **Artwork upload limit**             | 3        | 50         | 100          | Unlimited          | Unlimited              |
+| **Basic rooms (10 rooms)**           | ✔        | ✔          | ✔            | ✔                  | ✔                      |
+| **Standard rooms (up to 30 rooms)**  | —        | ✔          | ✔            | ✔                  | ✔                      |
+| **Premium rooms (100+ rooms)**       | —        | —          | ✔            | ✔                  | ✔ (incl. future packs) |
+| **High-resolution export (3000px+)** | —        | —          | ✔            | ✔                  | ✔                      |
+| **PDF export**                       | —        | —          | ✔            | ✔ (20/month)       | ✔ (unlimited)          |
+| **Virtual exhibitions**              | —        | —          | —            | ✔ (up to 3 active) | ✔ (unlimited)          |
+| **Designer Studio tools**            | —        | —          | ✔            | —                  | ✔                      |
+| **Gallery Hub & multi-art walls**    | —        | —          | —            | ✔                  | ✔                      |
+| **Widget embed**                     | ✔        | ✔          | ✔            | ✔                  | ✔                      |
+| **Buy button integration**           | ✔        | ✔          | ✔            | ✔                  | ✔                      |
+| **Public gallery pages**             | —        | —          | —            | ✔                  | ✔                      |
+| **Priority support**                 | —        | —          | —            | —                  | ✔                      |
+| **Early access to new features**     | —        | —          | —            | —                  | ✔                      |
+
+---
+
+# ✅ PART 4 — Implementation Notes
+
+* Ensure correct column order: **Free → Artist → Designer → Gallery → All-Access**.
+* Keep existing checkmark (✔) and dash (—) styles.
+* Maintain current table spacing, font sizing, and responsiveness.
+* Confirm mobile layout still displays all columns correctly.
+* Do NOT modify pricing cards or plan descriptions.
+
+---
+
+# MODE PREFERENCE
+
+**Fast Mode** — UI table update only.
+
+---
+
+# STOP CONDITION
+
+* Feature Comparison table displays all 5 plans including Free.
+* Artist plan shows "up to 30 rooms", not "30+".
+* All ticks/dashes perfectly match the table above.
+* Mobile and desktop layouts render correctly.
