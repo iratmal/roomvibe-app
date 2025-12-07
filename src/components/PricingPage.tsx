@@ -26,7 +26,7 @@ const PLANS: PlanConfig[] = [
     entitlement: 'artist_access',
     features: [
       'Upload up to 50 artworks',
-      'Standard mockup rooms',
+      'Access to 30+ standard mockup rooms',
       'Basic download export',
       'Frame styling controls',
       'Widget embed for your website',
@@ -42,8 +42,8 @@ const PLANS: PlanConfig[] = [
     subtitle: 'For interior designers presenting concepts to clients.',
     entitlement: 'designer_access',
     features: [
-      'All Artist features +',
-      'Premium mockup rooms',
+      'Upload up to 100 artworks',
+      'Access to 100+ premium mockup rooms',
       'High-resolution export (3000px+)',
       'PDF export',
       'Designer Studio tools',
@@ -60,6 +60,8 @@ const PLANS: PlanConfig[] = [
     subtitle: 'For galleries managing collections and exhibitions.',
     entitlement: 'gallery_access',
     features: [
+      'Upload unlimited artworks',
+      'Access to 100+ premium mockup rooms',
       'Multi-art wall presentations',
       'Virtual exhibition rooms',
       'Gallery Hub',
@@ -77,6 +79,8 @@ const PLANS: PlanConfig[] = [
     isAllAccess: true,
     recommended: true,
     features: [
+      'Upload unlimited artworks',
+      'Access to all 100+ premium mockup rooms',
       'Artist Module included',
       'Designer Module included',
       'Gallery Module included',
@@ -89,7 +93,7 @@ const PLANS: PlanConfig[] = [
 ];
 
 const COMPARISON_FEATURES = [
-  { name: 'Artwork upload limit', artist: '50', designer: 'Unlimited', gallery: '500', allaccess: 'Unlimited' },
+  { name: 'Artwork upload limit', artist: '50', designer: '100', gallery: 'Unlimited', allaccess: 'Unlimited' },
   { name: 'Premium rooms', artist: false, designer: true, gallery: true, allaccess: true },
   { name: 'High-resolution export', artist: false, designer: true, gallery: true, allaccess: true },
   { name: 'PDF export', artist: false, designer: true, gallery: true, allaccess: true },

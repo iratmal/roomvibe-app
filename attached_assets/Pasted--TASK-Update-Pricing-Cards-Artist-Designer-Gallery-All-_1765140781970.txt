@@ -1,0 +1,119 @@
+# TASK – Update Pricing Cards (Artist, Designer, Gallery, All-Access)
+
+Ovo je kompletan, precizan i spreman **copy–paste** zadatak za Replit Agenta za ažuriranje pricing kartica u RoomVibe aplikaciji.
+
+---
+
+## **Goal**
+
+Ažurirati sve pricing kartice na `/pricing` stranici tako da jasno prikazuju:
+
+* nove limite za upload artworkova,
+* broj dostupnih mockup soba,
+* razliku između Standard i Premium soba,
+* usklađene opise po planovima.
+
+Sve izmjene su **tekstualne** (UI copy update), bez mijenjanja logike, pretplata ili strukture podataka.
+
+---
+
+## **Context**
+
+Trenutni prikaz pricing kartica ne prikazuje:
+
+* koliko mockupova dobiva Designer, Gallery i All-Access,
+* razliku između Standard i Premium soba,
+* upload limit za Designer, Gallery i All-Access planove.
+
+Artist plan trenutno navodi “standard mockup rooms”, ali ih je premalo (samo ~10).
+Po novoj strategiji, Artist dobiva ~30+ standard soba.
+
+Designer, Gallery i All-Access dobivaju **100+ premium mockup rooms**.
+
+---
+
+## **Scope – do ONLY this:**
+
+Izmijeniti samo **tekst (copy)** unutar pricing kartica. Ništa drugo.
+
+Ažurirati sadržaj kartica prema sljedećem:
+
+---
+
+# 🎨 **ARTIST PLAN (€9/mo)**
+
+**Zamijeniti postojeći sadržaj ovim tekstom:**
+
+* Upload up to **50 artworks**
+* Access to **30+ standard mockup rooms** (Living, Bedroom, Kitchen, Kids, Neutral Walls)
+* Basic download export
+* Frame styling controls
+* Widget embed for your website
+* Buy button integration (Shopify, WooCommerce, Wix)
+
+---
+
+# 🟦 **DESIGNER PLAN (€29/mo)**
+
+**Zamijeniti sadržaj ovim tekstom:**
+
+* Upload up to **100 artworks**
+* Access to **100+ premium mockup rooms** (all rooms included)
+* High‑resolution export (3000px+)
+* PDF export
+* Designer Studio tools
+* Mockup downloads
+* Unlimited previews
+
+---
+
+# 🟩 **GALLERY PLAN (€49/mo)**
+
+**Zamijeniti sadržaj ovim tekstom:**
+
+* Upload **unlimited artworks**
+* Access to **100+ premium mockup rooms**
+* Multi‑art wall presentations
+* Virtual exhibition rooms
+* Gallery Hub
+* Exhibition PDF export
+* Public exhibition share links
+
+---
+
+# 🟨 **ALL‑ACCESS PLAN (€79/mo)**
+
+**Zamijeniti sadržaj ovim tekstom:**
+
+* Upload **unlimited artworks**
+* Access to **all 100+ premium mockup rooms**
+* Artist Module included
+* Designer Module included
+* Gallery Module included
+* All premium features
+* Priority support
+* Best price for full access
+
+---
+
+## **Additional UI Notes:**
+
+* Ne mijenjati boje, layout, stil ili CTA gumbe.
+* Ne dirati Stripe logiku niti checkout rute.
+* Ne mijenjati Feature Comparison tablicu ispod (to ćemo u drugom tasku).
+
+---
+
+## **Mode Preference**
+
+Ovo je čisti UI copy update → **use Fast Mode if available.**
+
+---
+
+## **Stop Condition**
+
+Pricing kartice prikazuju gore navedene tekstove točno kako su napisani. Nema vizualnih odstupanja, nema grammar fallbacka, spacing ostaje kao prije. Sve promjene su čisto tekstualne.
+
+---
+
+Kada agent završi, vraćamo se na Task #2: reorganizacija soba (TOP 10 standard, premium rooms, sidebar order).
