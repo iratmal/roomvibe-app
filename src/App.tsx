@@ -718,6 +718,10 @@ function StudioHeader() {
 // Formula: pxPerCm = canvasHeightPx / 270
 const DEFAULT_WALL_HEIGHT_CM = 270;
 
+// Global artwork scale reduction: makes artworks appear ~10% smaller relative to furniture
+// This provides more natural proportions without changing the true-to-size logic
+const GLOBAL_ARTWORK_SCALE_FACTOR = 0.90;
+
 // Frame configuration system with 12 professional frame styles
 type FrameConfig = {
   id: string;
@@ -898,7 +902,17 @@ function Studio() {
   const [userPhoto, setUserPhoto] = useState<string | null>(initialState.designerRoomImage);
   const [isUploadMode, setIsUploadMode] = useState<boolean>(initialState.isUploadMode);
 
-  const [artworksState, setArtworksState] = useState<any[]>(localArtworks as any);
+  // Initialize artworks with placeholder artwork first to prevent flash of wrong artwork
+  const [artworksState, setArtworksState] = useState<any[]>(() => {
+    const allArtworks = localArtworks as any[];
+    const placeholderIndex = allArtworks.findIndex((a: any) => a.id === 'whispers-of-the-ring-100-120-cm-roomvibe');
+    if (placeholderIndex > 0) {
+      const reordered = [...allArtworks];
+      const [placeholder] = reordered.splice(placeholderIndex, 1);
+      return [placeholder, ...reordered];
+    }
+    return allArtworks;
+  });
   const [artId, setArtId] = useState<string>("whispers-of-the-ring-100-120-cm-roomvibe");
   const artIdRef = useRef<string>(artId);
   const [isLoadingArtwork, setIsLoadingArtwork] = useState<boolean>(false);
@@ -1037,18 +1051,19 @@ function Studio() {
 
   // Calculate px/cm ratio for true-to-size rendering
   // Uses canvas HEIGHT and standard wall height (270cm), then applies per-scene scaleFactor
+  // Also applies GLOBAL_ARTWORK_SCALE_FACTOR for more natural proportions vs furniture
   useEffect(() => {
     if (!canvasRef.current) return;
     
     const canvasHeightPx = canvasRef.current.clientHeight;
     const basePxPerCm = canvasHeightPx / DEFAULT_WALL_HEIGHT_CM;
     const sceneScale = getActiveScaleFactor();
-    const ratio = basePxPerCm * sceneScale;
+    const ratio = basePxPerCm * sceneScale * GLOBAL_ARTWORK_SCALE_FACTOR;
     
     setPxPerCm(ratio);
     
     if (import.meta.env.DEV) {
-      console.log(`[Real-Scale] canvasHeight=${canvasHeightPx}px, wallHeight=${DEFAULT_WALL_HEIGHT_CM}cm, scaleFactor=${sceneScale}, pxPerCm=${ratio.toFixed(3)}`);
+      console.log(`[Real-Scale] canvasHeight=${canvasHeightPx}px, wallHeight=${DEFAULT_WALL_HEIGHT_CM}cm, sceneScale=${sceneScale}, globalScale=${GLOBAL_ARTWORK_SCALE_FACTOR}, pxPerCm=${ratio.toFixed(3)}`);
     }
   }, [sceneId, userPhoto, canvasRef.current?.clientHeight]);
 

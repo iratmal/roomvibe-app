@@ -1,0 +1,177 @@
+🧩 TASK 1 – Smanjiti veličinu slike u odnosu na namještaj
+
+Goal:
+Slightly reduce the rendered artwork size in all Studio scenes so that “Whispers of the Ring” (and all other artworks) look a bit smaller in relation to the furniture and walls. The change should be global and subtle (around 10–15%), not drastic.
+
+Context:
+
+Project: RoomVibe
+
+Screen: RoomVibe Studio (/studio route – scenes on the left, room preview in the center, artwork controls on the right).
+
+Currently, the default artwork “Whispers of the Ring” looks slightly too large compared to furniture in most rooms (tables, sofas, beds, etc.).
+
+Artwork scale is calculated based on artwork dimensions (e.g. 100×120 cm) against the virtual wall size.
+
+Relevant files (naming may differ, adjust to actual project):
+
+src/features/studio/components/StudioCanvas...
+
+src/features/studio/hooks/useArtworkScale...
+
+src/features/studio/components/ArtworkLayer...
+
+Any utility that calculates artwork-to-wall scale.
+
+Scope – do ONLY this:
+
+Find where artwork scale/size is calculated
+
+Locate the function(s) that convert real-world artwork dimensions into on-screen pixels inside the Studio preview.
+
+This is likely where you calculate a scale factor using wall width vs artwork width.
+
+Apply a global “slight reduction” factor
+
+Introduce a small global modifier (for example 0.9 or similar) that makes all artworks ~10–15% smaller relative to the room furniture.
+
+The change should affect all rooms/scenes consistently, not just a single room.
+
+Keep aspect ratio and true-to-size logic
+
+Do not break the existing true-to-size logic (100×120 cm must still map correctly relative to other sizes).
+
+The change should be a consistent multiplier applied after the existing calculation, not a hard-coded pixel size.
+
+Test in multiple rooms
+
+Open at least:
+
+Room 1 (current default with “Whispers of the Ring”)
+
+One bedroom
+
+One kitchen
+
+One living room
+
+Verify that artwork now looks slightly smaller and more natural compared to furniture, but not tiny.
+
+Do NOT:
+
+Do not change the aspect ratio of any artworks.
+
+Do not change frame thickness or frame styles.
+
+Do not touch upload-wall-photo logic.
+
+Do not refactor unrelated Studio components.
+
+Stop condition:
+When artwork appears ~10–15% smaller in all scenes (visually more natural vs furniture), the true-to-size perception still works, and no layout or stretching bugs are introduced. Then summarize what factor you used and where.
+
+Mode preference:
+This is a focused visual tweak → use Fast Mode if available.
+
+🧩 TASK 2 – Desni panel (Artwork/Frame) nestaje + krivi thumbnail na sekundu
+
+Goal:
+Fix the right-hand sidebar in the Studio so that:
+
+It stays visible and scrollable (does not disappear from the screen after a second).
+
+The thumbnail / artwork info on the top of the sidebar always matches the currently selected artwork (e.g. “Whispers of the Ring”, not “Light My Fire” flashing for a moment).
+
+Context:
+
+Screen: Artist Dashboard → Studio / RoomVibe Studio
+
+Current behaviour:
+
+When opening the Studio from the Artist Dashboard with artwork “Whispers of the Ring”:
+
+The right sidebar appears for a split second with the wrong artwork (“Light My Fire”) at the top.
+
+After that, the sidebar content essentially disappears / collapses – the right side looks empty or jumps out of view, so user cannot scroll or adjust frames properly.
+
+Expected behaviour:
+
+The sidebar must remain stable and visible.
+
+Initial artwork in the dropdown and thumbnail must be the artwork actually selected in the Studio (“Whispers of the Ring” in this case).
+
+No flashing of a different artwork.
+
+Relevant areas (names approximate):
+
+src/features/studio/pages/StudioPage...
+
+src/features/studio/components/Sidebar/ArtworkSidebar...
+
+Any context/store where selectedArtwork is managed (e.g. useStudioStore, useArtworkStore, StudioContext).
+
+Scope – do ONLY this:
+
+Fix initial artwork selection / flashing bug
+
+Investigate how the selected artwork is initialized when entering the Studio from the Artist Dashboard.
+
+Ensure that:
+
+The sidebar uses the same selectedArtwork state as the main canvas.
+
+There is no intermediate default like “Light My Fire” being set before the correct artwork is loaded.
+
+Remove any hard-coded default artwork that overrides the incoming artwork for a moment.
+
+Result: when Studio opens with “Whispers of the Ring”, the sidebar should immediately show “Whispers of the Ring” (no flash of another artwork).
+
+Fix sidebar disappearing / layout issue
+
+Investigate why the right panel disappears after a second:
+
+Possibly caused by conditional rendering based on route, role, or missing artwork.
+
+Or CSS/layout issue where the panel height gets collapsed or pushed out of viewport.
+
+Ensure the sidebar:
+
+Is always rendered on the Studio page for the current user role (Artist).
+
+Has stable layout and remains visible and scrollable on desktop (like on the screenshot).
+
+Check responsive behaviour but focus on desktop first.
+
+Test flow from Artist Dashboard
+
+From Artist Dashboard, open Studio with a specific artwork.
+
+Confirm:
+
+Sidebar appears once and stays on screen.
+
+Sidebar artwork name/thumbnail matches the artwork on the canvas.
+
+Changing artwork updates the sidebar correctly with no flicker.
+
+Do NOT:
+
+Do not redesign the sidebar UI.
+
+Do not change copy, labels or button text.
+
+Do not touch billing, roles or auth.
+
+Do not refactor unrelated dashboard sections.
+
+Stop condition:
+When opening the Studio from the Artist Dashboard:
+
+The right sidebar is visible, stable and scrollable the whole time.
+
+No flashing of “Light My Fire” (or any wrong artwork) on first render.
+
+The sidebar consistently shows the correct selected artwork.
+
+Mode preference:
+Also a jasno definiran bugfix → use Fast Mode if available.
