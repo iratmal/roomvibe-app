@@ -1,0 +1,177 @@
+# TASK – Fix Upgrade Modal Recommended Plan Logic
+
+**Goal:**
+Ispraviti logiku u "Upgrade Required" modalu u RoomVibe Studio tako da preporučeni plan (Recommended Plan) **uvijek predlaže sljedeći odgovarajući plan**, a ne trenutni plan korisnika.
+
+Trenutno stanje (bug):
+
+* Kada je korisnik na **Artist** planu i klikne na **premium mockup room**, modal preporuči **Artist** plan – što nema smisla jer je korisnik već na Artist planu.
+* Umjesto toga, modal bi trebao preporučiti **Designer** plan (prvi plan koji otključava premium rooms).
+
+Ovaj zadatak se odnosi samo na **logiku preporuke plana u modalu**. Ne mijenjati dizajn modala.
+
+---
+
+## 1) Upgrade use-case (feature → potrebni plan)
+
+Uvesti jasnu logiku koji plan je potreban za određenu značajku.
+
+### Trenutni plan → Kada korisnik pokuša:
+
+#### Ako je **Artist**
+
+* pokuša otvoriti **premium mockup room**
+  → Recommended plan: **Designer**
+* pokuša koristiti **high-resolution export**
+  → Recommended plan: **Designer**
+* pokuša koristiti **PDF export**
+  → Recommended plan: **Designer**
+* pokuša koristiti **gallery/exhibition tools**
+  → Recommended plan: **Gallery**
+
+#### Ako je **Designer**
+
+* pokuša koristiti **gallery/exhibition tools** (multi-art walls, exhibition rooms, public gallery pages)
+  → Recommended plan: **Gallery**
+* pokuša koristiti **unlimited exhibitions** ili **unlimited PDFs** ili **future premium packs** (ako su na neki način označeni)
+  → Recommended plan: **All-Access**
+
+#### Ako je **Gallery**
+
+* pokuša koristiti **Designer Studio tools**
+  → Recommended plan: **All-Access**
+* pokuša kreirati više od 3 aktivne exhibitions
+  → Recommended plan: **All-Access**
+* pokuša generirati više od 20 PDF exports mjesečno
+  → Recommended plan: **All-Access**
+
+#### Ako je **All-Access**
+
+* Ne bi smio vidjeti nijedan "Upgrade Required" modal za bilo koju značajku.
+
+---
+
+## 2) Implementacija – helper funkcija
+
+Uvesti helper funkciju npr.:
+
+```ts
+type PlanKey = "artist" | "designer" | "gallery" | "allaccess";
+type FeatureKey =
+  | "premiumRooms"
+  | "highRes"
+  | "pdfExport"
+  | "galleryTools"
+  | "exhibitions"
+  | "unlimitedExhibitions"
+  | "unlimitedPDF"
+  | "designerTools"
+  | "futurePremiumPacks";
+
+function getRecommendedUpgradePlan(
+  currentPlan: PlanKey,
+  feature: FeatureKey
+): PlanKey | null {
+  const upgradeMatrix: Record<PlanKey, Partial<Record<FeatureKey, PlanKey>>> = {
+    artist: {
+      premiumRooms: "designer",
+      highRes: "designer",
+      pdfExport: "designer",
+      galleryTools: "gallery",
+      exhibitions: "gallery",
+    },
+    designer: {
+      galleryTools: "gallery",
+      exhibitions: "gallery",
+      unlimitedExhibitions: "allaccess",
+      unlimitedPDF: "allaccess",
+      futurePremiumPacks: "allaccess",
+    },
+    gallery: {
+      designerTools: "allaccess",
+      unlimitedExhibitions: "allaccess",
+      unlimitedPDF: "allaccess",
+      futurePremiumPacks: "allaccess",
+    },
+    allaccess: {},
+  };
+
+  return upgradeMatrix[currentPlan][feature] ?? null;
+}
+```
+
+> Nazive `PlanKey` i `FeatureKey` uskladiti s postojećim tipovima / enumima u projektu.
+
+---
+
+## 3) Povezivanje s Upgrade modalom
+
+U komponenti/modulu koji prikazuje **Upgrade Required** modal (npr. `UpgradeModal.tsx` ili sličan):
+
+1. Kada se modal poziva, prosijediti:
+
+   * `currentPlan` (trenutni plan korisnika),
+   * `featureRequested` (koju je značajku korisnik pokušao koristiti – npr. "premiumRooms").
+
+2. Unutar modala pozvati `getRecommendedUpgradePlan(currentPlan, featureRequested)`.
+
+3. Na temelju povratne vrijednosti:
+
+   * Dohvatiti ispravan plan objekt (npr. iz `PRICING_PLANS` ili sl.)
+   * Prikazati:
+
+     * naziv plana (Designer, Gallery, All-Access),
+     * ispravnu cijenu
+   * Ako funkcija vrati `null`, fallback:
+
+     * prikazati samo "View plans" bez "Recommended plan" ili koristiti closest higher plan.
+
+4. **Ne prikazivati** upgrade modal s preporukom na plan koji je jednak `currentPlan`.
+
+---
+
+## 4) Tekst u modalu – prilagodba
+
+Za slučaj kada Artist pokušava otvoriti premium rooms, ažurirati poruku u modalu u nešto poput:
+
+> **Upgrade Required**
+> Premium mockup rooms (100+) are available on the **Designer** plan and above. Upgrade to access all rooms.
+
+Tekst može ostati generički ako je već dobro riješen; bitno je da dio s nazivom plana odgovara preporučenom planu iz logike.
+
+---
+
+## 5) Test scenariji
+
+1. **Artist**
+
+   * Pokušaj otvoriti premium room → modal preporučuje **Designer**.
+   * Pokušaj pokrenuti high-res export → modal preporučuje **Designer**.
+
+2. **Designer**
+
+   * Pokušaj otvoriti Exhibition / Gallery Hub → modal preporučuje **Gallery**.
+   * Pokušaj koristiti feature označen za All-Access (npr. unlimited exhibitions, future premium pack) → modal preporučuje **All-Access**.
+
+3. **Gallery**
+
+   * Pokušaj aktivirati Designer Tools → modal preporučuje **All-Access**.
+   * Pokušaj kreirati 4. exhibition (preko limita 3) → modal preporučuje **All-Access**.
+
+4. **All-Access**
+
+   * Nijedna akcija ne bi trebala prikazati Upgrade modal.
+
+---
+
+## 6) Mode Preference
+
+Ovo je ograničena logička izmjena u UI/feature gatingu → **use Fast Mode if available.**
+
+---
+
+## Stop Condition
+
+* Artist korisnik više **nikad ne vidi vlastiti plan** kao Recommended Plan u upgrade modalu.
+* Preporučeni plan u modalu uvijek odgovara prvoj sljedećoj razini koja omogućuje traženu značajku.
+* All-Access korisnici uopće ne dobivaju upgrade modal.

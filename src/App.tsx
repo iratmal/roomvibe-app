@@ -32,6 +32,7 @@ import { OnboardingPage } from "./components/OnboardingPage";
 import { Footer } from "./components/Footer";
 import { initGA4, resetGA4, GA4Events } from "./utils/analytics";
 import { initHotjar, resetHotjar } from "./utils/hotjar";
+import { getRecommendedUpgradePlan, getUpgradeMessageForFeature, type FeatureKey, type PlanKey } from "./utils/upgradeLogic";
 
 /**
  * RoomVibe — App + Landing + Studio + Authentication
@@ -839,6 +840,7 @@ function Studio() {
   // Upgrade modal state
   const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false);
   const [upgradeModalMessage, setUpgradeModalMessage] = useState<string>("");
+  const [upgradeFeature, setUpgradeFeature] = useState<FeatureKey | null>(null);
   
   // Coming soon modal for premium rooms without images
   const [showComingSoonModal, setShowComingSoonModal] = useState<boolean>(false);
@@ -868,6 +870,18 @@ function Studio() {
   // Check if user has high-res export access
   const hasHighResExport = planLimits.highResExport;
   const hasPdfExport = planLimits.pdfExport;
+  
+  // Helper to show upgrade modal with correct recommended plan
+  const showUpgradeFor = (feature: FeatureKey, customMessage?: string) => {
+    const recommendedPlan = getRecommendedUpgradePlan(effectivePlan as PlanKey, feature);
+    if (!recommendedPlan) {
+      // User already has access (All-Access or Admin)
+      return;
+    }
+    setUpgradeFeature(feature);
+    setUpgradeModalMessage(customMessage || getUpgradeMessageForFeature(feature, recommendedPlan));
+    setShowUpgradeModal(true);
+  };
   
   // Placeholder artwork for free users - "Whispers of the Ring"
   const placeholderArtwork = (localArtworks as any[]).find((a: any) => a.id === 'whispers-of-the-ring-100-120-cm-roomvibe') || (localArtworks as any[])[0];
@@ -1424,8 +1438,7 @@ function Studio() {
     
     // Check plan access for high-res (Designer+ only)
     if (highRes && !hasHighResExport) {
-      setUpgradeModalMessage("High-resolution exports are available on Designer plan and above. Upgrade to download high-quality 3000px images.");
-      setShowUpgradeModal(true);
+      showUpgradeFor('highResExport');
       return;
     }
     
@@ -1632,10 +1645,9 @@ function Studio() {
   const exportToPdf = async () => {
     if (!canvasRef.current || !art) return;
     
-    // Check plan access for PDF (Artist+ has PDF export)
+    // Check plan access for PDF (Designer+ has PDF export)
     if (!hasPdfExport) {
-      setUpgradeModalMessage("PDF exports are available on Artist plan and above. Upgrade to create professional PDF visualizations.");
-      setShowUpgradeModal(true);
+      showUpgradeFor('pdfExport');
       return;
     }
     
@@ -1650,8 +1662,8 @@ function Studio() {
       if (!trackResponse.ok) {
         const errorData = await trackResponse.json();
         if (trackResponse.status === 403) {
-          setUpgradeModalMessage(errorData.message || "You've reached your monthly PDF export limit. Upgrade to All-Access for unlimited exports.");
-          setShowUpgradeModal(true);
+          // Monthly limit reached - show upgrade to All-Access
+          showUpgradeFor('unlimitedPDF', errorData.message);
           return;
         }
         // For other errors, log and continue
@@ -1927,9 +1939,7 @@ function Studio() {
                     key={room.id}
                     onClick={() => {
                       if (isLocked) {
-                        const message = "Premium mockup rooms (100+) are available on Designer plan and above. Upgrade to access all rooms.";
-                        setUpgradeModalMessage(message);
-                        setShowUpgradeModal(true);
+                        showUpgradeFor('premiumRooms');
                       } else {
                         setUserPhoto(room.image);
                         setSceneId('');
@@ -1992,10 +2002,7 @@ function Studio() {
                 <UpgradeNudge
                   message="Unlock All"
                   variant="badge"
-                  onClick={() => {
-                    setUpgradeModalMessage("Upgrade to Designer to access all 100+ premium rooms.");
-                    setShowUpgradeModal(true);
-                  }}
+                  onClick={() => showUpgradeFor('premiumRooms')}
                 />
               </div>
             )}
@@ -2515,10 +2522,7 @@ function Studio() {
               {/* Upgrade CTA for Free Users */}
               {isFreePlan && (
                 <button
-                  onClick={() => { 
-                    setUpgradeModalMessage("Upgrade to remove watermarks and unlock high-resolution exports, PDF proposals, and more professional features."); 
-                    setShowUpgradeModal(true); 
-                  }}
+                  onClick={() => showUpgradeFor('watermarkRemoval')}
                   className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-[#264C61] transition-all hover:bg-[rgba(38,76,97,0.06)]"
                   style={{ border: '1.5px solid #D8B46A' }}
                 >
@@ -2529,10 +2533,7 @@ function Studio() {
               {/* Upgrade hint for Basic (Artist) users about High-Res */}
               {isArtistPlan && !hasHighResExport && (
                 <button
-                  onClick={() => {
-                    setUpgradeModalMessage("Upgrade to Designer to unlock high-resolution 3000px exports, PDF proposals, and custom branding.");
-                    setShowUpgradeModal(true);
-                  }}
+                  onClick={() => showUpgradeFor('highResExport')}
                   className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-[#264C61] transition-all hover:bg-[rgba(38,76,97,0.06)]"
                   style={{ border: '1.5px solid #D8B46A' }}
                 >
@@ -2562,10 +2563,11 @@ function Studio() {
           variant="modal"
           message={upgradeModalMessage || "Unlock access to our full collection of sample artworks to see how different styles look in your space. Upgrade now to explore all artwork options!"}
           currentPlan={effectivePlan}
-          suggestedPlan={effectivePlan === 'user' ? 'artist' : 'designer'}
+          suggestedPlan={upgradeFeature ? (getRecommendedUpgradePlan(effectivePlan as PlanKey, upgradeFeature) || 'artist') : (effectivePlan === 'user' ? 'artist' : 'designer')}
           onClose={() => {
             setShowUpgradeModal(false);
             setUpgradeModalMessage("");
+            setUpgradeFeature(null);
           }}
         />
       )}
