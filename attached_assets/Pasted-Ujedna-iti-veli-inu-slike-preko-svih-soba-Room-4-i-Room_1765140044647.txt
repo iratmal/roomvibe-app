@@ -1,0 +1,108 @@
+Ujednačiti veličinu slike preko svih soba (Room 4 i Room 8 su preveliki)
+
+Goal:
+Normalize the artwork scale across all preset rooms in RoomVibe Studio so that a 100 × 120 cm artwork looks visually consistent in relation to furniture and wall size in every scene.
+Currently, Room 4 and Room 8 render the artwork noticeably larger than other rooms – these need to be corrected to match rooms where scale already looks natural (e.g. Room 1).
+
+Context
+
+Screen: RoomVibe Studio (/studio)
+
+Preset scenes: Room 1, Room 2, Room 3, … (including new café / living rooms).
+
+When using artwork “Whispers of the Ring” (100 × 120 cm):
+
+In Room 1 the artwork looks natural vs table/sofa.
+
+In Room 4 and Room 8 the same artwork appears too large relative to the furniture and wall.
+
+This indicates that per-room wall calibration / scale is off for some scenes.
+
+Likely places to check:
+
+src/data/rooms.ts (or similar) – per-room config (wall width/height, scale, artwork area).
+
+Components that define the artwork bounding box / scale area for each preset room (e.g. RoomSceneConfig, sceneConfig, artworkArea, etc.).
+
+Utilities for cm → pixels mapping inside Studio.
+
+Scope – do ONLY this
+
+Identify the per-room scale / wall config
+
+Find where each room’s “virtual wall” is defined (for presets, not uploaded walls).
+
+Typical values might be:
+
+physical wall width/height in cm
+
+a scale factor / zoom
+
+an artwork bounding rect on the background image.
+
+Confirm that Room 1 has a correct & natural calibration.
+
+Use Room 1 as the baseline
+
+Treat Room 1 as the reference scene for how big a 100 × 120 cm artwork should appear relative to furniture.
+
+Derive a “pixels per cm” or equivalent scale factor from Room 1’s config.
+
+Adjust Room 4 and Room 8 to match the baseline
+
+For Room 4 and Room 8:
+
+Adjust their wall / scale / bounding-box parameters so that a 100 × 120 cm artwork appears visually similar in size to Room 1.
+
+Goal: when switching between Room 1, Room 4 and Room 8 with the same artwork, the artwork size should feel consistent vs tables/sofas (no scene where it looks dramatically larger).
+
+Do NOT tweak this via arbitrary zoom in the canvas – fix it in the scene config so it’s robust.
+
+Quick check for other presets
+
+Quickly compare a 100 × 120 cm artwork in a few other rooms (one bedroom, one bathroom, one kitchen).
+
+If any room clearly looks way off (much larger or much smaller than Room 1), adjust its config slightly to bring it in line.
+
+Keep changes small and subtle – we want consistency, not identical composition.
+
+Keep true-to-size behaviour
+
+Ensure that the true-to-size logic remains intact:
+
+If the user switches from 50 × 70 cm to 100 × 140 cm, the relative difference must still be correct.
+
+The fix should be per-room base scale calibration, not hard-coded pixel sizes.
+
+Test
+
+Use “Whispers of the Ring” (100 × 120 cm) as the test artwork.
+
+Compare Room 1, Room 4, Room 8 + at least one bedroom and one kitchen.
+
+Confirm:
+
+Artwork looks naturally proportional to furniture in all scenes.
+
+No room where artwork suddenly feels 30–40% larger than others.
+
+Do NOT
+
+Do not change frame styles, thickness or frame positions.
+
+Do not touch upload-wall-photo logic or user-uploaded wall scaling.
+
+Do not refactor Studio layout or categories.
+
+Do not change artwork aspect ratios.
+
+Stop condition
+
+With the same artwork (100 × 120 cm), switching between Room 1, Room 4, Room 8 and other presets shows visually consistent artwork size relative to the furniture and walls.
+
+Room 4 and Room 8 no longer feel “zoomed in” or oversized.
+
+True-to-size scaling still behaves correctly between different artwork dimensions.
+
+Mode preference:
+This is a calibration / fine-tuning task → use Fast Mode if available.

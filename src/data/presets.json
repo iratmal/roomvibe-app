@@ -18,7 +18,7 @@
     "name": "Room 2",
     "category": "cafe",
     "photo": "/rooms/cafe/cafe9.jpeg",
-    "wallWidthPx": 1150,
+    "wallWidthPx": 1100,
     "scaleFactor": 1.0,
     "safeArea": {
       "x": 0.5,
@@ -46,8 +46,8 @@
     "name": "Room 4",
     "category": "cafe",
     "photo": "/rooms/cafe/cafe25.jpeg",
-    "wallWidthPx": 1200,
-    "scaleFactor": 1.15,
+    "wallWidthPx": 1100,
+    "scaleFactor": 1.0,
     "safeArea": {
       "x": 0.5,
       "y": 0.38,
@@ -60,8 +60,8 @@
     "name": "Room 5",
     "category": "bedroom",
     "photo": "/rooms/bedroom/bedroom3.jpeg",
-    "wallWidthPx": 1000,
-    "scaleFactor": 0.9,
+    "wallWidthPx": 1100,
+    "scaleFactor": 1.0,
     "safeArea": {
       "x": 0.5,
       "y": 0.38,
@@ -74,7 +74,7 @@
     "name": "Room 6",
     "category": "bedroom",
     "photo": "/rooms/bedroom/bedroom4.jpeg",
-    "wallWidthPx": 1050,
+    "wallWidthPx": 1100,
     "scaleFactor": 1.0,
     "safeArea": {
       "x": 0.5,
@@ -88,7 +88,7 @@
     "name": "Room 7",
     "category": "bedroom",
     "photo": "/rooms/bedroom/bedroom17.jpeg",
-    "wallWidthPx": 950,
+    "wallWidthPx": 1100,
     "scaleFactor": 1.0,
     "safeArea": {
       "x": 0.5,
@@ -102,7 +102,7 @@
     "name": "Room 8",
     "category": "bedroom",
     "photo": "/rooms/bedroom/bedroom16.jpeg",
-    "wallWidthPx": 1000,
+    "wallWidthPx": 1100,
     "scaleFactor": 1.0,
     "safeArea": {
       "x": 0.5,
@@ -116,7 +116,7 @@
     "name": "Room 9",
     "category": "bathroom",
     "photo": "/rooms/bathroom/bathroom13.jpeg",
-    "wallWidthPx": 850,
+    "wallWidthPx": 1100,
     "scaleFactor": 1.0,
     "safeArea": {
       "x": 0.5,
@@ -130,7 +130,7 @@
     "name": "Room 10",
     "category": "bathroom",
     "photo": "/rooms/bathroom/bathroom12.jpeg",
-    "wallWidthPx": 900,
+    "wallWidthPx": 1100,
     "scaleFactor": 1.0,
     "safeArea": {
       "x": 0.5,
