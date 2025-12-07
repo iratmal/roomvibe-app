@@ -18,6 +18,22 @@ interface PlanConfig {
 
 const PLANS: PlanConfig[] = [
   {
+    id: 'free',
+    name: 'Free',
+    price: '€0',
+    priceValue: 0,
+    subtitle: 'Get started with basic mockups for free.',
+    features: [
+      '10 basic mockup rooms',
+      'Upload up to 3 artworks',
+      'Basic download export',
+      'Frame styling controls',
+      'Widget embed',
+      'Buy button integration',
+    ],
+    buttonText: 'Get Started Free',
+  },
+  {
     id: 'artist',
     name: 'Artist',
     price: '€9',
@@ -29,7 +45,7 @@ const PLANS: PlanConfig[] = [
       'Access to up to 30 standard mockup rooms (Living, Bedroom, Kitchen, Kids, Neutral Walls)',
       'Basic download export',
       'Frame styling controls',
-      'Widget embed for your website',
+      'Widget embed',
       'Buy button integration (Shopify, WooCommerce, Wix)',
     ],
     buttonText: 'Activate Artist Plan',
@@ -128,6 +144,10 @@ export function PricingPage() {
     if (!user) return false;
     if (isAdmin) return true;
     
+    if (plan.id === 'free') {
+      return true;
+    }
+    
     if (plan.isAllAccess) {
       return hasEntitlement('artist_access') && 
              hasEntitlement('designer_access') && 
@@ -143,6 +163,15 @@ export function PricingPage() {
 
   const handlePlanClick = async (plan: PlanConfig) => {
     setError('');
+
+    if (plan.id === 'free') {
+      if (!user) {
+        window.location.hash = '#/register';
+      } else {
+        window.location.hash = '#/dashboard';
+      }
+      return;
+    }
 
     if (!user) {
       sessionStorage.setItem('returnToPricing', 'true');
@@ -225,7 +254,7 @@ export function PricingPage() {
           )}
 
           {/* Pricing Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5 mb-16">
             {PLANS.map((plan) => (
               <PlanCard
                 key={plan.id}
@@ -375,8 +404,8 @@ function PlanCard({ plan, isActive, isLoading, onSelect }: PlanCardProps) {
         ))}
       </ul>
 
-      {/* Active Badge */}
-      {isActive && (
+      {/* Active Badge - Don't show for Free plan */}
+      {isActive && plan.id !== 'free' && (
         <div 
           className="mb-4 py-2 px-3 rounded-lg text-sm text-center flex items-center justify-center gap-2"
           style={{
@@ -393,16 +422,18 @@ function PlanCard({ plan, isActive, isLoading, onSelect }: PlanCardProps) {
       {/* Button */}
       <button
         onClick={onSelect}
-        disabled={isActive || isLoading}
+        disabled={isActive && plan.id !== 'free' || isLoading}
         className={`w-full ${
-          isActive 
+          isActive && plan.id !== 'free'
             ? 'py-3 px-4 rounded-lg font-semibold text-sm bg-gray-100 text-gray-400 cursor-not-allowed' 
-            : plan.recommended 
-              ? 'btn-premium text-sm' 
-              : 'btn-primary text-sm'
+            : plan.id === 'free'
+              ? 'py-3 px-4 rounded-lg font-semibold text-sm border-2 border-[#264C61] text-[#264C61] bg-white hover:bg-gray-50 transition-colors'
+              : plan.recommended 
+                ? 'btn-premium text-sm' 
+                : 'btn-primary text-sm'
         } disabled:opacity-50`}
       >
-        {isLoading ? 'Loading...' : (isActive ? 'Already Active' : plan.buttonText)}
+        {isLoading ? 'Loading...' : (isActive && plan.id !== 'free' ? 'Already Active' : plan.buttonText)}
       </button>
     </div>
   );

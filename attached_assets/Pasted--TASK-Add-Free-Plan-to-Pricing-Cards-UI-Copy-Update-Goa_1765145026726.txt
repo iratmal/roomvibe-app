@@ -1,0 +1,145 @@
+# TASK – Add Free Plan to Pricing Cards (UI Copy Update)
+
+**Goal:**
+Add the new **Free Plan** to the pricing cards on the `/pricing` page and ensure all plans are displayed in correct order:
+
+**Free → Artist → Designer → Gallery → All-Access**
+
+This task updates ONLY the text/content of pricing cards. No logic or Stripe configuration is modified here.
+
+---
+
+# ✅ PART 1 — Add FREE PLAN Pricing Card
+
+Insert a new pricing card at the top of the pricing section.
+
+### **FREE PLAN (0€/mo)**
+
+Replace entire card text with:
+
+* Access to **10 basic mockup rooms**
+* Upload up to **3 artworks**
+* Basic low‑resolution download export
+* Frame styling controls
+* Widget embed
+* Buy button integration (Shopify, WooCommerce, Wix)
+* No premium rooms
+* No standard rooms (available in Artist plan)
+* No designer tools
+* No gallery tools
+* No exhibitions
+
+This card must visually match the style of existing pricing cards.
+
+---
+
+# ✅ PART 2 — Update Pricing Card ORDER
+
+Plans must appear in the following exact sequence:
+
+1. **Free**
+2. **Artist**
+3. **Designer**
+4. **Gallery**
+5. **All-Access**
+
+Ensure the UI reflects this order on desktop and mobile.
+
+---
+
+# ✅ PART 3 — Update ARTIST Plan Text (Fix “30+ rooms”)
+
+Replace text:
+
+* ❌ "Access to 30+ standard mockup rooms"
+
+with:
+
+* ✅ "Access to **up to 30** standard mockup rooms"
+
+Apply this change consistently anywhere Artist plan text appears on the pricing page.
+
+---
+
+# ✅ PART 4 — Final Pricing Card Texts (Insert EXACTLY)
+
+### **FREE PLAN (0€/mo)**
+
+* 10 basic mockup rooms
+* Upload up to **3 artworks**
+* Basic download export
+* Frame styling controls
+* Widget embed
+* Buy button integration
+
+---
+
+### **ARTIST PLAN (€9/mo)**
+
+* Upload up to **50 artworks**
+* Access to **up to 30 standard mockup rooms** (Living, Bedroom, Kitchen, Kids, Neutral Walls)
+* Basic download export
+* Frame styling controls
+* Widget embed
+* Buy button integration
+
+---
+
+### **DESIGNER PLAN (€29/mo)**
+
+* Upload up to **100 artworks**
+* Access to **100+ premium mockup rooms**
+* High-resolution export (3000px+)
+* PDF export
+* Designer Studio tools
+* Mockup downloads
+* Unlimited previews
+
+---
+
+### **GALLERY PLAN (€49/mo)**
+
+* Upload **unlimited artworks**
+* Access to **100+ premium mockup rooms**
+* Multi-art wall presentations
+* Virtual exhibition rooms (up to **3 active exhibitions**)
+* Gallery Hub
+* Exhibition PDF export (**20 per month**)
+* Public exhibition share links
+
+---
+
+### **ALL‑ACCESS PLAN (€79/mo)**
+
+* Upload **unlimited artworks**
+* Access to **all 100+ premium mockup rooms**, including **future premium packs**
+* Artist + Designer + Gallery modules included
+* Unlimited PDF export
+* Unlimited virtual exhibitions
+* Priority support
+* Early access to new features
+* Best price for full access
+
+---
+
+# IMPLEMENTATION NOTES
+
+* Modify ONLY pricing card text and ordering.
+* DO NOT change Stripe product IDs, routing, or any logic.
+* Keep CTA buttons, layout, and styling unchanged.
+* Ensure the Free plan has a visible “Get Started” or similar CTA.
+
+---
+
+# MODE PREFERENCE
+
+**Fast Mode** — This is a text + layout ordering update.
+
+---
+
+# STOP CONDITION
+
+* Free plan card appears first and displays correct text.
+* Artist plan shows "up to 30 rooms" (not 30+).
+* All five plans appear in correct order.
+* Text matches exactly the updated content above.
