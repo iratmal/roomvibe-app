@@ -832,10 +832,9 @@ function Studio() {
   const effectivePlan = (user?.effectivePlan || 'user') as PlanType;
   const isFreePlan = effectivePlan === 'user';
   
-  // Premium rooms access limits based on plan
+  // Premium rooms access based on plan
   const planLimits = PLAN_LIMITS[effectivePlan];
-  const maxPremiumRooms = planLimits.maxPremiumRooms;
-  const hasUnlimitedPremiumRooms = maxPremiumRooms === -1;
+  const hasPremiumRoomsAccess = planLimits.premiumRoomsAccess;
   
   // Upgrade modal state
   const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false);
@@ -868,7 +867,7 @@ function Studio() {
   
   // Check if user has high-res export access
   const hasHighResExport = planLimits.highResExport;
-  const hasPdfExport = planLimits.pdfProposals;
+  const hasPdfExport = planLimits.pdfExport;
   
   // Placeholder artwork for free users - "Whispers of the Ring"
   const placeholderArtwork = (localArtworks as any[]).find((a: any) => a.id === 'whispers-of-the-ring-100-120-cm-roomvibe') || (localArtworks as any[])[0];
@@ -1640,6 +1639,29 @@ function Studio() {
       return;
     }
     
+    // Track PDF export with API for monthly limit enforcement
+    try {
+      const trackResponse = await fetch(`${API_URL}/api/exports/pdf/track`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (!trackResponse.ok) {
+        const errorData = await trackResponse.json();
+        if (trackResponse.status === 403) {
+          setUpgradeModalMessage(errorData.message || "You've reached your monthly PDF export limit. Upgrade to All-Access for unlimited exports.");
+          setShowUpgradeModal(true);
+          return;
+        }
+        // For other errors, log and continue
+        console.warn('[Export] PDF tracking returned error:', errorData);
+      }
+    } catch (err) {
+      console.warn('[Export] Could not track PDF export:', err);
+      // Continue with export even if tracking fails
+    }
+    
     setIsExporting(true);
     setExportType('pdf');
     
@@ -1896,25 +1918,19 @@ function Studio() {
                 </button>
               ))}
               
-              {/* Premium Rooms */}
+              {/* Premium Rooms - only shown to users with premium access (Designer+) */}
               {filteredPremiumRooms.map((room) => {
-                const originalIndex = premiumRooms.findIndex(r => r.id === room.id);
-                const isLocked = !hasUnlimitedPremiumRooms && originalIndex >= maxPremiumRooms;
+                const isLocked = !hasPremiumRoomsAccess;
                 
                 return (
                   <button
                     key={room.id}
                     onClick={() => {
                       if (isLocked) {
-                        const message = effectivePlan === 'user'
-                          ? "Upgrade to Artist to access more premium rooms (30 rooms)."
-                          : effectivePlan === 'artist'
-                          ? "Upgrade to Designer to access all 100+ premium rooms."
-                          : "Upgrade to access more premium rooms.";
+                        const message = "Premium mockup rooms (100+) are available on Designer plan and above. Upgrade to access all rooms.";
                         setUpgradeModalMessage(message);
                         setShowUpgradeModal(true);
                       } else {
-                        // Select this premium room as background
                         setUserPhoto(room.image);
                         setSceneId('');
                       }
@@ -1967,22 +1983,20 @@ function Studio() {
               </div>
             )}
             
-            {/* Upgrade hint for non-unlimited users */}
-            {!hasUnlimitedPremiumRooms && selectedCategory === "all" && (
+            {/* Upgrade hint for users without premium room access */}
+            {!hasPremiumRoomsAccess && selectedCategory === "all" && (
               <div className="mt-4 pt-3 border-t border-rv-neutral/40 flex items-center justify-between">
                 <span className="text-[10px] text-rv-textMuted">
-                  {maxPremiumRooms} of {premiumRooms.length} premium rooms unlocked
+                  {premiumRooms.length}+ premium rooms locked
                 </span>
-                {isArtistPlan && (
-                  <UpgradeNudge
-                    message="Unlock All"
-                    variant="badge"
-                    onClick={() => {
-                      setUpgradeModalMessage("Upgrade to Designer to access all 160+ premium rooms.");
-                      setShowUpgradeModal(true);
-                    }}
-                  />
-                )}
+                <UpgradeNudge
+                  message="Unlock All"
+                  variant="badge"
+                  onClick={() => {
+                    setUpgradeModalMessage("Upgrade to Designer to access all 100+ premium rooms.");
+                    setShowUpgradeModal(true);
+                  }}
+                />
               </div>
             )}
           </aside>

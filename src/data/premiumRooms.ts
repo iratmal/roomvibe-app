@@ -1,3 +1,5 @@
+export type RoomTier = 'standard' | 'premium';
+
 export type PremiumRoom = {
   id: string;
   category: "bathroom" | "bedroom" | "cafe" | "kids" | "kitchen" | "livingroom";
@@ -5,6 +7,7 @@ export type PremiumRoom = {
   image: string;
   wallWidthPx: number;
   scaleFactor?: number;  // Optional per-scene scale multiplier (default: 1.0)
+  tier?: RoomTier;  // 'standard' for 30+ free rooms, 'premium' for 100+ paid rooms (default: 'premium')
 };
 
 export const premiumRooms: PremiumRoom[] = [

@@ -12,6 +12,7 @@ import galleryRoutes from './api/gallery.js';
 import billingRoutes from './api/billing.js';
 import webhookRoutes from './api/webhook.js';
 import widgetRoutes from './api/widget.js';
+import exportsRoutes from './api/exports.js';
 import { initializeDatabase } from './db/init.js';
 import { query } from './db/database.js';
 import { ObjectStorageService, ObjectNotFoundError } from './objectStorage.js';
@@ -57,6 +58,7 @@ app.use('/api/designer', projectsRoutes);
 app.use('/api/gallery', galleryRoutes);
 app.use('/api/billing', billingRoutes);
 app.use('/api/widget', widgetRoutes);
+app.use('/api/exports', exportsRoutes);
 
 // Server readiness flag - set to true after database initialization
 let isServerReady = false;

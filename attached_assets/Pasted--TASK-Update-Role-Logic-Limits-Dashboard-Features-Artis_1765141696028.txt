@@ -1,0 +1,354 @@
+# TASK – Update Role Logic, Limits & Dashboard Features (Artist / Designer / Gallery / All-Access)
+
+**Goal:**
+Implement a unified, plan-based configuration for **Artist**, **Designer**, **Gallery**, and **All-Access** users, and enforce it across dashboards and Studio behaviour. This includes:
+
+* upload limits,
+* access to standard vs premium rooms,
+* access to Designer/Gallery tools,
+* export capabilities (high-res, PDF),
+* virtual exhibition limits,
+* and adding the **All-Access** role if not yet present.
+
+This task connects the pricing logic with the actual product behaviour.
+
+---
+
+## 1) PLAN LIMITS – CENTRAL CONFIGURATION
+
+Create or update a central configuration object for plan limits (in a dedicated config file or an existing `plans` / `roles` module). For example:
+
+```ts
+const PLAN_LIMITS = {
+  artist: {
+    upload: 50,
+    rooms: "standard",          // only standard rooms (30+)
+    premiumRooms: false,
+    highRes: false,
+    pdf: false,
+    pdfMonthlyLimit: 0,
+    designerTools: false,
+    galleryTools: false,
+    exhibitions: 0,              // no virtual exhibitions
+    prioritySupport: false,
+    earlyAccess: false,
+    publicGalleryPages: false,
+  },
+  designer: {
+    upload: 100,
+    rooms: "all",               // standard + premium
+    premiumRooms: true,
+    highRes: true,
+    pdf: true,
+    pdfMonthlyLimit: Infinity,
+    designerTools: true,
+    galleryTools: false,
+    exhibitions: 0,              // no exhibitions
+    prioritySupport: false,
+    earlyAccess: false,
+    publicGalleryPages: false,
+  },
+  gallery: {
+    upload: Infinity,            // unlimited artworks
+    rooms: "all",
+    premiumRooms: true,
+    highRes: true,
+    pdf: true,
+    pdfMonthlyLimit: 20,         // 20 PDF exports per month
+    designerTools: false,
+    galleryTools: true,          // multi-art walls, gallery hub
+    exhibitions: 3,              // up to 3 active exhibitions
+    prioritySupport: false,
+    earlyAccess: false,
+    publicGalleryPages: true,
+  },
+  allaccess: {
+    upload: Infinity,
+    rooms: "all",
+    premiumRooms: true,
+    futureRooms: true,           // includes future premium room packs
+    highRes: true,
+    pdf: true,
+    pdfMonthlyLimit: Infinity,   // unlimited PDF exports
+    designerTools: true,
+    galleryTools: true,
+    exhibitions: Infinity,       // unlimited active exhibitions
+    prioritySupport: true,
+    earlyAccess: true,
+    publicGalleryPages: true,
+  },
+} as const;
+```
+
+> Adjust naming according to existing conventions. The key point is: each plan has a single source of truth for limits and feature flags.
+
+Then ensure there is a small helper function, e.g.:
+
+```ts
+function getPlanLimits(plan: PlanKey) {
+  return PLAN_LIMITS[plan];
+}
+```
+
+`plan` value should come from subscription (Stripe plan ID → internal plan key mapping).
+
+---
+
+## 2) ROLE / PLAN MAPPING (Stripe → Internal)
+
+Make sure there is a clear mapping from Stripe products / prices to internal plan keys:
+
+```ts
+const PLAN_MAPPING = {
+  "stripe_price_artist": "artist",
+  "stripe_price_designer": "designer",
+  "stripe_price_gallery": "gallery",
+  "stripe_price_allaccess": "allaccess",
+};
+```
+
+* Ensure the **All-Access** plan mapping exists.
+* Wherever the app decides which features to show, use the internal `planKey` (`artist | designer | gallery | allaccess`) and `getPlanLimits(planKey)` instead of scattered conditionals.
+
+---
+
+## 3) ENFORCE LIMITS – ARTWORK UPLOAD
+
+In the artwork upload logic (backend + frontend safeguards):
+
+* Use `PLAN_LIMITS[plan].upload` to:
+
+  * prevent uploading more than `upload` artworks,
+  * show a friendly message when the limit is reached.
+
+Example behaviour:
+
+* Artist: max 50
+* Designer: max 100
+* Gallery: unlimited (no hard cap)
+* All-Access: unlimited
+
+Show a clear error or upgrade prompt when a user hits their limit.
+
+---
+
+## 4) ROOMS ACCESS – STANDARD VS PREMIUM
+
+In the Studio / Rooms selection logic:
+
+* Tag rooms as **standard** or **premium** in the rooms data model (if not already done).
+* Use `PLAN_LIMITS[plan].rooms` and `PLAN_LIMITS[plan].premiumRooms` to control visibility:
+
+  * **Artist**: only standard rooms should be selectable (30+ standard rooms: Living, Bedroom, Kitchen, Kids, Neutral walls).
+  * **Designer, Gallery, All-Access**: can access all rooms (standard + premium).
+
+Implementation:
+
+* In the sidebar where rooms are listed, filter or visually lock premium rooms for `artist` plan.
+* For locked premium rooms, show a **lock overlay** and an upgrade tooltip/modal (no need to fully implement modal logic in this task if it does not exist yet—at least ensure they are non-clickable).
+
+---
+
+## 5) EXPORT CAPABILITIES – HIGH-RES & PDF
+
+### High-Resolution Export
+
+* Only enabled if `PLAN_LIMITS[plan].highRes` is `true`.
+* Plans with high-res: Designer, Gallery, All-Access.
+* Artist should not see high-res export option or should see it as locked.
+
+### PDF Export
+
+* Use `PLAN_LIMITS[plan].pdf` and `PLAN_LIMITS[plan].pdfMonthlyLimit`.
+* Plans:
+
+  * Artist: no PDF export.
+  * Designer: PDF export enabled, no monthly limit.
+  * Gallery: PDF export enabled, **limit of 20 per month**.
+  * All-Access: PDF export enabled, unlimited.
+
+Implement:
+
+* A simple counter per user (or per account) for Gallery PDF exports:
+
+  * On each PDF generation, increment counter.
+  * If counter ≥ 20 for the current month:
+
+    * block further PDF exports,
+    * show message: e.g. "You’ve reached your monthly PDF limit. Upgrade to All-Access for unlimited PDF exports."
+
+The counter persistence can be simple (DB field with month marker).
+
+---
+
+## 6) VIRTUAL EXHIBITIONS LIMITS
+
+In the Virtual Exhibitions / Gallery module:
+
+* Use `PLAN_LIMITS[plan].exhibitions`.
+* Behaviour:
+
+  * Artist: 0 exhibitions (no access to exhibitions module).
+  * Designer: 0 exhibitions (no access to exhibitions module).
+  * Gallery: can have **up to 3 active exhibitions** at the same time.
+  * All-Access: unlimited active exhibitions.
+
+Implementation:
+
+* On creation of a new exhibition:
+
+  * Check how many existing active exhibitions the user has.
+  * If `>= PLAN_LIMITS[plan].exhibitions` and the limit is not Infinity:
+
+    * block creation,
+    * show message: e.g. "You’ve reached the limit of active exhibitions for your plan. Upgrade to All-Access for unlimited exhibitions."
+
+* In the Gallery dashboard, show a small status indicator, e.g.: `2 / 3 exhibitions used`.
+
+* In All-Access, no cap or display `Unlimited exhibitions`.
+
+---
+
+## 7) DASHBOARD FEATURES VISIBILITY
+
+Update which modules and tools appear on each dashboard according to the plan.
+
+### Artist Dashboard
+
+* Show:
+
+  * Artwork upload (up to 50)
+  * Standard rooms in Studio
+  * Widget embed
+  * Buy button integration
+* Hide or lock:
+
+  * Premium rooms
+  * Designer Studio tools
+  * Gallery tools (multi-art walls, exhibitions)
+  * Virtual Exhibitions menu
+
+### Designer Dashboard
+
+* Show:
+
+  * Artwork upload (up to 100)
+  * All rooms (standard + premium)
+  * Designer Studio tools (moodboards, presentation exports, etc.)
+  * High-res export & PDF export
+* Hide or lock:
+
+  * Gallery Hub
+  * Virtual Exhibitions
+  * Public gallery pages
+
+### Gallery Dashboard
+
+* Show:
+
+  * Unlimited artwork upload
+  * All rooms (standard + premium)
+  * Gallery Hub
+  * Multi-art wall presentations
+  * Virtual exhibition builder (with 3 active exhibitions limit)
+  * Exhibition PDF export (20 per month)
+  * Public gallery pages
+* Hide or lock:
+
+  * Designer-specific tools (if they are in a separate module or section)
+
+### All-Access Dashboard
+
+* Combine **Designer + Gallery + Artist** capabilities:
+
+  * All rooms (standard + premium + future packs)
+  * Unlimited works upload
+  * Designer tools enabled
+  * Gallery tools enabled
+  * Unlimited exhibitions
+  * Unlimited PDF exports
+  * Public gallery pages
+  * Priority support flag (can show banner or badge)
+  * Early access flag (to be used later for feature gating)
+
+If the All-Access dashboard is not yet a separate view, reuse the Gallery dashboard and conditionally enable Designer tools & labels when plan is `allaccess`.
+
+---
+
+## 8) PUBLIC GALLERY PAGES & SUPPORT FLAGS
+
+* `publicGalleryPages`:
+
+  * Only `gallery` and `allaccess` should have public gallery / exhibition pages.
+  * Ensure Artist and Designer do not expose any public gallery URLs (or show them as locked).
+
+* `prioritySupport` and `earlyAccess`:
+
+  * Only `allaccess` should have these flags set to `true`.
+  * Optional for now: show small badge or text in the account settings or dashboard header.
+
+---
+
+## 9) UI: LOCKED STATES & MESSAGES
+
+Wherever a feature is not available for a given plan (e.g. premium rooms for Artist, exhibitions for Designer, additional PDFs or exhibitions beyond limit for Gallery):
+
+* Show consistent locked state:
+
+  * either a dimmed icon with a lock,
+  * or a modal/popup on click.
+
+At minimum:
+
+* Block the action in logic.
+* Show a clear message suggesting upgrade (especially to Designer, Gallery or All-Access, depending on feature).
+
+---
+
+## 10) TESTING CHECKLIST
+
+Verify the following flows:
+
+1. **Artist user**
+
+   * Can upload up to 50 artworks; cannot exceed this.
+   * Sees only standard rooms; premium rooms are locked.
+   * Does not see designer tools, gallery hub, exhibitions.
+
+2. **Designer user**
+
+   * Can upload up to 100 artworks.
+   * Sees all rooms (standard + premium).
+   * Can use high-res export and PDF export without limits.
+   * Cannot access exhibitions or gallery hub.
+
+3. **Gallery user**
+
+   * Unlimited upload works.
+   * All rooms available.
+   * Can create up to 3 active exhibitions.
+   * After 3, creation is blocked with a clear message.
+   * PDF export works up to 20 per month; after that, blocked with upgrade hint.
+
+4. **All-Access user**
+
+   * Unlimited upload works.
+   * All rooms available, including any future premium tags.
+   * Designer + Gallery tools both available.
+   * Unlimited exhibitions and PDF exports.
+   * Public gallery pages available.
+   * Priority support / early access flags set (even if currently cosmetic).
+
+---
+
+## MODE PREFERENCE
+
+This is mostly configuration + UI logic work with some checks on existing structure.
+→ **Use Fast Mode if available.**
+
+---
+
+## STOP CONDITION
+
+The behaviour of Artist, Designer, Gallery and All-Access users in their dashboards and Studio strictly matches the defined limits and features above.
+No plan exposes features it shouldn’t, and all plan-specific limits are enforced at the logic level (not samo u tekstu).

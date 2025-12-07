@@ -14,6 +14,11 @@ function getEntitlementFieldFromPlan(plan: string): string | null {
   return planToEntitlement[plan] || null;
 }
 
+// Check if plan is all-access (grants all entitlements)
+function isAllAccessPlan(plan: string): boolean {
+  return plan === 'allaccess';
+}
+
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'] as string;
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -59,8 +64,8 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         // Get the entitlement field for this plan
         const entitlementField = getEntitlementFieldFromPlan(plan);
 
-        if (isAdmin) {
-          // Admin: update subscription but keep all entitlements (they have all access)
+        if (isAdmin || isAllAccessPlan(plan)) {
+          // Admin or All-Access: grant all entitlements
           await query(
             `UPDATE users SET 
               subscription_status = 'active',
@@ -74,7 +79,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             WHERE id = $4`,
             [plan, customerId, subscriptionId, userId]
           );
-          console.log(`✅ Admin user ${userId} subscription updated to ${plan} (all entitlements granted)`);
+          console.log(`✅ User ${userId} subscription updated to ${plan} (all entitlements granted)`);
         } else if (entitlementField) {
           // Non-admin: SET the specific entitlement to TRUE (don't reset others)
           await query(
@@ -139,20 +144,47 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         const entitlementField = plan ? getEntitlementFieldFromPlan(plan) : null;
 
         if (plan) {
-          if (isAdmin) {
-            // Admin: keep all entitlements
-            await query(
-              `UPDATE users SET 
-                subscription_status = $1,
-                subscription_plan = $2,
-                artist_access = TRUE,
-                designer_access = TRUE,
-                gallery_access = TRUE,
-                updated_at = CURRENT_TIMESTAMP
-              WHERE stripe_customer_id = $3`,
-              [subscriptionStatus, plan, customerId]
-            );
-            console.log(`✅ Admin subscription updated for customer ${customerId}: status=${subscriptionStatus}, plan=${plan}`);
+          if (isAdmin || isAllAccessPlan(plan)) {
+            // Admin or All-Access: grant/keep all entitlements
+            if (subscriptionStatus === 'active') {
+              await query(
+                `UPDATE users SET 
+                  subscription_status = $1,
+                  subscription_plan = $2,
+                  artist_access = TRUE,
+                  designer_access = TRUE,
+                  gallery_access = TRUE,
+                  updated_at = CURRENT_TIMESTAMP
+                WHERE stripe_customer_id = $3`,
+                [subscriptionStatus, plan, customerId]
+              );
+              console.log(`✅ All-access subscription updated for customer ${customerId}: status=${subscriptionStatus}, plan=${plan}`);
+            } else {
+              // All-Access canceled: revoke all entitlements (unless admin)
+              if (isAdmin) {
+                await query(
+                  `UPDATE users SET 
+                    subscription_status = $1,
+                    subscription_plan = $2,
+                    updated_at = CURRENT_TIMESTAMP
+                  WHERE stripe_customer_id = $3`,
+                  [subscriptionStatus, plan, customerId]
+                );
+              } else {
+                await query(
+                  `UPDATE users SET 
+                    subscription_status = $1,
+                    subscription_plan = $2,
+                    artist_access = FALSE,
+                    designer_access = FALSE,
+                    gallery_access = FALSE,
+                    updated_at = CURRENT_TIMESTAMP
+                  WHERE stripe_customer_id = $3`,
+                  [subscriptionStatus, plan, customerId]
+                );
+              }
+              console.log(`✅ All-access subscription ${subscriptionStatus} for customer ${customerId}`);
+            }
           } else if (entitlementField && subscriptionStatus === 'active') {
             // Active subscription: SET the specific entitlement (don't reset others)
             await query(
@@ -239,6 +271,22 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             [customerId]
           );
           console.log(`✅ Admin subscription canceled for customer ${customerId} (all entitlements preserved)`);
+        } else if (isAllAccessPlan(currentPlan)) {
+          // All-Access: revoke all entitlements
+          await query(
+            `UPDATE users SET 
+              subscription_status = 'canceled',
+              subscription_plan = 'user',
+              role = 'user',
+              stripe_subscription_id = NULL,
+              artist_access = FALSE,
+              designer_access = FALSE,
+              gallery_access = FALSE,
+              updated_at = CURRENT_TIMESTAMP
+            WHERE stripe_customer_id = $1`,
+            [customerId]
+          );
+          console.log(`✅ All-Access subscription canceled for customer ${customerId}: all entitlements revoked`);
         } else if (entitlementField) {
           // Non-admin: revoke only the specific entitlement for the canceled plan
           await query(

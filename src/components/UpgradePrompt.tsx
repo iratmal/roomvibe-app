@@ -15,6 +15,7 @@ const PLAN_NAMES: Record<string, string> = {
   artist: 'Artist',
   designer: 'Designer',
   gallery: 'Gallery',
+  allaccess: 'All-Access',
   admin: 'Admin',
 };
 
@@ -23,6 +24,7 @@ const PLAN_PRICES: Record<string, string> = {
   artist: '€9/month',
   designer: '€29/month',
   gallery: '€49/month',
+  allaccess: '€79/month',
 };
 
 export function UpgradePrompt({

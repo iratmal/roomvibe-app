@@ -1,4 +1,4 @@
-export type PlanType = 'user' | 'artist' | 'designer' | 'gallery' | 'admin';
+export type PlanType = 'user' | 'artist' | 'designer' | 'gallery' | 'allaccess' | 'admin';
 
 export interface PlanLimits {
   maxArtworks: number;
@@ -6,13 +6,23 @@ export interface PlanLimits {
   maxProjects: number;
   maxMockupRooms: number;
   maxPremiumRooms: number;
+  rooms: 'standard' | 'all';
   premiumRoomsAccess: boolean;
+  futureRooms: boolean;
   highResExport: boolean;
+  pdfExport: boolean;
+  pdfMonthlyLimit: number;
+  designerTools: boolean;
+  galleryTools: boolean;
+  exhibitions: number;
   clientFolders: boolean;
   galleryDashboard: boolean;
   multiArtistCollections: boolean;
   customBranding: boolean;
   pdfProposals: boolean;
+  publicGalleryPages: boolean;
+  prioritySupport: boolean;
+  earlyAccess: boolean;
 }
 
 export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
@@ -21,56 +31,120 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     maxWallPhotos: 1,
     maxProjects: 1,
     maxMockupRooms: 5,
-    maxPremiumRooms: 3,
+    maxPremiumRooms: 0,
+    rooms: 'standard',
     premiumRoomsAccess: false,
+    futureRooms: false,
     highResExport: false,
+    pdfExport: false,
+    pdfMonthlyLimit: 0,
+    designerTools: false,
+    galleryTools: false,
+    exhibitions: 0,
     clientFolders: false,
     galleryDashboard: false,
     multiArtistCollections: false,
     customBranding: false,
     pdfProposals: false,
+    publicGalleryPages: false,
+    prioritySupport: false,
+    earlyAccess: false,
   },
   artist: {
     maxArtworks: 50,
     maxWallPhotos: 100,
     maxProjects: 100,
     maxMockupRooms: -1,
-    maxPremiumRooms: 30,
-    premiumRoomsAccess: true,
+    maxPremiumRooms: 0,
+    rooms: 'standard',
+    premiumRoomsAccess: false,
+    futureRooms: false,
     highResExport: false,
+    pdfExport: false,
+    pdfMonthlyLimit: 0,
+    designerTools: false,
+    galleryTools: false,
+    exhibitions: 0,
     clientFolders: false,
     galleryDashboard: false,
     multiArtistCollections: false,
     customBranding: false,
-    pdfProposals: true,
+    pdfProposals: false,
+    publicGalleryPages: false,
+    prioritySupport: false,
+    earlyAccess: false,
   },
   designer: {
+    maxArtworks: 100,
+    maxWallPhotos: -1,
+    maxProjects: -1,
+    maxMockupRooms: -1,
+    maxPremiumRooms: -1,
+    rooms: 'all',
+    premiumRoomsAccess: true,
+    futureRooms: false,
+    highResExport: true,
+    pdfExport: true,
+    pdfMonthlyLimit: -1,
+    designerTools: true,
+    galleryTools: false,
+    exhibitions: 0,
+    clientFolders: true,
+    galleryDashboard: false,
+    multiArtistCollections: false,
+    customBranding: true,
+    pdfProposals: true,
+    publicGalleryPages: false,
+    prioritySupport: false,
+    earlyAccess: false,
+  },
+  gallery: {
     maxArtworks: -1,
     maxWallPhotos: -1,
     maxProjects: -1,
     maxMockupRooms: -1,
     maxPremiumRooms: -1,
+    rooms: 'all',
     premiumRoomsAccess: true,
+    futureRooms: false,
     highResExport: true,
-    clientFolders: true,
-    galleryDashboard: false,
-    multiArtistCollections: false,
-    customBranding: true,
-    pdfProposals: true,
-  },
-  gallery: {
-    maxArtworks: 500,
-    maxWallPhotos: -1,
-    maxProjects: -1,
-    maxMockupRooms: -1,
-    maxPremiumRooms: -1,
-    premiumRoomsAccess: true,
-    highResExport: true,
+    pdfExport: true,
+    pdfMonthlyLimit: 20,
+    designerTools: false,
+    galleryTools: true,
+    exhibitions: 3,
     clientFolders: true,
     galleryDashboard: true,
     multiArtistCollections: true,
     customBranding: true,
     pdfProposals: true,
+    publicGalleryPages: true,
+    prioritySupport: false,
+    earlyAccess: false,
+  },
+  allaccess: {
+    maxArtworks: -1,
+    maxWallPhotos: -1,
+    maxProjects: -1,
+    maxMockupRooms: -1,
+    maxPremiumRooms: -1,
+    rooms: 'all',
+    premiumRoomsAccess: true,
+    futureRooms: true,
+    highResExport: true,
+    pdfExport: true,
+    pdfMonthlyLimit: -1,
+    designerTools: true,
+    galleryTools: true,
+    exhibitions: -1,
+    clientFolders: true,
+    galleryDashboard: true,
+    multiArtistCollections: true,
+    customBranding: true,
+    pdfProposals: true,
+    publicGalleryPages: true,
+    prioritySupport: true,
+    earlyAccess: true,
   },
   admin: {
     maxArtworks: -1,
@@ -78,13 +152,23 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     maxProjects: -1,
     maxMockupRooms: -1,
     maxPremiumRooms: -1,
+    rooms: 'all',
     premiumRoomsAccess: true,
+    futureRooms: true,
     highResExport: true,
+    pdfExport: true,
+    pdfMonthlyLimit: -1,
+    designerTools: true,
+    galleryTools: true,
+    exhibitions: -1,
     clientFolders: true,
     galleryDashboard: true,
     multiArtistCollections: true,
     customBranding: true,
     pdfProposals: true,
+    publicGalleryPages: true,
+    prioritySupport: true,
+    earlyAccess: true,
   },
 };
 
@@ -93,6 +177,7 @@ export const PLAN_HIERARCHY: Record<PlanType, number> = {
   artist: 1,
   designer: 2,
   gallery: 3,
+  allaccess: 4,
   admin: 99,
 };
 
@@ -101,6 +186,7 @@ export const PLAN_NAMES: Record<PlanType, string> = {
   artist: 'Artist',
   designer: 'Designer',
   gallery: 'Gallery',
+  allaccess: 'All-Access',
   admin: 'Admin',
 };
 
@@ -109,6 +195,7 @@ export const PLAN_PRICES: Record<PlanType, string> = {
   artist: '€9/month',
   designer: '€29/month',
   gallery: '€49/month',
+  allaccess: '€79/month',
   admin: 'N/A',
 };
 
@@ -128,6 +215,11 @@ export function getEffectivePlan(user: {
   subscriptionStatus?: string; 
   subscriptionPlan?: string;
   effectivePlan?: string;
+  entitlements?: {
+    artist_access?: boolean;
+    designer_access?: boolean;
+    gallery_access?: boolean;
+  };
 }): PlanType {
   if (user.effectivePlan) {
     return user.effectivePlan as PlanType;
@@ -142,7 +234,11 @@ export function getEffectivePlan(user: {
     return 'user';
   }
 
-  if (!['user', 'artist', 'designer', 'gallery'].includes(plan)) {
+  if (user.entitlements?.artist_access && user.entitlements?.designer_access && user.entitlements?.gallery_access) {
+    return 'allaccess';
+  }
+
+  if (!['user', 'artist', 'designer', 'gallery', 'allaccess'].includes(plan)) {
     return 'user';
   }
 
@@ -174,7 +270,11 @@ export function canAccessFeature(user: UserPlanInfo | null, feature: keyof PlanL
     return value;
   }
   
-  return value !== 0;
+  if (typeof value === 'number') {
+    return value !== 0;
+  }
+  
+  return value !== 'standard';
 }
 
 export function isWithinLimit(user: UserPlanInfo | null, feature: keyof PlanLimits): boolean {
@@ -201,11 +301,13 @@ export function getUpgradeMessage(currentPlan: PlanType, feature: string): { mes
   const upgradeMap: Record<string, { message: string; suggestedPlan: PlanType }> = {
     maxArtworks: {
       message: currentPlan === 'user' 
-        ? "You've reached the limit for the free plan. Upgrade to Artist to upload more artworks."
+        ? "You've reached the limit for the free plan. Upgrade to Artist to upload up to 50 artworks."
         : currentPlan === 'artist'
-        ? "You've reached your artwork limit. Upgrade to Gallery for up to 500 artworks."
+        ? "You've reached your 50 artwork limit. Upgrade to Designer for up to 100 artworks, or Gallery for unlimited."
+        : currentPlan === 'designer'
+        ? "You've reached your 100 artwork limit. Upgrade to Gallery or All-Access for unlimited artworks."
         : "You've reached your artwork limit.",
-      suggestedPlan: currentPlan === 'user' ? 'artist' : 'gallery',
+      suggestedPlan: currentPlan === 'user' ? 'artist' : currentPlan === 'artist' ? 'designer' : 'gallery',
     },
     maxWallPhotos: {
       message: "You've reached your wall photo limit. Upgrade to unlock more uploads.",
@@ -219,28 +321,50 @@ export function getUpgradeMessage(currentPlan: PlanType, feature: string): { mes
       message: "High-resolution exports are available on Designer plan and above. Upgrade to download high-quality 3000px images.",
       suggestedPlan: 'designer',
     },
+    pdfExport: {
+      message: "PDF exports are available on Designer plan and above.",
+      suggestedPlan: 'designer',
+    },
+    pdfMonthlyLimit: {
+      message: "You've reached your monthly PDF export limit. Upgrade to All-Access for unlimited PDF exports.",
+      suggestedPlan: 'allaccess',
+    },
     premiumRoomsAccess: {
-      message: "Premium mockup rooms are available on Artist plan and above. Upgrade to access all rooms.",
-      suggestedPlan: 'artist',
+      message: "Premium mockup rooms (100+) are available on Designer plan and above. Upgrade to access all rooms.",
+      suggestedPlan: 'designer',
     },
     maxPremiumRooms: {
       message: currentPlan === 'user' 
-        ? "Upgrade to Artist to access more premium rooms (30 rooms)."
+        ? "Upgrade to Designer to access premium rooms."
         : currentPlan === 'artist'
         ? "Upgrade to Designer to access all 100+ premium rooms."
         : "Upgrade to access more premium rooms.",
-      suggestedPlan: currentPlan === 'user' ? 'artist' : 'designer',
+      suggestedPlan: 'designer',
+    },
+    designerTools: {
+      message: "Designer Studio tools are available on Designer and All-Access plans.",
+      suggestedPlan: 'designer',
+    },
+    galleryTools: {
+      message: "Gallery tools (multi-art walls, exhibitions) are available on Gallery and All-Access plans.",
+      suggestedPlan: 'gallery',
+    },
+    exhibitions: {
+      message: currentPlan === 'gallery'
+        ? "You've reached your limit of 3 active exhibitions. Upgrade to All-Access for unlimited exhibitions."
+        : "Virtual exhibitions are available on Gallery and All-Access plans.",
+      suggestedPlan: currentPlan === 'gallery' ? 'allaccess' : 'gallery',
     },
     clientFolders: {
-      message: "Client folders are available on the Designer plan. Upgrade to Designer to unlock this feature.",
+      message: "Client folders are available on Designer plan and above.",
       suggestedPlan: 'designer',
     },
     galleryDashboard: {
-      message: "The Gallery dashboard is reserved for Gallery plans. Upgrade to Gallery to manage multi-artist collections.",
+      message: "The Gallery dashboard is reserved for Gallery and All-Access plans.",
       suggestedPlan: 'gallery',
     },
     multiArtistCollections: {
-      message: "Multi-artist collections are available on Gallery plan. Upgrade to Gallery to unlock this feature.",
+      message: "Multi-artist collections are available on Gallery and All-Access plans.",
       suggestedPlan: 'gallery',
     },
     customBranding: {
@@ -248,8 +372,20 @@ export function getUpgradeMessage(currentPlan: PlanType, feature: string): { mes
       suggestedPlan: 'designer',
     },
     pdfProposals: {
-      message: "Professional PDF proposals are available on Artist plan and above.",
-      suggestedPlan: 'artist',
+      message: "PDF proposals are available on Designer plan and above.",
+      suggestedPlan: 'designer',
+    },
+    publicGalleryPages: {
+      message: "Public gallery pages are available on Gallery and All-Access plans.",
+      suggestedPlan: 'gallery',
+    },
+    prioritySupport: {
+      message: "Priority support is available exclusively on the All-Access plan.",
+      suggestedPlan: 'allaccess',
+    },
+    earlyAccess: {
+      message: "Early access to new features is available exclusively on the All-Access plan.",
+      suggestedPlan: 'allaccess',
     },
   };
 

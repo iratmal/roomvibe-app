@@ -2,7 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import { query } from '../db/database.js';
 import { authenticateToken } from '../middleware/auth.js';
-import { checkGalleryArtworkLimit, getEffectivePlan, requireMinimumPlan } from '../middleware/subscription.js';
+import { checkGalleryArtworkLimit, getEffectivePlan, requireMinimumPlan, getPlanLimits } from '../middleware/subscription.js';
 
 const router = express.Router();
 
@@ -70,8 +70,9 @@ router.post('/collections', authenticateToken, async (req: any, res) => {
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
     
-    if (!['gallery', 'admin'].includes(effectivePlan)) {
-      return res.status(403).json({ error: 'Only galleries and admins can create collections' });
+    if (!['gallery', 'allaccess', 'admin'].includes(effectivePlan) && 
+        !(req.user.entitlements?.gallery_access)) {
+      return res.status(403).json({ error: 'Only gallery, all-access, and admins can create collections' });
     }
 
     const { title, subtitle, description, status } = req.body;
@@ -80,6 +81,29 @@ router.post('/collections', authenticateToken, async (req: any, res) => {
 
     if (!title) {
       return res.status(400).json({ error: 'Collection title is required' });
+    }
+
+    // Check exhibition limit for non-admin users (only count published exhibitions)
+    const planLimits = getPlanLimits(req.user);
+    const exhibitionLimit = planLimits.exhibitions;
+    
+    if (exhibitionLimit !== -1 && effectivePlan !== 'admin') {
+      const countResult = await query(
+        "SELECT COUNT(*) as count FROM gallery_collections WHERE gallery_id = $1 AND status = 'published'",
+        [req.user.id]
+      );
+      const currentCount = parseInt(countResult.rows[0].count || '0', 10);
+      
+      if (currentCount >= exhibitionLimit) {
+        return res.status(403).json({
+          error: 'Exhibition limit reached',
+          message: `You've reached your limit of ${exhibitionLimit} active (published) exhibitions. Upgrade to All-Access for unlimited exhibitions.`,
+          current_count: currentCount,
+          limit: exhibitionLimit,
+          suggested_plan: 'allaccess',
+          upgrade_url: '/pricing'
+        });
+      }
     }
 
     const validStatuses = ['draft', 'published'];

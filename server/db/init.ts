@@ -339,6 +339,20 @@ export async function initializeDatabase() {
       END $$;
     `);
 
+    // PDF export tracking table for monthly limits
+    await query(`
+      CREATE TABLE IF NOT EXISTS pdf_exports (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        export_month VARCHAR(7) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS idx_pdf_exports_user_month ON pdf_exports(user_id, export_month);
+    `);
+
     console.log('✅ Database schema initialized successfully');
     return true;
   } catch (error) {
