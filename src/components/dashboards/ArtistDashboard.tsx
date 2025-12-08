@@ -53,7 +53,7 @@ export function ArtistDashboard() {
   
   // Calculate plan info for usage display
   const effectivePlan = user?.effectivePlan || 'user';
-  const isFreePlan = effectivePlan === 'user';
+  const isFreePlan = effectivePlan === 'user' || effectivePlan === 'free';
   const planLimits = PLAN_LIMITS[effectivePlan as keyof typeof PLAN_LIMITS] || PLAN_LIMITS.user;
   const maxArtworks = planLimits.maxArtworks;
   const isAtLimit = maxArtworks !== -1 && artworks.length >= maxArtworks;
@@ -368,7 +368,7 @@ export function ArtistDashboard() {
             </div>
             {isAtLimit && isFreePlan && (
               <p className="mt-2 text-sm text-amber-600">
-                You've reached your upload limit. Upgrade to Artist plan to upload more artworks.
+                You've reached your 3 artwork limit. Upgrade to Artist plan to upload up to 50 artworks.
               </p>
             )}
           </div>
@@ -749,7 +749,7 @@ export function ArtistDashboard() {
         {showUpgradeModal && (
           <UpgradePrompt
             variant="modal"
-            message="On the Free plan, you can upload only 1 artwork. Upgrade your plan to add more artworks and unlock additional features."
+            message="On the Free plan, you can upload up to 3 artworks. Upgrade your plan to add more artworks and unlock additional features."
             currentPlan="user"
             suggestedPlan="artist"
             onClose={() => setShowUpgradeModal(false)}

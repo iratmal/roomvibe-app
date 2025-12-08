@@ -19,13 +19,13 @@ const DEFAULT_MODEL_STR = "claude-sonnet-4-20250514";
 const anthropic = new Anthropic();
 
 export async function generateTagsFromImage(base64Image: string, mimeType: string = 'image/jpeg'): Promise<string[]> {
+  // Silently skip if API key not configured
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return [];
+  }
+
   try {
     const cleanBase64 = base64Image.replace(/^data:image\/\w+;base64,/, '');
-
-    console.log('[ImageTagging] Starting tag generation...');
-    console.log('[ImageTagging] Image size (base64 chars):', cleanBase64.length);
-    console.log('[ImageTagging] MIME type:', mimeType);
-    console.log('[ImageTagging] Calling Anthropic API...');
     
     const response = await anthropic.messages.create({
       model: DEFAULT_MODEL_STR,
