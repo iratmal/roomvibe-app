@@ -851,7 +851,6 @@ function Studio() {
   
   // Category filter for premium rooms
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const categories = ["all", "bathroom", "bedroom", "cafe", "kids", "kitchen", "livingroom"] as const;
   
   // Filter rooms by plan tier:
   // - Admin: All rooms (no filtering)
@@ -873,6 +872,11 @@ function Studio() {
   
   // Filter rooms by selected category AND plan tier
   const roomsFilteredByPlan = filterRoomsByPlan(premiumRooms);
+  
+  // Derive categories dynamically from the filtered rooms (for Free users, only show categories with basic rooms)
+  const availableCategories = Array.from(new Set(roomsFilteredByPlan.map(room => room.category)));
+  const categories = ["all", ...availableCategories.sort()];
+  
   const filteredPremiumRooms = selectedCategory === "all" 
     ? roomsFilteredByPlan 
     : roomsFilteredByPlan.filter(room => room.category === selectedCategory);

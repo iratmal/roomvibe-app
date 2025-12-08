@@ -1,0 +1,149 @@
+# TASK – Display the 10 Free Plan Rooms as the Default Visible Rooms in Studio
+
+**Goal:**
+Ensure that when a **Free Plan user** (or a user not logged in yet) enters the **RoomVibe Studio**, the **first visible list of rooms** on the left side is *exactly the 10 basic rooms assigned to the Free Plan*.
+
+These rooms must appear immediately on Studio load, without requiring the user to click on any category or filter.
+
+This must work consistently:
+
+* on initial Studio page load,
+* after hard refresh,
+* after login,
+* after returning from dashboard.
+
+---
+
+# ✅ PART 1 — REQUIRED DEFAULT BEHAVIOR
+
+When a Free Plan user opens `/studio`, the left sidebar should automatically display **only** these 10 rooms:
+
+### **Bathroom (2)**
+
+1. Bathroom 7
+2. Bathroom 10
+
+### **Bedroom (3)**
+
+3. Bedroom 4
+4. Bedroom 5
+5. Bedroom 6
+
+### **Kitchen (2)**
+
+6. Kitchen 18
+7. Kitchen 19
+
+### **Living Room (3)**
+
+8. Living Room 12
+9. Living Room 16
+10. Living Room 21
+
+These should be the **first and only rooms visible** in the left sidebar when the Studio loads for a Free user.
+
+---
+
+# ✅ PART 2 — LOGIC FIX
+
+Update Studio initialization logic so that:
+
+```ts
+if (plan === "free") {
+   displayedRooms = rooms.filter(r => r.basicFree === true);
+   setSelectedCategory("All"); // avoid category override
+   return;
+}
+```
+
+Important:
+
+* The app must NOT preload all rooms and then filter by category.
+* The app must NOT show Artist/Designer rooms on first load.
+* The Free list must be loaded **before** any category grouping.
+
+---
+
+# ✅ PART 3 — CATEGORY BEHAVIOR FOR FREE USERS
+
+If categories exist (e.g., Bathroom, Bedroom, Kitchen, Living):
+
+* Only categories relevant to the 10 free rooms should appear.
+* No empty categories should be shown.
+* Category switching must still filter within the **basicFree** set.
+
+Example:
+
+```ts
+if (plan === "free") {
+  categories = deriveCategoriesFrom(basicFreeRooms);
+}
+```
+
+---
+
+# ✅ PART 4 — AVOID ANY PREMIUM / STANDARD ROOMS ON FIRST LOAD
+
+Free users must NOT:
+
+* see premium or standard rooms on Studio open,
+* scroll past the 10 free rooms,
+* load additional rooms in the background.
+
+This means:
+
+```ts
+if (plan === "free") {
+   return basicFreeRoomsOnly;
+}
+```
+
+Not:
+
+```ts
+loadAllAndThenFilterLater() // ❌ reject this pattern
+```
+
+---
+
+# ✅ PART 5 — ADMIN EXCEPTION
+
+Admins must still see all rooms.
+
+```ts
+if (user.isAdmin) return rooms;
+```
+
+---
+
+# ✅ PART 6 — TEST CASES
+
+### **Test: Free User Opens Studio**
+
+* Only the 10 free rooms are in sidebar ✔
+* No premium or standard rooms appear ✔
+* No scroll past the free rooms ✔
+
+### **Test: Admin Opens Studio**
+
+* All rooms appear ✔
+
+### **Test: User Upgrades to Artist**
+
+* Sidebar reloads to show 30 rooms (10 free + 20 standard) ✔
+
+### **Test: Returning to Studio**
+
+* Correct room set loads every time ✔
+
+---
+
+# MODE
+
+Use **Fast Mode**.
+
+---
+
+# STOP CONDITION
+
+When a Free user loads Studio, the **left sidebar displays ONLY the 10 Free rooms**, in the exact order defined, without requiring any interaction or filter switching.
