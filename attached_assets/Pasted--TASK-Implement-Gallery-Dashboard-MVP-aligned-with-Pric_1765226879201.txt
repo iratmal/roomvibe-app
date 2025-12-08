@@ -1,0 +1,209 @@
+# TASK — Implement **Gallery Dashboard (MVP)** aligned with Pricing
+
+**Goal:**
+Kreirati funkcionalan **Gallery Dashboard** koji odgovara onome što je navedeno u pricing tablici za Gallery plan i služi kao centralno mjesto za upravljanje umjetninama, izložbama i (u MVP obliku) virtualnim galerijama.
+
+Pricing kartica za **Gallery** trenutno kaže:
+
+* **Upload unlimited artworks**
+* Access to **100+ premium mockup rooms**
+* **Multi‑art wall presentations**
+* **Virtual exhibition rooms (up to 3 active exhibitions)**
+* **Gallery Hub**
+* **Exhibition PDF export (20 per month)**
+* **Public exhibition share links**
+
+Ovaj task definira **MVP verziju** koja pokriva osnovnu funkcionalnost i priprema teren za napredniju virtualnu galeriju.
+
+---
+
+## 1. Route & osnovni layout
+
+### 1.1. Route
+
+* Dodati route za Gallery dashboard, npr.:
+
+  * `/dashboard/gallery`
+
+* Osigurati da nakon registracije kao Gallery account type, korisnik bude redirectan na **Gallery Dashboard**.
+
+### 1.2. Naslov & header
+
+Na vrhu stranice (unutar dashboard layouta):
+
+* Title: `Gallery Dashboard`
+* Subtitle: `Welcome back, [gallery name or email]!`
+
+Header navigacija je pokrivena zasebnim taskom **Dashboard Headers Task**, ovdje se samo usklađuje sadržaj.
+
+---
+
+## 2. Sekcije Gallery Dashboarda
+
+Predlažem sljedeću strukturu sekcija:
+
+### 2.1. **Gallery Hub** (overview)
+
+* Naslov: `Gallery Hub`
+* Kratak opis: npr. `Manage your artworks, exhibitions, and virtual shows in one place.`
+
+U ovoj sekciji možemo prikazati kratke statuse:
+
+* broj uploadanih artworkova
+* broj aktivnih izložbi
+* ukupno generiranih PDF‑ova ovaj mjesec (kasnije)
+
+MVP: dovoljno je nekoliko informativnih brojki bez kompleksne analitike.
+
+---
+
+### 2.2. **Artwork Library**
+
+Pricing: `Upload unlimited artworks`.
+
+Za MVP:
+
+* Formu za upload artworkova, vrlo sličnu Artist upload formi:
+
+  * Title (naziv djela)
+  * Artist (field za ime umjetnika)
+  * Image upload
+  * Dimensions (optional)
+
+* Nema limita u kodu ("unlimited"), ali u praksi možemo koristiti razuman soft limit ako je već dio sustava (npr. 1000) — za sada bez tvrdog ograničenja.
+
+* Prikaz kao grid/list `Artwork Library` s:
+
+  * thumbnail
+  * title
+  * artist name
+
+> Bitno: koristiti isti ili vrlo sličan artwork model kao kod Artista, uz dodatno polje `artistName`.
+
+---
+
+### 2.3. **Exhibitions** (osnova za virtualne galerije)
+
+Pricing: `Virtual exhibition rooms (up to 3 active exhibitions)`.
+
+MVP model izložbe:
+
+```ts
+interface Exhibition {
+  id: string;
+  name: string;
+  description?: string;
+  isActive: boolean;
+  createdAt: string;
+}
+```
+
+Funkcionalnost (MVP):
+
+* Gumb: `Create New Exhibition`
+* Forma: `name` + optional `description`
+* Lista izložbi s oznakom `Active` / `Inactive`.
+* Limit: **maks. 3 aktivne izložbe** u isto vrijeme.
+
+  * Ako korisnik pokuša aktivirati četvrtu, prikazati poruku.
+
+Za sada nije potrebno implementirati kompletan virtual gallery viewer; ovo je backend/frontend priprema i jednostavan management.
+
+> Virtual exhibition viewer i Street View logika bit će u zasebnom tasku, ali ovaj dashboard treba imati osnovnu strukturu za izložbe.
+
+---
+
+### 2.4. **Virtual Exhibition Rooms (MVP hook)**
+
+U sekciji `Exhibitions`, za svaku izložbu:
+
+* dodati button: `Open Virtual Room` (može voditi na placeholder stranicu ili osnovni layout koji će kasnije biti proširen).
+
+Za sada je dovoljno:
+
+* kreirati route npr. `/gallery/exhibitions/:id` s placeholder komponentom (`Coming soon` ili MVP vizualizacija jedne sobe),
+* osigurati da je arhitektura spremna za kasniji upgrade.
+
+---
+
+### 2.5. **Exports & Share links (MVP)**
+
+Pricing:
+
+* `Exhibition PDF export (20 per month)`
+* `Public exhibition share links`
+
+Za MVP u ovom tasku:
+
+* u `Exhibitions` listi dodati (za svaku izložbu):
+
+  * button `Generate PDF` (može biti placeholder akcija ili pozivanje postojećeg PDF exporta kada bude spreman),
+  * button `Copy Public Link` (generira/ prikazuje URL u formatu `/exhibitions/:id/public`).
+
+Implementacija može biti minimalna:
+
+* Za `Copy Public Link` dovoljno je konstruirati URL i kopirati ga u clipboard (ako postoji public route, super; ako ne, dodati placeholder route).
+* Ograničenje `20 per month` za PDF export nije nužno u ovom MVP tasku — može biti ostavljeno za kasniji task kada PDF export za izložbe bude potpuno funkcionalan.
+
+---
+
+### 2.6. **Your Plan (Gallery)**
+
+Sekcija na dnu:
+
+* Title: `Your Plan`
+* Status: `Gallery`
+* Tekst: npr. `You’re on the Gallery plan. Perfect for galleries managing collections and exhibitions.`
+
+Checklist, usklađeno s pricing tablicom:
+
+* ✓ Upload unlimited artworks
+* ✓ Access to 100+ premium mockup rooms
+* ✓ Multi‑art wall presentations
+* ✓ Virtual exhibition rooms (up to 3 active exhibitions)
+* ✓ Gallery Hub
+* ✓ Exhibition PDF export (20 per month)
+* ✓ Public exhibition share links
+
+Gumbi:
+
+* `Manage billing`
+* `View all plans`
+
+---
+
+## 3. Studio integracija (Gallery)
+
+Galerije također koriste Studio za mockupove u prostorima.
+
+* U Gallery Dashboardu dodati karticu `Studio` s buttonom `Open Studio`.
+* U Studiu, za Gallery korisnika:
+
+  * omogućiti pristup svim 100+ premium sobama.
+  * koristiti `Artwork Library` kao izvor slika (kao kod umjetnika, ali s dodatnim poljem `artistName`).
+
+Multi‑art wall presentations (više slika na zidu odjednom) može biti zaseban future task; za MVP je dovoljno da se koristi trenutni single‑art workflow dok ne dodamo multi‑art podršku.
+
+---
+
+## 4. Ne raditi
+
+* Ne implementirati kompletnu Street View virtual galeriju u ovom tasku (to je veći zaseban projekt).
+* Ne uvoditi kompleksnu PDF logiku; dopušten je placeholder/ minimalna funkcionalnost.
+* Ne dirati Stripe ili billing logiku; ovo je samo usklađivanje dashboarda s postojećim pricingom.
+
+---
+
+## 5. Stop condition
+
+* Kao Gallery korisnik:
+
+  * nakon registracije i prijave dolazim na **Gallery Dashboard**.
+  * mogu:
+
+    * uploadati veći broj artworkova u `Artwork Library` bez tvrdog limita.
+    * kreirati više izložbi, ali imati max 3 označene kao `Active`.
+    * iz `Exhibitions` sekcije otvoriti `Open Virtual Room` (route postoji, makar kao MVP viewer/placeholder).
+    * za svaku izložbu kliknuti `Generate PDF` i `Copy Public Link` (barem kao osnovna funkcionalnost).
+  * u sekciji `Your Plan` vidim točne stavke za Gallery plan.
+* Dashboard ima header navigaciju (iz globalnog header taska) i izgleda vizualno usklađeno s ostatkom aplikacije.

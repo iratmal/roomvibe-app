@@ -34,7 +34,14 @@ const PLAN_DISPLAYS: Record<string, PlanDisplay> = {
     badge: 'Designer',
     badgeColor: 'bg-purple-100 text-purple-800',
     description: 'For interior designers presenting concepts to clients.',
-    bullets: ['Unlimited artworks & mockups', 'Client folders & projects'],
+    bullets: [
+      'Up to 100 artworks',
+      'Access to 100+ premium rooms',
+      'High-resolution export (3000px+)',
+      'PDF export',
+      'Designer Studio tools',
+      'Unlimited previews'
+    ],
   },
   gallery: {
     badge: 'Gallery',

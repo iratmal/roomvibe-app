@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ImpersonationBanner } from '../ImpersonationBanner';
-import { YourPlanCard } from '../YourPlanCard';
 import { SiteHeader } from '../SiteHeader';
+import { PLAN_LIMITS } from '../../config/planLimits';
 
 const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
 
@@ -18,13 +18,32 @@ interface Project {
   updated_at: string;
 }
 
+interface Artwork {
+  id: number;
+  artist_id: number;
+  title: string;
+  image_url: string;
+  width: number;
+  height: number;
+  dimension_unit: string;
+  created_at: string;
+}
+
 export function DesignerDashboard() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
+  const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [loading, setLoading] = useState(false);
+  const [artworkLoading, setArtworkLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
+  const [showArtworkDeleteConfirm, setShowArtworkDeleteConfirm] = useState<number | null>(null);
+
+  const effectivePlan = user?.effectivePlan || 'designer';
+  const planLimits = PLAN_LIMITS[effectivePlan as keyof typeof PLAN_LIMITS] || PLAN_LIMITS.designer;
+  const maxArtworks = planLimits.maxArtworks;
+  const isAtArtworkLimit = maxArtworks !== -1 && artworks.length >= maxArtworks;
 
   const [formData, setFormData] = useState({
     title: '',
@@ -33,9 +52,32 @@ export function DesignerDashboard() {
     notes: ''
   });
 
+  const [artworkForm, setArtworkForm] = useState({
+    title: '',
+    width: '',
+    height: '',
+    dimensionUnit: 'cm',
+    image: null as File | null
+  });
+
   useEffect(() => {
     fetchProjects();
+    fetchArtworks();
   }, []);
+
+  const fetchArtworks = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/artist/artworks`, {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setArtworks(data.artworks || []);
+      }
+    } catch (err) {
+      console.error('Error fetching artworks:', err);
+    }
+  };
 
   const fetchProjects = async () => {
     try {
@@ -141,6 +183,94 @@ export function DesignerDashboard() {
     });
   };
 
+  const handleArtworkInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setArtworkForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleArtworkImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setArtworkForm(prev => ({ ...prev, image: e.target.files![0] }));
+    }
+  };
+
+  const handleArtworkSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!artworkForm.title || !artworkForm.image) {
+      setError('Please provide a title and image');
+      return;
+    }
+
+    if (isAtArtworkLimit) {
+      setError(`You've reached your limit of ${maxArtworks} artworks. Upgrade your plan for more.`);
+      return;
+    }
+
+    setArtworkLoading(true);
+    setError('');
+
+    try {
+      const formDataObj = new FormData();
+      formDataObj.append('title', artworkForm.title);
+      formDataObj.append('width', artworkForm.width || '50');
+      formDataObj.append('height', artworkForm.height || '50');
+      formDataObj.append('dimensionUnit', artworkForm.dimensionUnit);
+      formDataObj.append('buyUrl', 'https://example.com');
+      formDataObj.append('image', artworkForm.image);
+
+      const response = await fetch(`${API_URL}/api/artist/artworks`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formDataObj
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || errorData.error || 'Failed to upload artwork');
+      }
+
+      setSuccess('Artwork uploaded successfully!');
+      setArtworkForm({
+        title: '',
+        width: '',
+        height: '',
+        dimensionUnit: 'cm',
+        image: null
+      });
+      
+      const fileInput = document.querySelector('#artworkImage') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
+      
+      await fetchArtworks();
+      setTimeout(() => setSuccess(''), 5000);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setArtworkLoading(false);
+    }
+  };
+
+  const handleArtworkDelete = async (id: number) => {
+    try {
+      const response = await fetch(`${API_URL}/api/artist/artworks/${id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete artwork');
+      }
+
+      setSuccess('Artwork deleted successfully!');
+      setShowArtworkDeleteConfirm(null);
+      await fetchArtworks();
+      setTimeout(() => setSuccess(''), 5000);
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f7f8fa]">
       <SiteHeader showPlanBadge={true} />
@@ -148,27 +278,13 @@ export function DesignerDashboard() {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16">
         {/* Header Section */}
-        <div className="flex justify-between items-start mb-12 pb-8 border-b border-slate-200">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-semibold mb-3 text-[#264C61] tracking-tight" style={{ fontFamily: 'Inter, sans-serif' }}>
-              Designer Dashboard
-            </h1>
-            <p className="text-lg text-slate-500" style={{ fontFamily: 'Inter, sans-serif' }}>
-              Create client projects and generate room visualizations.
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <a
-              href="#/studio"
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#264C61] text-white text-sm font-semibold rounded-lg hover:bg-[#1D3A4A] transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              <span className="hidden sm:inline">Open Studio</span>
-              <span className="sm:hidden">Studio</span>
-            </a>
-          </div>
+        <div className="mb-12 pb-8 border-b border-slate-200">
+          <h1 className="text-4xl md:text-5xl font-semibold mb-2 text-[#264C61] tracking-tight" style={{ fontFamily: 'Inter, sans-serif' }}>
+            Designer Dashboard
+          </h1>
+          <p className="text-lg text-slate-500" style={{ fontFamily: 'Inter, sans-serif' }}>
+            Welcome back, {user?.email || 'Designer'}!
+          </p>
         </div>
 
         {error && (
@@ -430,12 +546,269 @@ export function DesignerDashboard() {
           )}
         </div>
 
+        {/* Upload Artwork & Photos Section */}
+        <div className="mb-12 p-8 bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100">
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <h2 className="text-2xl font-semibold mb-2 text-[#264C61]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                Upload Artwork & Photos
+              </h2>
+              <p className="text-sm text-slate-400">Upload images to use in Studio visualizations</p>
+            </div>
+            <div className="text-sm text-slate-500">
+              {artworks.length} / {maxArtworks === -1 ? '∞' : maxArtworks} uploads
+            </div>
+          </div>
+          
+          <form onSubmit={handleArtworkSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label htmlFor="artworkTitle" className="block text-sm font-semibold text-slate-700 mb-2">
+                  Title <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="artworkTitle"
+                  name="title"
+                  value={artworkForm.title}
+                  onChange={handleArtworkInputChange}
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] focus:border-transparent transition-all bg-slate-50 hover:bg-white"
+                  placeholder="e.g., Client Room Photo"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="artworkImage" className="block text-sm font-semibold text-slate-700 mb-2">
+                  Image <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="file"
+                  id="artworkImage"
+                  accept="image/*"
+                  onChange={handleArtworkImageChange}
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] focus:border-transparent transition-all bg-slate-50 hover:bg-white file:mr-4 file:py-1 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#264C61] file:text-white hover:file:bg-[#1D3A4A]"
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <label htmlFor="artworkWidth" className="block text-sm font-semibold text-slate-700 mb-2">
+                  Width (optional)
+                </label>
+                <input
+                  type="number"
+                  id="artworkWidth"
+                  name="width"
+                  value={artworkForm.width}
+                  onChange={handleArtworkInputChange}
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] focus:border-transparent transition-all bg-slate-50 hover:bg-white"
+                  placeholder="50"
+                />
+              </div>
+              <div>
+                <label htmlFor="artworkHeight" className="block text-sm font-semibold text-slate-700 mb-2">
+                  Height (optional)
+                </label>
+                <input
+                  type="number"
+                  id="artworkHeight"
+                  name="height"
+                  value={artworkForm.height}
+                  onChange={handleArtworkInputChange}
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] focus:border-transparent transition-all bg-slate-50 hover:bg-white"
+                  placeholder="50"
+                />
+              </div>
+              <div>
+                <label htmlFor="artworkUnit" className="block text-sm font-semibold text-slate-700 mb-2">
+                  Unit
+                </label>
+                <select
+                  id="artworkUnit"
+                  name="dimensionUnit"
+                  value={artworkForm.dimensionUnit}
+                  onChange={handleArtworkInputChange}
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] focus:border-transparent transition-all bg-slate-50 hover:bg-white"
+                >
+                  <option value="cm">cm</option>
+                  <option value="in">inches</option>
+                </select>
+              </div>
+            </div>
+            <button
+              type="submit"
+              disabled={artworkLoading || isAtArtworkLimit}
+              className="px-8 py-3.5 bg-[#264C61] text-white rounded-xl hover:bg-[#1D3A4A] transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#264C61]/25"
+            >
+              {artworkLoading ? 'Uploading...' : isAtArtworkLimit ? 'Limit Reached' : 'Upload Artwork'}
+            </button>
+          </form>
+        </div>
+
+        {/* My Artworks Grid */}
+        {artworks.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-2xl font-semibold mb-6 text-[#264C61]" style={{ fontFamily: 'Inter, sans-serif' }}>
+              My Artworks
+            </h2>
+            <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {artworks.map((artwork) => (
+                <div
+                  key={artwork.id}
+                  className="bg-white border border-slate-100 rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-slate-200/50 transition-all group"
+                >
+                  <div className="aspect-square bg-slate-100 relative">
+                    <img
+                      src={artwork.image_url}
+                      alt={artwork.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-semibold text-[#264C61] truncate mb-1">{artwork.title}</h3>
+                    <p className="text-sm text-slate-400">
+                      {artwork.width} × {artwork.height} {artwork.dimension_unit}
+                    </p>
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        onClick={() => setShowArtworkDeleteConfirm(artwork.id)}
+                        className="flex-1 text-xs px-3 py-2 text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                    {showArtworkDeleteConfirm === artwork.id && (
+                      <div className="mt-3 p-3 bg-red-50 rounded-lg">
+                        <p className="text-xs text-red-700 mb-2">Delete this artwork?</p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleArtworkDelete(artwork.id)}
+                            className="flex-1 text-xs px-2 py-1.5 bg-red-500 text-white rounded hover:bg-red-600"
+                          >
+                            Yes
+                          </button>
+                          <button
+                            onClick={() => setShowArtworkDeleteConfirm(null)}
+                            className="flex-1 text-xs px-2 py-1.5 border border-red-200 text-red-600 rounded hover:bg-red-100"
+                          >
+                            No
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Studio Card */}
+        <div className="mb-12 p-8 bg-gradient-to-br from-[#264C61] to-[#1D3A4A] rounded-2xl shadow-lg text-white">
+          <div className="flex items-start justify-between">
+            <div>
+              <h2 className="text-2xl font-semibold mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+                Studio
+              </h2>
+              <p className="text-white/80 mb-6 max-w-md">
+                Visualize your projects with premium mockup rooms. Access 100+ premium rooms, high-resolution exports, and PDF generation.
+              </p>
+              <a
+                href="#/studio"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-[#264C61] rounded-xl hover:bg-slate-100 transition-colors font-semibold"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Open Studio
+              </a>
+            </div>
+            <div className="hidden md:block opacity-20">
+              <svg className="w-32 h-32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Your Plan Section */}
+        <div className="mb-12 p-8 bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-semibold text-[#264C61]" style={{ fontFamily: 'Inter, sans-serif' }}>
+              Your Plan
+            </h2>
+            <span className="px-4 py-1.5 bg-purple-100 text-purple-800 text-sm font-semibold rounded-full">
+              Designer
+            </span>
+          </div>
+          <p className="text-slate-600 mb-6">
+            You're on the Designer plan. Perfect for interior designers presenting concepts to clients.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
+            <div className="flex items-center gap-2 text-sm text-slate-700">
+              <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Upload up to 100 artworks
+            </div>
+            <div className="flex items-center gap-2 text-sm text-slate-700">
+              <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Access to 100+ premium mockup rooms
+            </div>
+            <div className="flex items-center gap-2 text-sm text-slate-700">
+              <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              High-resolution export (3000px+)
+            </div>
+            <div className="flex items-center gap-2 text-sm text-slate-700">
+              <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              PDF export
+            </div>
+            <div className="flex items-center gap-2 text-sm text-slate-700">
+              <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Designer Studio tools
+            </div>
+            <div className="flex items-center gap-2 text-sm text-slate-700">
+              <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Mockup downloads
+            </div>
+            <div className="flex items-center gap-2 text-sm text-slate-700">
+              <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Unlimited previews
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <a
+              href="#/billing"
+              className="px-6 py-2.5 bg-[#264C61] text-white rounded-xl hover:bg-[#1D3A4A] transition-colors font-semibold"
+            >
+              Manage billing
+            </a>
+            <a
+              href="#/pricing"
+              className="px-6 py-2.5 border-2 border-slate-200 text-slate-700 rounded-xl hover:border-[#264C61] hover:text-[#264C61] transition-colors font-semibold"
+            >
+              View all plans
+            </a>
+          </div>
+        </div>
+
         {/* Account & Security Section */}
         <div className="grid gap-6 md:grid-cols-2">
-          {/* Designer Account Card - Clean, minimal design */}
           <div className="p-6 bg-slate-50 rounded-xl border border-slate-100">
             <div className="flex items-center gap-3 mb-5">
-              {/* Avatar placeholder */}
               <div className="w-10 h-10 rounded-full bg-[#264C61]/10 flex items-center justify-center">
                 <svg className="w-5 h-5 text-[#264C61]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -447,44 +820,25 @@ export function DesignerDashboard() {
             </div>
             <div className="space-y-3 text-sm">
               <div className="flex items-center justify-between py-2 border-b border-slate-200">
-                <span className="font-medium text-slate-600" style={{ fontFamily: 'Inter, sans-serif' }}>Email</span>
+                <span className="font-medium text-slate-600">Email</span>
                 <span className="text-slate-800">{user?.email}</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-slate-200">
-                <span className="font-medium text-slate-600" style={{ fontFamily: 'Inter, sans-serif' }}>Role</span>
-                <span className="px-2.5 py-0.5 bg-[#264C61]/10 text-[#264C61] text-xs font-semibold rounded-full">Designer</span>
+                <span className="font-medium text-slate-600">Role</span>
+                <span className="px-2.5 py-0.5 bg-purple-100 text-purple-800 text-xs font-semibold rounded-full">Designer</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-slate-200">
-                <span className="font-medium text-slate-600" style={{ fontFamily: 'Inter, sans-serif' }}>Status</span>
-                {user?.emailConfirmed ? (
-                  <span className="flex items-center gap-1 text-green-600 font-medium">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    Verified
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1 text-amber-600 font-medium">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                    Pending
-                  </span>
-                )}
+                <span className="font-medium text-slate-600">Artworks</span>
+                <span className="text-slate-800 font-semibold">{artworks.length}</span>
               </div>
               <div className="flex items-center justify-between py-2">
-                <span className="font-medium text-slate-600" style={{ fontFamily: 'Inter, sans-serif' }}>Projects</span>
+                <span className="font-medium text-slate-600">Projects</span>
                 <span className="text-slate-800 font-semibold">{projects.length}</span>
               </div>
             </div>
           </div>
 
-          {/* Change Password Card with enhanced styling */}
           <ChangePasswordDesigner />
-        </div>
-
-        <div className="mt-8">
-          <YourPlanCard />
         </div>
       </div>
     </div>
