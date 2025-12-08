@@ -1879,41 +1879,46 @@ function Studio() {
   }, [isResizing, isPinching, userPhoto]);
 
   return (
-    <main>
+    <main className="flex flex-col">
       {!isInIframe && <StudioHeader />}
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mx-auto max-w-[1400px] w-full px-4 sm:px-6 lg:px-8 py-4 lg:py-6 lg:min-h-[calc(100vh-80px)] lg:flex lg:flex-col">
         <div className="mb-4 text-sm text-rv-textMuted">
           <span className="font-semibold text-rv-primary">RoomVibe Studio</span> · Upload a wall photo, pick a room preset, and see your art true-to-size.
         </div>
-        <div className="grid grid-cols-12 gap-4 lg:gap-6">
+        <div className="grid grid-cols-12 gap-4 lg:gap-6 lg:flex-1">
           {/* Left: Scenes gallery - Shown last on mobile (order-3), first on desktop (lg:order-1) */}
-          <aside className="order-3 lg:order-1 col-span-12 lg:col-span-3 rounded-rvLg border border-rv-neutral bg-white shadow-rvSoft p-4 h-auto lg:h-[78vh] overflow-auto">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="text-xs font-semibold text-rv-textMuted uppercase tracking-wide">Scenes</div>
-              <a href="#home" className="text-xs font-medium text-rv-textMuted hover:text-rv-primary transition-colors">
-                Home
-              </a>
+          <aside className="order-3 lg:order-1 col-span-12 lg:col-span-3 rounded-rvLg border border-rv-neutral bg-white shadow-rvSoft p-4 h-auto lg:h-[calc(100vh-160px)] flex flex-col">
+            {/* Fixed header section */}
+            <div className="flex-shrink-0">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="text-xs font-semibold text-rv-textMuted uppercase tracking-wide">Scenes</div>
+                <a href="#home" className="text-xs font-medium text-rv-textMuted hover:text-rv-primary transition-colors">
+                  Home
+                </a>
+              </div>
+              
+              {/* Category Filter Pills */}
+              <div className="mb-4 flex flex-nowrap gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`flex-shrink-0 px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all shadow-sm ${
+                      selectedCategory === cat
+                        ? "bg-[#264C61] text-white shadow-md"
+                        : "bg-white text-[#264C61] border-2 border-[#264C61]/20 hover:border-[#264C61]/50 hover:bg-[#264C61]/5"
+                    }`}
+                  >
+                    {cat === "all" ? "All" : getCategoryDisplayName(cat)}
+                  </button>
+                ))}
+              </div>
             </div>
             
-            {/* Category Filter Pills */}
-            <div className="mb-5 flex flex-nowrap gap-2 overflow-x-auto pb-1 scrollbar-hide">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`flex-shrink-0 px-3.5 py-1.5 text-xs font-semibold rounded-full transition-all shadow-sm ${
-                    selectedCategory === cat
-                      ? "bg-[#264C61] text-white shadow-md"
-                      : "bg-white text-[#264C61] border-2 border-[#264C61]/20 hover:border-[#264C61]/50 hover:bg-[#264C61]/5"
-                  }`}
-                >
-                  {cat === "all" ? "All" : getCategoryDisplayName(cat)}
-                </button>
-              ))}
-            </div>
-            
-            {/* Unified Room Grid - Free presets first, then premium rooms */}
-            <div className="grid grid-cols-2 gap-2.5">
+            {/* Scrollable room list */}
+            <div className="flex-1 overflow-y-auto lg:overflow-y-auto overflow-x-hidden">
+              {/* Unified Room Grid - Free presets first, then premium rooms */}
+              <div className="grid grid-cols-2 gap-2.5">
               {/* Free Presets */}
               {filteredPresets.map((p: any) => (
                 <button
@@ -1993,19 +1998,20 @@ function Studio() {
               </div>
             )}
             
-            {/* Upgrade hint for users without premium room access */}
-            {!hasPremiumRoomsAccess && selectedCategory === "all" && (
-              <div className="mt-4 pt-3 border-t border-rv-neutral/40 flex items-center justify-between">
-                <span className="text-[10px] text-rv-textMuted">
-                  {premiumRooms.length}+ premium rooms locked
-                </span>
-                <UpgradeNudge
-                  message="Unlock All"
-                  variant="badge"
-                  onClick={() => showUpgradeFor('premiumRooms')}
-                />
-              </div>
-            )}
+              {/* Upgrade hint for users without premium room access */}
+              {!hasPremiumRoomsAccess && selectedCategory === "all" && (
+                <div className="mt-4 pt-3 border-t border-rv-neutral/40 flex items-center justify-between">
+                  <span className="text-[10px] text-rv-textMuted">
+                    {premiumRooms.length}+ premium rooms locked
+                  </span>
+                  <UpgradeNudge
+                    message="Unlock All"
+                    variant="badge"
+                    onClick={() => showUpgradeFor('premiumRooms')}
+                  />
+                </div>
+              )}
+            </div>
           </aside>
 
           {/* Center: Canvas - Shown first on mobile (order-1), middle on desktop (lg:order-2) */}
@@ -2321,8 +2327,10 @@ function Studio() {
           </section>
 
           {/* Right: Controls - Shown second on mobile (order-2), last on desktop (lg:order-3) */}
-          <aside className="order-2 lg:order-3 col-span-12 lg:col-span-3 rounded-rvLg border border-rv-neutral bg-white shadow-rvSoft p-4 lg:p-5 min-h-[200px] h-auto lg:h-[78vh] overflow-auto space-y-5">
-            <div className="text-xs font-semibold text-rv-textMuted uppercase tracking-wide">Artwork</div>
+          <aside className="order-2 lg:order-3 col-span-12 lg:col-span-3 rounded-rvLg border border-rv-neutral bg-white shadow-rvSoft p-4 lg:p-5 min-h-[200px] h-auto lg:h-[calc(100vh-160px)] flex flex-col">
+            {/* Scrollable settings section */}
+            <div className="flex-1 overflow-y-auto lg:overflow-y-auto space-y-5 lg:pr-1">
+              <div className="text-xs font-semibold text-rv-textMuted uppercase tracking-wide">Artwork</div>
             
             {/* Free users: Show limited artwork gallery with lock */}
             {isFreePlan ? (
@@ -2423,17 +2431,18 @@ function Studio() {
               </div>
             </div>
 
-            <div className="pt-2 border-t border-rv-neutral/50">
-              <button
-                onClick={resetPosition}
-                className="text-xs font-medium text-rv-textMuted hover:text-rv-primary transition-colors"
-              >
-                Reset position & size
-              </button>
+              <div className="pt-2 border-t border-rv-neutral/50">
+                <button
+                  onClick={resetPosition}
+                  className="text-xs font-medium text-rv-textMuted hover:text-rv-primary transition-colors"
+                >
+                  Reset position & size
+                </button>
+              </div>
             </div>
 
-            {/* Export Section */}
-            <div className="space-y-4">
+            {/* Export Section - Pinned at bottom on desktop */}
+            <div className="flex-shrink-0 pt-4 lg:pt-4 lg:border-t lg:border-rv-neutral/50 space-y-3">
               <div className="text-xs font-semibold text-rv-textMuted uppercase tracking-wide">Export</div>
               
               {/* Download Button (1200px) */}

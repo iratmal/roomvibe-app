@@ -21,7 +21,7 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
     - **Mid-Page CTA**: Centered block on #F9F9F9, py-16. Uses h2 with var(--roomvibe-navy) and btn-primary class.
     - **Footer**: Primary (#264C61) background with 4 columns (Branding, Product, Company, Newsletter). Subscribe button uses btn-primary class.
 - **Header**: Logo h-20 lg:h-24, nav gap-12 spacing. Sign Up button uses primary #264C61.
-- **Studio Layout**: A responsive, mobile-first, three-panel editor with dynamic canvas height and hidden navigation for iframe embedding. Polished UI with 44px minimum touch targets, gold-bordered premium buttons, and consistent RoomVibe branding throughout.
+- **Studio Layout (Updated Dec 2024)**: A responsive, mobile-first, three-panel editor with dynamic canvas height and hidden navigation for iframe embedding. Polished UI with 44px minimum touch targets, gold-bordered premium buttons, and consistent RoomVibe branding throughout. Desktop viewport-height layout: left/right columns use `h-[calc(100vh-160px)]` with flex-col structure. Left column has fixed header (Scenes title + category filters) with scrollable room list (`flex-1 overflow-y-auto`). Right column has scrollable settings section with Export buttons pinned at bottom (`flex-shrink-0`).
 - **Iconography**: Inline SVG components with gold accent.
 - **Artwork Interaction**: Drag-to-move with bounds, diagonal resizing with smart scaling, true physical scale rendering, and frame selection. Mobile touch handling differentiates between scroll and drag.
 

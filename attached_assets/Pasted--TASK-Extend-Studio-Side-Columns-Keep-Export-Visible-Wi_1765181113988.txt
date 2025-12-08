@@ -1,0 +1,137 @@
+# TASK – Extend Studio Side Columns & Keep Export Visible Without Page Scroll
+
+**Goal**
+Adjust the layout of the Studio page so that:
+
+1. The **left “Scenes” column** and **right settings/export column** visually extend lower (not cut off near the footer).
+2. The **EXPORT section on the right is visible without needing to scroll the whole page** – user should see it in the viewport when working in Studio.
+3. Scrolling for long lists (Scenes, Frames, etc.) happens **inside the columns**, not by pushing the whole page toward the footer.
+
+This is a **layout/UX** task for the `/studio` page.
+
+---
+
+## 1) Main layout: studio area should fill viewport height
+
+On the `/studio` page, ensure that the main Studio content (left scenes column, center room preview, right settings + export) occupies the full available viewport height (minus header and some spacing above footer).
+
+Example structure (pseudo):
+
+```tsx
+<div className="studio-layout">
+  <Header />
+  <main className="studio-main">
+    {/* left, center, right columns */}
+  </main>
+  <Footer />
+</div>
+```
+
+Update CSS/Tailwind so that:
+
+```css
+.studio-main {
+  min-height: calc(100vh - var(--header-height) - var(--footer-offset));
+  display: flex; /* or grid, depending on current implementation */
+}
+```
+
+Or Tailwind-equivalent, for example:
+
+```tsx
+<main className="flex flex-1 min-h-[calc(100vh-var(--header-height)-var(--footer-offset))]">
+  {/* columns */}
+</main>
+```
+
+Adjust exact values to match existing header/footer heights.
+
+---
+
+## 2) Left “Scenes” column behaviour
+
+Requirements:
+
+* Left column height should be based on the viewport height, not the content.
+* The list of scenes should scroll **inside the column** (internal scroll), not make the full page scroll down to the footer.
+
+Implementation idea:
+
+```tsx
+<aside className="h-[calc(100vh-var(--header-height)-var(--footer-offset))] flex flex-col">
+  {/* scenes header + filters */}
+  <div className="flex-1 overflow-y-auto">
+    {/* scenes grid/list */}
+  </div>
+</aside>
+```
+
+This way:
+
+* Header of the scenes column stays fixed at the top of the column.
+* Scenes list scrolls independently (`overflow-y-auto`).
+
+---
+
+## 3) Right settings + EXPORT column behaviour
+
+Goal: EXPORT section (Download / High-Resolution Download buttons) should be visible without scrolling the whole page.
+
+Use a vertical flex layout for the right column:
+
+```tsx
+<aside className="h-[calc(100vh-var(--header-height)-var(--footer-offset))] flex flex-col">
+  <div className="flex-1 overflow-y-auto">
+    {/* artwork selector, frame options, controls, etc. */}
+  </div>
+
+  <div className="mt-4">
+    {/* EXPORT section – Download + High-Resolution Download */}
+  </div>
+</aside>
+```
+
+Key points:
+
+* Right column has `flex flex-col` with a fixed height relative to viewport.
+* Upper part (artwork, frame, controls) uses `flex-1 overflow-y-auto` so it scrolls **inside** the column when content is tall.
+* EXPORT block is outside the scrollable area, pinned at the bottom of the column, always visible when the Studio is in view.
+
+Optional: If needed, you can also apply `position: sticky; bottom: 0` on the export container to keep it in view within the column.
+
+---
+
+## 4) Footer separation
+
+* Ensure the footer is visually **separate** from the Studio section.
+* On desktop viewports, the Studio area (left + center + right columns) should look like a solid block, and the footer should sit **below** with some spacing.
+* The columns should not look like they are "touching" the footer.
+
+If necessary, add small margin/padding between the bottom of the Studio container and the footer.
+
+---
+
+## 5) Responsive behaviour
+
+* Apply the new height/flex behaviour starting from desktop breakpoint (e.g. `md:` or `lg:`).
+* On mobile, keep the current stacking/scrolling behaviour unless it becomes obviously broken.
+
+Example:
+
+```tsx
+<main className="flex flex-col lg:flex-row lg:min-h-[calc(100vh-var(--header-height)-var(--footer-offset))]">
+  {/* columns */}
+</main>
+```
+
+---
+
+## STOP CONDITION
+
+On a typical laptop viewport:
+
+* Left scenes column is taller and shows more rooms, scrolling inside itself when needed.
+* Right column shows the EXPORT buttons without scrolling the full page; only inner column scroll is needed.
+* Footer appears clearly below the Studio section, with breathing room.
+
+The UX should feel more spacious and professional, without EXPORT being hidden near the footer.
