@@ -1956,7 +1956,7 @@ function Studio() {
 
   return (
     <main className="flex flex-col">
-      {!isInIframe && <StudioHeader />}
+      {!isInIframe && <SiteHeader showPlanBadge={false} />}
       <div className="mx-auto max-w-[1400px] w-full px-4 sm:px-6 lg:px-8 py-4 lg:py-6 lg:min-h-[calc(100vh-80px)] lg:flex lg:flex-col">
         <div className="mb-4 text-sm text-rv-textMuted">
           <span className="font-semibold text-rv-primary">RoomVibe Studio</span> · Upload a wall photo, pick a room preset, and see your art true-to-size.

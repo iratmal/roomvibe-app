@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { SiteHeader } from './SiteHeader';
 
 const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
 
@@ -206,35 +207,7 @@ export function PricingPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/80 border-b border-rv-neutral">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-20 items-center justify-between">
-            <a href="#/" className="flex items-center">
-              <img 
-                src="/roomvibe-logo-transparent.png" 
-                alt="RoomVibe" 
-                className="h-16 w-auto"
-              />
-            </a>
-            <div className="flex items-center gap-4">
-              {user ? (
-                <a href="#/dashboard" className="text-sm font-medium text-rv-text hover:text-rv-primary transition-colors">
-                  Dashboard
-                </a>
-              ) : (
-                <>
-                  <a href="#/login" className="text-sm font-medium text-rv-text hover:text-rv-primary transition-colors">
-                    Login
-                  </a>
-                  <a href="#/register" className="btn-primary text-sm py-2 px-4">
-                    Sign Up
-                  </a>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      <SiteHeader showPlanBadge={false} />
 
       <main className="py-12 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
