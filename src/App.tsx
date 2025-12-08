@@ -977,8 +977,10 @@ function Studio() {
   const [userPhoto, setUserPhoto] = useState<string | null>(initialState.designerRoomImage);
   const [isUploadMode, setIsUploadMode] = useState<boolean>(initialState.isUploadMode);
 
-  // Artworks array - "Whispers of the Ring" is already first in artworks.json
+  // Artworks array - user's artworks + sample artworks
   const [artworksState, setArtworksState] = useState<any[]>(localArtworks as any[]);
+  const [userArtworks, setUserArtworks] = useState<any[]>([]);
+  const [hasLoadedUserArtworks, setHasLoadedUserArtworks] = useState<boolean>(false);
   const [artId, setArtId] = useState<string>("whispers-of-the-ring-100-120-cm-roomvibe");
   const artIdRef = useRef<string>(artId);
   const [isLoadingArtwork, setIsLoadingArtwork] = useState<boolean>(false);
@@ -986,6 +988,61 @@ function Studio() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+  
+  // Fetch user's artworks from API when logged in
+  useEffect(() => {
+    const fetchUserArtworks = async () => {
+      if (!user) {
+        setUserArtworks([]);
+        setHasLoadedUserArtworks(true);
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_URL}/api/artist/mine`, {
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.artworks && data.artworks.length > 0) {
+            // Transform image URLs to include API_URL if needed
+            const transformedArtworks = data.artworks.map((artwork: any) => ({
+              ...artwork,
+              overlayImageUrl: artwork.overlayImageUrl?.startsWith('http') 
+                ? artwork.overlayImageUrl 
+                : `${API_URL}${artwork.overlayImageUrl}`
+            }));
+            setUserArtworks(transformedArtworks);
+            
+            // Set first user artwork as selected if user has artworks
+            if (transformedArtworks.length > 0 && !isFreePlan) {
+              setArtId(transformedArtworks[0].id);
+            }
+          }
+        }
+      } catch (error) {
+        console.warn('[Studio] Failed to fetch user artworks:', error);
+      } finally {
+        setHasLoadedUserArtworks(true);
+      }
+    };
+    
+    fetchUserArtworks();
+  }, [user]);
+  
+  // Combine user artworks (first) with sample artworks
+  useEffect(() => {
+    if (hasLoadedUserArtworks) {
+      if (userArtworks.length > 0) {
+        // User has uploaded artworks - show them first, then sample artworks
+        setArtworksState([...userArtworks, ...(localArtworks as any[])]);
+      } else {
+        // No user artworks - show sample artworks
+        setArtworksState(localArtworks as any[]);
+      }
+    }
+  }, [userArtworks, hasLoadedUserArtworks]);
   
   useEffect(() => {
     const loadArtworkFromUrl = async () => {
@@ -2476,18 +2533,50 @@ function Studio() {
                 </div>
               </div>
             ) : (
-              /* Paid users: Show full artwork dropdown */
-              <div className="-mt-3">
+              /* Paid users: Show artwork selector with user's artworks first */
+              <div className="-mt-3 space-y-3">
+                {/* Show prompt if logged in but no user artworks */}
+                {user && userArtworks.length === 0 && hasLoadedUserArtworks && (
+                  <div className="p-3 bg-rv-surface/50 rounded-rvMd border border-dashed border-rv-neutral">
+                    <p className="text-sm text-rv-textMuted mb-2">
+                      You don't have any artworks yet.
+                    </p>
+                    <a
+                      href="#/dashboard"
+                      className="inline-flex items-center gap-1.5 text-sm font-medium text-rv-primary hover:text-rv-primaryHover transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                      </svg>
+                      Go to Dashboard to upload
+                    </a>
+                  </div>
+                )}
+                
+                {/* Artwork dropdown */}
                 <select
                   className="w-full rounded-rvMd border border-rv-neutral px-3 py-2.5 text-sm font-medium text-rv-text bg-white focus:outline-none focus:ring-2 focus:ring-rv-primary/20 focus:border-rv-primary transition-all"
                   value={artId}
                   onChange={(e) => setArtId(e.target.value)}
                 >
-                  {artworksState.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {a.title}
-                    </option>
-                  ))}
+                  {/* User's artworks section */}
+                  {userArtworks.length > 0 && (
+                    <optgroup label="My Artworks">
+                      {userArtworks.map((a) => (
+                        <option key={a.id} value={a.id}>
+                          {a.title}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+                  {/* Sample artworks section */}
+                  <optgroup label="Sample Artworks">
+                    {(localArtworks as any[]).map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.title}
+                      </option>
+                    ))}
+                  </optgroup>
                 </select>
               </div>
             )}

@@ -62,6 +62,42 @@ router.get('/artworks', authenticateToken, async (req: any, res) => {
   }
 });
 
+// Role-agnostic endpoint to get current user's artworks (for Studio)
+// Works for any account type: User, Artist, Designer, Gallery
+router.get('/mine', authenticateToken, async (req: any, res) => {
+  try {
+    console.log('[/mine] Fetching artworks for logged-in user:', req.user.id);
+    
+    const result = await query(
+      `SELECT id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, created_at
+       FROM artworks 
+       WHERE artist_id = $1 
+       ORDER BY created_at DESC`,
+      [req.user.id]
+    );
+    
+    // Transform to Studio-friendly format
+    const artworks = result.rows.map((row: any) => ({
+      id: `db-${row.id}`,
+      title: row.title,
+      overlayImageUrl: row.image_url,
+      widthCm: parseFloat(row.width),
+      heightCm: parseFloat(row.height),
+      dimensionUnit: row.dimension_unit || 'cm',
+      priceAmount: row.price_amount,
+      priceCurrency: row.price_currency || 'EUR',
+      buyUrl: row.buy_url,
+      tags: row.tags || []
+    }));
+    
+    console.log(`[/mine] Found ${artworks.length} artworks for user ${req.user.id}`);
+    res.json({ artworks });
+  } catch (error: any) {
+    console.error('[/mine] Error fetching user artworks:', error);
+    res.status(500).json({ error: 'Failed to fetch artworks' });
+  }
+});
+
 router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('image'), async (req: any, res) => {
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);

@@ -1,0 +1,154 @@
+# TASK — Connect User/Artist/Designer/Gallery Dashboards to Studio (Artwork Selector)
+
+**Goal:**
+Omogućiti da **svaki korisnik koji uploada artwork** (User, Artist, Designer, Gallery) može svoje radove koristiti u **RoomVibe Studiju**.
+Trenutno Studio nije povezan s uploadanim artworkovima iz dashboarda (User/Artist), pa umjetnik ne vidi svoje slike u izborniku u Studiju.
+
+---
+
+## 1. Koncept
+
+* Svaki account type koji ima mogućnost uploada artworka (trenutno: **User** s User Dashboardom i **Artist** s Artist Dashboardom, kasnije i Designer/Gallery) mora imati **isti osnovni flow**:
+
+  1. Korisnik uploada artwork u svoj dashboard.
+  2. Kada otvori **Studio**, njegove slike su dostupne u posebnom **Artwork Selector** izborniku.
+  3. Klik na artwork → taj se artwork prikazuje na zidu u odabranoj sobi.
+
+* Studio treba raditi neovisno o tipu accounta — osnovni princip je:
+  **"Prikaži artworke trenutno logiranog korisnika"**.
+
+---
+
+## 2. Backend / API
+
+### 2.1. Jedinstveni endpoint za dohvat artworka prijavljenog korisnika
+
+Dodaj ili prilagodi API endpoint, npr.:
+
+```ts
+GET /api/artworks/mine
+```
+
+Funkcionalnost:
+
+* koristi ID trenutno logiranog korisnika (bez obzira na account type: `user`, `artist`, `designer`, `gallery`).
+* vraća **sve artworke** tog korisnika koji su aktivni.
+
+Povratni format (prilagoditi postojećem modelu, ali minimalno treba):
+
+```ts
+{
+  id: string;
+  title: string;
+  imageUrl: string; // put do slike za Studio rendering
+  widthCm: number;
+  heightCm: number;
+  // ako već postoji, može i aspectRatio, price, tags itd.
+}
+```
+
+Napomena:
+
+* Ako već postoji funkcija `getArtworksForArtist` ili slično, refaktoriraj tako da se koristi za sve account typeove, filtrirano po `userId`.
+
+---
+
+## 3. Studio — Artwork Selector (Frontend)
+
+### 3.1. Učitavanje artworka u Studiju
+
+U glavnoj Studio komponenti (npr. `StudioPage.tsx` ili `RoomVibeStudio.tsx`):
+
+1. Na mountu (ili nakon što su user podaci učitani) pozvati:
+
+```ts
+const artworks = await fetch('/api/artworks/mine');
+```
+
+2. Spremiti rezultate u lokalni state (npr. `const [myArtworks, setMyArtworks] = useState<Artwork[]>([])`).
+
+3. Ako korisnik nema nijedan artwork:
+
+   * `myArtworks` je prazan array — vidi fallback u točki 3.3.
+
+### 3.2. UI — Artwork Selector
+
+Dodati u Studio UI:
+
+* **Artwork dropdown ili side panel** (ovisno o postojećem dizajnu):
+
+  * naslov: `Artwork`
+  * kontrola (npr. select ili list):
+
+    * prikaz thumbnail + title
+
+Kada korisnik odabere artwork:
+
+* učitati odgovarajući `imageUrl` na zid u glavnom prikazu
+* koristiti `widthCm` i `heightCm` za pravilno skaliranje u prostoru (već postojeća logika za dimenzije se može iskoristiti)
+
+Primjer API korištenja u UI-ju:
+
+```ts
+const handleSelectArtwork = (artwork: Artwork) => {
+  setSelectedArtwork(artwork);
+  // postojeća logika za postavljanje slike na zid
+};
+```
+
+### 3.3. Fallback kad nema artworka
+
+Ako `myArtworks.length === 0`:
+
+* prikazati poruku u Artwork sekciji Studija:
+
+```text
+You don’t have any artworks yet.
+Go to your Dashboard to upload your first piece.
+```
+
+* dodati gumb:
+
+```text
+Go to Dashboard
+```
+
+koji vodi na `/dashboard` (ovo vrijedi i za User i za Artist).
+
+---
+
+## 4. Podrška za različite account typeove
+
+Logika `/api/artworks/mine` i Studio Artwork Selector mora biti **role-agnostic**:
+
+* Ako je prijavljeni korisnik **User (Free)** → vraćaju se artworkovi z uploadanog preko User Dashboarda.
+* Ako je **Artist** → vraćaju se artworkovi iz Artist Dashboarda.
+* Kada kasnije dodamo **Designer** i **Gallery** upload sekcije, oni će koristiti isti endpoint.
+
+Važno:
+
+* Ne uvoditi duplu logiku po rolama.
+* Sve se filtrira samo po `userId`.
+
+---
+
+## 5. Ne raditi
+
+* Ne dirati widget kod logiku.
+* Ne mijenjati pricing, planove, billing.
+* Ne dirati AI Suggested Rooms logiku, osim ako treba koristiti `selectedArtwork` za dimenzije/tags.
+* Ne uvoditi nove tipove soba.
+
+---
+
+## 6. Stop condition
+
+* Kada se prijavim kao Artist ili kao User:
+
+  * u Dashboardu mogu uploadati artwork (kao i sada).
+  * kad kliknem **Open Studio**, u Studiju vidim **Artwork Selector** sa svojim radovima.
+  * klik na bilo koji artwork odmah ga postavi na zid.
+* Ako nemam nijedan artwork:
+
+  * u Studiju vidim jasnu poruku i gumb da odem na Dashboard.
+* Funkcionalnost je ista za sve account typeove koji imaju upload (User, Artist, kasnije Designer i Gallery) — backend radi samo s `userId`, bez duplicirane role logike.
