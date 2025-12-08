@@ -881,9 +881,12 @@ function Studio() {
     ? roomsFilteredByPlan 
     : roomsFilteredByPlan.filter(room => room.category === selectedCategory);
   
+  // Hide legacy presets for Free users - they should only see the 10 basic rooms from premiumRooms
+  // Admin and paid users can see all presets
+  const presetsForPlan = isAdmin || effectivePlan !== 'user' ? (presets as any[]) : [];
   const filteredPresets = selectedCategory === "all"
-    ? (presets as any[])
-    : (presets as any[]).filter((p: any) => p.category === selectedCategory);
+    ? presetsForPlan
+    : presetsForPlan.filter((p: any) => p.category === selectedCategory);
   
   // Export state
   const [isExporting, setIsExporting] = useState<boolean>(false);
