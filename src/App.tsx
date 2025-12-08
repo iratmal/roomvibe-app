@@ -1914,7 +1914,7 @@ function Studio() {
         </div>
         <div className="grid grid-cols-12 gap-4 lg:gap-6 lg:flex-1">
           {/* Left: Scenes gallery - Shown last on mobile (order-3), first on desktop (lg:order-1) */}
-          <aside className="order-3 lg:order-1 col-span-12 lg:col-span-3 rounded-rvLg border border-rv-neutral bg-white shadow-rvSoft p-4 h-auto lg:h-[calc(100vh-160px)] flex flex-col">
+          <aside className="order-3 lg:order-1 col-span-12 lg:col-span-3 rounded-rvLg border border-rv-neutral bg-white shadow-rvSoft p-4 h-auto lg:h-[calc(100vh-140px)] flex flex-col">
             {/* Fixed header section */}
             <div className="flex-shrink-0">
               <div className="mb-4 flex items-center justify-between">
@@ -2360,7 +2360,7 @@ function Studio() {
           </section>
 
           {/* Right: Controls - Shown second on mobile (order-2), last on desktop (lg:order-3) */}
-          <aside className="order-2 lg:order-3 col-span-12 lg:col-span-3 rounded-rvLg border border-rv-neutral bg-white shadow-rvSoft p-4 lg:p-5 min-h-[200px] h-auto lg:h-[calc(100vh-160px)] flex flex-col">
+          <aside className="order-2 lg:order-3 col-span-12 lg:col-span-3 rounded-rvLg border border-rv-neutral bg-white shadow-rvSoft p-4 lg:p-5 min-h-[200px] h-auto lg:h-[calc(100vh-140px)] flex flex-col">
             {/* Scrollable settings section */}
             <div className="flex-1 overflow-y-auto lg:overflow-y-auto space-y-5 lg:pr-1">
               <div className="text-xs font-semibold text-rv-textMuted uppercase tracking-wide">Artwork</div>
@@ -2582,19 +2582,20 @@ function Studio() {
                   Unlock High-Resolution → Upgrade to Designer
                 </button>
               )}
+              
+              {/* View & Buy Button - properly spaced below upgrade CTA */}
+              {art && (
+                <a
+                  href={(art as any).buyUrl || (art as any).onlineStoreUrl || "#"}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => GA4Events.buyClick((art as any).buyUrl || (art as any).onlineStoreUrl || "#")}
+                  className="inline-flex w-full items-center justify-center rounded-rvMd bg-rv-primary px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-rv-primaryHover hover:shadow-md transition-all mt-2"
+                >
+                  View &amp; Buy
+                </a>
+              )}
             </div>
-
-            {art && (
-              <a
-                href={(art as any).buyUrl || (art as any).onlineStoreUrl || "#"}
-                target="_blank"
-                rel="noreferrer"
-                onClick={() => GA4Events.buyClick((art as any).buyUrl || (art as any).onlineStoreUrl || "#")}
-                className="inline-flex w-full items-center justify-center rounded-rvMd bg-rv-primary px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-rv-primaryHover hover:shadow-md transition-all"
-              >
-                View &amp; Buy
-              </a>
-            )}
           </aside>
         </div>
       </div>
