@@ -2,29 +2,28 @@ import Anthropic from '@anthropic-ai/sdk';
 
 /*
  * Image tagging service using Claude Vision API
- * Integration: blueprint:javascript_anthropic
+ * Integration: Replit Anthropic Integration (javascript_anthropic)
  * 
  * The newest Anthropic model is "claude-sonnet-4-20250514".
  * Using this model for vision-based artwork tag generation.
+ * 
+ * Note: Replit's Anthropic integration auto-provides the API key.
+ * No manual ANTHROPIC_API_KEY configuration needed.
  */
 
 // <important_do_not_delete>
 const DEFAULT_MODEL_STR = "claude-sonnet-4-20250514";
 // </important_do_not_delete>
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+// Replit's Anthropic integration auto-configures the API key
+const anthropic = new Anthropic();
 
 export async function generateTagsFromImage(base64Image: string, mimeType: string = 'image/jpeg'): Promise<string[]> {
   try {
-    if (!process.env.ANTHROPIC_API_KEY) {
-      console.warn('[ImageTagging] ANTHROPIC_API_KEY not set, skipping tag generation');
-      return [];
-    }
-
     const cleanBase64 = base64Image.replace(/^data:image\/\w+;base64,/, '');
 
+    console.log('[ImageTagging] Generating tags using Replit AI...');
+    
     const response = await anthropic.messages.create({
       model: DEFAULT_MODEL_STR,
       max_tokens: 300,
@@ -76,7 +75,8 @@ Return ONLY a JSON array of lowercase tag strings, no explanation. Example: ["ab
     console.log('[ImageTagging] Generated tags:', cleanTags);
     return cleanTags;
   } catch (error: any) {
-    console.error('[ImageTagging] Error generating tags:', error.message);
+    // Graceful fallback - don't break upload if AI fails
+    console.error('[ImageTagging] Error generating tags (continuing without tags):', error.message);
     return [];
   }
 }

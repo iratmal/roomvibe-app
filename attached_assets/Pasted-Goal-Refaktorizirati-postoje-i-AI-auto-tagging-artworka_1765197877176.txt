@@ -1,0 +1,103 @@
+Goal:
+Refaktorizirati postojeći AI auto-tagging artworka tako da koristi Replit AI Vision (ili službeni Replit AI client) umjesto Anthropic API-ja, bez potrebe za ANTHROPIC_API_KEY. Nakon ovog taska, auto-tagging treba raditi “out-of-the-box” na Replitu, bez dodatnih API ključeva.
+
+Context:
+
+Projekt: RoomVibe
+
+U prethodnom tasku implementiran je auto-tagging artworka koristeći Anthropic (Claude Vision) i ANTHROPIC_API_KEY.
+
+Trenutno stanje:
+
+ako ANTHROPIC_API_KEY nije postavljen, tagovi se ne generiraju
+
+želimo ukloniti tu ovisnost i koristiti Replitov AI (vision) koji radi unutar Replit okruženja.
+
+Relevantni fileovi (približno, prilagodi prema projektu):
+
+backend logika za upload artworka, npr:
+
+src/app/api/artworks/upload/route.ts
+
+ili gdje se poziva AI za generiranje tagova
+
+DB/model definicija za artwork:
+
+src/lib/db/artworks.ts (ili ekvivalent)
+
+eventualni helper za AI poziv, ako postoji, npr:
+
+src/lib/ai/tagging.ts
+
+🔧 Scope – napravi SAMO ovo:
+
+Nađi postojeći Anthropic AI poziv za auto-tagging
+
+lokacija gdje se poziva Claude / Anthropic model za generiranje tagova iz slike
+
+tu logiku treba refaktorizirati.
+
+Zamijeni Anthropic AI poziv Replit AI Vision pozivom
+
+koristi službeni Replit AI način rada za vision (bez potrebe za vanjskim API ključem).
+
+cilj: poslati sadržaj slike (image buffer / URL) modelu i dobiti natrag tekstualni opis/tagove.
+
+model treba vratiti 5–10 kratkih tagova na engleskom, npr.:
+["abstract", "beige", "gold", "calm", "modern art"].
+
+ako Replit nudi gotovu vision funkciju / client, koristi je; ako ne, implementiraj prema njihovoj dokumentaciji.
+
+Ukloni ovisnost o ANTHROPIC_API_KEY
+
+ukloni reference na process.env.ANTHROPIC_API_KEY iz auto-tagging koda.
+
+nema potrebe da korisnik išta ručno postavlja u Secrets zbog tagiranja.
+
+ako postoje bilo kakvi warning/logovi tipa “ANTHROPIC_API_KEY missing” → ukloni ih.
+
+Graceful fallback (bez rušenja)
+
+ako iz bilo kojeg razloga Replit AI ne vrati valjan response (error, timeout, prazan rezultat):
+
+NEMOJ bacati grešku prema korisniku
+
+jednostavno postavi tags = [] i nastavi spremanje artworka kao i prije.
+
+važno: korisnički upload mora raditi čak i ako AI ne radi.
+
+Zadrži postojeći način spremanja tagova u DB
+
+polje tags: string[] ostaje isto
+
+UI prikaz generiranih tagova ostaje isti – samo se izvor AI-a mijenja.
+
+ne mijenjaj strukturu baze niti UI format tagova.
+
+🚫 Ne raditi:
+
+Ne uvoditi dodatne vanjske API providere (nema OpenAI, nema novog Anthropic poziva).
+
+Ne mijenjati ništa vezano uz Room Selector / AI Room Suggest – to je drugi task.
+
+Ne dirati Stripe, e-račune, GA4 ili bilo kakav billing / analytics kod.
+
+Ne uvoditi novi env var za AI – cilj je da ovo radi bez ručnog unosa ključeva.
+
+✅ Stop condition:
+
+Auto-tagging koristi isključivo Replit AI / Replit Vision, bez potrebe za ANTHROPIC_API_KEY.
+
+Upload artworka radi normalno.
+
+Kada se slika uploada, tagovi se pokušaju generirati;
+
+ako AI uspije → tagovi se spremaju i prikazuju kao i prije
+
+ako AI ne uspije → upload svejedno prolazi, ali bez tagova (bez errora prema korisniku).
+
+💡 Napomena:
+
+Ovo je refaktor i usko definiran task – koristi Fast Mode ako je dostupan.
+
+Fokus je na tome da RoomVibe auto-tagging radi “out-of-the-box” na Replitu, bez dodatne konfiguracije s moje strane.
