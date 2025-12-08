@@ -1,0 +1,168 @@
+# TASK — Create “User Dashboard” for Free Users (max 3 artworks)
+
+**Goal:**
+Implement a dedicated **User Dashboard** for FREE plan users (plan = `free`) that allows:
+
+* Uploading up to **3 artworks**
+* Viewing their artworks (“My Artworks”)
+* Accessing the Studio (“Open Studio”)
+
+This dashboard must be separate from the Artist Dashboard used by paid plans.
+
+---
+
+## 1. Concept Overview
+
+* Free users get a **User Dashboard** (basic version of Artist Dashboard).
+* Paid users (Artist, Pro, Gallery…) keep their existing **Artist Dashboard**.
+
+User Dashboard includes:
+
+* Upload Artwork (with limit = 3)
+* My Artworks section
+* Studio access
+
+User Dashboard does **not** include:
+
+* Widget code
+* Advanced gallery tools
+* Connect features
+* Any premium Artist plan functionality
+
+---
+
+## 2. Routing & Rendering Logic
+
+Update dashboard routing so that:
+
+```ts
+if (user.plan === 'free') {
+  renderUserDashboard();
+} else {
+  renderFullDashboard();
+}
+```
+
+Important:
+
+* DO NOT use `Account Type: user/artist` to determine dashboard.
+* Dashboard type must be **driven by subscription plan**, not role.
+
+---
+
+## 3. User Dashboard Layout
+
+Create a new component (example: `UserDashboard.tsx`) that contains:
+
+### A) Top section (keep as-is):
+
+* Welcome back
+* Open Studio button
+* Favorites
+* History
+* Plan overview
+
+### B) Add Artwork Upload Section
+
+Include fields:
+
+* Title
+* Dimensions (width, height + units)
+* Price (optional)
+* Buy URL
+* Image upload
+* **Upload Artwork** button
+
+### C) My Artworks Grid
+
+Display:
+
+* Thumbnail
+* Title
+* Dimensions
+* Price
+* "View & Buy" link
+* (Optional) Edit/Delete buttons
+
+### D) Section title
+
+```
+My Artworks (Free plan – up to 3 artworks)
+```
+
+---
+
+## 4. Enforce Upload Limit (3 artworks)
+
+Centralize limits in config:
+
+```ts
+export const PLAN_ARTWORK_LIMITS = {
+  free: 3,
+  artist: 40,
+};
+```
+
+### Backend (required)
+
+In the artwork creation endpoint:
+
+1. Read `user.plan`.
+2. Determine limit via config.
+3. Count existing artworks.
+4. If `count >= limit`:
+
+   * DO NOT create artwork
+   * Return error code: `ARTWORK_LIMIT_REACHED`
+
+### Frontend behavior
+
+* If API returns `ARTWORK_LIMIT_REACHED`:
+
+  * Show Upgrade modal:
+
+    * Text:
+
+      > "On the Free plan, you can upload up to 3 artworks. Upgrade to the Artist plan to upload more artworks and unlock additional features."
+
+* Banner should display:
+
+```
+3/3 artworks uploaded (Free plan)
+```
+
+when limit is reached.
+
+---
+
+## 5. Testing Requirements
+
+Using a **real free account**:
+
+1. Log into `/dashboard` → should display **User Dashboard**.
+2. Upload 1st artwork → success.
+3. Upload 2nd → success.
+4. Upload 3rd → success.
+5. Upload 4th → blocked, show upgrade modal.
+6. Banner correctly shows `3/3 artworks uploaded (Free plan)`.
+7. No artwork beyond limit is created.
+
+---
+
+## 6. Do NOT Modify
+
+* Do NOT modify Designer or Gallery dashboards.
+* Do NOT change Stripe/billing logic (only update text in modal if needed).
+* Do NOT modify AI features (auto-tagging, Room Suggest, Studio logic).
+
+---
+
+## STOP CONDITION
+
+A real FREE user sees a fully functional **User Dashboard** with:
+
+* Upload Artwork section
+* My Artworks grid
+* Hard limit of 3 artworks
+
+Paid Artist accounts continue using their existing full Artist Dashboard.

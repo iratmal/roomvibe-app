@@ -232,7 +232,16 @@ function DashboardRouter() {
     return <AdminDashboard />;
   }
 
-  // All users get the unified dashboard with sidebar navigation
+  // Free users get UserDashboard with basic artwork upload (max 3)
+  // Dashboard type is driven by subscription plan, not account type
+  const effectivePlan = user?.effectivePlan || 'user';
+  const isFreePlan = effectivePlan === 'user' || effectivePlan === 'free';
+  
+  if (isFreePlan) {
+    return <UserDashboard />;
+  }
+
+  // Paid users get the unified dashboard with sidebar navigation
   // The sidebar shows modules based on their entitlements
   return <UnifiedDashboard />;
 }

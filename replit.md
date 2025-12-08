@@ -34,10 +34,11 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
     - **Premium Room Library (Updated Dec 2024)**: 70 premium room scenes across 3 categories (Bathroom: 14, Bedroom: 24, Cafe: 32). Located in `public/rooms/{category}/` with data in `src/data/premiumRooms.ts`. Tiered access based on subscription plan.
     - **Export Features**: Supports image (regular 1200px, high-res 3000px) and PDF exports with plan-based restrictions and watermarking for free users. Upgrade nudges are integrated into the export flow.
 - **Role-Based Dashboards**:
-    - **Artist Dashboard**: CRUD for artwork management, including image uploads and website widget embedding.
+    - **User Dashboard (Dec 2024)**: Dedicated dashboard for FREE plan users (plan = 'free' or 'user'). Features: artwork upload (max 3), My Artworks grid with edit/delete, Studio access. Does NOT include widget code or premium features. Located in `src/components/dashboards/UserDashboard.tsx`. Routing in `DashboardRouter` uses `effectivePlan` to determine dashboard type (subscription-based, not role-based).
+    - **Artist Dashboard**: CRUD for artwork management, including image uploads and website widget embedding. Available to paid Artist plan subscribers.
     - **Designer Dashboard**: Project management and custom room image uploads.
     - **Gallery Dashboard**: Collection management for online exhibitions.
-    - All non-admin users access a unified dashboard with sidebar navigation and module-specific content. Sidebar features grouped sections (Artist Tools, Designer Tools, Gallery Tools), locked modules show "Upgrade to unlock X Tools" subtext, and uses polished spacing (12px 18px padding, 20px icons, 10px gaps).
+    - Paid users (Artist/Designer/Gallery/All-Access) access a unified dashboard with sidebar navigation and module-specific content. Sidebar features grouped sections (Artist Tools, Designer Tools, Gallery Tools), locked modules show "Upgrade to unlock X Tools" subtext, and uses polished spacing (12px 18px padding, 20px icons, 10px gaps).
 - **Stripe Subscriptions**: Full integration for five plans (Free, Artist, Designer, Gallery, All-Access) handling checkout, customer portal, and webhook events to manage user roles and entitlements.
 - **Plan Tiers & Room Access (Updated Dec 2024)**:
     - **Free/User** (€0): 3 artworks, 10 basic rooms, basic export, watermarked downloads
