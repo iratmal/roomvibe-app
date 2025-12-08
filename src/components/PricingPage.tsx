@@ -42,7 +42,7 @@ const PLANS: PlanConfig[] = [
     entitlement: 'artist_access',
     features: [
       'Upload up to 50 artworks',
-      'Access to up to 30 standard mockup rooms (Living, Bedroom, Kitchen, Kids, Neutral Walls)',
+      'Access to up to 40 standard mockup rooms (Living, Bedroom, Kitchen, Kids, Cafe, Neutral Walls)',
       'Basic download export',
       'Frame styling controls',
       'Widget embed',
@@ -111,7 +111,7 @@ const PLANS: PlanConfig[] = [
 const COMPARISON_FEATURES = [
   { name: 'Artwork upload limit', free: '3', artist: '50', designer: '100', gallery: 'Unlimited', allaccess: 'Unlimited' },
   { name: 'Basic rooms (10 rooms)', free: true, artist: true, designer: true, gallery: true, allaccess: true },
-  { name: 'Standard rooms (up to 30 rooms)', free: false, artist: true, designer: true, gallery: true, allaccess: true },
+  { name: 'Standard rooms (up to 40 rooms)', free: false, artist: true, designer: true, gallery: true, allaccess: true },
   { name: 'Premium rooms (100+ rooms)', free: false, artist: false, designer: true, gallery: true, allaccess: '✔ (incl. future packs)' },
   { name: 'High-resolution export (3000px+)', free: false, artist: false, designer: true, gallery: true, allaccess: true },
   { name: 'PDF export', free: false, artist: false, designer: true, gallery: '✔ (20/month)', allaccess: '✔ (unlimited)' },

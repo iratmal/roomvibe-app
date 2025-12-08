@@ -855,7 +855,7 @@ function Studio() {
   // Filter rooms by plan tier:
   // - Admin: All rooms (no filtering)
   // - Designer/Gallery/All-Access: All rooms (premium access)
-  // - Artist: Standard rooms (30 total - includes basicFree)
+  // - Artist: Standard rooms (40 total - includes basicFree)
   // - Free/User: Basic only (10 rooms with basicFree: true)
   const filterRoomsByPlan = (rooms: typeof premiumRooms) => {
     if (isAdmin || hasPremiumRoomsAccess) {
@@ -863,7 +863,7 @@ function Studio() {
       return rooms;
     }
     if (effectivePlan === 'artist') {
-      // Artist sees standard rooms (30 total - includes all basicFree rooms)
+      // Artist sees standard rooms (40 total - includes all basicFree rooms)
       return rooms.filter(room => room.standard === true);
     }
     // Free users see only basic rooms (10 with basicFree: true)

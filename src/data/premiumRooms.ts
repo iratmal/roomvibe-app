@@ -7,9 +7,9 @@ export type PremiumRoom = {
   image: string;
   wallWidthPx: number;
   scaleFactor?: number;  // Optional per-scene scale multiplier (default: 1.0)
-  tier?: RoomTier;  // 'basic' for Free plan (10 rooms), 'standard' for Artist plan (30 rooms), 'premium' for Designer+ (default: 'premium')
+  tier?: RoomTier;  // 'basic' for Free plan (10 rooms), 'standard' for Artist plan (40 rooms), 'premium' for Designer+ (default: 'premium')
   basicFree?: boolean;  // True for the 10 basic free rooms
-  standard?: boolean;  // True for the 30 standard rooms (Artist plan) - includes basicFree rooms
+  standard?: boolean;  // True for the 40 standard rooms (Artist plan) - includes basicFree rooms
 };
 
 export const premiumRooms: PremiumRoom[] = [
@@ -19,7 +19,8 @@ export const premiumRooms: PremiumRoom[] = [
     "name": "Bathroom 1",
     "image": "/rooms/bathroom/bathroom1.jpg",
     "wallWidthPx": 750,
-    "tier": "standard"
+    "tier": "standard",
+    "standard": true
   },
   {
     "id": "bathroom_2",
@@ -27,7 +28,8 @@ export const premiumRooms: PremiumRoom[] = [
     "name": "Bathroom 2",
     "image": "/rooms/bathroom/bathroom2.jpeg",
     "wallWidthPx": 800,
-    "tier": "standard"
+    "tier": "standard",
+    "standard": true
   },
   {
     "id": "bathroom_3",
@@ -502,9 +504,9 @@ export const premiumRooms: PremiumRoom[] = [
   { "id": "kids_23", "category": "kids", "name": "Kids Room 23", "image": "/rooms/kids/kidsroom23.jpeg", "wallWidthPx": 900 },
   { "id": "kids_24", "category": "kids", "name": "Kids Room 24", "image": "/rooms/kids/kidsroom24.jpeg", "wallWidthPx": 950 },
   // Kitchen
-  { "id": "kitchen_1", "category": "kitchen", "name": "Kitchen 1", "image": "/rooms/kitchen/kitchen1.jpeg", "wallWidthPx": 1000, "tier": "standard" },
-  { "id": "kitchen_2", "category": "kitchen", "name": "Kitchen 2", "image": "/rooms/kitchen/kitchen2.jpeg", "wallWidthPx": 950, "tier": "standard" },
-  { "id": "kitchen_3", "category": "kitchen", "name": "Kitchen 3", "image": "/rooms/kitchen/kitchen3.jpeg", "wallWidthPx": 1000, "tier": "standard" },
+  { "id": "kitchen_1", "category": "kitchen", "name": "Kitchen 1", "image": "/rooms/kitchen/kitchen1.jpeg", "wallWidthPx": 1000, "tier": "standard", "standard": true },
+  { "id": "kitchen_2", "category": "kitchen", "name": "Kitchen 2", "image": "/rooms/kitchen/kitchen2.jpeg", "wallWidthPx": 950, "tier": "standard", "standard": true },
+  { "id": "kitchen_3", "category": "kitchen", "name": "Kitchen 3", "image": "/rooms/kitchen/kitchen3.jpeg", "wallWidthPx": 1000, "tier": "standard", "standard": true },
   { "id": "kitchen_4", "category": "kitchen", "name": "Kitchen 4", "image": "/rooms/kitchen/kitchen4.jpeg", "wallWidthPx": 1050, "tier": "standard" },
   { "id": "kitchen_5", "category": "kitchen", "name": "Kitchen 5", "image": "/rooms/kitchen/kitchen5.jpeg", "wallWidthPx": 1000, "tier": "standard" },
   { "id": "kitchen_6", "category": "kitchen", "name": "Kitchen 6", "image": "/rooms/kitchen/kitchen6.jpeg", "wallWidthPx": 950 },
@@ -547,11 +549,11 @@ export const premiumRooms: PremiumRoom[] = [
   { "id": "kitchen_43", "category": "kitchen", "name": "Kitchen 43", "image": "/rooms/kitchen/kitchen43.jpeg", "wallWidthPx": 1000 },
   { "id": "kitchen_44", "category": "kitchen", "name": "Kitchen 44", "image": "/rooms/kitchen/kitchen44.jpeg", "wallWidthPx": 1050 },
   // Living Room
-  { "id": "livingroom_1", "category": "livingroom", "name": "Living Room 1", "image": "/rooms/livingroom/livingroom1.jpg", "wallWidthPx": 1100, "tier": "standard" },
-  { "id": "livingroom_2", "category": "livingroom", "name": "Living Room 2", "image": "/rooms/livingroom/livingroom2.jpeg", "wallWidthPx": 1050, "tier": "standard" },
-  { "id": "livingroom_3", "category": "livingroom", "name": "Living Room 3", "image": "/rooms/livingroom/livingroom3.jpg", "wallWidthPx": 1100, "tier": "standard" },
-  { "id": "livingroom_4", "category": "livingroom", "name": "Living Room 4", "image": "/rooms/livingroom/livingroom4.jpeg", "wallWidthPx": 1150, "tier": "standard" },
-  { "id": "livingroom_5", "category": "livingroom", "name": "Living Room 5", "image": "/rooms/livingroom/livingroom5.jpg", "wallWidthPx": 1100, "tier": "standard" },
+  { "id": "livingroom_1", "category": "livingroom", "name": "Living Room 1", "image": "/rooms/livingroom/livingroom1.jpg", "wallWidthPx": 1100, "tier": "standard", "standard": true },
+  { "id": "livingroom_2", "category": "livingroom", "name": "Living Room 2", "image": "/rooms/livingroom/livingroom2.jpeg", "wallWidthPx": 1050, "tier": "standard", "standard": true },
+  { "id": "livingroom_3", "category": "livingroom", "name": "Living Room 3", "image": "/rooms/livingroom/livingroom3.jpg", "wallWidthPx": 1100, "tier": "standard", "standard": true },
+  { "id": "livingroom_4", "category": "livingroom", "name": "Living Room 4", "image": "/rooms/livingroom/livingroom4.jpeg", "wallWidthPx": 1150, "tier": "standard", "standard": true },
+  { "id": "livingroom_5", "category": "livingroom", "name": "Living Room 5", "image": "/rooms/livingroom/livingroom5.jpg", "wallWidthPx": 1100, "tier": "standard", "standard": true },
   { "id": "livingroom_6", "category": "livingroom", "name": "Living Room 6", "image": "/rooms/livingroom/livingroom6.jpeg", "wallWidthPx": 1050 },
   { "id": "livingroom_7", "category": "livingroom", "name": "Living Room 7", "image": "/rooms/livingroom/livingroom7.jpg", "wallWidthPx": 1100, "tier": "standard", "standard": true },
   { "id": "livingroom_8", "category": "livingroom", "name": "Living Room 8", "image": "/rooms/livingroom/livingroom8.jpeg", "wallWidthPx": 1150 },

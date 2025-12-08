@@ -1,6 +1,6 @@
 export type PlanType = 'free' | 'user' | 'artist' | 'designer' | 'gallery' | 'allaccess' | 'admin';
 
-export type RoomTier = 'basic10' | 'standard30' | 'all';
+export type RoomTier = 'basic10' | 'standard40' | 'all';
 
 export interface PlanLimits {
   maxArtworks: number;
@@ -80,8 +80,8 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     maxArtworks: 50,
     maxWallPhotos: 100,
     maxProjects: 100,
-    maxMockupRooms: 30,
-    roomTier: 'standard30',
+    maxMockupRooms: 40,
+    roomTier: 'standard40',
     rooms: 'standard',
     premiumRoomsAccess: false,
     futureRooms: false,
