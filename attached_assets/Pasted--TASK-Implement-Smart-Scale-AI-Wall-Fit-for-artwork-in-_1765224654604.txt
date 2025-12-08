@@ -1,0 +1,213 @@
+# TASK — Implement **Smart Scale (AI Wall Fit)** for artwork in Studio
+
+**Goal:**
+Poboljšati realizam prikaza slike na zidu tako da **veličina i pozicija artworka u Studiju** bolje odgovara stvarnim proporcijama zida i namještaja (kada, kauč, krevet itd.).
+
+Umjesto statičnog skaliranja, želimo **pametno skaliranje** ("Smart Scale / AI Wall Fit") koje uzima u obzir:
+
+* stvarne dimenzije slike u cm
+* dimenzije i položaj zidnog prostora u sobi
+* položaj i visinu namještaja (kauč, kada, krevet)
+
+---
+
+## 1. Koncept
+
+Trenutno:
+
+* Artwork se prikazuje na zidu u Studiju, ali ponekad izgleda preveliko ili premalo u odnosu na namještaj.
+
+Želimo:
+
+* realističan dojam:
+
+  * slika iznad kauča/kade/krevet ne zauzima cijeli zid
+  * postoji razmak između slike i namještaja
+  * slika je u okvirnom realnom rasponu (npr. 40–70% širine zida)
+
+Ne treba nam pravi "AI model" – dovoljno je nekoliko pametnih pravila i metapodataka po sobi.
+
+---
+
+## 2. Model proširenje za sobe (rooms)
+
+U data model za sobe (gdje su definirane scene u Studiju), proširiti podatke sa informacijama o zidu i namještaju.
+
+Primjer interfacea (prilagoditi postojećem):
+
+```ts
+export interface Room {
+  id: string;
+  name: string;
+  imageUrl: string;
+  roomType: RoomType; // npr. 'bathroom' | 'bedroom' | 'living' | 'kids' | ...
+
+  // Područje zida na kojem se slika prikazuje (u koordinatama scene, px ili relativno)
+  wallBounds: {
+    x: number;      // lijevi rub zida
+    y: number;      // gornji rub zida
+    width: number;  // širina dostupnog zida
+    height: number; // visina dostupnog zida
+  };
+
+  // (Opcionalno) Y-koordinata gornjeg ruba glavnog namještaja ispod slike (kada, kauč, krevet)
+  furnitureTopY?: number;
+
+  // (Opcionalno) dodatni faktor perspektive/kamere, ako treba kasnije
+  cameraDistance?: number;
+}
+```
+
+> Napomena: `wallBounds` i `furnitureTopY` mogu biti zadani ručno za svaku sobu nakon što se vizualno odredi gdje je zid i namještaj. Važno je da vrijednosti budu konzistentne unutar iste scene.
+
+---
+
+## 3. Smart Scale funkcija
+
+Dodati helper, npr. `src/lib/studio/smartScale.ts`:
+
+```ts
+import { Room } from '@/data/rooms';
+import { Artwork } from '@/types/artwork';
+
+export interface ScaledArtworkPlacement {
+  widthPx: number;
+  heightPx: number;
+  x: number; // pozicija centra ili gornjeg lijevog kuta (ovisno o trenutnoj implementaciji)
+  y: number;
+}
+
+export function getSmartArtworkPlacement(
+  artwork: Artwork,
+  room: Room
+): ScaledArtworkPlacement {
+  // implementacija
+}
+```
+
+### 3.1. Ulazni podaci
+
+Iz `artwork` koristiti:
+
+* `widthCm` (stvarna širina slike)
+* `heightCm` (stvarna visina slike)
+
+Iz `room` koristiti:
+
+* `wallBounds` (dimenzije zida u px)
+* `furnitureTopY` (ako postoji)
+
+### 3.2. Pravila skaliranja (heuristike)
+
+Predložena pravila (MVP):
+
+1. **Omjer slike (aspect ratio)**
+
+   ```ts
+   const aspect = artwork.widthCm / artwork.heightCm;
+   ```
+
+2. **Ciljani raspon širine slike u odnosu na zid**
+
+   * minimalno: npr. `0.35 * wallBounds.width`
+   * maksimalno: npr. `0.70 * wallBounds.width`
+
+   Odabrati ciljnu širinu u tom rasponu. Jednostavan MVP:
+
+   * uzmi `0.55 * wallBounds.width` kao default ciljnu širinu.
+
+3. **Izračun visine slike u px**
+
+   ```ts
+   const widthPx = wallBounds.width * 0.55; // ili dinamički unutar raspona
+   const heightPx = widthPx / aspect;
+   ```
+
+4. **Provjera da slika ne prelazi visinu zida**
+
+   * ako je `heightPx > wallBounds.height * 0.9`, skalirati dolje.
+
+5. **Pozicija iznad namještaja (ako postoji `furnitureTopY`)**
+
+   * cilj: donji rub slike neka bude npr. **20–30px iznad furnitureTopY**.
+   * primjer:
+
+   ```ts
+   const gapAboveFurniture = 24; // px
+   const bottomY = room.furnitureTopY - gapAboveFurniture;
+   const y = bottomY - heightPx; // ako koristimo top-left koordinatu
+   ```
+
+6. **Ako nema `furnitureTopY`** (npr. prazan zid):
+
+   * pozicionirati sliku otprilike u sredinu `wallBounds` po visini:
+
+   ```ts
+   const y = wallBounds.y + (wallBounds.height - heightPx) / 2;
+   ```
+
+7. **Vodoravno centriranje**
+
+   * centrirati sliku unutar `wallBounds`:
+
+   ```ts
+   const x = wallBounds.x + (wallBounds.width - widthPx) / 2;
+   ```
+
+Vratiti `widthPx`, `heightPx`, `x`, `y`.
+
+> Ovo je MVP heuristika; kasnije se može dodati finiji tuning po tipu sobe (`roomType`).
+
+---
+
+## 4. Integracija u Studio
+
+U glavnoj Studio komponenti, gdje se trenutno računa pozicija i veličina artworka:
+
+1. Kada se promijeni `selectedRoom` ili `selectedArtwork` (ili njihove dimenzije):
+
+```ts
+useEffect(() => {
+  if (!selectedRoom || !selectedArtwork) return;
+
+  const placement = getSmartArtworkPlacement(selectedArtwork, selectedRoom);
+  setArtworkPlacement(placement); // state koji koristi renderer
+}, [selectedRoom, selectedArtwork]);
+```
+
+2. U komponenti koja renderira artwork na zidu (npr. `RoomCanvas` ili `WallOverlay`), umjesto dosadašnje logike koristiti `artworkPlacement.widthPx`, `heightPx`, `x`, `y`.
+
+3. Ostaviti mogućnost da user ručno prilagodi veličinu (ako takva opcija postoji) — ali default inicijalni prikaz treba dolaziti iz Smart Scale funkcije.
+
+---
+
+## 5. Fallback & sigurnosne provjere
+
+* Ako `room.wallBounds` nije definiran:
+
+  * koristiti postojeću logiku kao fallback (bez Smart Scale).
+* Ako artwork nema dimenzije u cm:
+
+  * koristiti neki razuman default (npr. srednja veličina na zidu).
+
+Važno: ne smije biti runtime errora.
+
+---
+
+## 6. Ne raditi
+
+* Ne mijenjati AI Suggested Rooms logiku.
+* Ne dirati dashboarde, upload, planove, Stripe, billing.
+* Ne mijenjati osnovni layout Studija, samo način kako se računa veličina/pozicija artworka.
+
+---
+
+## 7. Stop condition
+
+* U Studiju, kada mijenjam sobe (kauč, kada, krevet…) i artworke različitih dimenzija:
+
+  * slika uvijek izgleda **realistične veličine** u odnosu na namještaj.
+  * iznad kauča/kade/krevet postoji logičan razmak.
+  * slika ne izgleda ni apsurdno ogromna ni premalena.
+* Nema vizualnih skokova ili bugova.
+* Postojeći Studio flow (frameovi, export, AI Suggested Rooms) radi kao i prije.
