@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import localArtworks from "./data/artworks.json";
 import presets from "./data/presets.json";
 import { premiumRooms, getCategoryDisplayName, type PremiumRoom } from "./data/premiumRooms";
+import { getTopSuggestedRooms } from "./lib/ai/roomSuggest";
 import { PLAN_LIMITS, type PlanType } from "./config/planLimits";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { CookieConsentProvider, useCookieConsent } from "./context/CookieConsentContext";
@@ -890,6 +891,9 @@ function Studio() {
     ? roomsFilteredByPlan 
     : roomsFilteredByPlan.filter(room => room.category === selectedCategory);
   
+  // AI Suggested Rooms - will be computed after art is defined
+  // (moved to later in the component where art is available)
+  
   // Hide legacy presets for Free users - they should only see the 10 basic rooms from premiumRooms
   // Admin and paid users can see all presets
   const presetsForPlan = isAdmin || effectivePlan !== 'user' ? (presets as any[]) : [];
@@ -1051,6 +1055,9 @@ function Studio() {
   // For free users, always use placeholder artwork regardless of state
   const effectiveArtId = isFreePlan ? placeholderArtId : artId;
   const art = artworksState.find((a) => a.id === effectiveArtId);
+  
+  // AI Suggested Rooms - get top 3 rooms based on artwork tags
+  const aiSuggestedRooms = getTopSuggestedRooms(art?.tags, roomsFilteredByPlan, 3);
 
   const [frameStyle, setFrameStyle] = useState<string>("none");
   
@@ -1962,6 +1969,35 @@ function Studio() {
             
             {/* Scrollable room list */}
             <div className="flex-1 overflow-y-auto lg:overflow-y-auto overflow-x-hidden">
+              {/* AI Suggested Rooms Section */}
+              {selectedCategory === "all" && aiSuggestedRooms.length > 0 && (
+                <div className="mb-4">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <svg className="w-3.5 h-3.5 text-[#C9A24A]" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2L14.09 8.26L22 9.27L16 14.14L18.18 21.02L12 17.77L5.82 21.02L8 14.14L2 9.27L9.91 8.26L12 2Z"/>
+                    </svg>
+                    <span className="text-[10px] font-semibold text-[#264C61] uppercase tracking-wide">AI Suggested Rooms</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {aiSuggestedRooms.map((room) => (
+                      <button
+                        key={`suggested-${room.id}`}
+                        onClick={() => {
+                          setUserPhoto(room.image);
+                          setSceneId('');
+                        }}
+                        className="group relative overflow-hidden rounded-rvMd bg-white shadow-sm hover:shadow-md transition-all ring-1 ring-[#C9A24A]/30 hover:ring-[#C9A24A]"
+                      >
+                        <div 
+                          className="h-14 w-full bg-cover bg-center bg-[#F7F3EE]"
+                          style={{ backgroundImage: `url(${room.image})` }}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
               {/* Unified Room Grid - Free presets first, then premium rooms */}
               <div className="grid grid-cols-2 gap-2.5">
               {/* Free Presets */}

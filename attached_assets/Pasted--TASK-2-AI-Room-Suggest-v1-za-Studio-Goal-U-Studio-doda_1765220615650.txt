@@ -1,0 +1,136 @@
+## TASK 2 — AI Room Suggest (v1) za Studio
+
+**Goal:**
+U **Studio** dodati funkciju koja predlaže **top 3 sobe (“AI Suggested Rooms”)** za odabrani artwork, na temelju njegovih tagova (`tags: string[]`) i tipa sobe (`Bathroom, Bedroom, Living Room, Kids, Cafe, Kitchen`). Ako nema tagova, koristiti jednostavan fallback (default sobe).
+
+---
+
+### 1. Context
+
+* Projekt: **RoomVibe**
+* Studio već prikazuje popis soba koje korisnik može odabrati.
+* Sobe su definirane u nekom data fileu, npr. `src/data/rooms.ts` ili slično.
+* Svaka soba ima tip / kategoriju, npr.:
+
+  * `"Bathroom"`, `"Bedroom"`, `"Living Room"`, `"Kids"`, `"Cafe"`, `"Kitchen"`.
+* Artwork model već ima polje `tags?: string[]`:
+
+  * tagovi mogu dolaziti iz AI auto-tagginga ili ručno (može biti i prazno).
+* Želimo da, kad korisnik u Studiju otvori artwork, na vrhu liste soba vidi sekciju **“AI Suggested Rooms”** s 3 preporučene sobe.
+
+---
+
+### 2. Scope – napravi SAMO ovo
+
+#### 2.1. Model & helpers za sobe
+
+1. U data/model fileu za sobe (npr. `rooms.ts`) osiguraj da postoji tip npr.:
+
+```ts
+export type RoomType = 'bathroom' | 'bedroom' | 'living' | 'kids' | 'cafe' | 'kitchen';
+
+export interface Room {
+  id: string;
+  name: string;
+  imageUrl: string;
+  roomType: RoomType;
+  // ...ostala polja koja već koristiš
+  vibeTags?: string[]; // optional: npr. ['bright', 'neutral', 'cozy']
+}
+```
+
+2. Ako `roomType` već postoji u drugom obliku, uskladi ga s ovim ili napravi mapu.
+
+#### 2.2. Funkcija `suggestRoomsForArtwork`
+
+Dodaj helper npr. u `src/lib/ai/roomSuggest.ts` (ili slično):
+
+```ts
+export function suggestRoomsForArtwork(
+  artworkTags: string[] | undefined,
+  rooms: Room[]
+): Room[] {
+  // ...
+}
+```
+
+Logika:
+
+* Ako `artworkTags` je prazno/undefined → samo vrati `rooms` bez promjene (Studio će koristiti fallback).
+* Inače:
+
+  1. Normaliziraj tagove (lowercase, trim).
+  2. Za svaki `room` izračunaj `score` prema matchu tagova s tipom sobe i `vibeTags`.
+
+Primjeri scoring pravila (možeš hard-codeati u funkciji):
+
+* **Bedroom** dobiva +1 za svaki tag koji sadrži:
+  `"calm"`, `"soft"`, `"romantic"`, `"intimate"`, `"cozy"`.
+* **Living Room** dobiva +1 za:
+  `"family"`, `"warm"`, `"neutral"`, `"beige"`, `"inviting"`.
+* **Kids** dobiva +1 za:
+  `"playful"`, `"colorful"`, `"bright"`, `"fun"`, `"whimsical"`, `"animals"`.
+* **Cafe/Kitchen** dobiva +1 za:
+  `"coffee"`, `"cafe"`, `"food"`, `"brunch"`, `"gathering"`.
+* **Bathroom** dobiva +1 za:
+  `"minimal"`, `"clean"`, `"fresh"`, `"spa"`, `"light"`.
+
+Ako koristiš `room.vibeTags`, možeš dodati još +1 po matchu između `artworkTags` i `room.vibeTags`.
+
+Na kraju:
+
+* sortiraj sobe po `score` (descending)
+* ako više soba ima isti score, zadrži postojeći redoslijed.
+
+Funkcija vraća **sortiranu listu soba**.
+
+#### 2.3. Integracija u Studio (UI)
+
+U komponenti koja prikazuje izbor soba u Studiju (npr. `RoomSelector.tsx` ili gdje god postoji UI za sobe):
+
+1. Dohvati:
+
+   * `selectedArtwork` (ili ID) s njegovim `tags`.
+   * sve dostupne `rooms` za tog korisnika/plan.
+
+2. Izračunaj:
+
+```ts
+const suggestedRooms = suggestRoomsForArtwork(selectedArtwork?.tags, rooms);
+```
+
+3. Na vrh lista soba dodaj novu sekciju:
+
+* naslov: **“AI Suggested Rooms”**
+* prikaži **prve 3 sobe** iz `suggestedRooms` (ili manje, ako ih ima manje).
+* ispod toga prikaži postojeći grid/listu svih soba kao i do sada.
+
+4. Vizualno jasno odvoji ovu sekciju (npr. mali podnaslov + razmak), ali ne mijenjaj postojeći layout više nego što je nužno.
+
+#### 2.4. Fallback ponašanje
+
+* Ako `selectedArtwork.tags` ne postoji, ili je prazan array:
+
+  * `suggestRoomsForArtwork` vraća sobe u originalnom redoslijedu.
+  * UI i dalje prikazuje **“AI Suggested Rooms”**, ali to su u praksi “default” sobe (prve 3).
+* Nema errora prema korisniku – feature treba raditi i kad tagovi iz nekog razloga ne postoje.
+
+---
+
+### 3. Ne raditi
+
+* Ne uvoditi nikakav dodatni AI/ML model – logika treba biti čista TypeScript heuristika.
+* Ne mijenjati upload logiku, tagging, Stripe, planove, dashboard itd.
+* Ne dodavati nove sobe; koristiti postojeći set.
+* Ne mijenjati Studio layout izvan dodavanja “AI Suggested Rooms” sekcije.
+
+---
+
+### 4. Stop condition
+
+* Kada otvorim Studio s odabranim artworkom:
+
+  * iznad liste soba vidim sekciju **“AI Suggested Rooms”** s do 3 sobe.
+  * ako artwork ima tagove, ove sobe su logično povezane s tipom slike.
+  * ako artwork nema tagove, i dalje vidim 3 predložene sobe (default), bez grešaka.
+* Postojeća lista soba i Studio funkcije rade kao i prije.
