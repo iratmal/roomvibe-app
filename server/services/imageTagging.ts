@@ -22,7 +22,10 @@ export async function generateTagsFromImage(base64Image: string, mimeType: strin
   try {
     const cleanBase64 = base64Image.replace(/^data:image\/\w+;base64,/, '');
 
-    console.log('[ImageTagging] Generating tags using Replit AI...');
+    console.log('[ImageTagging] Starting tag generation...');
+    console.log('[ImageTagging] Image size (base64 chars):', cleanBase64.length);
+    console.log('[ImageTagging] MIME type:', mimeType);
+    console.log('[ImageTagging] Calling Anthropic API...');
     
     const response = await anthropic.messages.create({
       model: DEFAULT_MODEL_STR,
@@ -51,6 +54,9 @@ Return ONLY a JSON array of lowercase tag strings, no explanation. Example: ["ab
         ]
       }]
     });
+
+    console.log('[ImageTagging] API Response received');
+    console.log('[ImageTagging] Response content:', JSON.stringify(response.content, null, 2));
 
     const textContent = response.content.find(block => block.type === 'text');
     if (!textContent || textContent.type !== 'text') {
