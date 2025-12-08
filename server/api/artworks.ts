@@ -4,6 +4,7 @@ import path from 'path';
 import { query } from '../db/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { checkArtworkLimit, getEffectivePlan, requireMinimumPlan } from '../middleware/subscription.js';
+import { generateTagsFromImage } from '../services/imageTagging.js';
 
 const router = express.Router();
 
@@ -34,13 +35,13 @@ router.get('/artworks', authenticateToken, async (req: any, res) => {
     let queryParams;
 
     if (effectivePlan === 'admin') {
-      queryText = `SELECT a.id, a.artist_id, a.title, a.image_url, a.width, a.height, a.dimension_unit, a.price_amount, a.price_currency, a.buy_url, a.created_at, a.updated_at, u.email as artist_email
+      queryText = `SELECT a.id, a.artist_id, a.title, a.image_url, a.width, a.height, a.dimension_unit, a.price_amount, a.price_currency, a.buy_url, a.tags, a.created_at, a.updated_at, u.email as artist_email
                    FROM artworks a
                    LEFT JOIN users u ON a.artist_id = u.id
                    ORDER BY a.created_at DESC`;
       queryParams = [];
     } else {
-      queryText = `SELECT id, artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, created_at, updated_at
+      queryText = `SELECT id, artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, created_at, updated_at
                    FROM artworks 
                    WHERE artist_id = $1 
                    ORDER BY created_at DESC`;
@@ -89,12 +90,17 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
     const currency = priceCurrency || 'EUR';
     const unit = dimensionUnit || 'cm';
 
+    // Generate AI tags from image (non-blocking, with fallback to empty array)
+    console.log('[Upload] Generating AI tags for artwork...');
+    const tags = await generateTagsFromImage(req.file.buffer.toString('base64'), req.file.mimetype);
+    console.log('[Upload] Generated tags:', tags);
+
     console.log('Inserting artwork into database...');
     const result = await query(
-      `INSERT INTO artworks (artist_id, title, image_url, image_data, width, height, dimension_unit, price_amount, price_currency, buy_url, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CURRENT_TIMESTAMP)
-       RETURNING id, artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, created_at, updated_at`,
-      [targetArtistId, title, `/api/artwork-image/${Date.now()}`, imageData, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl]
+      `INSERT INTO artworks (artist_id, title, image_url, image_data, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, CURRENT_TIMESTAMP)
+       RETURNING id, artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, created_at, updated_at`,
+      [targetArtistId, title, `/api/artwork-image/${Date.now()}`, imageData, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, tags]
     );
 
     const artworkId = result.rows[0].id;

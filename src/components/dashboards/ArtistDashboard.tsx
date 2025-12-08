@@ -19,6 +19,7 @@ interface Artwork {
   price_amount: number | string | null;
   price_currency: string;
   buy_url: string;
+  tags?: string[];
   created_at: string;
   updated_at: string;
   artist_email?: string;
@@ -543,10 +544,27 @@ export function ArtistDashboard() {
                       {artwork.width} × {artwork.height} {artwork.dimension_unit || 'cm'}
                     </p>
                     {formatPrice(artwork.price_amount, artwork.price_currency) && (
-                      <p className="text-sm font-semibold text-rv-accent mb-3">
+                      <p className="text-sm font-semibold text-rv-accent mb-2">
                         {formatPrice(artwork.price_amount, artwork.price_currency)}
                       </p>
                     )}
+                    
+                    {artwork.tags && artwork.tags.length > 0 && (
+                      <div className="mb-3">
+                        <p className="text-xs text-rv-textMuted mb-1.5">AI-generated tags:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {artwork.tags.map((tag, index) => (
+                            <span
+                              key={index}
+                              className="inline-block px-2 py-0.5 text-xs bg-rv-surface text-rv-text rounded-full border border-rv-neutral"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
                     <button
                       onClick={(e) => {
                         e.stopPropagation();

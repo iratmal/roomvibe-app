@@ -13,6 +13,7 @@
     "enrich": "tsx scripts/enrichArtworks.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.37.0",
     "@google-cloud/storage": "^7.17.3",
     "@types/bcryptjs": "^2.4.6",
     "@types/cookie-parser": "^1.4.10",
