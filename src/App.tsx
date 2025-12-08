@@ -1971,13 +1971,14 @@ function Studio() {
             <div className="flex-1 overflow-y-auto lg:overflow-y-auto overflow-x-hidden">
               {/* AI Suggested Rooms Section */}
               {selectedCategory === "all" && aiSuggestedRooms.length > 0 && (
-                <div className="mb-4">
-                  <div className="flex items-center gap-1.5 mb-2">
+                <div className="mb-6 pb-4 border-b border-gray-200">
+                  <div className="flex items-center gap-1.5">
                     <svg className="w-3.5 h-3.5 text-[#C9A24A]" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M12 2L14.09 8.26L22 9.27L16 14.14L18.18 21.02L12 17.77L5.82 21.02L8 14.14L2 9.27L9.91 8.26L12 2Z"/>
                     </svg>
                     <span className="text-[10px] font-semibold text-[#264C61] uppercase tracking-wide">AI Suggested Rooms</span>
                   </div>
+                  <p className="text-xs text-gray-400 mt-1 mb-2">Powered by RoomVibe AI</p>
                   <div className="grid grid-cols-3 gap-1.5">
                     {aiSuggestedRooms.map((room) => (
                       <button
