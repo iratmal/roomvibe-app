@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useMemo } from "react";
 import localArtworks from "./data/artworks.json";
 import presets from "./data/presets.json";
 import { premiumRooms, getCategoryDisplayName, type PremiumRoom } from "./data/premiumRooms";
+import { getSmartScalePlacement, shouldUseSmartScale } from "./lib/studio/smartScale";
 import { getTopSuggestedRooms } from "./lib/ai/roomSuggest";
 import { PLAN_LIMITS, type PlanType } from "./config/planLimits";
 import { AuthProvider, useAuth } from "./context/AuthContext";
@@ -1152,14 +1153,15 @@ function Studio() {
 
   useEffect(() => {
     artIdRef.current = artId;
-    // Reset scale to 100% when artwork changes
-    setScale(1.0);
     
     // Track artwork change
     if (art) {
       GA4Events.changeArtwork(art.id);
     }
   }, [artId, art]);
+
+  // Smart Scale: Apply intelligent sizing when room or artwork changes
+  const [smartScaleEnabled, setSmartScaleEnabled] = useState<boolean>(true);
 
   // Get scaleFactor from active scene (FREE preset or Premium room via userPhoto)
   const getActiveScaleFactor = (): number => {
@@ -1195,6 +1197,52 @@ function Studio() {
       console.log(`[Real-Scale] canvasHeight=${canvasHeightPx}px, wallHeight=${DEFAULT_WALL_HEIGHT_CM}cm, sceneScale=${sceneScale}, globalScale=${GLOBAL_ARTWORK_SCALE_FACTOR}, pxPerCm=${ratio.toFixed(3)}`);
     }
   }, [sceneId, userPhoto, canvasRef.current?.clientHeight]);
+
+  // Smart Scale: Apply intelligent sizing when room or artwork changes
+  useEffect(() => {
+    if (!smartScaleEnabled) return;
+    if (!canvasRef.current) return;
+    if (!art) return;
+    if (pxPerCm <= 0) return;
+    
+    const canvasWidth = canvasRef.current.clientWidth;
+    const canvasHeight = canvasRef.current.clientHeight;
+    
+    if (canvasWidth === 0 || canvasHeight === 0) return;
+    
+    const currentRoom = userPhoto?.startsWith('/rooms/') 
+      ? premiumRooms.find(r => r.image === userPhoto)
+      : null;
+    
+    if (currentRoom && shouldUseSmartScale(currentRoom)) {
+      const placement = getSmartScalePlacement(
+        art.widthCm || 100,
+        art.heightCm || 70,
+        currentRoom,
+        canvasWidth,
+        canvasHeight,
+        pxPerCm
+      );
+      
+      setScale(placement.scale);
+      setOffsetX(placement.offsetX);
+      setOffsetY(placement.offsetY);
+      
+      if (import.meta.env.DEV) {
+        console.log('[Smart Scale] Applied:', {
+          room: currentRoom.id,
+          artwork: art.id,
+          scale: placement.scale.toFixed(2),
+          offsetX: placement.offsetX,
+          offsetY: placement.offsetY
+        });
+      }
+    } else {
+      setScale(1.0);
+      setOffsetX(0);
+      setOffsetY(0);
+    }
+  }, [art?.id, art?.widthCm, art?.heightCm, userPhoto, smartScaleEnabled, pxPerCm]);
 
   const fileRef = useRef<HTMLInputElement | null>(null);
 
