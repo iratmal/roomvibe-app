@@ -41,7 +41,7 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
     { value: 'artist', label: 'Artist', description: 'Upload and manage your artwork' },
     { value: 'designer', label: 'Designer', description: 'Create custom room designs' },
     { value: 'gallery', label: 'Gallery', description: 'Manage gallery collections' },
-    { value: 'admin', label: 'Admin', description: 'Full platform access' },
+    { value: 'admin', label: 'All-Access', description: 'Full platform access' },
   ];
 
   return (
