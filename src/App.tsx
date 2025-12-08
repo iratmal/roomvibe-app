@@ -829,13 +829,17 @@ function Studio() {
   const isInIframe = useIsInIframe();
   const { user } = useAuth();
   
+  // Admin check - admins bypass ALL restrictions
+  const isAdmin = user?.isAdmin || user?.role === 'admin';
+  
   // Determine user's effective plan for artwork access
   const effectivePlan = (user?.effectivePlan || 'user') as PlanType;
-  const isFreePlan = effectivePlan === 'user';
+  // Admin is never treated as free plan
+  const isFreePlan = !isAdmin && effectivePlan === 'user';
   
-  // Premium rooms access based on plan
+  // Premium rooms access based on plan - admin always has access
   const planLimits = PLAN_LIMITS[effectivePlan];
-  const hasPremiumRoomsAccess = planLimits.premiumRoomsAccess;
+  const hasPremiumRoomsAccess = isAdmin || planLimits.premiumRoomsAccess;
   
   // Upgrade modal state
   const [showUpgradeModal, setShowUpgradeModal] = useState<boolean>(false);
@@ -862,17 +866,21 @@ function Studio() {
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [exportType, setExportType] = useState<'image' | 'pdf' | null>(null);
   
-  // Export success modal state (shown for Free and Artist users only)
+  // Export success modal state (shown for Free and Artist users only, never for admin)
   const [showExportSuccessModal, setShowExportSuccessModal] = useState<boolean>(false);
   const [exportSuccessType, setExportSuccessType] = useState<'image' | 'pdf'>('image');
-  const isArtistPlan = effectivePlan === 'artist';
+  const isArtistPlan = !isAdmin && effectivePlan === 'artist';
   
-  // Check if user has high-res export access
-  const hasHighResExport = planLimits.highResExport;
-  const hasPdfExport = planLimits.pdfExport;
+  // Check if user has high-res export access - admin always has access
+  const hasHighResExport = isAdmin || planLimits.highResExport;
+  const hasPdfExport = isAdmin || planLimits.pdfExport;
   
   // Helper to show upgrade modal with correct recommended plan
+  // Admin users NEVER see upgrade modals
   const showUpgradeFor = (feature: FeatureKey, customMessage?: string) => {
+    // Admin bypasses all upgrade prompts
+    if (isAdmin) return;
+    
     const recommendedPlan = getRecommendedUpgradePlan(effectivePlan as PlanKey, feature);
     if (!recommendedPlan) {
       // User already has access (All-Access or Admin)

@@ -1,0 +1,169 @@
+# TASK – Fix Admin Access (Stop Upgrade Prompts for Admin Accounts)
+
+**Goal:**
+Ensure that **admin accounts** can access *all pages, all tools, all rooms, all dashboards, all exports and all restricted features* **without ever being shown an Upgrade Required modal**.
+
+This includes preventing the system from redirecting admin users to:
+
+* Free → Artist upgrade page
+* Artist upgrade modal
+* Any plan-based locking logic
+* Any plan-based filtering of features or rooms
+
+Admin must always have full unrestricted access.
+
+---
+
+# ✅ PROBLEM DESCRIPTION
+
+Currently, when logging in with an **admin password / admin account**, the system incorrectly treats the admin as a normal user.
+
+This causes:
+
+* Admin cannot open certain rooms (premium, standard, etc.)
+* Admin gets redirected to pricing pages
+* Admin gets “Upgrade to Artist / Designer / Gallery” popups
+* Admin is blocked from reviewing full Studio features
+
+This must be permanently fixed.
+
+---
+
+# ✅ PART 1 — Add `isAdmin` Flag to User Session
+
+If not already present, add a boolean flag:
+
+```ts
+user.isAdmin === true
+```
+
+This can come from:
+
+* database user object, or
+* environment variable logic, or
+* a dedicated admin email list, or
+* existing role logic
+
+(Use whichever method already exists or is simplest to integrate.)
+
+---
+
+# ✅ PART 2 — ADMIN BYPASSES ALL PLAN CHECKS
+
+Wherever the app checks plan limitations (studio access, premium rooms, exports, designer tools, gallery tools, exhibitions, etc.), modify the logic so:
+
+```ts
+if (user.isAdmin) return true;
+```
+
+Meaning: **admin always has access**.
+
+Apply this to:
+
+* `canAccessRoom` logic
+* `canExport` logic
+* `canUseDesignerTools`
+* `canUseGalleryTools`
+* `canViewPremiumRooms`
+* exhibition creation
+* PDF export limits
+* upgrade modal triggers
+
+Admin should be treated the same as an All-Access user, but without any limits.
+
+---
+
+# ✅ PART 3 — DISABLE UPGRADE MODAL FOR ADMINS
+
+Inside the Upgrade Required modal trigger logic, add:
+
+```ts
+if (user.isAdmin) return null; // or skip modal entirely
+```
+
+Admin must **never** see:
+
+* Upgrade prompt
+* Locked icons
+* Redirect to pricing
+* Stripe flow
+
+---
+
+# ✅ PART 4 — FULL ACCESS TO ALL ROOMS
+
+Admin account should:
+
+* see **all rooms** (Free + Standard + Premium + Future packs)
+* never have filtering applied based on plan
+* never have rooms locked
+
+Implement:
+
+```ts
+if (user.isAdmin) {
+  return allRooms; // bypass filtering
+}
+```
+
+---
+
+# ✅ PART 5 — FULL ACCESS TO DASHBOARDS
+
+Admin must be able to open:
+
+* Artist dashboard
+* Designer dashboard
+* Gallery dashboard
+* All-Access dashboard
+
+without redirects or limitations.
+
+If any dashboard component checks the plan:
+
+```ts
+if (user.isAdmin) return true;
+```
+
+---
+
+# ✅ PART 6 — TEST CASES
+
+### Test Case 1: Admin enters Studio
+
+* Should see *all rooms*
+* No upgrade modal
+* No locked features
+* Export visible and usable
+
+### Test Case 2: Admin opens Designer Tools
+
+* Should open normally
+* No prompts
+
+### Test Case 3: Admin opens Gallery Tools
+
+* Should open normally
+* Exhibitions unlimited
+
+### Test Case 4: Admin accesses premium rooms
+
+* All visible, clickable, no restrictions
+
+### Test Case 5: Admin does a hard refresh / new login
+
+* Still no upgrade prompts
+
+---
+
+# MODE PREFERENCE
+
+**Fast Mode** – small logic fixes across feature gating functions.
+
+---
+
+# STOP CONDITION
+
+* Admin can navigate anywhere without seeing any upgrade prompts.
+* Admin has full access to all features and data.
+* Admin is never redirected to `/pricing` or any upgrade flow.
