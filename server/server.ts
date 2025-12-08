@@ -23,14 +23,21 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+// For Autoscale deployments, listen on port 80. In development, use 3001.
 const PORT = parseInt(
   process.env.PORT || 
-  (process.env.NODE_ENV === 'production' ? '5000' : '3001'), 
+  (process.env.NODE_ENV === 'production' ? '80' : '3001'), 
   10
 );
 
+// Get Replit domain for CORS
+const replitDomain = process.env.REPLIT_DOMAINS?.split(',')[0];
 const allowedOrigins = process.env.NODE_ENV === 'production'
-  ? [process.env.FRONTEND_URL || 'https://app.roomvibe.app'].filter(Boolean)
+  ? [
+      process.env.FRONTEND_URL,
+      'https://app.roomvibe.app',
+      replitDomain ? `https://${replitDomain}` : null,
+    ].filter(Boolean) as string[]
   : ['http://localhost:5000', 'http://127.0.0.1:5000'];
 
 app.use(cors({
