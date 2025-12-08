@@ -22,7 +22,7 @@ const PLAN_DISPLAYS: Record<string, PlanDisplay> = {
     badge: 'User',
     badgeColor: 'bg-gray-100 text-gray-700',
     description: "You're on the free plan. Perfect for testing RoomVibe with basic features.",
-    bullets: ['Basic studio access', '5 starter rooms'],
+    bullets: ['10 Basic Mockup Rooms', '5 starter rooms'],
   },
   artist: {
     badge: 'Artist',
