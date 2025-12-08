@@ -1,0 +1,194 @@
+# TASK – Assign 30 Standard Artist Rooms (5 per category) & Implement Filtering Logic
+
+**Goal:**
+Implement the **Artist Plan room set**, which includes **30 standard rooms**, divided as **5 rooms per category**. These rooms must be visible to Artist, Designer, Gallery, All-Access plans, and Admin. Free users must NOT see these rooms.
+
+This task also ensures that:
+
+* Free Plan displays **only 10 basic rooms**
+* Artist Plan displays **30 rooms total** (10 basic + 20 additional standard)
+* Premium rooms remain locked for Designer/Gallery/All-Access only
+* Admin bypasses all filters
+
+---
+
+# ✅ PART 1 — Assign Standard Rooms for ARTIST PLAN (30 total)
+
+Mark the following rooms as:
+
+```json
+standard: true
+```
+
+These rooms form the full Artist Plan offering.
+
+---
+
+## **BATHROOM (5)**
+
+* Bathroom 3
+* Bathroom 4
+* Bathroom 5
+* Bathroom 7 *(basicFree)*
+* Bathroom 10 *(basicFree)*
+
+---
+
+## **BEDROOM (5)**
+
+* Bedroom 4 *(basicFree)*
+* Bedroom 5 *(basicFree)*
+* Bedroom 6 *(basicFree)*
+* Bedroom 8
+* Bedroom 12
+
+---
+
+## **KITCHEN (5)**
+
+* Kitchen 18 *(basicFree)*
+* Kitchen 19 *(basicFree)*
+* Kitchen 12
+* Kitchen 14
+* Kitchen 20
+
+---
+
+## **LIVING ROOM (5)**
+
+* Living Room 12 *(basicFree)*
+* Living Room 16 *(basicFree)*
+* Living Room 21 *(basicFree)*
+* Living Room 7
+* Living Room 15
+
+---
+
+## **KIDS ROOM (5)**
+
+* Kids Room 1
+* Kids Room 2
+* Kids Room 3
+* Kids Room 4
+* Kids Room 5
+
+---
+
+## **CAFE (5)**
+
+* Cafe 1
+* Cafe 2
+* Cafe 3
+* Cafe 4
+* Cafe 5
+
+---
+
+# ✅ PART 2 — Update Filtering Logic
+
+## **Free Plan**
+
+Show only 10 basic free rooms:
+
+```ts
+if (plan === "free") {
+  return rooms.filter(r => r.basicFree === true);
+}
+```
+
+---
+
+## **Artist Plan**
+
+Show basic free rooms + standard rooms:
+
+```ts
+if (plan === "artist") {
+  return rooms.filter(r => r.basicFree || r.standard === true);
+}
+```
+
+→ Should total **30 rooms maximum**.
+
+---
+
+## **Designer / Gallery / All-Access Plans**
+
+Show all rooms (standard + premium):
+
+```ts
+if (plan === "designer" || plan === "gallery" || plan === "allaccess") {
+  return rooms;
+}
+```
+
+---
+
+## **Admin Bypass**
+
+Admin must always see all rooms:
+
+```ts
+if (user.isAdmin) return rooms;
+```
+
+---
+
+# ✅ PART 3 — Metadata Structure
+
+Each room should have:
+
+```ts
+{
+  id: string,
+  name: string,
+  category: string,
+  basicFree?: boolean,
+  standard?: boolean,
+  premium?: boolean,
+  imageUrl: string,
+}
+```
+
+Rooms not in the basic or standard sets default to `premium: true`.
+
+---
+
+# ✅ PART 4 — Testing Instructions
+
+### **Free Plan**
+
+* Shows exactly 10 rooms (basicFree only)
+* No other rooms visible
+
+### **Artist Plan**
+
+* Shows exactly 30 rooms (10 + 20)
+* Shows 5 per category
+* Premium rooms do not appear
+
+### **Designer / Gallery / All-Access**
+
+* Show all rooms
+* Categories populated correctly
+
+### **Admin**
+
+* Sees everything
+* No restrictions
+
+---
+
+# Mode
+
+**Fast Mode** – metadata tagging + filtering updates.
+
+---
+
+# STOP CONDITION
+
+* Artist plan displays exactly 30 rooms.
+* Rooms are correctly tagged and filtered.
+* Free plan remains limited to 10 rooms.
+* Premium plans show full library.
+* Admin bypass works in all cases.

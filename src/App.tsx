@@ -855,19 +855,19 @@ function Studio() {
   // Filter rooms by plan tier:
   // - Admin: All rooms (no filtering)
   // - Designer/Gallery/All-Access: All rooms (premium access)
-  // - Artist: Basic (10) + Standard (20) = 30 rooms
-  // - Free/User: Basic only (10 rooms)
+  // - Artist: Standard rooms (30 total - includes basicFree)
+  // - Free/User: Basic only (10 rooms with basicFree: true)
   const filterRoomsByPlan = (rooms: typeof premiumRooms) => {
     if (isAdmin || hasPremiumRoomsAccess) {
       // Admin and premium users see all rooms
       return rooms;
     }
     if (effectivePlan === 'artist') {
-      // Artist sees basic + standard rooms (up to 30)
-      return rooms.filter(room => room.basicFree || room.tier === 'basic' || room.tier === 'standard');
+      // Artist sees standard rooms (30 total - includes all basicFree rooms)
+      return rooms.filter(room => room.standard === true);
     }
-    // Free users see only basic rooms (10)
-    return rooms.filter(room => room.basicFree || room.tier === 'basic');
+    // Free users see only basic rooms (10 with basicFree: true)
+    return rooms.filter(room => room.basicFree === true);
   };
   
   // Filter rooms by selected category AND plan tier
