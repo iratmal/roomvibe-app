@@ -425,9 +425,9 @@ function PlanCard({ plan, isActive, isLoading, onSelect }: PlanCardProps) {
         disabled={isActive && plan.id !== 'free' || isLoading}
         className={`w-full ${
           isActive && plan.id !== 'free'
-            ? 'py-3 px-4 rounded-lg font-semibold text-sm bg-gray-100 text-gray-400 cursor-not-allowed' 
+            ? 'btn-primary text-sm bg-gray-100 !text-gray-400 cursor-not-allowed' 
             : plan.id === 'free'
-              ? 'py-3 px-4 rounded-lg font-semibold text-sm border-2 border-[#264C61] text-[#264C61] bg-white hover:bg-gray-50 transition-colors'
+              ? 'btn-outline text-sm'
               : plan.recommended 
                 ? 'btn-premium text-sm' 
                 : 'btn-primary text-sm'
