@@ -1975,8 +1975,8 @@ function Studio() {
               {filteredPremiumRooms.map((room) => {
                 // Rooms are now pre-filtered by plan, so no locking needed
                 const isLocked = false;
-                // Basic free rooms get clean thumbnails (no gold badges)
-                const isBasicFree = room.basicFree === true;
+                // Basic and standard rooms get clean thumbnails (no gold badges)
+                const hasCleanThumbnail = room.basicFree === true || room.standard === true;
                 
                 return (
                   <button
@@ -1999,8 +1999,8 @@ function Studio() {
                       style={{ backgroundImage: `url(${room.image})` }}
                     />
                     
-                    {/* Premium star badge - hidden for basic free rooms */}
-                    {!isBasicFree && (
+                    {/* Premium star badge - hidden for basic and standard rooms */}
+                    {!hasCleanThumbnail && (
                       <div className="absolute top-1.5 left-1.5">
                         <div className="bg-[#D8B46A] rounded-full p-1 shadow-sm">
                           <svg className="h-2 w-2 text-white" viewBox="0 0 24 24" fill="currentColor">
@@ -2022,8 +2022,8 @@ function Studio() {
                       </div>
                     )}
                     
-                    {/* Room name label - hidden for basic free rooms (clean thumbnails) */}
-                    {!isBasicFree && (
+                    {/* Room name label - hidden for basic and standard rooms (clean thumbnails) */}
+                    {!hasCleanThumbnail && (
                       <div className={`absolute bottom-0 left-0 right-0 px-2 py-1 text-[9px] font-medium ${
                         isLocked ? "bg-[#264C61]/80 text-white" : "bg-gradient-to-t from-[#D8B46A]/80 to-[#D8B46A]/60 text-white"
                       }`}>
