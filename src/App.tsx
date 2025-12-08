@@ -853,10 +853,29 @@ function Studio() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const categories = ["all", "bathroom", "bedroom", "cafe", "kids", "kitchen", "livingroom"] as const;
   
-  // Filter rooms by selected category
+  // Filter rooms by plan tier:
+  // - Admin: All rooms (no filtering)
+  // - Designer/Gallery/All-Access: All rooms (premium access)
+  // - Artist: Basic (10) + Standard (20) = 30 rooms
+  // - Free/User: Basic only (10 rooms)
+  const filterRoomsByPlan = (rooms: typeof premiumRooms) => {
+    if (isAdmin || hasPremiumRoomsAccess) {
+      // Admin and premium users see all rooms
+      return rooms;
+    }
+    if (effectivePlan === 'artist') {
+      // Artist sees basic + standard rooms (up to 30)
+      return rooms.filter(room => room.basicFree || room.tier === 'basic' || room.tier === 'standard');
+    }
+    // Free users see only basic rooms (10)
+    return rooms.filter(room => room.basicFree || room.tier === 'basic');
+  };
+  
+  // Filter rooms by selected category AND plan tier
+  const roomsFilteredByPlan = filterRoomsByPlan(premiumRooms);
   const filteredPremiumRooms = selectedCategory === "all" 
-    ? premiumRooms 
-    : premiumRooms.filter(room => room.category === selectedCategory);
+    ? roomsFilteredByPlan 
+    : roomsFilteredByPlan.filter(room => room.category === selectedCategory);
   
   const filteredPresets = selectedCategory === "all"
     ? (presets as any[])
@@ -1943,9 +1962,10 @@ function Studio() {
                 </button>
               ))}
               
-              {/* Premium Rooms - only shown to users with premium access (Designer+) */}
+              {/* Rooms filtered by plan - users only see rooms they have access to */}
               {filteredPremiumRooms.map((room) => {
-                const isLocked = !hasPremiumRoomsAccess;
+                // Rooms are now pre-filtered by plan, so no locking needed
+                const isLocked = false;
                 
                 return (
                   <button
@@ -2006,16 +2026,21 @@ function Studio() {
               </div>
             )}
             
-              {/* Upgrade hint for users without premium room access */}
-              {!hasPremiumRoomsAccess && selectedCategory === "all" && (
+              {/* Upgrade hint for users without full room access */}
+              {!isAdmin && !hasPremiumRoomsAccess && selectedCategory === "all" && (
                 <div className="mt-4 pt-3 border-t border-rv-neutral/40 flex items-center justify-between">
                   <span className="text-[10px] text-rv-textMuted">
-                    {premiumRooms.length}+ premium rooms locked
+                    {isFreePlan 
+                      ? `${premiumRooms.length - 10}+ more rooms available`
+                      : effectivePlan === 'artist'
+                      ? `${premiumRooms.length - 30}+ premium rooms available`
+                      : `${premiumRooms.length}+ rooms available`
+                    }
                   </span>
                   <UpgradeNudge
-                    message="Unlock All"
+                    message={isFreePlan ? "Upgrade for More" : "Unlock All"}
                     variant="badge"
-                    onClick={() => showUpgradeFor('premiumRooms')}
+                    onClick={() => showUpgradeFor(isFreePlan ? 'standardRooms' : 'premiumRooms')}
                   />
                 </div>
               )}

@@ -45,7 +45,11 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
     - **Designer** (€29/mo): 100 artworks, 100+ premium rooms, high-res export, PDF export, Designer Studio
     - **Gallery** (€49/mo): Unlimited artworks, 100+ premium rooms, 3 active exhibitions, 20 PDF/month
     - **All-Access** (€79/mo): Unlimited everything, future premium packs, priority support
-- **Room Tier System**: `roomTier` property in plan limits: 'basic10' (Free), 'standard30' (Artist), 'all' (Designer+)
+- **Room Tier System (Updated Dec 2024)**: Rooms tagged with `tier` property ('basic', 'standard', 'premium') and `basicFree` boolean in `src/data/premiumRooms.ts`:
+    - **Basic Rooms (10)**: Free plan - Bathroom 7/10, Bedroom 4/5/6, Kitchen 18/19, Living Room 12/16/21
+    - **Standard Rooms (20 additional)**: Artist plan - Bathroom 1-3, Bedroom 1-3/7-10, Kitchen 1-5, Living Room 1-5
+    - **Premium Rooms (remaining)**: Designer/Gallery/All-Access - All remaining rooms
+    - Room filtering logic in Studio's `filterRoomsByPlan()` function; admin bypasses all restrictions
 - **Pricing Page**: Modular pricing page (`#/pricing`) with 4 plan cards using new brand colors. Feature comparison table with primary (#264C61) and gold (#C9A24A) text colors. Entitlement-based Active badges shown above disabled buttons when plan is active.
 - **Billing Page**: Dedicated billing management page (`#/billing`) with 3-section layout:
     - **Active Modules**: Primary pill cards showing current entitlements (background #E8EBF7, border-left #264C61).
