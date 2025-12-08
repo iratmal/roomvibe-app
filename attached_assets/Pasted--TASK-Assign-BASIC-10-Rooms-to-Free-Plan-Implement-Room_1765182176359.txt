@@ -1,0 +1,164 @@
+# TASK – Assign BASIC 10 Rooms to Free Plan & Implement Room Filtering by Plan
+
+**Goal:**
+Implement the new FREE PLAN room set by assigning the specified 10 rooms as **basic_free_rooms** and updating Studio filtering logic so each plan only sees the rooms allowed for their tier.
+
+This task ensures:
+
+* Free users see ONLY the 10 basic rooms.
+* Artist sees 10 basic + up to 20 standard rooms (total 30).
+* Designer / Gallery / All‑Access see **all rooms** (standard + premium).
+* Admin bypasses all restrictions.
+
+---
+
+# ✅ PART 1 — BASIC 10 ROOMS (FREE PLAN)
+
+Mark the following rooms as **basic_free_rooms: true** in the room metadata:
+
+### **Bathroom (2)**
+
+1. Bathroom **7**
+2. Bathroom **10**
+
+### **Bedroom (3)**
+
+3. Bedroom **4**
+4. Bedroom **5**
+5. Bedroom **6**
+
+### **Kitchen (2)**
+
+6. Kitchen **18**
+7. Kitchen **19**
+
+### **Living Room (3)**
+
+8. Living Room **12**
+9. Living Room **16**
+10. Living Room **21**
+
+Store this as a dedicated room tag: `basicFree: true`.
+
+---
+
+# ✅ PART 2 — PLAN‑BASED ROOM VISIBILITY
+
+Update the Studio room filtering logic as follows:
+
+### **FREE PLAN**
+
+User should see **only** rooms tagged `basicFree: true`.
+
+Filtering rule:
+
+```ts
+if (plan === "free") {
+  return rooms.filter(r => r.basicFree === true);
+}
+```
+
+---
+
+### **ARTIST PLAN**
+
+User should see:
+
+* all `basicFree: true` rooms (10)
+* plus **standard: true** rooms (20 additional)
+
+Total: **up to 30 rooms**.
+
+Filtering rule:
+
+```ts
+if (plan === "artist") {
+  return rooms.filter(r => r.basicFree || r.standard === true);
+}
+```
+
+*(Ensure Artist does NOT see premium rooms.)*
+
+---
+
+### **DESIGNER, GALLERY, ALL‑ACCESS**
+
+User should see **all rooms** (standard + premium).
+
+Filtering rule:
+
+```ts
+if (plan === "designer" || plan === "gallery" || plan === "allaccess") {
+  return rooms; // full library
+}
+```
+
+---
+
+### **ADMIN**
+
+Admin always sees ALL rooms, no filters.
+
+```ts
+if (user.isAdmin) return rooms;
+```
+
+---
+
+# ✅ PART 3 — UPDATE ROOM METADATA STRUCTURE
+
+Ensure each room object includes:
+
+```ts
+{
+  id: string,
+  name: string,
+  category: "bathroom" | "bedroom" | "kitchen" | "living" | ...,
+  basicFree?: boolean,
+  standard?: boolean,
+  premium?: boolean,
+  imageUrl: string,
+  ...
+}
+```
+
+Rooms not in basic or standard lists should default to `premium: true`.
+
+---
+
+# ✅ PART 4 — TESTING
+
+### FREE PLAN
+
+* Should show exactly **10 rooms** listed above.
+* No other rooms appear.
+
+### ARTIST PLAN
+
+* Should show 10 basic + 20 standard = **30 rooms max**.
+* Should NOT show premium rooms.
+
+### DESIGNER / GALLERY / ALL‑ACCESS
+
+* Should show the full list of rooms (100+).
+
+### ADMIN
+
+* Should always see all rooms.
+* Should never see upgrade prompts.
+
+---
+
+# MODE PREFERENCE
+
+Use **Fast Mode** – this is a filtering + metadata tagging task.
+
+---
+
+# STOP CONDITION
+
+* Free users see ONLY the 10 specified rooms.
+* Artist sees up to 30 rooms.
+* Premium-tier plans see everything.
+* Admin bypass applies.
+* Room data structure is updated with tags for future scalability.
