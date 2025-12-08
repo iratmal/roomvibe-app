@@ -1,0 +1,111 @@
+# TASK – Fix EXPORT Section Layout (Keep PDF sublabel visible & align View & Buy button)
+
+**Goal:**
+Improve the layout of the **EXPORT** section in the Studio right column so that:
+
+1. The **PDF Export** sublabel ("Printer-ready quality") is always fully visible.
+2. The **View & Buy** button is not stuck directly under the PDF Export row, but appears with proper spacing below the upgrade CTA.
+3. The entire right column has enough vertical space so the footer does not visually "push" into the Studio controls.
+4. Left and right columns visually extend down to a similar height for balance.
+
+This is a follow-up refinement to the Studio layout.
+
+---
+
+## 1) EXPORT Section – Required Visual Structure
+
+The EXPORT block should follow this vertical order (top to bottom):
+
+1. **Download** button
+
+   * Subtext: "1200 px – watermark on free plan" (or similar)
+2. **High-Resolution Download** button
+
+   * Subtext: "3000 px – no watermark – Designer feature"
+3. **PDF Export** button
+
+   * Subtext: **"Printer-ready quality"** → this text must be fully visible
+4. **Unlock High-Resolution Export – Upgrade** CTA button
+5. **View & Buy** button
+
+Each row should have:
+
+* consistent vertical spacing (e.g. margin-bottom),
+* no overlapping or collapsing of subtext when viewport height is smaller.
+
+Make sure the PDF export subtext is not covered or visually merged with the View & Buy button.
+
+---
+
+## 2) Fix View & Buy Button Position
+
+Currently, the **View & Buy** button is visually pushed up so that it appears directly under the PDF Export button, hiding the "Printer-ready quality" label.
+
+Required behaviour:
+
+* Add sufficient margin/padding between the **PDF Export** block and the **Unlock High-Resolution Export → Upgrade** CTA.
+* Place **View & Buy** **below** the Upgrade CTA, with the same vertical spacing as other buttons.
+
+Example structure (pseudo):
+
+```tsx
+<section className="space-y-3">
+  <ExportButtonMain />
+  <ExportButtonHighRes />
+  <ExportButtonPdf />
+
+  <UpgradeHighResCta />
+
+  <ViewAndBuyButton />
+</section>
+```
+
+Avoid absolute positioning or negative margins in this section.
+
+---
+
+## 3) Increase Right Column Height (More Breathing Room)
+
+To prevent the EXPORT block from being squashed against the footer, slightly **increase the effective height** of the Studio area so that the right column has enough vertical space.
+
+Options:
+
+* Increase `min-height` of the main Studio container (`studio-main`) relative to viewport height (e.g. `min-h-[calc(100vh-HEADER-FOOTER_OFFSET_SMALLER)]` → tweak offset so there is more room).
+* Alternatively, add more top padding within the right column so elements are not compressed at the bottom.
+
+Goal: On a typical laptop viewport, user should see the entire EXPORT section (including sublabels and both buttons) without it colliding visually with the footer.
+
+---
+
+## 4) Keep Left Column Visually Balanced
+
+Ensure the **left Scenes column** visually extends down to a similar height as the right column, so the layout looks balanced.
+
+* If right column height is increased, mirror the height logic on the left column container.
+* Continue using internal scroll (`overflow-y-auto`) for long room lists inside the left column.
+
+---
+
+## 5) Testing
+
+On a typical 13"–15" laptop viewport:
+
+* All three export buttons and their sublabels are fully visible.
+* The "Printer-ready quality" text under PDF Export is clearly visible and not overlapped.
+* The View & Buy button is clearly separated from the PDF Export row and sits below the upgrade CTA.
+* There is visible breathing space between the bottom of the EXPORT section and the footer.
+* Left and right columns visually align in height.
+
+---
+
+## Mode
+
+Use **Fast Mode** – small layout and spacing adjustments.
+
+---
+
+## Stop Condition
+
+* PDF Export sublabel is always readable.
+* View & Buy button sits in the correct position with proper spacing.
+* Studio columns look balanced and not "zgnječeno" u footer.
