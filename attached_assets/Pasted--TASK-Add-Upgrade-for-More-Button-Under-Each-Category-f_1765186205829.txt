@@ -1,0 +1,168 @@
+# TASK – Add “Upgrade for More” Button Under Each Category for Free and Artist Users
+
+**Goal:**
+For FREE and ARTIST plan users, in the Studio left sidebar, display an **“Upgrade for More”** button **under each category block**, so that a user can immediately upgrade when they reach the end of their available rooms for that category.
+
+This must appear:
+
+* Under **Bathroom** preview list
+* Under **Bedroom** preview list
+* Under **Kitchen** preview list
+* Under **Kids** preview list
+* Under **Living Room** preview list
+* Under **Cafe** preview list (if present)
+
+The button should appear only when the category is limited by the user’s current plan.
+
+---
+
+## ✅ PART 1 — WHEN BUTTON SHOULD APPEAR
+
+### **Free Plan Users:**
+
+Free plan users have access ONLY to the 10 basic rooms.
+
+Therefore, **under every category**, after showing available rooms:
+
+* Show a gold/amber button with label:
+  **“Upgrade for More Rooms”**
+
+This button should appear even if the Free user sees only 1–3 rooms in that category.
+
+---
+
+### **Artist Plan Users:**
+
+Artist users have access to up to 30 standard rooms.
+
+They should still see an upgrade button because Designer/Gallery tiers unlock:
+
+* 100+ premium mockup rooms
+* high‑resolution export
+* PDF export
+* designer tools
+* gallery tools
+
+So under each category for an Artist user:
+
+* Show **“Unlock 100+ Premium Rooms → Upgrade”**
+
+---
+
+## ✅ PART 2 — BUTTON PLACEMENT
+
+Button must appear:
+
+* Directly **below the displayed room thumbnails** inside each category tab.
+* Not at the bottom of the entire sidebar — instead, **per category**.
+
+Visual example structure:
+
+```
+Bathroom
+[Room thumbnail]
+[Room thumbnail]
+[Room thumbnail]
+
+[ gold Upgrade button ]
+```
+
+Spacing:
+
+* `mt-3` above button
+* `mb-4` below button
+
+---
+
+## ✅ PART 3 — BUTTON ACTION / ROUTING
+
+The button must trigger the **Upgrade flow modal** with the **correct recommended plan**.
+
+Plan recommendation rules:
+
+```ts
+if (plan === "free") recommendedPlan = "artist";
+if (plan === "artist") recommendedPlan = "designer";
+```
+
+Call the same upgrade modal that is used when clicking locked rooms.
+
+---
+
+## ✅ PART 4 — CONDITIONAL LOGIC
+
+### Show the button if:
+
+* `user.plan === "free"` → always
+* `user.plan === "artist"` → always
+
+### Do NOT show the button if:
+
+* user is Designer
+* user is Gallery
+* user is All‑Access
+* user is Admin
+
+Implementation idea:
+
+```tsx
+{(plan === "free" || plan === "artist") && (
+  <UpgradeButton onClick={() => openUpgradeModal(recommendedPlan)} />
+)}
+```
+
+---
+
+## ✅ PART 5 — DESIGN REQUIREMENTS
+
+### Button style:
+
+* Color: **gold / premium accent** (same as existing upgrade CTA)
+* Full‑width inside category block
+* Rounded corners consistent with RoomVibe UI
+* Label variations:
+
+  * Free → **“Upgrade for More Rooms”**
+  * Artist → **“Unlock 100+ Premium Rooms → Upgrade”**
+
+### Hover State:
+
+* Slight darkened gold tone
+
+---
+
+## ✅ PART 6 — TESTING CHECKLIST
+
+### FREE USER
+
+* Sees 10 basic rooms total
+* Under each category (Bathroom, Bedroom, Kids, etc.) sees **Upgrade for More Rooms** button
+* Clicking button opens upgrade modal recommending **Artist** plan
+
+### ARTIST USER
+
+* Sees up to 30 rooms across categories
+* Under each category sees **Unlock 100+ Premium Rooms → Upgrade** button
+* Clicking button opens upgrade modal recommending **Designer** plan
+
+### DESIGNER / GALLERY / ALL‑ACCESS
+
+* No upgrade buttons appear in categories
+
+### ADMIN
+
+* No upgrade buttons appear
+
+---
+
+## MODE
+
+Use **Fast Mode** — UI injection + conditional logic.
+
+---
+
+## STOP CONDITION
+
+* Every category for Free/Artist users ends with an appropriate Upgrade button.
+* Buttons trigger correct upgrade modal.
+* Premium‑tier users and Admins never see the buttons.

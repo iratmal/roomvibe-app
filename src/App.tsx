@@ -2042,22 +2042,19 @@ function Studio() {
               </div>
             )}
             
-              {/* Upgrade hint for users without full room access */}
-              {!isAdmin && !hasPremiumRoomsAccess && selectedCategory === "all" && (
-                <div className="mt-4 pt-3 border-t border-rv-neutral/40 flex items-center justify-between">
-                  <span className="text-[10px] text-rv-textMuted">
-                    {isFreePlan 
-                      ? `${premiumRooms.length - 10}+ more rooms available`
-                      : effectivePlan === 'artist'
-                      ? `${premiumRooms.length - 30}+ premium rooms available`
-                      : `${premiumRooms.length}+ rooms available`
-                    }
-                  </span>
-                  <UpgradeNudge
-                    message={isFreePlan ? "Upgrade for More" : "Unlock All"}
-                    variant="badge"
+              {/* Upgrade button for Free and Artist users - shown under every category */}
+              {!isAdmin && (isFreePlan || isArtistPlan) && (
+                <div className="mt-3 mb-4">
+                  <button
                     onClick={() => showUpgradeFor(isFreePlan ? 'standardRooms' : 'premiumRooms')}
-                  />
+                    className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-[#264C61] transition-all hover:bg-[rgba(38,76,97,0.06)]"
+                    style={{ border: '1.5px solid #D8B46A' }}
+                  >
+                    {isFreePlan 
+                      ? "Upgrade for More Rooms"
+                      : "Unlock 100+ Premium Rooms → Upgrade"
+                    }
+                  </button>
                 </div>
               )}
             </div>
