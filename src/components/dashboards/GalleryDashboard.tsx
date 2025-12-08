@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ImpersonationBanner } from '../ImpersonationBanner';
-import { YourPlanCard } from '../YourPlanCard';
 import { SiteHeader } from '../SiteHeader';
 
 const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
@@ -17,6 +16,17 @@ interface Collection {
   created_at: string;
   updated_at: string;
   first_artwork_url?: string;
+}
+
+interface Artwork {
+  id: number;
+  title: string;
+  artist_name: string;
+  image_url: string;
+  width: number;
+  height: number;
+  dimension_unit: string;
+  created_at: string;
 }
 
 function ChangePasswordGallery() {
@@ -132,12 +142,16 @@ function ChangePasswordGallery() {
 }
 
 export function GalleryDashboard() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [collections, setCollections] = useState<Collection[]>([]);
+  const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [loading, setLoading] = useState(false);
+  const [artworkLoading, setArtworkLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
+  const [showArtworkDeleteConfirm, setShowArtworkDeleteConfirm] = useState<number | null>(null);
+  const [copiedLink, setCopiedLink] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -146,11 +160,24 @@ export function GalleryDashboard() {
     status: 'draft' as 'draft' | 'published'
   });
 
+  const [artworkForm, setArtworkForm] = useState({
+    title: '',
+    artistName: '',
+    width: '',
+    height: '',
+    dimensionUnit: 'cm'
+  });
+  const [artworkImage, setArtworkImage] = useState<File | null>(null);
+
+  const publishedCount = collections.filter(c => c.status === 'published').length;
+
   useEffect(() => {
     fetchCollections();
+    fetchArtworks();
     
     const handleHashChange = () => {
       fetchCollections();
+      fetchArtworks();
     };
     
     const handleCollectionUpdated = () => {
@@ -190,6 +217,118 @@ export function GalleryDashboard() {
       setError(err.message || 'Failed to load collections');
       setCollections([]);
     }
+  };
+
+  const fetchArtworks = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/artist/artworks`, {
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        console.error('Failed to fetch artworks');
+        return;
+      }
+
+      const data = await response.json();
+      setArtworks(Array.isArray(data.artworks) ? data.artworks : []);
+    } catch (err: any) {
+      console.error('Error fetching artworks:', err);
+    }
+  };
+
+  const handleArtworkInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setArtworkForm({
+      ...artworkForm,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleArtworkImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setArtworkImage(e.target.files[0]);
+    }
+  };
+
+  const handleArtworkSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!artworkForm.title.trim()) {
+      setError('Artwork title is required');
+      return;
+    }
+
+    if (!artworkImage) {
+      setError('Image is required');
+      return;
+    }
+
+    setArtworkLoading(true);
+    setError('');
+
+    try {
+      const formDataToSend = new FormData();
+      formDataToSend.append('title', artworkForm.title);
+      formDataToSend.append('artistName', artworkForm.artistName || 'Unknown Artist');
+      formDataToSend.append('width', artworkForm.width || '50');
+      formDataToSend.append('height', artworkForm.height || '50');
+      formDataToSend.append('dimensionUnit', artworkForm.dimensionUnit);
+      formDataToSend.append('buyUrl', 'https://gallery.example.com');
+      formDataToSend.append('image', artworkImage);
+
+      const response = await fetch(`${API_URL}/api/artist/artworks`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formDataToSend
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to upload artwork');
+      }
+
+      setSuccess('Artwork uploaded successfully!');
+      setArtworkForm({ title: '', artistName: '', width: '', height: '', dimensionUnit: 'cm' });
+      setArtworkImage(null);
+      const fileInput = document.getElementById('galleryArtworkImage') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
+      fetchArtworks();
+
+      setTimeout(() => setSuccess(''), 5000);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setArtworkLoading(false);
+    }
+  };
+
+  const handleArtworkDelete = async (artworkId: number) => {
+    try {
+      const response = await fetch(`${API_URL}/api/artist/artworks/${artworkId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete artwork');
+      }
+
+      setSuccess('Artwork deleted successfully!');
+      setShowArtworkDeleteConfirm(null);
+      fetchArtworks();
+
+      setTimeout(() => setSuccess(''), 5000);
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  const copyPublicLink = (collectionId: number) => {
+    const baseUrl = window.location.origin;
+    const publicUrl = `${baseUrl}/#/exhibitions/${collectionId}/public`;
+    navigator.clipboard.writeText(publicUrl);
+    setCopiedLink(collectionId);
+    setTimeout(() => setCopiedLink(null), 2000);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -290,24 +429,12 @@ export function GalleryDashboard() {
         {/* Header Section */}
         <div className="flex justify-between items-start mb-12 pb-8 border-b border-slate-200">
           <div>
-            <h1 className="text-4xl md:text-5xl font-semibold mb-3 text-[#264C61] tracking-tight" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <h1 className="text-4xl md:text-5xl font-semibold mb-2 text-[#264C61] tracking-tight" style={{ fontFamily: 'Inter, sans-serif' }}>
               Gallery Dashboard
             </h1>
             <p className="text-lg text-slate-500" style={{ fontFamily: 'Inter, sans-serif' }}>
-              Create digital collections and exhibitions for your gallery.
+              Welcome back, {user?.email}!
             </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <a
-              href="#/studio"
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#264C61] text-white text-sm font-semibold rounded-lg hover:bg-[#1D3A4A] transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              <span className="hidden sm:inline">Open Studio</span>
-              <span className="sm:hidden">Studio</span>
-            </a>
           </div>
         </div>
 
@@ -323,11 +450,237 @@ export function GalleryDashboard() {
           </div>
         )}
 
+        {/* Gallery Hub Section */}
         <div className="mb-12 p-8 bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100">
           <h2 className="text-2xl font-semibold mb-2 text-[#264C61]" style={{ fontFamily: 'Inter, sans-serif' }}>
-            Create New Collection
+            Gallery Hub
           </h2>
-          <p className="text-sm text-slate-400 mb-8">Curate artworks into themed exhibitions</p>
+          <p className="text-sm text-slate-400 mb-8">Manage your artworks, exhibitions, and virtual shows in one place.</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="p-6 bg-slate-50 rounded-xl border border-slate-100">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-full bg-[#264C61]/10 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-[#264C61]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-[#264C61]">{artworks.length}</p>
+                  <p className="text-sm text-slate-500">Artworks</p>
+                </div>
+              </div>
+            </div>
+            <div className="p-6 bg-slate-50 rounded-xl border border-slate-100">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-[#264C61]">{publishedCount} / 3</p>
+                  <p className="text-sm text-slate-500">Active Exhibitions</p>
+                </div>
+              </div>
+            </div>
+            <div className="p-6 bg-slate-50 rounded-xl border border-slate-100">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-[#264C61]">{collections.length}</p>
+                  <p className="text-sm text-slate-500">Total Collections</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Artwork Library Section */}
+        <div className="mb-12 p-8 bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100">
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <h2 className="text-2xl font-semibold mb-2 text-[#264C61]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                Artwork Library
+              </h2>
+              <p className="text-sm text-slate-400">Upload artworks for your collections and exhibitions</p>
+            </div>
+            <div className="text-sm text-slate-500">
+              {artworks.length} artworks (unlimited)
+            </div>
+          </div>
+          
+          <form onSubmit={handleArtworkSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label htmlFor="artworkTitle" className="block text-sm font-semibold text-slate-700 mb-2">
+                  Title <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="artworkTitle"
+                  name="title"
+                  value={artworkForm.title}
+                  onChange={handleArtworkInputChange}
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] focus:border-transparent transition-all bg-slate-50 hover:bg-white"
+                  placeholder="e.g., Abstract Sunset"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="artistName" className="block text-sm font-semibold text-slate-700 mb-2">
+                  Artist Name
+                </label>
+                <input
+                  type="text"
+                  id="artistName"
+                  name="artistName"
+                  value={artworkForm.artistName}
+                  onChange={handleArtworkInputChange}
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] focus:border-transparent transition-all bg-slate-50 hover:bg-white"
+                  placeholder="e.g., John Smith"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div>
+                <label htmlFor="galleryArtworkImage" className="block text-sm font-semibold text-slate-700 mb-2">
+                  Image <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="file"
+                  id="galleryArtworkImage"
+                  accept="image/*"
+                  onChange={handleArtworkImageChange}
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] focus:border-transparent transition-all bg-slate-50 hover:bg-white file:mr-4 file:py-1 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#264C61] file:text-white hover:file:bg-[#1D3A4A]"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="artworkWidth" className="block text-sm font-semibold text-slate-700 mb-2">
+                  Width
+                </label>
+                <input
+                  type="number"
+                  id="artworkWidth"
+                  name="width"
+                  value={artworkForm.width}
+                  onChange={handleArtworkInputChange}
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] focus:border-transparent transition-all bg-slate-50 hover:bg-white"
+                  placeholder="50"
+                />
+              </div>
+              <div>
+                <label htmlFor="artworkHeight" className="block text-sm font-semibold text-slate-700 mb-2">
+                  Height
+                </label>
+                <input
+                  type="number"
+                  id="artworkHeight"
+                  name="height"
+                  value={artworkForm.height}
+                  onChange={handleArtworkInputChange}
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] focus:border-transparent transition-all bg-slate-50 hover:bg-white"
+                  placeholder="50"
+                />
+              </div>
+              <div>
+                <label htmlFor="artworkUnit" className="block text-sm font-semibold text-slate-700 mb-2">
+                  Unit
+                </label>
+                <select
+                  id="artworkUnit"
+                  name="dimensionUnit"
+                  value={artworkForm.dimensionUnit}
+                  onChange={handleArtworkInputChange}
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] focus:border-transparent transition-all bg-slate-50 hover:bg-white"
+                >
+                  <option value="cm">cm</option>
+                  <option value="in">inches</option>
+                </select>
+              </div>
+            </div>
+            <button
+              type="submit"
+              disabled={artworkLoading}
+              className="px-8 py-3.5 bg-[#264C61] text-white rounded-xl hover:bg-[#1D3A4A] transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#264C61]/25"
+            >
+              {artworkLoading ? 'Uploading...' : 'Upload Artwork'}
+            </button>
+          </form>
+        </div>
+
+        {/* My Artworks Grid */}
+        {artworks.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-2xl font-semibold mb-6 text-[#264C61]" style={{ fontFamily: 'Inter, sans-serif' }}>
+              My Artworks ({artworks.length})
+            </h2>
+            <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {artworks.map((artwork) => (
+                <div
+                  key={artwork.id}
+                  className="bg-white border border-slate-100 rounded-2xl overflow-hidden hover:shadow-lg hover:shadow-slate-200/50 transition-all group"
+                >
+                  <div className="aspect-square bg-slate-100 relative">
+                    <img
+                      src={artwork.image_url}
+                      alt={artwork.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-semibold text-[#264C61] truncate mb-1">{artwork.title}</h3>
+                    {artwork.artist_name && (
+                      <p className="text-sm text-slate-500 truncate">{artwork.artist_name}</p>
+                    )}
+                    <p className="text-xs text-slate-400 mt-1">
+                      {artwork.width} × {artwork.height} {artwork.dimension_unit}
+                    </p>
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        onClick={() => setShowArtworkDeleteConfirm(artwork.id)}
+                        className="flex-1 text-xs px-3 py-2 text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                    {showArtworkDeleteConfirm === artwork.id && (
+                      <div className="mt-3 p-3 bg-red-50 rounded-lg">
+                        <p className="text-xs text-red-700 mb-2">Delete this artwork?</p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleArtworkDelete(artwork.id)}
+                            className="flex-1 text-xs px-2 py-1.5 bg-red-500 text-white rounded hover:bg-red-600"
+                          >
+                            Yes
+                          </button>
+                          <button
+                            onClick={() => setShowArtworkDeleteConfirm(null)}
+                            className="flex-1 text-xs px-2 py-1.5 border border-red-200 text-red-600 rounded hover:bg-red-100"
+                          >
+                            No
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Exhibitions Section */}
+        <div className="mb-12 p-8 bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100">
+          <h2 className="text-2xl font-semibold mb-2 text-[#264C61]" style={{ fontFamily: 'Inter, sans-serif' }}>
+            Create New Exhibition
+          </h2>
+          <p className="text-sm text-slate-400 mb-8">Curate artworks into themed exhibitions (up to 3 active)</p>
           
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -511,21 +864,44 @@ export function GalleryDashboard() {
                       </div>
                     </div>
 
-                    <div className="flex gap-3 pt-2">
-                      <button
-                        onClick={() => handleViewCollection(collection.id)}
-                        className="flex-1 px-4 py-2.5 text-sm bg-[#264C61] text-white rounded-xl hover:bg-[#1D3A4A] transition-all font-semibold shadow-sm"
-                        style={{ fontFamily: 'Inter, sans-serif' }}
-                      >
-                        View Collection
-                      </button>
-                      <button
-                        onClick={() => setShowDeleteConfirm(collection.id)}
-                        className="px-4 py-2.5 text-sm text-red-500 border border-red-200 rounded-xl hover:bg-red-50 transition-all font-semibold"
-                        style={{ fontFamily: 'Inter, sans-serif' }}
-                      >
-                        Delete
-                      </button>
+                    <div className="space-y-3 pt-2">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleViewCollection(collection.id)}
+                          className="flex-1 px-3 py-2 text-sm bg-[#264C61] text-white rounded-lg hover:bg-[#1D3A4A] transition-all font-semibold"
+                        >
+                          View
+                        </button>
+                        <a
+                          href={`#/gallery/exhibitions/${collection.id}`}
+                          className="flex-1 px-3 py-2 text-sm bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-all font-semibold text-center"
+                        >
+                          Virtual Room
+                        </a>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            setSuccess('PDF export coming soon!');
+                            setTimeout(() => setSuccess(''), 3000);
+                          }}
+                          className="flex-1 px-3 py-2 text-xs border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-all font-medium"
+                        >
+                          Generate PDF
+                        </button>
+                        <button
+                          onClick={() => copyPublicLink(collection.id)}
+                          className="flex-1 px-3 py-2 text-xs border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-all font-medium"
+                        >
+                          {copiedLink === collection.id ? 'Copied!' : 'Copy Link'}
+                        </button>
+                        <button
+                          onClick={() => setShowDeleteConfirm(collection.id)}
+                          className="px-3 py-2 text-xs text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-all font-medium"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
 
                     {showDeleteConfirm === collection.id && (
@@ -557,6 +933,108 @@ export function GalleryDashboard() {
           )}
         </div>
 
+        {/* Studio Card */}
+        <div className="mb-12 p-8 bg-gradient-to-br from-[#264C61] to-[#1D3A4A] rounded-2xl shadow-lg text-white">
+          <div className="flex items-start justify-between">
+            <div>
+              <h2 className="text-2xl font-semibold mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+                Studio
+              </h2>
+              <p className="text-white/80 mb-6 max-w-md">
+                Visualize your gallery artworks in 100+ premium mockup rooms. Create stunning presentations for your exhibitions and clients.
+              </p>
+              <a
+                href="#/studio"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-[#264C61] rounded-xl hover:bg-slate-100 transition-colors font-semibold"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Open Studio
+              </a>
+            </div>
+            <div className="hidden md:block opacity-20">
+              <svg className="w-32 h-32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Your Plan Section */}
+        <div className="mb-12 p-8 bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-semibold text-[#264C61]" style={{ fontFamily: 'Inter, sans-serif' }}>
+              Your Plan
+            </h2>
+            <span className="px-4 py-1.5 bg-amber-100 text-amber-800 text-sm font-semibold rounded-full">
+              Gallery
+            </span>
+          </div>
+          <p className="text-slate-600 mb-6">
+            You're on the Gallery plan. Perfect for galleries managing collections and exhibitions.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
+            <div className="flex items-center gap-2 text-sm text-slate-700">
+              <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Upload unlimited artworks
+            </div>
+            <div className="flex items-center gap-2 text-sm text-slate-700">
+              <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Access to 100+ premium mockup rooms
+            </div>
+            <div className="flex items-center gap-2 text-sm text-slate-700">
+              <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Multi-art wall presentations
+            </div>
+            <div className="flex items-center gap-2 text-sm text-slate-700">
+              <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Virtual exhibition rooms (up to 3 active)
+            </div>
+            <div className="flex items-center gap-2 text-sm text-slate-700">
+              <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Gallery Hub
+            </div>
+            <div className="flex items-center gap-2 text-sm text-slate-700">
+              <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Exhibition PDF export (20 per month)
+            </div>
+            <div className="flex items-center gap-2 text-sm text-slate-700">
+              <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Public exhibition share links
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <a
+              href="#/billing"
+              className="px-6 py-2.5 bg-[#264C61] text-white rounded-xl hover:bg-[#1D3A4A] transition-colors font-semibold"
+            >
+              Manage billing
+            </a>
+            <a
+              href="#/pricing"
+              className="px-6 py-2.5 border-2 border-slate-200 text-slate-700 rounded-xl hover:border-[#264C61] hover:text-[#264C61] transition-colors font-semibold"
+            >
+              View all plans
+            </a>
+          </div>
+        </div>
+
+        {/* Account & Security Section */}
         <div className="grid gap-6 md:grid-cols-2">
           <div className="p-6 bg-slate-50 rounded-xl border border-slate-100">
             <div className="flex items-center gap-3 mb-5">
@@ -571,43 +1049,25 @@ export function GalleryDashboard() {
             </div>
             <div className="space-y-3 text-sm">
               <div className="flex items-center justify-between py-2 border-b border-slate-200">
-                <span className="font-medium text-slate-600" style={{ fontFamily: 'Inter, sans-serif' }}>Email</span>
+                <span className="font-medium text-slate-600">Email</span>
                 <span className="text-slate-800">{user?.email}</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-slate-200">
-                <span className="font-medium text-slate-600" style={{ fontFamily: 'Inter, sans-serif' }}>Role</span>
-                <span className="px-2.5 py-0.5 bg-[#264C61]/10 text-[#264C61] text-xs font-semibold rounded-full">Gallery</span>
+                <span className="font-medium text-slate-600">Role</span>
+                <span className="px-2.5 py-0.5 bg-amber-100 text-amber-800 text-xs font-semibold rounded-full">Gallery</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-slate-200">
-                <span className="font-medium text-slate-600" style={{ fontFamily: 'Inter, sans-serif' }}>Status</span>
-                {user?.emailConfirmed ? (
-                  <span className="flex items-center gap-1 text-green-600 font-medium">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    Verified
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1 text-amber-600 font-medium">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                    Pending
-                  </span>
-                )}
+                <span className="font-medium text-slate-600">Artworks</span>
+                <span className="text-slate-800 font-semibold">{artworks.length}</span>
               </div>
               <div className="flex items-center justify-between py-2">
-                <span className="font-medium text-slate-600" style={{ fontFamily: 'Inter, sans-serif' }}>Collections</span>
+                <span className="font-medium text-slate-600">Collections</span>
                 <span className="text-slate-800 font-semibold">{collections.length}</span>
               </div>
             </div>
           </div>
 
           <ChangePasswordGallery />
-        </div>
-
-        <div className="mt-8">
-          <YourPlanCard />
         </div>
       </div>
     </div>

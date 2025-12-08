@@ -101,7 +101,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-white text-rv-text">
-      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/privacy" && normalizedHash !== "#/terms" && normalizedHash !== "#/upload-consent" && normalizedHash !== "#/pricing" && normalizedHash !== "#/billing" && normalizedHash !== "#/onboarding" && !normalizedHash.startsWith("#/exhibition") && <TopNav />}
+      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/privacy" && normalizedHash !== "#/terms" && normalizedHash !== "#/upload-consent" && normalizedHash !== "#/pricing" && normalizedHash !== "#/billing" && normalizedHash !== "#/onboarding" && !normalizedHash.startsWith("#/exhibition") && !normalizedHash.startsWith("#/gallery/exhibitions/") && !normalizedHash.startsWith("#/exhibitions/") && <TopNav />}
       {normalizedHash === "#/onboarding" ? (
         <OnboardingRouter />
       ) : normalizedHash === "#/pricing" ? (
@@ -120,6 +120,10 @@ function AppContent() {
         <SimpleVisualizer />
       ) : normalizedHash.startsWith("#/exhibition/") ? (
         <Exhibition />
+      ) : normalizedHash.startsWith("#/exhibitions/") && normalizedHash.endsWith("/public") ? (
+        <PublicExhibitionPage />
+      ) : normalizedHash.startsWith("#/gallery/exhibitions/") ? (
+        <VirtualExhibitionRoom />
       ) : normalizedHash === "#/docs" ? (
         <DocsPage />
       ) : normalizedHash === "#/login" ? (
@@ -2923,6 +2927,130 @@ function CTASection() {
   );
 }
 
+
+/* ------------- Virtual Exhibition Room (MVP Placeholder) ------------- */
+
+function VirtualExhibitionRoom() {
+  const hash = window.location.hash;
+  const match = hash.match(/^#\/gallery\/exhibitions\/(\d+)/);
+  const exhibitionId = match ? match[1] : null;
+
+  return (
+    <div className="min-h-screen bg-[#f7f8fa]">
+      <SiteHeader showPlanBadge={false} />
+      <div className="max-w-4xl mx-auto px-4 py-16 text-center">
+        <div className="mb-8">
+          <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-amber-100 flex items-center justify-center">
+            <svg className="w-12 h-12 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+          </div>
+          <h1 className="text-3xl md:text-4xl font-bold text-[#264C61] mb-4" style={{ fontFamily: 'Inter, sans-serif' }}>
+            Virtual Exhibition Room
+          </h1>
+          <p className="text-lg text-slate-600 mb-2">Exhibition ID: {exhibitionId}</p>
+          <p className="text-slate-500 max-w-xl mx-auto">
+            The virtual exhibition room experience is coming soon. You'll be able to walk through your collection in an immersive 3D environment.
+          </p>
+        </div>
+        
+        <div className="p-8 bg-white rounded-2xl shadow-lg border border-slate-100 mb-8">
+          <h2 className="text-xl font-semibold text-[#264C61] mb-4">Coming Soon Features</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+            <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-xl">
+              <svg className="w-6 h-6 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              <div>
+                <h3 className="font-semibold text-[#264C61]">360° Gallery View</h3>
+                <p className="text-sm text-slate-500">Walk through your exhibition in a virtual space</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-xl">
+              <svg className="w-6 h-6 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <div>
+                <h3 className="font-semibold text-[#264C61]">Artwork Placement</h3>
+                <p className="text-sm text-slate-500">Arrange artworks on virtual gallery walls</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-xl">
+              <svg className="w-6 h-6 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+              </svg>
+              <div>
+                <h3 className="font-semibold text-[#264C61]">Share & Invite</h3>
+                <p className="text-sm text-slate-500">Send virtual tour links to collectors</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-xl">
+              <svg className="w-6 h-6 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <div>
+                <h3 className="font-semibold text-[#264C61]">Multi-device Support</h3>
+                <p className="text-sm text-slate-500">View on desktop, tablet, or VR headset</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <a
+          href="#/dashboard/gallery"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-[#264C61] text-white rounded-xl hover:bg-[#1D3A4A] transition-colors font-semibold"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Back to Gallery Dashboard
+        </a>
+      </div>
+    </div>
+  );
+}
+
+/* ------------- Public Exhibition Page ------------- */
+
+function PublicExhibitionPage() {
+  const hash = window.location.hash;
+  const match = hash.match(/^#\/exhibitions\/(\d+)\/public/);
+  const exhibitionId = match ? match[1] : null;
+
+  return (
+    <div className="min-h-screen bg-white">
+      <div className="max-w-6xl mx-auto px-4 py-16">
+        <div className="text-center mb-12">
+          <h1 className="text-3xl md:text-4xl font-bold text-[#264C61] mb-4" style={{ fontFamily: 'Inter, sans-serif' }}>
+            Gallery Exhibition
+          </h1>
+          <p className="text-slate-500">
+            Exhibition #{exhibitionId} - Public View
+          </p>
+        </div>
+        
+        <div className="p-8 bg-slate-50 rounded-2xl text-center">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[#264C61]/10 flex items-center justify-center">
+            <svg className="w-10 h-10 text-[#264C61]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-[#264C61] mb-2">Public Exhibition Coming Soon</h2>
+          <p className="text-slate-500 max-w-md mx-auto">
+            This exhibition will be publicly viewable once the gallery curator publishes their collection.
+          </p>
+        </div>
+        
+        <div className="mt-8 text-center">
+          <a href="#/" className="text-[#264C61] hover:underline font-medium">
+            ← Back to RoomVibe
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* ------------- Docs page (kodovi) ------------- */
 

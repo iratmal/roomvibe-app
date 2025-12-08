@@ -47,7 +47,15 @@ const PLAN_DISPLAYS: Record<string, PlanDisplay> = {
     badge: 'Gallery',
     badgeColor: 'bg-amber-100 text-amber-800',
     description: 'For galleries managing collections and exhibitions.',
-    bullets: ['Gallery dashboard', 'Collections & multi-artist support'],
+    bullets: [
+      'Upload unlimited artworks',
+      'Access to 100+ premium mockup rooms',
+      'Multi-art wall presentations',
+      'Virtual exhibition rooms (up to 3 active)',
+      'Gallery Hub',
+      'Exhibition PDF export (20 per month)',
+      'Public exhibition share links'
+    ],
   },
 };
 
