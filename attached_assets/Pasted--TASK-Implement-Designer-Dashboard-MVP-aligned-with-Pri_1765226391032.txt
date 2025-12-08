@@ -1,0 +1,200 @@
+# TASK — Implement **Designer Dashboard (MVP)** aligned with Pricing
+
+**Goal:**
+Kreirati funkcionalan **Designer Dashboard** koji odgovara onome što je navedeno u pricing tablici za Designer plan i omogućuje dizajnerima da organiziraju svoje projekte i koriste RoomVibe Studio s proširenim mogućnostima.
+
+Pricing kartica za **Designer** trenutno kaže:
+
+* Upload up to **100 artworks**
+* Access to **100+ premium mockup rooms**
+* **High‑resolution export (3000px+)**
+* **PDF export**
+* **Designer Studio tools**
+* **Mockup downloads**
+* **Unlimited previews**
+
+Ovaj task je fokusiran na **dashboard stranu + povezivanje sa Studio/limitima**, ne na kompletan vizualni redesign.
+
+---
+
+## 1. Route & osnovni layout
+
+### 1.1. Route
+
+* Dodati route za Designer dashboard, npr.:
+
+  * `/dashboard/designer`
+
+* Osigurati da nakon prijave kao Designer account type (na Create Account stranici), korisnik bude redirectan na **Designer Dashboard**.
+
+### 1.2. Naslov & header
+
+Na vrhu stranice (unutar dashboard layouta):
+
+* Title: `Designer Dashboard`
+* Subtitle: `Welcome back, [email or name]!`
+
+Header navigacija dolazi iz zasebnog taska **Dashboard Headers Task** — ovdje je samo bitno da se Designer Dashboard uklopi u taj layout.
+
+---
+
+## 2. Sekcije Designer Dashboarda
+
+Predlažem sljedeću strukturu sekcija (u jednoj stranici, u vertikalnom layoutu kao Artist Dashboard):
+
+### 2.1. **Designer Projects** (glavna sekcija)
+
+* Naslov: `My Projects`
+* Gumb: `Create New Project`
+
+MVP model projekta:
+
+```ts
+interface DesignerProject {
+  id: string;
+  name: string;
+  description?: string;
+  createdAt: string;
+}
+```
+
+Funkcionalnost (MVP):
+
+* dodavanje novog projekta (name + optional description)
+* prikaz liste projekata (simple card / list)
+* nema potrebe za kompliciranim edit modalima u ovoj fazi — jednostavni inline edit ili barem delete kasnije.
+
+> Kasnije se projekti mogu povezivati s vizualizacijama, ali za sada je dovoljno da dizajner ima organizacijski kontejner.
+
+---
+
+### 2.2. **Upload Artwork / Assets**
+
+Dizajner prema pricingu ima: `Upload up to 100 artworks`.
+
+Ovdje se radi o istom konceptu "artwork" kao kod umjetnika, ali u praksi to mogu biti:
+
+* slike prostora klijenata,
+* moodboard vizuali,
+* referentni radovi.
+
+Za MVP:
+
+* sekcija s naslovom: `Upload Artwork & Photos`
+
+* forma je vrlo slična Artist Upload formi:
+
+  * Title
+  * Image (file upload)
+  * Dimensions (optional, ali dobro dođe za scale)
+
+* Limit: **100 uploadanih stavki** za Designer plan.
+
+  * potrebno dodati provjeru limita na backendu i prikaz poruke na frontend strani (npr. slično kao Artist 50 artworkova).
+
+* Prikaz `My Assets`/`My Artworks` kao grid kartica s thumbnailom.
+
+> Bitno: koristiti isti artwork model kao i za Artist plan, kako bi Studio integracija bila jednostavna.
+
+---
+
+### 2.3. **Open Studio (Designer mode)**
+
+Sekcija s karticom:
+
+* naslov: `Studio`
+* opis: `Visualize your projects with premium mockup rooms.`
+* button: `Open Studio`
+
+Kada dizajner klikne na `Open Studio`:
+
+* otvara se `/studio` kao i za druge korisnike,
+* ali uz sljedeće postavke i limite (vidi točku 3):
+
+  * pristup svim 100+ premium sobama
+  * dostupni high-res i PDF exporti
+
+> Ako je moguće, proslijediti informaciju da je u pitanju Designer user (npr. query param ili context), tako da Studio može omogućiti Designer-only feature set.
+
+---
+
+### 2.4. **Your Plan (Designer)**
+
+Sekcija na dnu, u istom stilu kao kod User/Artist:
+
+* Title: `Your Plan`
+* Status: `Designer`
+* Tekst: `You’re on the Designer plan. Perfect for interior designers presenting concepts to clients.`
+
+Checklist (uskladiti s pricing tablicom):
+
+* ✓ Upload up to **100 artworks**
+* ✓ Access to **100+ premium mockup rooms**
+* ✓ High‑resolution export (3000px+)
+* ✓ PDF export
+* ✓ Designer Studio tools
+* ✓ Mockup downloads
+* ✓ Unlimited previews
+
+Gumbi:
+
+* `Manage billing` (ako je relevantno)
+* `View all plans`
+
+---
+
+## 3. Plan limits & Studio permissions (Designer)
+
+Osigurati da **Designer** plan ima sljedeće mogućnosti u aplikaciji:
+
+1. **Artworks limit:**
+
+   * Max 100 uploadanih artworkova (asset-a).
+   * Ako pokušaju uploadati 101., prikazati jasnu poruku i blokirati upload.
+
+2. **Rooms:**
+
+   * U Studiju: omogućiti pristup svim sobama označenim kao "premium" + osnovnim sobama.
+   * Free plan vidi samo 10 basic mockup soba (što već imamo), Artist vidi max 40, Designer vidi sve (100+).
+
+3. **Exports:**
+
+   * Omogućiti **High-resolution Download (3000px+)** bez watermarka kao dio Designer plana.
+   * Omogućiti **PDF Export** kao uključenu opciju (bez dodatnog locka).
+
+4. **Unlimited previews:**
+
+   * Ne uvoditi limit na broj vizualizacija za Designer plan.
+
+> Ako dio ovoga već postoji za Artist plan, potrebno je samo prilagoditi check i povećati limite za Designer.
+
+---
+
+## 4. UX & UI
+
+* Vizualno se držati istog layouta kao Artist Dashboard, ali s oznakom `Designer Dashboard`.
+* Boje, tipografija i gumbi isti kao u ostatku aplikacije (Tailwind + postojeće klase).
+* Responsive dizajn – dashboard mora dobro izgledati i na desktopu i na tabletu/mobitelu (osnovna responsivnost je dovoljna).
+
+---
+
+## 5. Ne raditi
+
+* Ne uvoditi odmah kompleksno povezivanje projekata s pojedinačnim vizualizacijama (to može biti kasnija faza).
+* Ne dirati Stripe integraciju u ovom tasku.
+* Ne mijenjati pricing tablicu (ovo je backend/frontend poravnanje prema postojećem prikazu, ne redizajn planova).
+
+---
+
+## 6. Stop condition
+
+* Kao Designer korisnik:
+
+  * nakon registracije i prijave dolazim na **Designer Dashboard**.
+  * mogu:
+
+    * kreirati barem jedan projekt u sekciji `My Projects`.
+    * uploadati artworke/fotografije (do 100) i vidjeti ih u gridu.
+    * kliknuti `Open Studio` i koristiti Studio sa svim premium sobama, high-res downloadom i PDF exportom.
+  * u sekciji `Your Plan` vidim točne informacije za Designer plan.
+* Dashboard ima header navigaciju (iz globalnog headere taska) i izgleda vizualno usklađeno s ostatkom aplikacije.

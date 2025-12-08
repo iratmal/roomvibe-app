@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { YourPlanCard } from '../YourPlanCard';
 import { ChangePassword } from '../ChangePassword';
+import { SiteHeader } from '../SiteHeader';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -237,38 +238,34 @@ export function UnifiedDashboard() {
   const groupOrder: GroupType[] = ['general', 'artist', 'designer', 'gallery'];
 
   return (
-    <div className="min-h-screen bg-rv-surface flex">
+    <div className="min-h-screen bg-rv-surface flex flex-col">
+      <SiteHeader showPlanBadge={true} />
       <UpgradeModal 
         isOpen={upgradeModal.open} 
         onClose={() => setUpgradeModal({ ...upgradeModal, open: false })}
         planType={upgradeModal.planType}
       />
 
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-white border-r border-rv-neutral flex flex-col transition-all duration-300`}>
-        <div className="p-4 border-b border-rv-neutral flex items-center justify-between">
-          {sidebarOpen && (
-            <a href="#/" className="flex items-center">
-              <img 
-                src="/roomvibe-logo-transparent.png" 
-                alt="RoomVibe" 
-                className="h-12 w-auto"
-              />
-            </a>
-          )}
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 rounded-lg hover:bg-rv-surface transition-colors"
-            aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
-          >
-            <svg className="w-5 h-5 text-rv-textMuted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              {sidebarOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-              )}
-            </svg>
-          </button>
-        </div>
+      <div className="flex flex-1">
+        <aside className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-white border-r border-rv-neutral flex flex-col transition-all duration-300`}>
+          <div className="p-4 border-b border-rv-neutral flex items-center justify-between">
+            {sidebarOpen && (
+              <span className="text-sm font-semibold text-rv-primary">Dashboard</span>
+            )}
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-2 rounded-lg hover:bg-rv-surface transition-colors"
+              aria-label={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+            >
+              <svg className="w-5 h-5 text-rv-textMuted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                {sidebarOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                )}
+              </svg>
+            </button>
+          </div>
 
         <nav className="flex-1 pt-4 px-3 space-y-0.5 overflow-y-auto" style={{ paddingTop: '16px' }}>
           {groupOrder.map((group) => {
@@ -404,11 +401,12 @@ export function UnifiedDashboard() {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-auto">
-        <div className="min-h-full">
-          {renderModuleContent()}
-        </div>
-      </main>
+        <main className="flex-1 overflow-auto">
+          <div className="min-h-full">
+            {renderModuleContent()}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

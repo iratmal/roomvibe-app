@@ -1,0 +1,101 @@
+# TASK — Add global header navigation to all dashboards
+
+**Goal:**
+Osigurati da svi dashboardi (User, Artist, Designer, Gallery, All‑Access) imaju **konzistentan header** s glavnom navigacijom, kako bi korisnik uvijek znao gdje se nalazi i imao jednostavan pristup ključnim stranicama (Home, How it Works, Pricing, Studio, Dashboard, Sign out).
+
+Trenutno:
+
+* Dashboard stranice (barem User i Artist) prikazuju sadržaj bez glavnog headera iz public dijela stranice.
+* Jedini način navigacije je skrolanje do footera.
+
+---
+
+## 1. Scope
+
+Dodati **isti header** (ili vrlo sličan) kao na public stranicama i na sve dashboard routeove:
+
+* `/dashboard` (User / Free)
+* `/dashboard/artist` ili `/dashboard?role=artist` (ovisno kako je trenutno)
+* `/dashboard/designer` (kad bude implementiran)
+* `/dashboard/gallery` (kad bude implementiran)
+* bilo koji drugi dashboard view (npr. All‑Access, admin, billing overview itd.)
+
+Header treba biti konzistentan s glavnim sajtom, ali može imati nekoliko prilagodbi za logirane korisnike.
+
+---
+
+## 2. Header elementi (za logiranog korisnika)
+
+Predlažem sljedeću strukturu, usklađenu s postojećim public headerom:
+
+* **Logo:** RoomVibe (klik vodi na `/` ili `/how-it-works` – provjeriti što koristimo sada na homepageu).
+
+* **Main navigation links:**
+
+  * `How it works` → `/how-it-works`
+  * `Pricing` → `/pricing`
+  * `Studio` → `/studio`
+  * `Dashboard` → `/dashboard` (ili odgovarajući dashboard za ulogu)
+
+* **Account area (desno):**
+
+  * tekst/labela s trenutno aktivnim planom i/ili ulogom (npr. `Free`, `Artist`, `Designer`, `Gallery`, `All‑Access`).
+
+    * Ovo može biti mali badge ili text: `Plan: Artist`.
+  * `Sign out` button (ako već postoji drugdje, samo ga preseliti u header ili duplicirati).
+
+Na mobilnim uređajima:
+
+* koristiti hamburger menu / dropdown, kao i na public stranici.
+
+---
+
+## 3. Implementation details
+
+1. Izdvojiti postojeći public header u reusable komponentu, ako već nije:
+
+```tsx
+// primjer
+export function SiteHeader({ showPlanBadge }: { showPlanBadge?: boolean }) {
+  // ...
+}
+```
+
+2. Na dashboard layout komponenti (npr. `DashboardLayout.tsx`):
+
+* importati SiteHeader
+* prikazati header na vrhu prije dashboard sadržaja
+
+3. U Account contextu (ili gdje već spremamo usera), pročitati:
+
+* `currentPlan` / `subscription.plan`
+* `role` (user/artist/designer/gallery)
+
+…i proslijediti u header radi prikaza badge‑a.
+
+---
+
+## 4. UX zahtjevi
+
+* Header mora izgledati **identično stilski** kao na glavnom sajtu (font, boje, veličina).
+* Dashboard sadržaj mora imati dovoljno top paddings (npr. `pt-20`) da se ne preklapa s headerom.
+* Na mobilnim uređajima, navigacija mora biti "tappable"; ako imamo postojeći mobile header, koristiti isti pattern.
+
+---
+
+## 5. Ne raditi
+
+* Ne mijenjati sadržaj dashboard sekcija (My Artworks, Website Integration, Your Plan itd.).
+* Ne dirati pricing logiku, Stripe, plan limits itd.
+* Ne mijenjati izgled public headera osim ako je nužno; cilj je samo reuse u dashboard dijelu.
+
+---
+
+## 6. Stop condition
+
+* Kada se prijavim kao bilo koji tip korisnika (Free/User, Artist, Designer, Gallery):
+
+  * na vrhu dashboard stranice vidim **RoomVibe header s glavnom navigacijom**.
+  * mogu kliknuti na `How it works`, `Pricing`, `Studio`, `Dashboard` i `Sign out`.
+* Navigacija radi i na desktopu i na mobitelu.
+* Dashboard izgleda vizualno usklađeno s ostatkom sajta (bez čudnih prijelaza ili duplih headera).

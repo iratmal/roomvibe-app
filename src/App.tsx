@@ -32,6 +32,7 @@ import { ExportSuccessModal } from "./components/ExportSuccessModal";
 import { UpgradeNudge } from "./components/UpgradeNudge";
 import { OnboardingPage } from "./components/OnboardingPage";
 import { Footer } from "./components/Footer";
+import { SiteHeader } from "./components/SiteHeader";
 import { initGA4, resetGA4, GA4Events } from "./utils/analytics";
 import { initHotjar, resetHotjar } from "./utils/hotjar";
 import { getRecommendedUpgradePlan, getUpgradeMessageForFeature, type FeatureKey, type PlanKey } from "./utils/upgradeLogic";
@@ -329,96 +330,7 @@ function Container({ children, id }: { children: React.ReactNode; id?: string })
 /* ------------- Top navigation ------------- */
 
 function TopNav() {
-  const [open, setOpen] = useState(false);
-  const { user } = useAuth();
-
-  return (
-    <header className="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/95 border-b border-gray-100">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="flex h-16 lg:h-[72px] items-center justify-between">
-          <a href="#/" className="flex items-center">
-            <img 
-              src="/roomvibe-logo-transparent.png" 
-              alt="RoomVibe" 
-              className="h-16 lg:h-[68px] w-auto"
-            />
-          </a>
-          <nav className="hidden md:flex items-center gap-12 text-sm font-medium">
-            <a href="#how" className="text-[#1A1A1A] hover:text-[#264C61] transition-colors">
-              How it works
-            </a>
-            <a href="#/pricing" className="text-[#1A1A1A] hover:text-[#264C61] transition-colors">
-              Pricing
-            </a>
-            <a href="#/studio" className="text-[#1A1A1A] hover:text-[#264C61] transition-colors">
-              Studio
-            </a>
-            {user ? (
-              <>
-                <a href="#/dashboard" className="text-[#1A1A1A] hover:text-[#264C61] transition-colors">
-                  Dashboard
-                </a>
-                <span className="text-xs text-gray-400">({user.role})</span>
-              </>
-            ) : (
-              <>
-                <a href="#/login" className="text-[#1A1A1A] hover:text-[#264C61] transition-colors">
-                  Login
-                </a>
-                <a href="#/register" className="btn-primary">
-                  Sign Up
-                </a>
-              </>
-            )}
-          </nav>
-          <button
-            aria-label="Open menu"
-            className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 text-[#264C61] hover:bg-gray-50 transition-colors"
-            onClick={() => setOpen((v) => !v)}
-          >
-            <MenuIcon className="h-5 w-5" />
-          </button>
-        </div>
-      </div>
-      {open && (
-        <div className="md:hidden border-t border-gray-100 bg-white shadow-lg absolute left-0 right-0 top-full z-50">
-          <div className="mx-auto max-w-7xl px-6 py-6 text-sm">
-            <div className="flex flex-col gap-2 font-medium">
-              <a onClick={() => setOpen(false)} href="#how" className="py-3 text-[#1A1A1A] hover:text-[#264C61] transition-colors">
-                How it works
-              </a>
-              <a onClick={() => setOpen(false)} href="#/pricing" className="py-3 text-[#1A1A1A] hover:text-[#264C61] transition-colors">
-                Pricing
-              </a>
-              <a onClick={() => setOpen(false)} href="#/studio" className="py-3 text-[#1A1A1A] hover:text-[#264C61] transition-colors">
-                Studio
-              </a>
-              {user ? (
-                <a onClick={() => setOpen(false)} href="#/dashboard" className="py-3 text-[#1A1A1A] hover:text-[#264C61] transition-colors">
-                  Dashboard
-                </a>
-              ) : (
-                <a onClick={() => setOpen(false)} href="#/login" className="py-3 text-[#1A1A1A] hover:text-[#264C61] transition-colors">
-                  Login
-                </a>
-              )}
-            </div>
-            {user ? (
-              <div className="mt-3 text-xs text-gray-400">Logged in as {user.role}</div>
-            ) : (
-              <a
-                href="#/register"
-                onClick={() => setOpen(false)}
-                className="btn-primary mt-4 w-full"
-              >
-                Sign Up
-              </a>
-            )}
-          </div>
-        </div>
-      )}
-    </header>
-  );
+  return <SiteHeader showPlanBadge={false} />;
 }
 
 /* ------------- HOMEPAGE ------------- */

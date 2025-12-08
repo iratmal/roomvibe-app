@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ImpersonationBanner } from '../ImpersonationBanner';
 import { YourPlanCard } from '../YourPlanCard';
+import { SiteHeader } from '../SiteHeader';
 
 const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
 
@@ -282,6 +283,7 @@ export function GalleryDashboard() {
 
   return (
     <div className="min-h-screen bg-[#f7f8fa]">
+      <SiteHeader showPlanBadge={true} />
       <ImpersonationBanner />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16">
@@ -306,12 +308,6 @@ export function GalleryDashboard() {
               <span className="hidden sm:inline">Open Studio</span>
               <span className="sm:hidden">Studio</span>
             </a>
-            <button
-              onClick={logout}
-              className="px-4 py-2.5 text-sm font-semibold border-2 border-rv-neutral rounded-lg hover:bg-rv-surface transition-colors text-rv-text"
-            >
-              Logout
-            </button>
           </div>
         </div>
 

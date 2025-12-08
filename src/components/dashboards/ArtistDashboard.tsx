@@ -4,6 +4,7 @@ import { ChangePassword } from '../ChangePassword';
 import { ImpersonationBanner } from '../ImpersonationBanner';
 import { YourPlanCard } from '../YourPlanCard';
 import { UpgradePrompt } from '../UpgradePrompt';
+import { SiteHeader } from '../SiteHeader';
 import { PLAN_LIMITS } from '../../config/planLimits';
 
 const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
@@ -298,6 +299,7 @@ export function ArtistDashboard() {
 
   return (
     <div className="min-h-screen bg-white">
+      <SiteHeader showPlanBadge={true} />
       <ImpersonationBanner />
       <div className="max-w-7xl mx-auto px-4 py-10">
         <div className="flex justify-between items-center mb-10">
@@ -316,12 +318,6 @@ export function ArtistDashboard() {
               <span className="hidden sm:inline">Open Studio</span>
               <span className="sm:hidden">Studio</span>
             </a>
-            <button
-              onClick={logout}
-              className="px-4 py-2.5 text-sm font-semibold border-2 border-rv-neutral rounded-lg hover:bg-rv-surface transition-colors text-rv-text"
-            >
-              Logout
-            </button>
           </div>
         </div>
 
