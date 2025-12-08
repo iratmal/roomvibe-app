@@ -949,10 +949,12 @@ function Studio() {
     } catch (e) {
       console.warn('[Studio] Error reading URL params:', e);
     }
+    // Default to first basic free room (Bathroom 7) instead of legacy preset
+    const firstFreeRoom = premiumRooms.find(room => room.basicFree === true);
     return { 
-      sceneId: (presets as any)[0]?.id || '', 
+      sceneId: '', 
       isUploadMode: false, 
-      designerRoomImage: null 
+      designerRoomImage: firstFreeRoom?.image || null 
     };
   };
 
