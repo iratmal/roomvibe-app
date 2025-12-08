@@ -1,0 +1,116 @@
+# TASK — Make **AI Suggested Rooms** react to selected artwork changes
+
+**Goal:**
+Osigurati da se sekcija **AI Suggested Rooms** u Studiju dinamički mijenja svaki put kada korisnik odabere drugi artwork. Trenutno AI sekcija prikazuje uvijek iste sobe, bez obzira na odabrano umjetničko djelo.
+
+---
+
+## 1. Current Problem
+
+* Studio je povezan s uploadanim artworkovima — u desnom panelu (ARTWORK dropdown) mogu birati vlastite radove.
+* Međutim, sekcija **AI Suggested Rooms** prikazuje isti set soba bez obzira na to koji je artwork odabran.
+* Očito je da se AI logika koja računa preporuke:
+
+  * poziva samo jednom (na mountu)
+  * ili nije povezana na `selectedArtwork` state.
+
+---
+
+## 2. Expected Behavior
+
+* Kad korisnik u Studiju promijeni odabrani artwork (u ARTWORK dropdownu):
+
+  1. `selectedArtwork` state se ažurira.
+  2. AI logika se ponovno pokreće za taj artwork.
+  3. AI Suggested Rooms sekcija prikazuje **novi set top 3 soba** koji bolje odgovaraju tom artworku (prema tagovima / bojama).
+
+* Ako korisnik ponovno odabere prethodni artwork, AI bi trebao vratiti preporuke koje odgovaraju tom artworku.
+
+---
+
+## 3. Implementation Details
+
+### 3.1. Povezivanje na `selectedArtwork`
+
+U Studio komponenti (npr. `StudioPage.tsx` ili `RoomVibeStudio.tsx`) provjeriti gdje se definira:
+
+```ts
+const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(...);
+```
+
+i gdje se zove AI funkcija za generiranje soba (npr. `generateAISuggestions` ili `suggestRoomsForArtwork`).
+
+Dodati ili prilagoditi `useEffect`:
+
+```ts
+useEffect(() => {
+  if (!selectedArtwork) return;
+
+  generateAISuggestions(selectedArtwork);
+}, [selectedArtwork]);
+```
+
+Važno:
+
+* `generateAISuggestions` treba primati **trenutno odabrani artwork** (ili barem njegove `tags` i/ili `imageUrl`).
+* Ne oslanjati se na `artworks[0]` ili neki statični artwork.
+
+### 3.2. Funkcija za AI sugestije
+
+Ako već postoji helper npr. `suggestRoomsForArtwork(artworkTags, rooms)`, provjeri:
+
+* da se poziva s tagovima `selectedArtwork.tags` (ili drugim podacima iz `selectedArtwork`).
+* da vraća sortiranu listu soba (top 3 koriste se u UI-ju).
+
+Primjer:
+
+```ts
+const generateAISuggestions = (artwork: Artwork) => {
+  const tags = artwork.tags; // može biti undefined
+  const rankedRooms = suggestRoomsForArtwork(tags, allRooms);
+  setAiSuggestedRooms(rankedRooms.slice(0, 3));
+};
+```
+
+### 3.3. UI update
+
+Provjeriti da UI za AI Suggested Rooms koristi state koji se ažurira iz AI funkcije, npr.:
+
+```ts
+const [aiSuggestedRooms, setAiSuggestedRooms] = useState<Room[]>([]);
+
+// render
+<AiSuggestedRoomsSection rooms={aiSuggestedRooms} />
+```
+
+Ako sada AI sekcija koristi statički `rooms` array (bez state-a), potrebno je prebaciti je na state koji se ažurira.
+
+---
+
+## 4. Fallback ponašanje
+
+* Ako `selectedArtwork` nema tagove (`tags` je `undefined` ili prazan array):
+
+  * AI funkcija može koristiti default scoring (npr. samo `roomType`), ili
+  * vratiti originalni poredak soba i koristiti prve 3 kao "default" preporuke.
+* Važno je da nema errora i da AI sekcija i dalje nešto prikazuje.
+
+---
+
+## 5. Ne raditi
+
+* Ne mijenjati logiku Studio layouta osim onoga što je nužno za ažuriranje AI sekcije.
+* Ne mijenjati upload logiku, planove, Stripe ili widget kod.
+* Ne uvoditi nove sobe ili AI servise — koristiti postojeću heuristiku u TypeScriptu.
+
+---
+
+## 6. Stop condition
+
+* Ulogiram se kao Artist ili User i uđem u Studio.
+* U ARTWORK dropdownu biram različite radove:
+
+  * **AI Suggested Rooms** se mijenja kad promijenim artwork.
+  * Različiti radovi daju različite kombinacije soba (barem u nekim slučajevima).
+* Ako opet izaberem isti artwork, dobivam konzistentne, očekivane preporuke za njega.
+* Nema vizualnih bugova ni konzolnih errora nakon promjene artworka.

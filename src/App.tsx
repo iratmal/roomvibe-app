@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import localArtworks from "./data/artworks.json";
 import presets from "./data/presets.json";
 import { premiumRooms, getCategoryDisplayName, type PremiumRoom } from "./data/premiumRooms";
@@ -1113,8 +1113,11 @@ function Studio() {
   const effectiveArtId = isFreePlan ? placeholderArtId : artId;
   const art = artworksState.find((a) => a.id === effectiveArtId);
   
-  // AI Suggested Rooms - get top 3 rooms based on artwork tags
-  const aiSuggestedRooms = getTopSuggestedRooms(art?.tags, roomsFilteredByPlan, 3);
+  // AI Suggested Rooms - get top 3 rooms based on artwork tags, title keywords, or ID-based variation
+  // useMemo ensures recalculation when artwork or filtered rooms change
+  const aiSuggestedRooms = useMemo(() => {
+    return getTopSuggestedRooms(art?.tags, roomsFilteredByPlan, 3, art?.title, art?.id);
+  }, [art?.id, art?.tags, art?.title, roomsFilteredByPlan]);
 
   const [frameStyle, setFrameStyle] = useState<string>("none");
   
