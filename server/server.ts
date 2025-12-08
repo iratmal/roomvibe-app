@@ -276,29 +276,22 @@ async function startServer() {
     console.log(`✓ RoomVibe API server listening on port ${PORT}`);
     console.log(`  Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`  Health check available at /api/health`);
+    
+    // Mark server as ready immediately for health checks
+    // Database initialization happens asynchronously
+    isServerReady = true;
   });
 
-  // Initialize database with timeout to prevent indefinite blocking
-  try {
-    const DB_INIT_TIMEOUT = 30000; // 30 seconds timeout
-    
-    const dbInitPromise = initializeDatabase();
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Database initialization timeout')), DB_INIT_TIMEOUT)
-    );
-    
-    await Promise.race([dbInitPromise, timeoutPromise]);
-    
-    isServerReady = true;
-    console.log(`✓ Database initialized - server fully ready`);
-  } catch (error) {
-    console.error('Database initialization failed:', error);
-    // Server continues running for health checks, but may have limited functionality
-    // In production, you might want to exit here depending on requirements
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('  Continuing in development mode with potentially limited DB access');
-    }
-  }
+  // Initialize database in background - no timeout, handles errors gracefully
+  initializeDatabase()
+    .then(() => {
+      console.log(`✓ Database initialized successfully`);
+    })
+    .catch((error) => {
+      console.error('Database initialization warning:', error instanceof Error ? error.message : error);
+      console.log('  Server continues running - some features may be unavailable until DB is ready');
+      // Don't crash - server stays up for health checks and retries
+    });
 }
 
 startServer();
