@@ -346,7 +346,7 @@ function ArtworkPlane({
   );
 }
 
-// Artwork image component using ref-based material for reliable texture binding
+// Artwork image component - uses useFrame to ensure material updates propagate
 function ArtworkImage({ 
   url, 
   width, 
@@ -362,57 +362,43 @@ function ArtworkImage({
   hovered: boolean;
   setHovered: (h: boolean) => void;
 }) {
-  const materialRef = useRef<THREE.MeshBasicMaterial>(null);
-  const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
+  const meshRef = useRef<THREE.Mesh>(null);
   const textureRef = useRef<THREE.Texture | null>(null);
+  const [loaded, setLoaded] = useState(false);
   
   useEffect(() => {
     if (!url) {
       console.warn('[ArtworkImage] No URL provided');
-      setStatus('error');
       return;
     }
     
-    console.log('[ArtworkImage] === STARTING TEXTURE LOAD ===');
-    console.log('[ArtworkImage] URL:', url);
-    setStatus('loading');
+    console.log('[ArtworkImage] === LOADING ===', url);
+    setLoaded(false);
     
-    const loader = new THREE.TextureLoader();
-    loader.crossOrigin = 'anonymous';
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
     
-    loader.load(
-      url,
-      (loadedTexture) => {
-        console.log('[ArtworkImage] === TEXTURE LOADED SUCCESS ===');
-        console.log('[ArtworkImage] Image size:', loadedTexture.image?.width, 'x', loadedTexture.image?.height);
-        
-        // Configure texture
-        loadedTexture.colorSpace = THREE.SRGBColorSpace;
-        loadedTexture.magFilter = THREE.LinearFilter;
-        loadedTexture.minFilter = THREE.LinearFilter;
-        loadedTexture.generateMipmaps = false;
-        loadedTexture.flipY = true;
-        loadedTexture.needsUpdate = true;
-        
-        textureRef.current = loadedTexture;
-        
-        // CRITICAL: Directly assign texture to material ref if it exists
-        if (materialRef.current) {
-          console.log('[ArtworkImage] Assigning texture directly to material');
-          materialRef.current.map = loadedTexture;
-          materialRef.current.color.set(0xffffff);
-          materialRef.current.needsUpdate = true;
-          console.log('[ArtworkImage] Material updated:', materialRef.current);
-        }
-        
-        setStatus('loaded');
-      },
-      undefined,
-      (error) => {
-        console.error('[ArtworkImage] === TEXTURE LOAD FAILED ===', error);
-        setStatus('error');
-      }
-    );
+    img.onload = () => {
+      console.log('[ArtworkImage] Image loaded:', img.width, 'x', img.height);
+      
+      const texture = new THREE.Texture(img);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.magFilter = THREE.LinearFilter;
+      texture.minFilter = THREE.LinearFilter;
+      texture.generateMipmaps = false;
+      texture.needsUpdate = true;
+      
+      textureRef.current = texture;
+      setLoaded(true);
+      
+      console.log('[ArtworkImage] Texture created:', texture.uuid);
+    };
+    
+    img.onerror = (err) => {
+      console.error('[ArtworkImage] Load error:', err);
+    };
+    
+    img.src = url;
     
     return () => {
       if (textureRef.current) {
@@ -422,20 +408,22 @@ function ArtworkImage({
     };
   }, [url]);
   
-  // When material ref becomes available, apply texture if already loaded
-  useEffect(() => {
-    if (materialRef.current && textureRef.current && status === 'loaded') {
-      console.log('[ArtworkImage] Applying preloaded texture to material');
-      materialRef.current.map = textureRef.current;
-      materialRef.current.color.set(0xffffff);
-      materialRef.current.needsUpdate = true;
+  // Use frame to ensure material is updated
+  useFrame(() => {
+    if (meshRef.current && textureRef.current && loaded) {
+      const material = meshRef.current.material as THREE.MeshBasicMaterial;
+      if (material.map !== textureRef.current) {
+        console.log('[ArtworkImage] useFrame applying texture to material');
+        material.map = textureRef.current;
+        material.color.set(0xffffff);
+        material.needsUpdate = true;
+      }
     }
-  }, [status]);
-
-  console.log('[ArtworkImage] RENDER - status:', status, 'texture:', textureRef.current ? 'EXISTS' : 'NULL', 'material:', materialRef.current ? 'EXISTS' : 'NULL');
+  });
 
   return (
     <mesh 
+      ref={meshRef}
       position={[0, 0, 0.005]}
       onClick={(e) => {
         e.stopPropagation();
@@ -446,10 +434,9 @@ function ArtworkImage({
     >
       <planeGeometry args={[width, height]} />
       <meshBasicMaterial 
-        ref={materialRef}
-        map={textureRef.current}
-        color={status === 'error' ? '#ffcccc' : '#ffffff'}
+        color={loaded ? 0xffffff : 0xe8e4e0}
         toneMapped={false}
+        side={THREE.DoubleSide}
       />
     </mesh>
   );
