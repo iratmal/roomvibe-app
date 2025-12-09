@@ -872,14 +872,14 @@ export function GalleryDashboard() {
                         >
                           View
                         </button>
-                        <div className="flex-1 relative group">
+                        <div className="flex-1 relative">
                           <a
                             href={`#/gallery/exhibitions/${collection.id}`}
-                            className="block w-full px-3 py-2 text-sm bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-all font-semibold text-center"
+                            className="peer block w-full px-3 py-2 text-sm bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-all font-semibold text-center"
                           >
                             Virtual Room
                           </a>
-                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded-lg opacity-0 peer-hover:opacity-100 peer-focus:opacity-100 transition-opacity pointer-events-none w-56 text-center leading-snug z-10">
                             Preview this collection in a gallery-style mockup. Interactive 360° view is coming soon.
                             <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
                           </div>

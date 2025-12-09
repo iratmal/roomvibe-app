@@ -2935,6 +2935,10 @@ function VirtualExhibitionRoom() {
   const match = hash.match(/^#\/gallery\/exhibitions\/(\d+)/);
   const exhibitionId = match ? match[1] : null;
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#f7f8fa]">
       <SiteHeader showPlanBadge={false} />

@@ -1,0 +1,155 @@
+# ✅ ROOMVIBE — TASK: Gallery Scroll + Tooltip Fix (Final)
+
+Ovo je fokusirani UI/UX task za Replit Agenta. Sve promjene su vizualne, bez backend zahvata.
+
+Koristi **Fast Mode**.
+
+---
+
+## 🎯 GOAL
+
+1. Ispravno riješiti **scroll ponašanje** kod otvaranja Virtual Exhibition Room stranice iz Gallery Dashboarda (View → uvijek od vrha stranice).
+2. Ispraviti **tooltip** za gumb **“Virtual Room”** tako da:
+
+   * se tooltip prikazuje **samo** kada korisnik hovera / fokusira gumb **“Virtual Room”**, a NE kada je iznad gumba **“View”** ili bilo gdje drugdje na kartici.
+   * se tooltip tekst vidi CIJELI (nije odrezan, uredno se lomi u 2–3 reda).
+
+---
+
+## 📌 KONTEKST
+
+Projekt: **RoomVibe**
+Dashboard: **Gallery Dashboard** – ruta `/dashboard/gallery`
+Virtual Exhibition: **Virtual Exhibition Room** – ruta `/gallery/exhibitions/:id`
+
+Relevantni folderi:
+
+* `src/components/dashboards/GalleryDashboard.tsx` ili ekvivalent
+* `src/components/gallery/CollectionCard.tsx` ili komponenta u kojoj se renderaju kolekcijske kartice (View / Virtual Room / Generate PDF…)
+* `src/pages/gallery/VirtualExhibitionRoom.tsx` ili odgovarajuća komponenta za Virtual Exhibition Room
+* `src/App.tsx` (router setup, samo ako je potrebno za scroll behaviour)
+
+---
+
+# 1️⃣ FIX — Gallery “View” Scroll (Virtual Exhibition Room)
+
+**Problem:**
+Kada korisnik klikne **“View”** iz Gallery Dashboarda (Gallery Hub / My Collections), Virtual Exhibition Room se ponekad otvori skrolan na sredinu stranice. Želimo garantirati da se stranica **uvijek otvara od vrha**.
+
+### ✅ Što treba napraviti
+
+1. **Reset scrolla na mountu Virtual Exhibition Room komponente**
+
+   * U komponenti za Virtual Exhibition Room (npr. `VirtualExhibitionRoom.tsx`) dodaj hook:
+
+     ```ts
+     useEffect(() => {
+       window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+     }, []);
+     ```
+   * Ako već postoji globalni `ScrollToTop` za promjenu ruta, provjeri da se odnosi i na rutu `/gallery/exhibitions/:id`.
+
+2. **Provjeri sve "View" linkove**
+
+   * U Gallery Dashboard komponenti provjeri generiranje linkova za **View**.
+   * Link treba biti čist, bez hash fragmenata (npr. `#section`):
+
+     ```tsx
+     <Link to={`/gallery/exhibitions/${exhibitionId}`}>
+     ```
+
+3. **Test:**
+
+   * Otvori `/dashboard/gallery`, skrolaj dolje.
+   * Klikni **View** na kolekciji.
+   * Potvrdi da se Virtual Exhibition Room uvijek otvara tako da je vidljiv vrh stranice (naslov "Virtual Exhibition Room" + opis), bez dodatnog scrollanja.
+
+---
+
+# 2️⃣ FIX — Tooltip za "Virtual Room" (samo na tom gumbu + cijeli tekst)
+
+**Trenutno stanje:**
+Tooltip se pojavljuje, ali:
+
+* pojavljuje se i kada je kursor iznad gumba **“View”**
+* tekst tooltipsa je odrezan na desnoj strani i nije u potpunosti vidljiv
+
+Željeno ponašanje:
+
+* Tooltip se aktivira **isključivo** kada korisnik hovera ili fokusira gumb **“Virtual Room”**.
+* Tekst tooltipsa je u potpunosti vidljiv i lijepo formatiran.
+
+### ✅ Što treba napraviti
+
+1. **Lokacija:**
+
+   * Komponenta kolekcijske kartice (npr. `CollectionCard.tsx` ili slična komponenta koja rendera "View / Virtual Room / Generate PDF / Copy Link / Delete" gumb red).
+
+2. **Tooltip veži direktno na gumb "Virtual Room"**
+
+   * Ako koristiš postojeći Tooltip komponent (npr. `Tooltip`, `TooltipTrigger`, `TooltipContent`), strukturiraj ga tako da:
+
+     * `TooltipTrigger` wrapa **samo** gumb "Virtual Room".
+     * gumb "View" i ostali gumbi **nisu** unutar tih Tooltip wrappera.
+
+   Primjer strukture (pseudo-kod):
+
+   ```tsx
+   <div className="buttons-row">
+     <Button>View</Button>
+
+     <Tooltip>
+       <TooltipTrigger asChild>
+         <Button variant="secondary">Virtual Room</Button>
+       </TooltipTrigger>
+       <TooltipContent>
+         {/* tekst dolje */}
+       </TooltipContent>
+     </Tooltip>
+   </div>
+   ```
+
+3. **Tekst tooltipsa:**
+   Koristi ovaj tekst:
+
+   > **"Preview this collection in a gallery-style mockup. Interactive 360° view is coming soon."**
+
+4. **Osiguraj da se tooltip u potpunosti vidi**
+
+   * `TooltipContent` treba imati max-width i automatsko lomljenje teksta, npr.:
+
+     ```tsx
+     <TooltipContent className="max-w-xs text-sm text-center leading-snug">
+       Preview this collection in a gallery-style mockup. Interactive 360° view is coming soon.
+     </TooltipContent>
+     ```
+   * Pozicioniraj tooltip tako da nije odrezan desno (npr. centriran iznad gumba). Ako biblioteku tooltipa već koristite s dobrim defaultom, dovoljno je pravilno ga wrapati samo oko gumba.
+
+5. **Test:**
+
+   * Hover iznad **View** → NE SMIJE pojaviti tooltip.
+   * Hover iznad **Virtual Room** → tooltip se pojavi i cijeli tekst se vidi (nije odrezan, tekst se lijepo lomi).
+
+---
+
+# 🚫 NON-SCOPE
+
+* Ne mijenjati tekstove na drugim mjestima u dashboardu.
+* Ne dirati druge gumbe ili tooltipe.
+* Ne raditi refaktore izvan nužnog za ova dva fixa.
+* Ne mijenjati logiku kolekcija, samo UI ponašanje.
+
+---
+
+# ✅ STOP CONDITION
+
+Agent treba stati tek kada:
+
+1. Klik na **View** iz Gallery Dashboarda **uvijek** otvara Virtual Exhibition Room skrolan na sam vrh (naslov odmah vidljiv).
+2. Tooltip za **"Virtual Room"** se pojavljuje **isključivo** kada je korisnik iznad tog gumba (ne iznad "View").
+3. Tooltip tekst je u potpunosti vidljiv i uredno formatiran (bez odrezanog dijela).
+4. U outputu jasno navede:
+
+   * koje je fileove mijenjao
+   * koju je logiku koristio za scroll fix
+   * kako je strukturirao Tooltip (Trigger + Content) oko gumba "Virtual Room".
