@@ -2955,7 +2955,8 @@ function VirtualExhibitionRoom() {
         </div>
         
         <div className="p-8 bg-white rounded-2xl shadow-lg border border-slate-100 mb-8">
-          <h2 className="text-xl font-semibold text-[#264C61] mb-4">Coming Soon Features</h2>
+          <h2 className="text-xl font-semibold text-[#264C61] mb-2">Coming Soon Features</h2>
+          <p className="text-sm text-slate-500 mb-6">An immersive 360° gallery experience is currently in development. Expected early 2026.</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
             <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-xl">
               <svg className="w-6 h-6 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2999,7 +3000,7 @@ function VirtualExhibitionRoom() {
         
         <a
           href="#/dashboard/gallery"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-[#264C61] text-white rounded-xl hover:bg-[#1D3A4A] transition-colors font-semibold"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-[#264C61] text-white rounded-lg hover:bg-[#1D3A4A] transition-colors font-semibold"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />

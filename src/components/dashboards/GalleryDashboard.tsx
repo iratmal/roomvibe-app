@@ -685,12 +685,12 @@ export function GalleryDashboard() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="title" className="block text-sm font-semibold text-slate-700 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+                <label htmlFor="title" className="block text-[15px] font-semibold text-slate-800 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
                   Collection Title <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                     </svg>
                   </div>
@@ -700,20 +700,20 @@ export function GalleryDashboard() {
                     name="title"
                     value={formData.title}
                     onChange={handleInputChange}
-                    className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] focus:border-transparent transition-all bg-slate-50 hover:bg-white"
-                    placeholder="e.g., Contemporary Art Collection 2024"
+                    className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] focus:border-transparent transition-all bg-slate-50 hover:bg-white text-[15px] placeholder:text-slate-500"
+                    placeholder="Modern Gallery Showcase 2025"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="subtitle" className="block text-sm font-semibold text-slate-700 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+                <label htmlFor="subtitle" className="block text-[15px] font-semibold text-slate-800 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
                   Subtitle
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                     </svg>
                   </div>
@@ -723,20 +723,20 @@ export function GalleryDashboard() {
                     name="subtitle"
                     value={formData.subtitle}
                     onChange={handleInputChange}
-                    className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] focus:border-transparent transition-all bg-slate-50 hover:bg-white"
-                    placeholder="e.g., Modern Abstracts & Landscapes"
+                    className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] focus:border-transparent transition-all bg-slate-50 hover:bg-white text-[15px] placeholder:text-slate-500"
+                    placeholder="Contemporary Abstracts & Landscapes"
                   />
                 </div>
               </div>
             </div>
 
             <div>
-              <label htmlFor="description" className="block text-sm font-semibold text-slate-700 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+              <label htmlFor="description" className="block text-[15px] font-semibold text-slate-800 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
                 Description
               </label>
               <div className="relative">
                 <div className="absolute top-3 left-0 pl-4 flex items-start pointer-events-none">
-                  <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
@@ -746,8 +746,8 @@ export function GalleryDashboard() {
                   value={formData.description}
                   onChange={handleInputChange}
                   rows={3}
-                  className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] focus:border-transparent transition-all bg-slate-50 hover:bg-white resize-none"
-                  placeholder="Tell visitors about this collection..."
+                  className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] focus:border-transparent transition-all bg-slate-50 hover:bg-white resize-none text-[15px] placeholder:text-slate-500"
+                  placeholder="Tell visitors about the theme of this exhibition..."
                 />
               </div>
             </div>
@@ -872,12 +872,18 @@ export function GalleryDashboard() {
                         >
                           View
                         </button>
-                        <a
-                          href={`#/gallery/exhibitions/${collection.id}`}
-                          className="flex-1 px-3 py-2 text-sm bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-all font-semibold text-center"
-                        >
-                          Virtual Room
-                        </a>
+                        <div className="flex-1 relative group">
+                          <a
+                            href={`#/gallery/exhibitions/${collection.id}`}
+                            className="block w-full px-3 py-2 text-sm bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-all font-semibold text-center"
+                          >
+                            Virtual Room
+                          </a>
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                            Preview this collection in a gallery-style mockup. Interactive 360° view is coming soon.
+                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
+                          </div>
+                        </div>
                       </div>
                       <div className="flex gap-2">
                         <button
@@ -934,7 +940,7 @@ export function GalleryDashboard() {
         </div>
 
         {/* Studio Card */}
-        <div className="mb-12 p-8 bg-gradient-to-br from-[#264C61] to-[#1D3A4A] rounded-2xl shadow-lg text-white">
+        <div className="mb-16 p-8 bg-gradient-to-br from-[#264C61] to-[#1D3A4A] rounded-2xl shadow-lg text-white">
           <div className="flex items-start justify-between">
             <div>
               <h2 className="text-2xl font-semibold mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
@@ -962,7 +968,7 @@ export function GalleryDashboard() {
         </div>
 
         {/* Your Plan Section */}
-        <div className="mb-12 p-8 bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100">
+        <div className="mb-16 p-8 bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-semibold text-[#264C61]" style={{ fontFamily: 'Inter, sans-serif' }}>
               Your Plan

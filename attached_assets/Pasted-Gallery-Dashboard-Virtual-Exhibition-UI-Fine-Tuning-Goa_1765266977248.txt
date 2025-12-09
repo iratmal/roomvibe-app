@@ -1,0 +1,61 @@
+Gallery Dashboard & Virtual Exhibition (UI Fine-Tuning)
+
+Goal:
+Izvesti nekoliko manjih UI dorada na Gallery dashboardu i Virtual Exhibition (Coming Soon) ekranu kako bi sučelje bilo vizualno čišće, premium i konzistentno. Ovo su mali, fokusirani zadaci — koristi Fast Mode ako je dostupan.
+
+Scope — napravi samo ovo:
+1. Poboljšanje čitljivosti Subtitle & Description polja u “Create New Exhibition”
+
+Povećaj font-size placeholdera i labela za 1–2 px.
+
+Povećaj kontrast teksta (npr. iz trenutno vrlo svijetle sive u nešto tamniji neutral pigment — u skladu s postojećim dizajnom).
+
+Dodaj primjer kroz placeholder, npr.
+
+Collection Title → “Modern Gallery Showcase 2025”
+
+Subtitle → “Contemporary Abstracts & Landscapes”
+
+Description → “Tell visitors about the theme of this exhibition…”
+
+2. Povećati vertikalni spacing između sekcija u “Your Plan” / “Account Details”
+
+Dodati oko 16–24 px dodatnog “air spacing” između sekcija na dnu dashboarda kako bi prijelaz izgledao vizualno uglađeniji.
+
+Ne mijenjati padding unutar samih komponenti — samo razmak između glavnih sekcija.
+
+3. “Virtual Exhibition Room — Coming Soon” → dodati micro-description
+
+Ispod naslova “Coming Soon Features” dodati jednu kratku rečenicu:
+“An immersive 360° gallery experience is currently in development. Expected early 2026.”
+
+Stil teksta neka prati sekundarni description stil u aplikaciji.
+
+4. Poboljšati vizualni stil gumba “Back to Gallery Dashboard”
+
+Smanjiti border-radius kako bi bio konzistentan s ostalim buttonima u aplikaciji (npr. ako su ostali 6–8 px, uskladiti s time).
+
+Ne mijenjati primarnu boju gumba.
+
+5. Tooltip za “Virtual Room” u kolekcijama
+
+Dodati mali tooltip (ikonica “i” ili hover tooltip) pokraj gumba “Virtual Room”.
+
+Tekst tooltipsa:
+“Preview this collection in a gallery-style mockup. Interactive 360° view is coming soon.”
+
+Non-Scope (nemoj dirati):
+
+Nikakve backend funkcije
+
+Nikakve nove API-e
+
+Nikakve promjene logike kolekcija ili izložbi
+
+Ne dodavati nove stranice
+
+Ne refaktorirati postojeće komponente osim minimalnih UI izmjena iz Scopea
+
+Stop Condition:
+
+Kada su sve UI dorade implementirane i vizualno provjerene u deploy previewu. Prikaži izmijenjene fileove i kratki screenshot/preview gdje je relevantno.
