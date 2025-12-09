@@ -684,6 +684,83 @@ function CameraController({
   );
 }
 
+// DEBUG: Standalone test plane to verify texture rendering works independently
+function DebugTestPlane() {
+  const [texture, setTexture] = useState<THREE.Texture | null>(null);
+  const [status, setStatus] = useState('loading');
+  
+  useEffect(() => {
+    console.log('[DEBUG TEST PLANE] Starting to load test texture...');
+    
+    const loader = new THREE.TextureLoader();
+    loader.load(
+      '/art/gv-2025-001.jpg',
+      (loadedTexture) => {
+        console.log('[DEBUG TEST PLANE] SUCCESS! Texture loaded:', {
+          image: loadedTexture.image,
+          width: loadedTexture.image?.width,
+          height: loadedTexture.image?.height,
+          uuid: loadedTexture.uuid
+        });
+        
+        loadedTexture.colorSpace = THREE.SRGBColorSpace;
+        loadedTexture.needsUpdate = true;
+        setTexture(loadedTexture);
+        setStatus('loaded');
+      },
+      (progress) => {
+        console.log('[DEBUG TEST PLANE] Loading progress:', progress);
+      },
+      (error) => {
+        console.error('[DEBUG TEST PLANE] FAILED to load texture:', error);
+        setStatus('error');
+      }
+    );
+  }, []);
+  
+  console.log('[DEBUG TEST PLANE] Render - status:', status, 'texture:', texture ? 'exists' : 'null');
+
+  return (
+    <group>
+      {/* Debug label */}
+      <Html position={[0, 3.2, -5]} center>
+        <div style={{ background: 'yellow', padding: '4px 8px', fontSize: '12px', fontWeight: 'bold' }}>
+          DEBUG TEST: {status}
+        </div>
+      </Html>
+      
+      {/* Test plane with texture */}
+      <mesh position={[0, 2.5, -5]}>
+        <planeGeometry args={[2, 1.4]} />
+        {texture ? (
+          <meshBasicMaterial 
+            map={texture} 
+            color="#ffffff"
+            toneMapped={false}
+          />
+        ) : (
+          <meshBasicMaterial color={status === 'error' ? '#ff0000' : '#00ff00'} />
+        )}
+      </mesh>
+      
+      {/* Also try meshStandardMaterial version below it */}
+      <mesh position={[0, 1, -5]}>
+        <planeGeometry args={[2, 1.4]} />
+        {texture ? (
+          <meshStandardMaterial 
+            map={texture} 
+            color="#ffffff"
+            metalness={0}
+            roughness={0.5}
+          />
+        ) : (
+          <meshBasicMaterial color={status === 'error' ? '#ff0000' : '#ffff00'} />
+        )}
+      </mesh>
+    </group>
+  );
+}
+
 export function Gallery360Scene({
   preset,
   slotAssignments,
@@ -738,6 +815,9 @@ export function Gallery360Scene({
       />
 
       <GalleryRoom preset={preset} />
+      
+      {/* DEBUG: Standalone test plane to verify textures work */}
+      <DebugTestPlane />
 
       {preset.slots.map(slot => {
         const assignment = slotAssignments.find(sa => sa.slotId === slot.id);

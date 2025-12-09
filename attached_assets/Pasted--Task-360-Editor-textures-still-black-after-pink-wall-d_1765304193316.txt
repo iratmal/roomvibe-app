@@ -1,0 +1,85 @@
+**Task: 360° Editor – textures still black after pink-wall deployment**
+
+I refreshed the 360° editor:
+
+* ✅ The north wall is now PINK → confirms the latest build is deployed.
+* ❌ All artworks are still rendered as solid black rectangles (see latest screenshot).
+* I’m viewing as Gallery (Admin impersonation), but the UI and wall slots look correct, only the textures don’t show.
+
+This tells us the issue is in the **texture / material / canvas setup**, not in the API, not in deployment.
+
+---
+
+### Please do the following inside the 360° scene
+
+1. **Hard‑code one test plane with a visible texture**
+
+Create a very simple test mesh in the scene (not using any gallery data, just a fixed plane):
+
+```tsx
+import * as THREE from 'three';
+import { useLoader } from '@react-three/fiber';
+
+function TestArtworkPlane() {
+  const texture = useLoader(THREE.TextureLoader, '/test-images/test-artwork.jpg');
+  texture.colorSpace = THREE.SRGBColorSpace;
+
+  return (
+    <mesh position={[0, 1.6, -4]}>
+      <planeGeometry args={[2, 1.4]} />
+      <meshStandardMaterial
+        map={texture}
+        color="#ffffff"
+        metalness={0}
+        roughness={0.5}
+      />
+    </mesh>
+  );
+}
+```
+
+Render that component in the Modern Gallery scene next to the existing wall meshes.
+
+2. **Make sure the material doesn’t multiply the texture to black**
+
+For the artwork planes we use in the gallery:
+
+* `material.color` must be **white** (or very light), e.g. `#ffffff`, not dark grey / black.
+* `map` must be set: `material.map = loadedTexture; material.needsUpdate = true;`
+* If we’re using a shared material, make sure we are not re‑using a material whose color is `0x000000`.
+
+3. **Check renderer / color space**
+
+Make sure we use:
+
+```tsx
+gl.outputColorSpace = THREE.SRGBColorSpace;
+```
+
+and for the loaded texture:
+
+```tsx
+texture.colorSpace = THREE.SRGBColorSpace;
+```
+
+4. **Log the full texture object**
+
+When loading the artwork image, log:
+
+```ts
+console.log('ARTWORK TEXTURE LOADED', {
+  url,
+  image: texture.image,
+  width: texture.image?.width,
+  height: texture.image?.height,
+});
+```
+
+I will open the browser console and send you a screenshot of these logs.
+
+5. **Goal of this step**
+
+* First, I need to see **any** image (even a dummy test JPEG) correctly rendered on a plane in the 360° scene.
+* Once that works, we hook the same working texture pipeline to the real artwork images from the API.
+
+If possible, keep the pink wall for now so we’re sure we’re always looking at the new build. When the test plane finally shows the image (not black), you can switch the wall back to our normal gallery color.
