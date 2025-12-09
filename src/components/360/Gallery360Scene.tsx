@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, Suspense } from 'react';
+import React, { useRef, useState, useEffect, useCallback, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Html, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
@@ -228,18 +228,84 @@ function CameraController({
 }) {
   const { camera } = useThree();
   const controlsRef = useRef<any>(null);
+  const [controlsReady, setControlsReady] = useState(false);
+  
+  const targetPosition = useRef(new THREE.Vector3(...viewpoint.position));
+  const targetLookAt = useRef(new THREE.Vector3(...viewpoint.lookAt));
+  const lastViewpointId = useRef(viewpoint.id);
+  const isAnimating = useRef(false);
+  const needsInitialSync = useRef(true);
+
+  const controlsCallback = useCallback((controls: any) => {
+    controlsRef.current = controls;
+    if (controls) {
+      needsInitialSync.current = true;
+      isAnimating.current = false;
+      setControlsReady(true);
+    } else {
+      needsInitialSync.current = true;
+      setControlsReady(false);
+    }
+  }, []);
 
   useEffect(() => {
-    camera.position.set(...viewpoint.position);
-    if (controlsRef.current) {
-      controlsRef.current.target.set(...viewpoint.lookAt);
+    if (!controlsReady || !controlsRef.current) return;
+    
+    if (needsInitialSync.current) {
+      camera.position.copy(targetPosition.current);
+      controlsRef.current.target.copy(targetLookAt.current);
       controlsRef.current.update();
+      needsInitialSync.current = false;
+      isAnimating.current = false;
     }
-  }, [viewpoint, camera]);
+  }, [controlsReady, camera]);
+
+  useEffect(() => {
+    const isNewViewpoint = lastViewpointId.current !== viewpoint.id;
+    
+    targetPosition.current.set(...viewpoint.position);
+    targetLookAt.current.set(...viewpoint.lookAt);
+    lastViewpointId.current = viewpoint.id;
+    
+    if (isNewViewpoint) {
+      if (controlsReady && controlsRef.current && !needsInitialSync.current) {
+        isAnimating.current = true;
+      } else {
+        needsInitialSync.current = true;
+      }
+    }
+  }, [viewpoint, controlsReady]);
+
+  useFrame((_, delta) => {
+    if (!controlsRef.current || !controlsReady) return;
+    
+    if (needsInitialSync.current) {
+      camera.position.copy(targetPosition.current);
+      controlsRef.current.target.copy(targetLookAt.current);
+      controlsRef.current.update();
+      needsInitialSync.current = false;
+      isAnimating.current = false;
+      return;
+    }
+    
+    if (!isAnimating.current) return;
+    
+    const lerpFactor = Math.min(5 * delta, 0.2);
+    camera.position.lerp(targetPosition.current, lerpFactor);
+    controlsRef.current.target.lerp(targetLookAt.current, lerpFactor);
+    controlsRef.current.update();
+    
+    if (camera.position.distanceTo(targetPosition.current) < 0.03) {
+      camera.position.copy(targetPosition.current);
+      controlsRef.current.target.copy(targetLookAt.current);
+      controlsRef.current.update();
+      isAnimating.current = false;
+    }
+  });
 
   return (
     <OrbitControls 
-      ref={controlsRef}
+      ref={controlsCallback}
       enableZoom={isEditor}
       enablePan={isEditor}
       minPolarAngle={Math.PI / 4}

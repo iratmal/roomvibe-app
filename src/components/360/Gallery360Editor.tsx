@@ -44,18 +44,28 @@ export function Gallery360Editor({
     slotAssignments, 
     assignArtwork,
     loadAssignments,
-    clearSlot
+    clearSlot,
+    resetToSlots
   } = useArtworkSlots(preset.slots);
 
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [previousPresetId, setPreviousPresetId] = useState(selectedPresetId);
 
   useEffect(() => {
-    if (initialAssignments.length > 0) {
+    if (initialAssignments.length > 0 && selectedPresetId === presetId) {
       loadAssignments(initialAssignments);
     }
-  }, [initialAssignments, loadAssignments]);
+  }, [initialAssignments, loadAssignments, selectedPresetId, presetId]);
+
+  useEffect(() => {
+    if (selectedPresetId !== previousPresetId) {
+      resetToSlots(preset.slots);
+      setSelectedSlotId(null);
+      setPreviousPresetId(selectedPresetId);
+    }
+  }, [selectedPresetId, previousPresetId, preset.slots, resetToSlots]);
 
   const handleAssignArtwork = (slotId: string, artwork: Artwork | null) => {
     if (artwork) {

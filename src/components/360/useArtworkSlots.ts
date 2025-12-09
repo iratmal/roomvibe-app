@@ -18,6 +18,7 @@ export interface UseArtworkSlotsResult {
   clearSlot: (slotId: string) => void;
   clearAllSlots: () => void;
   loadAssignments: (assignments: SlotAssignment[]) => void;
+  resetToSlots: (newSlots: Slot[]) => void;
 }
 
 export function useArtworkSlots(slots: Slot[]): UseArtworkSlotsResult {
@@ -66,12 +67,17 @@ export function useArtworkSlots(slots: Slot[]): UseArtworkSlotsResult {
     );
   }, []);
 
+  const resetToSlots = useCallback((newSlots: Slot[]) => {
+    setSlotAssignments(newSlots.map(slot => ({ slotId: slot.id, artworkId: null })));
+  }, []);
+
   return {
     slotAssignments,
     assignArtwork,
     getAssignment,
     clearSlot,
     clearAllSlots,
-    loadAssignments
+    loadAssignments,
+    resetToSlots
   };
 }
