@@ -1,0 +1,52 @@
+Tekst koji mu možeš doslovno copy-pasteati (ENG, za Replit agenta)
+
+Task: Modern Gallery – visual style upgrade using ArtSteps as reference
+
+I’ve attached 2–3 screenshots from an exhibition on ArtSteps.
+Please use them as a visual reference only (do NOT copy their assets or room layout) and update our “Modern Gallery” 360° room to achieve a similarly realistic, premium look.
+
+1. Fix current bug
+
+Right now all artworks appear as solid black rectangles in the Modern Gallery editor.
+
+First, fix this so artworks render correctly again (correct texture loading, materials, and aspect ratios).
+
+2. Visual realism & atmosphere (match the reference vibe)
+
+Walls: soft, slightly warm white/grey, with subtle shading – no flat “cartoon” surfaces.
+
+Floor: realistic material (wood or concrete, depending on what’s easier), with visible but subtle texture, like in the ArtSteps screenshots.
+
+Ceiling: add simple but elegant beams/panels and track lighting, inspired by the reference images (again, not copying 1:1, just the feeling).
+
+Lighting: soft, gallery-style lighting with:
+
+gentle wall falloff,
+
+individual light spots above artworks,
+
+no harsh shadows or over-dark corners.
+
+Frames: keep our simple frames, but make sure they feel integrated into the wall (slight shadow, correct thickness).
+
+3. Artwork proportions & wall layout
+
+Make sure artworks keep their correct aspect ratio based on their original width/height.
+
+Avoid stretching.
+
+The main wall should be wider, so 3–4 artworks can breathe (similar spacing as in the reference gallery).
+
+Camera height should feel like a person standing (~1.6–1.7 m), so artworks are at natural eye level.
+
+4. Overall feeling
+
+The gallery should feel like a real, airy space where you could actually walk in — closer to ArtSteps realism and further away from a “flat cartoon” look.
+
+Keep performance in mind (low-poly where possible), but prioritize a polished, professional impression.
+
+When you’re done, please:
+
+enable the Modern Gallery in the 360° editor for testing, and
+
+confirm what exactly you changed (materials, lighting setup, camera, walls, etc.).
