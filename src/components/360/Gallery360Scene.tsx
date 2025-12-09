@@ -346,37 +346,38 @@ function ArtworkPlane({
   );
 }
 
-// Helper to get the proxied URL for WebGL texture loading
+// Helper to get the correct URL for WebGL texture loading
+// In production, CDN serves frontend so we must use absolute backend URL
 function getProxiedImageUrl(url: string): string {
   if (!url) return '';
   
-  // Check if it's an internal API URL - these don't need proxying
-  // as they're served from the same origin with proper headers
-  if (url.startsWith('/api/') || url.startsWith('/api/gallery-artwork-image/')) {
-    // For dev, prepend the backend server URL for internal API calls
-    if (import.meta.env.DEV) {
-      return `http://localhost:3001${url}`;
-    }
-    return url;
+  const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
+  
+  // For internal gallery artwork URLs, construct the full backend URL
+  if (url.startsWith('/api/gallery-artwork-image/')) {
+    // In production, we need to use the same origin for API calls
+    // The backend serves both frontend and API in autoscale deployment
+    return `${API_URL}${url}`;
   }
   
-  // Check if already a proxy URL by parsing the URL properly
+  // For other internal API URLs
+  if (url.startsWith('/api/')) {
+    return `${API_URL}${url}`;
+  }
+  
+  // For external URLs, use the image proxy to handle CORS
   try {
-    const parsedUrl = new URL(url, window.location.origin);
+    const parsedUrl = new URL(url);
+    // Already a full URL - check if it's already proxied
     if (parsedUrl.pathname === '/api/image-proxy') {
-      return url; // Already proxied
-    }
-    // Also check for internal API paths
-    if (parsedUrl.pathname.startsWith('/api/')) {
       return url;
     }
+    // External image - proxy it
+    return `${API_URL}/api/image-proxy?url=${encodeURIComponent(url)}`;
   } catch {
-    // URL parsing failed, proceed with proxying
+    // Not a valid absolute URL - proxy it
+    return `${API_URL}/api/image-proxy?url=${encodeURIComponent(url)}`;
   }
-  
-  // External URLs need the proxy to fix CORS for WebGL
-  const baseUrl = import.meta.env.DEV ? 'http://localhost:3001' : '';
-  return `${baseUrl}/api/image-proxy?url=${encodeURIComponent(url)}`;
 }
 
 function ArtworkImage({ 
