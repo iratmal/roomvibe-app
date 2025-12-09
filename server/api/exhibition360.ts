@@ -131,12 +131,12 @@ router.get('/exhibitions/:id/360-public', async (req, res) => {
       return res.status(404).json({ error: 'No 360 scene configured for this exhibition' });
     }
 
-    // Get gallery_artworks for this collection (not the general artworks table)
     const artworksResult = await query(
-      `SELECT id, title, artist_name, image_url, width_value, height_value, dimension_unit
-       FROM gallery_artworks
-       WHERE collection_id = $1
-       ORDER BY created_at`,
+      `SELECT a.id, a.title, a.artist_name, a.image_url, a.width, a.height, a.dimension_unit
+       FROM gallery_artworks ga
+       JOIN artworks a ON ga.artwork_id = a.id
+       WHERE ga.collection_id = $1
+       ORDER BY ga.display_order`,
       [collectionId]
     );
 
@@ -144,15 +144,12 @@ router.get('/exhibitions/:id/360-public', async (req, res) => {
       ? JSON.parse(collection.scene_360_data) 
       : collection.scene_360_data;
 
-    // Hydrate slots with artwork data from gallery_artworks
-    // The slot already has artworkUrl from when it was saved, but we re-hydrate to ensure fresh data
     const hydratedSlots = (scene360Data.slots || []).map((slot: SlotAssignment) => {
       if (!slot.artworkId) return slot;
       
       const artwork = artworksResult.rows.find(a => String(a.id) === slot.artworkId);
       if (!artwork) {
-        // Slot already has data saved from editor, use that
-        console.log(`[360 Public] Using saved slot data for artwork ${slot.artworkId}`);
+        console.warn(`[360 Public] Artwork ${slot.artworkId} not found for slot ${slot.slotId}`);
         return slot;
       }
       
@@ -161,8 +158,8 @@ router.get('/exhibitions/:id/360-public', async (req, res) => {
         artworkUrl: artwork.image_url,
         artworkTitle: artwork.title,
         artistName: artwork.artist_name,
-        width: artwork.width_value,
-        height: artwork.height_value,
+        width: artwork.width,
+        height: artwork.height,
         dimensionUnit: artwork.dimension_unit
       };
     });

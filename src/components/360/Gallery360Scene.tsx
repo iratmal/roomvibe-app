@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback, Suspense, useMemo } from 'react';
-import { Canvas, useFrame, useThree, useLoader } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { Gallery360Preset, Slot, Hotspot, Viewpoint } from '../../config/gallery360Presets';
@@ -346,7 +346,6 @@ function ArtworkPlane({
   );
 }
 
-// Artwork image component - uses useFrame to ensure material updates propagate
 function ArtworkImage({ 
   url, 
   width, 
@@ -362,68 +361,45 @@ function ArtworkImage({
   hovered: boolean;
   setHovered: (h: boolean) => void;
 }) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const textureRef = useRef<THREE.Texture | null>(null);
-  const [loaded, setLoaded] = useState(false);
+  const [texture, setTexture] = useState<THREE.Texture | null>(null);
+  const [loadError, setLoadError] = useState(false);
   
   useEffect(() => {
     if (!url) {
-      console.warn('[ArtworkImage] No URL provided');
+      setLoadError(true);
       return;
     }
     
-    console.log('[ArtworkImage] === LOADING ===', url);
-    setLoaded(false);
+    setLoadError(false);
+    const loader = new THREE.TextureLoader();
+    loader.crossOrigin = 'anonymous';
     
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    
-    img.onload = () => {
-      console.log('[ArtworkImage] Image loaded:', img.width, 'x', img.height);
-      
-      const texture = new THREE.Texture(img);
-      texture.colorSpace = THREE.SRGBColorSpace;
-      texture.magFilter = THREE.LinearFilter;
-      texture.minFilter = THREE.LinearFilter;
-      texture.generateMipmaps = false;
-      texture.needsUpdate = true;
-      
-      textureRef.current = texture;
-      setLoaded(true);
-      
-      console.log('[ArtworkImage] Texture created:', texture.uuid);
-    };
-    
-    img.onerror = (err) => {
-      console.error('[ArtworkImage] Load error:', err);
-    };
-    
-    img.src = url;
+    loader.load(
+      url,
+      (loadedTexture) => {
+        loadedTexture.colorSpace = THREE.SRGBColorSpace;
+        loadedTexture.minFilter = THREE.LinearFilter;
+        loadedTexture.magFilter = THREE.LinearFilter;
+        loadedTexture.generateMipmaps = false;
+        setTexture(loadedTexture);
+        setLoadError(false);
+      },
+      undefined,
+      (error) => {
+        console.warn('Failed to load artwork texture:', url, error);
+        setLoadError(true);
+      }
+    );
     
     return () => {
-      if (textureRef.current) {
-        textureRef.current.dispose();
-        textureRef.current = null;
+      if (texture) {
+        texture.dispose();
       }
     };
   }, [url]);
-  
-  // Use frame to ensure material is updated
-  useFrame(() => {
-    if (meshRef.current && textureRef.current && loaded) {
-      const material = meshRef.current.material as THREE.MeshBasicMaterial;
-      if (material.map !== textureRef.current) {
-        console.log('[ArtworkImage] useFrame applying texture to material');
-        material.map = textureRef.current;
-        material.color.set(0xffffff);
-        material.needsUpdate = true;
-      }
-    }
-  });
 
   return (
     <mesh 
-      ref={meshRef}
       position={[0, 0, 0.005]}
       onClick={(e) => {
         e.stopPropagation();
@@ -433,11 +409,20 @@ function ArtworkImage({
       onPointerOut={() => setHovered(false)}
     >
       <planeGeometry args={[width, height]} />
-      <meshBasicMaterial 
-        color={loaded ? 0xffffff : 0xe8e4e0}
-        toneMapped={false}
-        side={THREE.DoubleSide}
-      />
+      {loadError || !texture ? (
+        <meshStandardMaterial 
+          color="#d4cfc7"
+          roughness={0.8}
+        />
+      ) : (
+        <meshStandardMaterial 
+          map={texture} 
+          emissive={hovered ? '#333333' : '#000000'}
+          emissiveIntensity={hovered ? 0.12 : 0}
+          roughness={0.35}
+          metalness={0}
+        />
+      )}
     </mesh>
   );
 }
@@ -643,13 +628,6 @@ export function Gallery360Scene({
       shadows
       camera={{ fov: 55, near: 0.1, far: 100 }}
       style={{ background: '#ddd9d4' }}
-      gl={(canvas) => {
-        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
-        renderer.outputColorSpace = THREE.SRGBColorSpace;
-        renderer.toneMapping = THREE.NoToneMapping;
-        renderer.toneMappingExposure = 1.0;
-        return renderer;
-      }}
     >
       {/* Soft ambient fill - prevents harsh black areas */}
       <ambientLight intensity={0.55} color="#f5f3f0" />
