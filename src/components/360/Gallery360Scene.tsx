@@ -169,9 +169,10 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       ))}
 
       {/* Walls with subtle warmth - soft gallery white-gray */}
+      {/* DEBUG: North wall is PINK to confirm deployment */}
       <mesh position={[0, height / 2, -halfD]} receiveShadow>
         <planeGeometry args={[width, height]} />
-        <meshStandardMaterial color="#e8e4df" side={THREE.DoubleSide} roughness={0.88} metalness={0} />
+        <meshStandardMaterial color="#FF69B4" side={THREE.DoubleSide} roughness={0.88} metalness={0} />
       </mesh>
 
       <mesh position={[0, height / 2, halfD]} rotation={[0, Math.PI, 0]} receiveShadow>
@@ -346,6 +347,10 @@ function ArtworkPlane({
   );
 }
 
+// DEBUG: Hard-coded test image to verify texture rendering works
+const DEBUG_TEST_IMAGE = '/art/gv-2025-001.jpg';
+const DEBUG_USE_TEST_IMAGE = true; // Set to false to use real artwork URLs
+
 // Inner component that uses useLoader - must be wrapped in Suspense
 function ArtworkTextureLoader({ 
   url, 
@@ -362,19 +367,35 @@ function ArtworkTextureLoader({
   hovered: boolean;
   setHovered: (h: boolean) => void;
 }) {
-  const texture = useLoader(THREE.TextureLoader, url);
+  // DEBUG: Use test image or real URL
+  const textureUrl = DEBUG_USE_TEST_IMAGE ? DEBUG_TEST_IMAGE : url;
+  
+  console.log('[Gallery360] STEP 1: Starting texture load for URL:', textureUrl, '(original:', url, ')');
+  
+  const texture = useLoader(THREE.TextureLoader, textureUrl);
   
   // Configure texture for proper display
   useEffect(() => {
     if (texture) {
-      console.log('[Gallery360] Texture loaded via useLoader:', url, 'size:', texture.image?.width, 'x', texture.image?.height);
+      console.log('[Gallery360] STEP 2: Texture object received');
+      console.log('[Gallery360]   - texture:', texture);
+      console.log('[Gallery360]   - texture.image:', texture.image);
+      console.log('[Gallery360]   - image dimensions:', texture.image?.width, 'x', texture.image?.height);
+      console.log('[Gallery360]   - texture.source.data:', texture.source?.data);
+      
       texture.colorSpace = THREE.SRGBColorSpace;
       texture.magFilter = THREE.LinearFilter;
       texture.minFilter = THREE.LinearFilter;
       texture.generateMipmaps = false;
       texture.needsUpdate = true;
+      
+      console.log('[Gallery360] STEP 3: Texture configured, needsUpdate set to true');
+    } else {
+      console.error('[Gallery360] ERROR: texture is null/undefined after useLoader');
     }
-  }, [texture, url]);
+  }, [texture, textureUrl]);
+
+  console.log('[Gallery360] STEP 4: Rendering mesh with texture map');
 
   return (
     <mesh 
@@ -390,6 +411,9 @@ function ArtworkTextureLoader({
       <meshBasicMaterial 
         map={texture}
         toneMapped={false}
+        onUpdate={(material) => {
+          console.log('[Gallery360] STEP 5: Material updated, map assigned:', material.map ? 'YES' : 'NO');
+        }}
       />
     </mesh>
   );
