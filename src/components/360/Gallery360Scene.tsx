@@ -346,6 +346,25 @@ function ArtworkPlane({
   );
 }
 
+// Helper to get the proxied URL for WebGL texture loading
+function getProxiedImageUrl(url: string): string {
+  if (!url) return '';
+  
+  // Check if already a proxy URL by parsing the URL properly
+  try {
+    const parsedUrl = new URL(url, window.location.origin);
+    if (parsedUrl.pathname === '/api/image-proxy') {
+      return url; // Already proxied
+    }
+  } catch {
+    // URL parsing failed, proceed with proxying
+  }
+  
+  // Use backend proxy to ensure CORS headers for WebGL
+  const baseUrl = import.meta.env.DEV ? 'http://localhost:3001' : '';
+  return `${baseUrl}/api/image-proxy?url=${encodeURIComponent(url)}`;
+}
+
 function ArtworkImage({ 
   url, 
   width, 
@@ -372,10 +391,12 @@ function ArtworkImage({
     
     setLoadError(false);
     const loader = new THREE.TextureLoader();
-    loader.crossOrigin = 'anonymous';
+    
+    // Use proxied URL to fix CORS issues for WebGL textures
+    const proxiedUrl = getProxiedImageUrl(url);
     
     loader.load(
-      url,
+      proxiedUrl,
       (loadedTexture) => {
         loadedTexture.colorSpace = THREE.SRGBColorSpace;
         loadedTexture.minFilter = THREE.LinearFilter;
