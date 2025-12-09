@@ -1,0 +1,165 @@
+# 360° Editor – Texture Debug Helper Snippets
+
+Ovo je pomoćni zadatak za Replit agenta da popravi problem crnih placeholdera (teksture se ne prikazuju) u 360° Editoru.
+
+## 1. Kratki opis problema (za kontekst)
+
+U 360° Editoru (Modern Gallery i ostali prostori):
+
+* Umjesto prikaza stvarnih slika na zidovima, prikazuju se crni kvadrati (kao da tekstura ne postoji).
+* U lijevom panelu pod **Wall Slots** thumbnail slike izgledaju ispravno, ali na 3D zidu ne.
+* Ovo se događa i nakon više pokušaja refaktora – znači da je vjerojatno problem u načinu na koji se teksture učitavaju / dodjeljuju materijalu ili u colorSpace / tonemapping postavkama.
+
+Cilj ovog dokumenta je dati ti konkretne kod‑primjere i debug smjernice.
+
+---
+
+## 2. Predložena struktura komponenti
+
+Pretpostavljeni setup (prilagodi stvarnom kodu):
+
+* Canvas: `react-three-fiber`
+* Loader: `TextureLoader` ili `useTexture`
+* Materijal: `MeshStandardMaterial` ili sličan PBR materijal
+
+### 2.1. Primjer komponente za artwork na zidu
+
+```tsx
+import { useLoader } from '@react-three/fiber'
+import * as THREE from 'three'
+
+interface ArtworkPlaneProps {
+  imageUrl: string
+  width: number
+  height: number
+  position: [number, number, number]
+}
+
+export function ArtworkPlane({ imageUrl, width, height, position }: ArtworkPlaneProps) {
+  const texture = useLoader(THREE.TextureLoader, imageUrl)
+
+  // Osiguraj ispravan color space i filtriranje
+  texture.colorSpace = THREE.SRGBColorSpace
+  texture.magFilter = THREE.LinearFilter
+  texture.minFilter = THREE.LinearMipmapLinearFilter
+  texture.anisotropy = 8
+
+  return (
+    <mesh position={position}>
+      <planeGeometry args={[width, height]} />
+      <meshStandardMaterial
+        map={texture}
+        toneMapped={false}
+        transparent={false}
+      />
+    </mesh>
+  )
+}
+```
+
+> Ključno: **`texture.colorSpace = THREE.SRGBColorSpace`** i **`toneMapped={false}`** često rješavaju situacije gdje slika izgleda pre-tamna ili potpuno crna.
+
+### 2.2. Fallback ako tekstura ne učita (da izbjegnemo crni kvadrat)
+
+```tsx
+export function SafeArtworkPlane(props: ArtworkPlaneProps) {
+  const texture = useLoader(THREE.TextureLoader, props.imageUrl)
+
+  const materialProps: JSX.IntrinsicElements['meshStandardMaterial'] = texture
+    ? {
+        map: texture,
+        toneMapped: false,
+      }
+    : {
+        color: '#cccccc', // svijetli fallback umjesto crnog kvadrata
+      }
+
+  if (texture) {
+    texture.colorSpace = THREE.SRGBColorSpace
+  }
+
+  return (
+    <mesh position={props.position}>
+      <planeGeometry args={[props.width, props.height]} />
+      <meshStandardMaterial {...materialProps} />
+    </mesh>
+  )
+}
+```
+
+---
+
+## 3. Canvas / renderer postavke
+
+Ako je problem u rendereru (npr. tone mapping, outputEncoding), preporuka je **eksplicitno** postaviti ove vrijednosti.
+
+### 3.1. Primjer Canvas konfiguracije
+
+```tsx
+import { Canvas } from '@react-three/fiber'
+import * as THREE from 'three'
+
+export function Gallery360Canvas() {
+  return (
+    <Canvas
+      camera={{ position: [0, 1.6, 4], fov: 60 }}
+      gl={(canvas) => {
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
+        renderer.outputColorSpace = THREE.SRGBColorSpace
+        renderer.toneMapping = THREE.NoToneMapping
+        renderer.toneMappingExposure = 1.0
+        renderer.physicallyCorrectLights = true
+        return renderer
+      }}
+    >
+      {/* ostatak scene */}
+    </Canvas>
+  )
+}
+```
+
+> Bitno: neka **outputColorSpace bude SRGBColorSpace**, a **toneMapping = NoToneMapping** dok ne vidimo da teksture rade ispravno.
+
+---
+
+## 4. Debug koraci za agenta (copy‑paste za task)
+
+1. U 360° Editor kodu **lociraj komponentu** koja prikazuje artworke na zidovima (npr. `WallSlotMesh`, `ArtworkMesh`, slično).
+2. Zamijeni postojeći materijal i loading logiku s gore predloženom `SafeArtworkPlane` implementacijom.
+3. U Canvas setupu:
+
+   * eksplicitno postavi `renderer.outputColorSpace = THREE.SRGBColorSpace` (ili `gl.outputColorSpace` ovisno o verziji),
+   * postavi `renderer.toneMapping = THREE.NoToneMapping`.
+4. Dodaj privremeni debug overlay:
+
+```tsx
+console.log('Loaded artwork texture', imageUrl, texture)
+```
+
+5. Provjeri u browser konzoli:
+
+   * da nema WebGL errora (`GL_INVALID_ENUM`, `GL_INVALID_OPERATION` itd.),
+   * da se tekstura stvarno učitava (texture objekt nije `undefined`).
+6. Ako se tekstura učitava, ali je i dalje crna:
+
+   * privremeno postavi `meshBasicMaterial` umjesto `meshStandardMaterial` da isključiš sve utjecaje svjetla:
+
+```tsx
+<meshBasicMaterial map={texture} toneMapped={false} />
+```
+
+* ako tada radi, problem je u svjetlima / exposureu – potrebno je prilagoditi intenzitet svjetla i/ili tone mapping.
+
+---
+
+## 5. Završna napomena
+
+Prioritet je:
+
+1. **Prvo** osigurati da se slike uopće prikazuju (čak i ako je prostor još "cartoonish").
+2. **Tek onda** polirati realizam (materijali, pod, stupovi, strop, svjetla) po već postojećoj *Master Quality Checklist* specifikaciji.
+
+Ovaj dokument služi kao tehnička pomoć – slobodno refaktoriraj kod, ali molim:
+
+* nemoj uvoditi globalni `overrideMaterial` koji bi mogao pregaziti `map` na artworkovima,
+* pobrini se da su svi `mesh` objekti koji predstavljaju slike **odvojeni** od zidova (zid = jedan mesh, slika = drugi mesh ispred njega).

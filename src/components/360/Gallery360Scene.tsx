@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback, Suspense, useMemo } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Canvas, useFrame, useThree, useLoader } from '@react-three/fiber';
 import { OrbitControls, Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { Gallery360Preset, Slot, Hotspot, Viewpoint } from '../../config/gallery360Presets';
@@ -346,21 +346,97 @@ function ArtworkPlane({
   );
 }
 
-// Use relative URLs - Vite proxy forwards /api requests to backend in dev mode
-function getFullImageUrl(url: string): string {
-  if (!url) return '';
-  // Already absolute URL - return as-is
-  if (
-    url.startsWith('http://') || 
-    url.startsWith('https://') || 
-    url.startsWith('data:') ||
-    url.startsWith('//') ||
-    url.startsWith('blob:')
-  ) {
-    return url;
+// Inner component that uses useLoader - must be wrapped in Suspense
+function ArtworkTextureLoader({ 
+  url, 
+  width, 
+  height,
+  onClick,
+  hovered,
+  setHovered
+}: { 
+  url: string; 
+  width: number; 
+  height: number;
+  onClick?: () => void;
+  hovered: boolean;
+  setHovered: (h: boolean) => void;
+}) {
+  const texture = useLoader(THREE.TextureLoader, url);
+  
+  // Configure texture for proper display
+  useEffect(() => {
+    if (texture) {
+      console.log('[Gallery360] Texture loaded via useLoader:', url, 'size:', texture.image?.width, 'x', texture.image?.height);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.magFilter = THREE.LinearFilter;
+      texture.minFilter = THREE.LinearFilter;
+      texture.generateMipmaps = false;
+      texture.needsUpdate = true;
+    }
+  }, [texture, url]);
+
+  return (
+    <mesh 
+      position={[0, 0, 0.005]}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick?.();
+      }}
+      onPointerOver={() => setHovered(true)}
+      onPointerOut={() => setHovered(false)}
+    >
+      <planeGeometry args={[width, height]} />
+      <meshBasicMaterial 
+        map={texture}
+        toneMapped={false}
+      />
+    </mesh>
+  );
+}
+
+// Fallback placeholder while texture loads
+function ArtworkPlaceholder({ 
+  width, 
+  height,
+  color = "#e8e4e0"
+}: { 
+  width: number; 
+  height: number;
+  color?: string;
+}) {
+  return (
+    <mesh position={[0, 0, 0.005]}>
+      <planeGeometry args={[width, height]} />
+      <meshBasicMaterial color={color} />
+    </mesh>
+  );
+}
+
+// Error boundary wrapper for texture loading
+class TextureErrorBoundary extends React.Component<
+  { children: React.ReactNode; fallback: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode; fallback: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
   }
-  // Relative API or object storage URL - return as-is (Vite proxy handles in dev)
-  return url;
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error) {
+    console.error('[Gallery360] Texture loading error:', error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+    return this.props.children;
+  }
 }
 
 function ArtworkImage({ 
@@ -378,92 +454,23 @@ function ArtworkImage({
   hovered: boolean;
   setHovered: (h: boolean) => void;
 }) {
-  const [texture, setTexture] = useState<THREE.Texture | null>(null);
-  const [loadError, setLoadError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const textureRef = useRef<THREE.Texture | null>(null);
-  
-  useEffect(() => {
-    if (!url) {
-      setLoadError(true);
-      setIsLoading(false);
-      return;
-    }
-    
-    setLoadError(false);
-    setIsLoading(true);
-    
-    const fullUrl = getFullImageUrl(url);
-    console.log('[Gallery360] Loading artwork texture:', fullUrl);
-    
-    const loader = new THREE.TextureLoader();
-    loader.crossOrigin = 'anonymous';
-    
-    let cancelled = false;
-    
-    loader.load(
-      fullUrl,
-      (loadedTexture) => {
-        if (cancelled) {
-          loadedTexture.dispose();
-          return;
-        }
-        console.log('[Gallery360] Texture loaded successfully:', fullUrl, 'image size:', loadedTexture.image?.width, 'x', loadedTexture.image?.height);
-        loadedTexture.colorSpace = THREE.SRGBColorSpace;
-        loadedTexture.minFilter = THREE.LinearFilter;
-        loadedTexture.magFilter = THREE.LinearFilter;
-        loadedTexture.generateMipmaps = false;
-        loadedTexture.flipY = true;
-        loadedTexture.needsUpdate = true;
-        
-        if (textureRef.current) {
-          textureRef.current.dispose();
-        }
-        textureRef.current = loadedTexture;
-        setTexture(loadedTexture);
-        setLoadError(false);
-        setIsLoading(false);
-      },
-      undefined,
-      (error) => {
-        if (cancelled) return;
-        console.error('[Gallery360] Failed to load artwork texture:', fullUrl, error);
-        setLoadError(true);
-        setIsLoading(false);
-      }
-    );
-    
-    return () => {
-      cancelled = true;
-      if (textureRef.current) {
-        textureRef.current.dispose();
-        textureRef.current = null;
-      }
-    };
-  }, [url]);
+  if (!url) {
+    return <ArtworkPlaceholder width={width} height={height} color="#f0e8e0" />;
+  }
 
   return (
-    <mesh 
-      position={[0, 0, 0.005]}
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick?.();
-      }}
-      onPointerOver={() => setHovered(true)}
-      onPointerOut={() => setHovered(false)}
-    >
-      <planeGeometry args={[width, height]} />
-      {isLoading ? (
-        <meshBasicMaterial color="#e8e4e0" />
-      ) : loadError || !texture ? (
-        <meshBasicMaterial color="#f0e8e0" />
-      ) : (
-        <meshBasicMaterial 
-          map={texture}
-          toneMapped={false}
+    <TextureErrorBoundary fallback={<ArtworkPlaceholder width={width} height={height} color="#f0e8e0" />}>
+      <Suspense fallback={<ArtworkPlaceholder width={width} height={height} />}>
+        <ArtworkTextureLoader
+          url={url}
+          width={width}
+          height={height}
+          onClick={onClick}
+          hovered={hovered}
+          setHovered={setHovered}
         />
-      )}
-    </mesh>
+      </Suspense>
+    </TextureErrorBoundary>
   );
 }
 
@@ -668,6 +675,13 @@ export function Gallery360Scene({
       shadows
       camera={{ fov: 55, near: 0.1, far: 100 }}
       style={{ background: '#ddd9d4' }}
+      gl={(canvas) => {
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        renderer.toneMapping = THREE.NoToneMapping;
+        renderer.toneMappingExposure = 1.0;
+        return renderer;
+      }}
     >
       {/* Soft ambient fill - prevents harsh black areas */}
       <ambientLight intensity={0.55} color="#f5f3f0" />
