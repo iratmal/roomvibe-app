@@ -60,6 +60,15 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
     - **Billing Management**: btn-primary "Manage Billing" button (Stripe portal) and btn-outline "View All Plans" button.
 - **Multi-Entitlement System**: Users can accumulate and retain access to multiple modules (Artist, Designer, Gallery) via subscriptions. Entitlements are additively granted and revoked upon subscription changes. Admin users automatically possess all entitlements.
 - **Unified Widget System**: A single embeddable JavaScript widget (`public/widget.js`) that dynamically adapts its functionality (Artist, Designer, Gallery modes) based on the user's entitlements. The widget is modal-based with RoomVibe branding and offers mode-specific layouts and controls, including advanced features for Gallery mode.
+- **Virtual Exhibition Editor (Dec 2024)**: MVP feature for Gallery plan users to create immersive virtual exhibitions.
+    - **Gallery Presets**: 4 gallery room backgrounds (White Cube, Modern Loft, Concrete Room, Classic Museum) stored in `src/data/galleryPresets.ts` with images in `public/gallery-presets/`.
+    - **Editor Flow**: 2-step workflow - preset selection → artwork placement editor with drag-and-drop.
+    - **GalleryWallEditor Component**: Drag & drop artwork placement (up to 6 per scene), scale controls, click-outside reset, visual feedback with shadows.
+    - **Scene Persistence**: JSONB `scene_data` column in collections table storing `{ presetId, placements: [{ artworkId, x, y, scale }], updatedAt }`.
+    - **API Endpoints**: GET/PUT `/api/gallery/collections/:id/scene` for scene data, GET `/api/gallery/exhibitions/:id/public` for public view.
+    - **Placement Hydration**: Saved placements merge with collection artworks on load; warns when artwork IDs don't match (deleted artworks).
+    - **Server Validation**: Validates presetId exists, placements array structure, numeric artworkId, and x/y/scale coordinate ranges.
+    - **Routes**: `#/gallery/exhibitions/:id` (editor, gallery plan required), `#/exhibitions/:id/public` (read-only public view for published collections).
 - **Gallery Exhibition Page**: Publicly accessible page for viewing published gallery collections with slideshow navigation and artwork details.
 - **Feature Locking by Plan**: Comprehensive access control enforced on both frontend and backend through dedicated configuration files and middleware, based on subscription plans and defined limits for artworks, wall photos, and projects.
 - **Hybrid Upgrade Flow (Dec 2024)**: Linear upgrade recommendations in modals (Free→Artist→Designer→Gallery→All-Access based on feature requested), but pricing page allows any upgrade. Upgrade logic in `src/utils/upgradeLogic.ts` with `getRecommendedUpgradePlan()` function.
