@@ -1,0 +1,255 @@
+# 360° Virtual Exhibition – Visual & UX Polish Pack (V1)
+
+**Context**
+RoomVibe – Gallery Dashboard ima potpuno funkcionalan 360° Virtual Exhibition MVP (editor + public viewer), ali vizualno i UX‑ovski još nije na razini premium produkta. Ovaj task je isključivo **visual & UX polish** – bez promjene postojećih ruta ili logike spremanja podataka.
+
+**Važno:** Nemoj mijenjati postojeću strukturu route‑ova niti backend model (osim ako je izričito navedeno). Fokus je na UI/UX, 3D osvjetljenju, kameri i vizualima.
+
+---
+
+## 1. Gallery Dashboard – Collection cards
+
+**Cilj:** Poboljšati UX za galerije i jasno naglasiti 360° Virtual Exhibition kao premium feature.
+
+### 1.1. Dodaj "Edit" gumb na collection kartice
+
+**Trenutno:**
+Na karticama kolekcija (npr. "sunset") postoje gumbi: `View`, `Virtual Room`, `360°`, `Generate PDF`, `Copy link`, `Delete`. Nema načina da se kolekcija preimenuje ili da se izmijeni opis/status direktno s Dashboarda.
+
+**Zadatak:**
+
+* Dodaj diskretan **"Edit"** gumb (ikona olovke) na karticu kolekcije.
+* Lokacija: gore desno na kartici, u istom vizualnom stilu kao i ostale ikonice u appu.
+* Klik na "Edit" otvara postojeći ekran/formu na kojem korisnik može:
+
+  * promijeniti **Collection Title**
+  * promijeniti **Subtitle** / description (ako već postoji)
+  * promijeniti **Status** (Draft / Published)
+* Ako već postoji standardni "edit collection" view, koristi ga – nemoj uvoditi novu logiku, samo dodaj ulaznu točku (gumb).
+
+**Acceptance criteria:**
+
+* Sa Gallery Dashboarda mogu kliknuti "Edit" i urediti osnovne podatke kolekcije.
+* Nakon spremanja, novi naslov/subtitle/status se ispravno prikazuje na kartici.
+
+---
+
+### 1.2. Makni "Virtual Room" gumb s Gallery dashboarda
+
+**Trenutno:**
+Na karticama kolekcija nalazi se žuti gumb **"Virtual Room"**. Ovaj gumb je smislen za artiste/dizajnere (mockup sobe), ali ne i za galerije.
+
+**Zadatak:**
+
+* U **Gallery Dashboardu** ukloni žuti gumb **"Virtual Room"** sa collection kartica.
+* Uklanjanje treba biti **samo za Gallery role / Gallery Dashboard** – ne dirati logiku Studio/Artist/Designer dijela aplikacije.
+
+**Acceptance criteria:**
+
+* Na Gallery Dashboardu collection kartice više nemaju "Virtual Room".
+* Nema konzolnih errora, ostali gumbi funkcioniraju kao i prije.
+
+---
+
+### 1.3. Dodaj žuti gumb "Virtual Exhibition" (link na 360° editor)
+
+**Cilj:** Jasno pozicionirati 360° feature kao premium virtualnu izložbu.
+
+**Zadatak:**
+
+* Na mjesto gdje je prije bio žuti gumb, dodaj novi žuti gumb s labelom: **"Virtual Exhibition"**.
+* Stil: koristiti isti primarni žuti stil kao i ostali CTA gumbi (npr. trenutno korišteni žuti CTA u aplikaciji).
+* Klik na **"Virtual Exhibition"** treba voditi na postojeći 360 editor route:
+
+  * `#/gallery/exhibitions/:id/360-editor`
+* 360° ikona/gumb može ostati kao dodatna brza akcija ili se po potrebi može ukloniti ako duplira funkcionalnost – ali žuti gumb mora voditi na 360 editor.
+
+**Acceptance criteria:**
+
+* Žuti gumb na kartici kolekcije ima labelu **"Virtual Exhibition"**.
+* Klik na gumb otvara 360° editor za tu kolekciju.
+
+---
+
+## 2. 3D scena – Lighting & ton
+
+Galerijski prostor je trenutno pre-mračan i slike izgledaju tamno i "flat". Potrebno je napraviti lighting pass kako bi prostor izgledao svjetlije, prozračnije i profesionalno.
+
+### 2.1. Poboljšaj osvjetljenje (React Three Fiber / Three.js)
+
+**Trenutno:**
+
+* Osvjetljenje je slabo, puno sive boje i tvrde sjene.
+* Slike na zidovima djeluju tamnije nego originalni artworkovi.
+
+**Zadatak (smjernice):**
+
+* U 3D sceni (White Cube i ostale galerije) prilagodi svjetla:
+
+  * Pojačaj **ambient** componentu (npr. `ambientLight intensity ≈ 1.3 – 1.6`).
+  * Dodaj **HemisphereLight** (soft daylight efekt):
+
+    * skyColor: blago topla bijela
+    * groundColor: blago hladna siva/plavkasta
+    * intensity cca 0.8 – 1.2
+  * Ako koristiš `DirectionalLight`, smanji tvrdoću sjena (soft shadows) i pazi da ne preeksponira zidove.
+* Cilj je da zidovi budu **svijetlo neutralni** (galerijski bijeli/svijetlo sivi), a slike vizualno dobiju na živosti.
+
+**Acceptance criteria:**
+
+* Artworkovi su vidljivo svjetliji i vjerniji originalnim bojama.
+* Zidovi izgledaju kao svijetla galerija, ne kao tamno-sivi tunel.
+* Nema izrazito crnih fleka na podu/zidovima.
+
+---
+
+## 3. Artworks kao 3D objekti – okviri, sjene i postavljanje
+
+Trenutno artworkovi izgledaju kao da su zalijepljeni na zid ("naljepnice"). Želimo im dati osjećaj pravih galerijskih slika s tankim okvirima i blagim sjenama.
+
+### 3.1. Dodaj tanki 3D okvir oko artworkova
+
+**Zadatak:**
+
+* Svaki artwork na zidu treba imati minimalni 3D okvir:
+
+  * frame depth: vrlo plitak (npr. 0.01 u 3D jedinicama – samo da se osjeti rub)
+  * boja okvira: neutralna (npr. mat bijela ili tamno siva; možeš koristiti istu temu kao u Studio frame‑ovima ako postoji reuse).
+* Artwork (tekstura) treba sjediti unutar okvira kao slika, ne kao zaseban mesh bez okvira.
+
+### 3.2. Blaga sjena iza slike (shadow cast)
+
+**Zadatak:**
+
+* Omogući da okvir baca **vrlo blagu sjenu** na zid (soft shadow), tako da se dobije osjećaj dubine.
+* Intenzitet sjene neka bude suptilan (ovo je galerija, ne dramatična scena).
+
+### 3.3. Minimalni odmak od zida
+
+**Zadatak:**
+
+* Artwork + okvir trebaju biti minimalno pomaknuti od zida (npr. 1–2 cm u 3D skali) kako bi sjena imala prostora i izgledala prirodno.
+
+**Acceptance criteria:**
+
+* Na svim zidovima artworkovi izgledaju kao prave slike s tankim okvirom.
+* Jasno se osjeća razlika između zida i slike (nije flat naljepnica).
+
+---
+
+## 4. Kamera i kretanje – spriječiti "ulazak" u zidove i pod
+
+Na nekim pogledima kamera odlazi previsoko, prenisko ili "ulazi" u pod/zidove. To vizualno izgleda neprofesionalno i može zbuniti korisnika.
+
+### 4.1. Clamp visine i rotacije kamere
+
+**Zadatak:**
+
+* Postavi ograničenja kamere:
+
+  * Visina kamere (Y osi) neka bude u rasponu koji simulira osobu visine ~1.6 m.
+  * Vertical tilt (gore/dolje) ograniči tako da korisnik ne gleda u plafon ili direktno u pod.
+
+### 4.2. Collision boundaries (zidovi, pod, strop)
+
+**Zadatak:**
+
+* Dodaj nevidljive collidere oko galerije:
+
+  * prednji, stražnji i bočni zidovi
+  * pod i plafon
+* Spriječi da kamera prolazi kroz geometriju (floor, wall, ceiling).
+
+### 4.3. Glatko kretanje između viewpointova
+
+**Zadatak:**
+
+* Kretanje između točaka (Entrance, Center, Back Left, Back Right) treba koristiti glatku interpolaciju (što već koristiš – `lerp` / animirani transition), ali bez trzaja i bez prolaska kroz zidove.
+
+**Acceptance criteria:**
+
+* Više nije moguće "ušetati" kamerom kroz zid ili pod.
+* U svim viewpointovima, zidovi i slike su jasno u kadru i izgledaju prirodno.
+
+---
+
+## 5. Kalibracija viewpointova (Entrance, Center, Back Left, Back Right)
+
+Na nekim screenshotovima slotovi (npr. "South Wall – Center", "West Wall – Lower") nisu u kadru i scena izgleda čudno.
+
+**Zadatak:**
+
+* Prođi sve viewpointove za White Cube Gallery (i ostale ako je već implementirano) i:
+
+  * redefiniraj pozicije (XYZ) kamere tako da korisnik dobije logičan pregled prostorije.
+  * okreni kameru prema relevantnim zidovima (target look-at point).
+* Pobrini se da svi zidovi s aktivnim slotovima mogu biti pregledani iz bar jedne pozicije bez ekstremnih rotacija.
+
+**Acceptance criteria:**
+
+* Klik na "Entrance" daje osjećaj ulaska u galeriju.
+* Klik na "Center" daje pregled glavnih zidova.
+* "Back Left" i "Back Right" daju prirodne pogledne točke na stražnje zidove.
+* Nigdje ne vidimo samo sive plohe bez razumljive geometrije.
+
+---
+
+## 6. General UX & vizualni detalji
+
+### 6.1. Posvijetli ukupni ton galerije
+
+**Zadatak:**
+
+* Nakon prilagodbe svjetla i materijala zidova, dodatno provjeri ukupni ton:
+
+  * Cilj je dojam svijetle, prozračne bijele galerije.
+  * Izbjegavati preteške, tamne tonove na velikim površinama.
+
+### 6.2. Konsistentan background (bez neželjenih crnih rubova)
+
+**Zadatak:**
+
+* Na rubovima scene (ako korisnik okrene kameru prema "praznini") ne bi se trebale vidjeti crne plohe ili otvoreni svemir.
+* Osiguraj da je galerijski prostor zatvoren (4 zida + pod + plafon), bez vidljivih rupa.
+
+**Acceptance criteria:**
+
+* Galerijski prostor izgleda čisto, svijetlo i moderno.
+* Nema crnih, neočekivanih ploha u kadru.
+
+---
+
+## 7. Tehničke napomene
+
+* Nemoj mijenjati postojeće API modele za exhibitions, osim ako je nužno zbog dodavanja okvira/sjena. Ako je potrebna dodatna konfiguracija (npr. boja okvira), prvo koristi hard-coded vrijednosti.
+* Sve promjene moraju biti kompatibilne s postojećim route‑ovima:
+
+  * `#/gallery/exhibitions/:id/360-editor`
+  * `#/exhibitions/:id/360`
+* Sve stilove radije rješavaj unutar postojećih komponenti (Tailwind/SCSS prema postojećem setupu).
+
+---
+
+## 8. Finalni QA checklist
+
+Prije završetka zadatka, molim te provjeri:
+
+1. Gallery Dashboard:
+
+   * [ ] Collection kartice imaju "Edit" gumb i žuti "Virtual Exhibition".
+   * [ ] "Virtual Room" je uklonjen s Gallery dashboarda.
+2. 3D scena:
+
+   * [ ] Zidovi i prostor su svijetli, slike nisu tamne.
+   * [ ] Svaki artwork ima tanki okvir i blagu sjenu.
+   * [ ] Slike ne izgledaju kao naljepnice.
+3. Kamera:
+
+   * [ ] Nije moguće ući u zid/pod/plafon.
+   * [ ] Viewpointovi daju logične poglede na galeriju.
+4. General:
+
+   * [ ] Nema novih konzolnih errora.
+   * [ ] Postojeće scene/exhibicije se i dalje učitavaju ispravno.
+
+Ako bilo gdje treba dodatno pojašnjenje, slobodno dodaj kratki komentar u kodu ili napiši kratku napomenu uz PR (što si točno prilagodio u lightingu i kameri).

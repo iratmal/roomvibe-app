@@ -152,6 +152,9 @@ export function GalleryDashboard() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
   const [showArtworkDeleteConfirm, setShowArtworkDeleteConfirm] = useState<number | null>(null);
   const [copiedLink, setCopiedLink] = useState<number | null>(null);
+  const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
+  const [editForm, setEditForm] = useState({ title: '', subtitle: '', status: 'draft' as 'draft' | 'published' });
+  const [editLoading, setEditLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -414,6 +417,50 @@ export function GalleryDashboard() {
 
   const handleViewCollection = (collectionId: number) => {
     window.location.hash = `#/dashboard/gallery/collection/${collectionId}`;
+  };
+
+  const openEditModal = (collection: Collection) => {
+    setEditingCollection(collection);
+    setEditForm({
+      title: collection.title,
+      subtitle: collection.subtitle || '',
+      status: collection.status
+    });
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCollection) return;
+
+    setEditLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch(`${API_URL}/api/gallery/collections/${editingCollection.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          title: editForm.title,
+          subtitle: editForm.subtitle || null,
+          status: editForm.status
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update collection');
+      }
+
+      setSuccess('Collection updated successfully!');
+      setEditingCollection(null);
+      fetchCollections();
+      setTimeout(() => setSuccess(''), 5000);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setEditLoading(false);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -828,10 +875,19 @@ export function GalleryDashboard() {
                   key={collection.id}
                   className="bg-white border border-slate-100 rounded-2xl hover:shadow-lg hover:shadow-slate-200/50 transition-all group overflow-hidden"
                 >
-                  <div className="h-32 bg-gradient-to-br from-[#264C61]/10 to-[#D8B46A]/10 flex items-center justify-center">
+                  <div className="relative h-32 bg-gradient-to-br from-[#264C61]/10 to-[#D8B46A]/10 flex items-center justify-center">
                     <svg className="w-16 h-16 text-[#264C61]/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                     </svg>
+                    <button
+                      onClick={() => openEditModal(collection)}
+                      className="absolute top-3 right-3 w-8 h-8 bg-white/90 hover:bg-white rounded-lg flex items-center justify-center shadow-sm hover:shadow transition-all"
+                      title="Edit collection"
+                    >
+                      <svg className="w-4 h-4 text-[#264C61]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
                   </div>
                   
                   <div className="p-6">
@@ -877,19 +933,13 @@ export function GalleryDashboard() {
                           View
                         </button>
                         <a
-                          href={`#/gallery/exhibitions/${collection.id}`}
-                          className="flex-1 px-3 py-2 text-sm bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-all font-semibold text-center"
-                        >
-                          Virtual Room
-                        </a>
-                        <a
                           href={`#/gallery/exhibitions/${collection.id}/360-editor`}
-                          className="flex-1 px-3 py-2 text-sm bg-gradient-to-r from-[#264C61] to-[#1D3A4A] text-white rounded-lg hover:opacity-90 transition-all font-semibold text-center flex items-center justify-center gap-1"
+                          className="flex-1 px-3 py-2 text-sm bg-[#C9A24A] text-white rounded-lg hover:bg-[#B8913A] transition-all font-semibold text-center flex items-center justify-center gap-1.5"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                           </svg>
-                          360°
+                          Virtual Exhibition
                         </a>
                       </div>
                       <div className="flex gap-2">
@@ -1083,6 +1133,85 @@ export function GalleryDashboard() {
           <ChangePasswordGallery />
         </div>
       </div>
+
+      {/* Edit Collection Modal */}
+      {editingCollection && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold text-[#264C61]" style={{ fontFamily: 'Inter, sans-serif' }}>
+                Edit Collection
+              </h3>
+              <button
+                onClick={() => setEditingCollection(null)}
+                className="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center transition-colors"
+              >
+                <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                  Title <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={editForm.title}
+                  onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] bg-slate-50"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                  Subtitle
+                </label>
+                <input
+                  type="text"
+                  value={editForm.subtitle}
+                  onChange={(e) => setEditForm({ ...editForm, subtitle: e.target.value })}
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] bg-slate-50"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                  Status
+                </label>
+                <select
+                  value={editForm.status}
+                  onChange={(e) => setEditForm({ ...editForm, status: e.target.value as 'draft' | 'published' })}
+                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] bg-slate-50"
+                >
+                  <option value="draft">Draft</option>
+                  <option value="published">Published</option>
+                </select>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingCollection(null)}
+                  className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-colors font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={editLoading}
+                  className="flex-1 px-4 py-2.5 bg-[#264C61] text-white rounded-xl hover:bg-[#1D3A4A] transition-colors font-semibold disabled:opacity-50"
+                >
+                  {editLoading ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

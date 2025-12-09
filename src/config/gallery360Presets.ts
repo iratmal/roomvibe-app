@@ -41,43 +41,43 @@ export const gallery360Presets: Gallery360Preset[] = [
     name: 'White Cube Gallery',
     description: 'Classic minimalist gallery space with clean white walls',
     dimensions: { width: 14, height: 4, depth: 10 },
-    wallColor: '#f5f5f5',
-    floorColor: '#e0e0e0',
+    wallColor: '#fafafa',
+    floorColor: '#e8e8e8',
     ceilingColor: '#ffffff',
     viewpoints: [
       {
         id: 'entrance',
-        position: [0, 1.6, 4],
-        lookAt: [0, 1.6, -4],
+        position: [0, 1.6, 3.5],
+        lookAt: [0, 1.8, -4],
         label: 'Entrance'
       },
       {
         id: 'center',
         position: [0, 1.6, 0],
-        lookAt: [0, 1.6, -4],
+        lookAt: [0, 1.8, -4.5],
         label: 'Center'
       },
       {
         id: 'back-left',
-        position: [-4, 1.6, -3],
-        lookAt: [4, 1.6, -3],
+        position: [-3.5, 1.6, -2],
+        lookAt: [6, 1.8, 0],
         label: 'Back Left'
       },
       {
         id: 'back-right',
-        position: [4, 1.6, -3],
-        lookAt: [-4, 1.6, -3],
+        position: [3.5, 1.6, -2],
+        lookAt: [-6, 1.8, 0],
         label: 'Back Right'
       }
     ],
     hotspots: [
-      { id: 'h1', position: [0, 0.1, 2], targetViewpoint: 'center', rotation: 0 },
-      { id: 'h2', position: [0, 0.1, -2], targetViewpoint: 'entrance', rotation: Math.PI },
-      { id: 'h3', position: [-3, 0.1, -2], targetViewpoint: 'back-left', rotation: -Math.PI / 4 },
-      { id: 'h4', position: [3, 0.1, -2], targetViewpoint: 'back-right', rotation: Math.PI / 4 },
+      { id: 'h1', position: [0, 0.1, 1.5], targetViewpoint: 'center', rotation: 0 },
+      { id: 'h2', position: [0, 0.1, -1.5], targetViewpoint: 'entrance', rotation: Math.PI },
+      { id: 'h3', position: [-2.5, 0.1, -1], targetViewpoint: 'back-left', rotation: -Math.PI / 4 },
+      { id: 'h4', position: [2.5, 0.1, -1], targetViewpoint: 'back-right', rotation: Math.PI / 4 },
       { id: 'h5', position: [0, 0.1, 0], targetViewpoint: 'center', rotation: Math.PI },
-      { id: 'h6', position: [-2, 0.1, 0], targetViewpoint: 'center', rotation: Math.PI / 2 },
-      { id: 'h7', position: [2, 0.1, 0], targetViewpoint: 'center', rotation: -Math.PI / 2 }
+      { id: 'h6', position: [-2, 0.1, 1], targetViewpoint: 'back-left', rotation: Math.PI / 2 },
+      { id: 'h7', position: [2, 0.1, 1], targetViewpoint: 'back-right', rotation: -Math.PI / 2 }
     ],
     slots: [
       { id: 'wall-north-1', wallId: 'north', position: [-4, 2, -4.95], rotation: [0, 0, 0], width: 2, height: 1.5, label: 'North Wall - Left' },

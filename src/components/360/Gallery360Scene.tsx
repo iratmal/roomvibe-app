@@ -25,32 +25,32 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
     <group>
       <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[width, depth]} />
-        <meshStandardMaterial color={preset.floorColor} />
+        <meshStandardMaterial color={preset.floorColor} roughness={0.8} />
       </mesh>
 
       <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
-        <meshStandardMaterial color={preset.ceilingColor} />
+        <meshStandardMaterial color={preset.ceilingColor} roughness={0.9} />
       </mesh>
 
       <mesh position={[0, height / 2, -halfD]} receiveShadow>
         <planeGeometry args={[width, height]} />
-        <meshStandardMaterial color={preset.wallColor} side={THREE.DoubleSide} />
+        <meshStandardMaterial color={preset.wallColor} side={THREE.DoubleSide} roughness={0.95} />
       </mesh>
 
       <mesh position={[0, height / 2, halfD]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[width, height]} />
-        <meshStandardMaterial color={preset.wallColor} side={THREE.DoubleSide} />
+        <meshStandardMaterial color={preset.wallColor} side={THREE.DoubleSide} roughness={0.95} />
       </mesh>
 
       <mesh position={[halfW, height / 2, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
-        <meshStandardMaterial color={preset.wallColor} side={THREE.DoubleSide} />
+        <meshStandardMaterial color={preset.wallColor} side={THREE.DoubleSide} roughness={0.95} />
       </mesh>
 
       <mesh position={[-halfW, height / 2, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
-        <meshStandardMaterial color={preset.wallColor} side={THREE.DoubleSide} />
+        <meshStandardMaterial color={preset.wallColor} side={THREE.DoubleSide} roughness={0.95} />
       </mesh>
     </group>
   );
@@ -73,58 +73,75 @@ function ArtworkPlane({
   const [hovered, setHovered] = useState(false);
 
   const hasArtwork = assignment?.artworkUrl;
+  const frameDepth = 0.025;
+  const frameWidth = 0.035;
+  const wallOffset = 0.015;
 
   return (
     <group position={slot.position} rotation={slot.rotation}>
-      <mesh
-        ref={meshRef}
-        onClick={(e) => {
-          e.stopPropagation();
-          onClick?.();
-        }}
-        onPointerOver={() => setHovered(true)}
-        onPointerOut={() => setHovered(false)}
-      >
-        <planeGeometry args={[slot.width, slot.height]} />
-        <meshStandardMaterial 
-          color={isSelected ? '#C9A24A' : (hovered ? '#e0e0e0' : '#d0d0d0')}
-          transparent
-          opacity={hasArtwork ? 0 : 0.3}
-        />
-      </mesh>
+      <group position={[0, 0, wallOffset]}>
+        {hasArtwork ? (
+          <>
+            <mesh castShadow position={[0, 0, -frameDepth / 2]}>
+              <boxGeometry args={[slot.width + frameWidth * 2, slot.height + frameWidth * 2, frameDepth]} />
+              <meshStandardMaterial color="#303030" roughness={0.7} metalness={0.05} />
+            </mesh>
 
-      {hasArtwork && (
-        <Suspense fallback={
-          <mesh>
+            <mesh position={[0, 0, 0.001]}>
+              <planeGeometry args={[slot.width, slot.height]} />
+              <meshStandardMaterial color="#fafafa" />
+            </mesh>
+
+            <Suspense fallback={
+              <mesh position={[0, 0, 0.002]}>
+                <planeGeometry args={[slot.width, slot.height]} />
+                <meshBasicMaterial color="#e0e0e0" />
+              </mesh>
+            }>
+              <ArtworkImage 
+                url={assignment!.artworkUrl!} 
+                width={slot.width} 
+                height={slot.height}
+                onClick={onClick}
+                hovered={hovered}
+                setHovered={setHovered}
+              />
+            </Suspense>
+          </>
+        ) : (
+          <mesh
+            ref={meshRef}
+            onClick={(e) => {
+              e.stopPropagation();
+              onClick?.();
+            }}
+            onPointerOver={() => setHovered(true)}
+            onPointerOut={() => setHovered(false)}
+          >
             <planeGeometry args={[slot.width, slot.height]} />
-            <meshBasicMaterial color="#cccccc" />
+            <meshStandardMaterial 
+              color={isSelected ? '#C9A24A' : (hovered ? '#e8e8e8' : '#e0e0e0')}
+              transparent
+              opacity={0.5}
+            />
           </mesh>
-        }>
-          <ArtworkImage 
-            url={assignment!.artworkUrl!} 
-            width={slot.width} 
-            height={slot.height}
-            onClick={onClick}
-            hovered={hovered}
-            setHovered={setHovered}
-          />
-        </Suspense>
-      )}
+        )}
 
-      {!hasArtwork && isEditor && (
-        <Html center>
-          <div className="bg-white/80 px-2 py-1 rounded text-xs text-gray-600 whitespace-nowrap pointer-events-none">
-            {slot.label}
-          </div>
-        </Html>
-      )}
+        {isEditor && !hasArtwork && (
+          <Html center>
+            <div className="bg-white/90 px-3 py-1.5 rounded-lg text-xs text-gray-600 whitespace-nowrap pointer-events-none shadow-sm border border-gray-200">
+              {slot.label}
+            </div>
+          </Html>
+        )}
 
-      {(isSelected || (hovered && isEditor)) && (
-        <mesh position={[0, 0, -0.01]}>
-          <planeGeometry args={[slot.width + 0.1, slot.height + 0.1]} />
-          <meshBasicMaterial color="#C9A24A" transparent opacity={0.5} />
-        </mesh>
-      )}
+        {(isSelected || (hovered && isEditor)) && (
+          <mesh position={[0, 0, hasArtwork ? 0.01 : 0.001]}>
+            <planeGeometry args={[slot.width + 0.08, slot.height + 0.08]} />
+            <meshBasicMaterial color="#C9A24A" transparent opacity={0.35} depthTest={false} />
+          </mesh>
+        )}
+      </group>
     </group>
   );
 }
@@ -154,7 +171,7 @@ function ArtworkImage({
 
   return (
     <mesh 
-      position={[0, 0, 0.01]}
+      position={[0, 0, 0.005]}
       onClick={(e) => {
         e.stopPropagation();
         onClick?.();
@@ -166,8 +183,9 @@ function ArtworkImage({
       <meshStandardMaterial 
         map={texture} 
         transparent
-        emissive={hovered ? '#333333' : '#000000'}
-        emissiveIntensity={hovered ? 0.2 : 0}
+        emissive={hovered ? '#444444' : '#000000'}
+        emissiveIntensity={hovered ? 0.15 : 0}
+        roughness={0.4}
       />
     </mesh>
   );
@@ -307,10 +325,12 @@ function CameraController({
     <OrbitControls 
       ref={controlsCallback}
       enableZoom={isEditor}
-      enablePan={isEditor}
-      minPolarAngle={Math.PI / 4}
+      enablePan={false}
+      minPolarAngle={Math.PI * 0.35}
       maxPolarAngle={Math.PI * 0.65}
-      rotateSpeed={0.5}
+      minDistance={0.5}
+      maxDistance={isEditor ? 10 : 5}
+      rotateSpeed={0.4}
     />
   );
 }
@@ -327,12 +347,27 @@ export function Gallery360Scene({
 }: Gallery360SceneProps) {
   return (
     <Canvas
+      shadows
       camera={{ fov: 60, near: 0.1, far: 100 }}
-      style={{ background: '#1a1a1a' }}
+      style={{ background: '#f0f0f0' }}
     >
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[5, 10, 5]} intensity={0.8} />
-      <pointLight position={[0, 3.5, 0]} intensity={0.4} />
+      <ambientLight intensity={0.9} />
+      <hemisphereLight
+        args={['#fffef8', '#e0e0e8', 0.6]}
+        position={[0, preset.dimensions.height, 0]}
+      />
+      <directionalLight 
+        position={[3, preset.dimensions.height - 0.5, 2]} 
+        intensity={0.5}
+        castShadow
+        shadow-mapSize={[1024, 1024]}
+        shadow-bias={-0.0001}
+      />
+      <directionalLight 
+        position={[-3, preset.dimensions.height - 0.5, -2]} 
+        intensity={0.3}
+      />
+      <pointLight position={[0, preset.dimensions.height - 0.5, 0]} intensity={0.4} />
 
       <GalleryRoom preset={preset} />
 
