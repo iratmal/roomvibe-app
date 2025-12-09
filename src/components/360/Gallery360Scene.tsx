@@ -190,8 +190,33 @@ function ArtworkPlane({
   const frameDepth = 0.035;
   const wallOffset = 0.04;
   
-  const totalFrameW = slot.width + (passepartoutWidth * 2) + (frameWidth * 2);
-  const totalFrameH = slot.height + (passepartoutWidth * 2) + (frameWidth * 2);
+  const CM_TO_METERS = 0.01;
+  const artworkDimensions = useMemo(() => {
+    if (!hasArtwork || !assignment?.width || !assignment?.height) {
+      return { width: slot.width, height: slot.height };
+    }
+    
+    let artW = assignment.width * CM_TO_METERS;
+    let artH = assignment.height * CM_TO_METERS;
+    
+    if (artW > slot.width) {
+      const scale = slot.width / artW;
+      artW *= scale;
+      artH *= scale;
+    }
+    
+    if (artH > slot.height) {
+      const scale = slot.height / artH;
+      artW *= scale;
+      artH *= scale;
+    }
+    
+    return { width: artW, height: artH };
+  }, [hasArtwork, assignment?.width, assignment?.height, slot.width, slot.height]);
+  
+  const { width: artWidth, height: artHeight } = artworkDimensions;
+  const totalFrameW = artWidth + (passepartoutWidth * 2) + (frameWidth * 2);
+  const totalFrameH = artHeight + (passepartoutWidth * 2) + (frameWidth * 2);
 
   return (
     <group position={slot.position} rotation={slot.rotation}>
@@ -211,20 +236,20 @@ function ArtworkPlane({
             </mesh>
 
             <mesh position={[0, 0, 0.001]}>
-              <planeGeometry args={[slot.width + (passepartoutWidth * 2), slot.height + (passepartoutWidth * 2)]} />
+              <planeGeometry args={[artWidth + (passepartoutWidth * 2), artHeight + (passepartoutWidth * 2)]} />
               <meshStandardMaterial color="#f5f5f2" roughness={0.95} />
             </mesh>
 
             <Suspense fallback={
               <mesh position={[0, 0, 0.003]}>
-                <planeGeometry args={[slot.width, slot.height]} />
+                <planeGeometry args={[artWidth, artHeight]} />
                 <meshBasicMaterial color="#e8e4e0" />
               </mesh>
             }>
               <ArtworkImage 
                 url={assignment!.artworkUrl!} 
-                width={slot.width} 
-                height={slot.height}
+                width={artWidth} 
+                height={artHeight}
                 onClick={onClick}
                 hovered={hovered}
                 setHovered={setHovered}
