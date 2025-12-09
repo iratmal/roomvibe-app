@@ -1,0 +1,236 @@
+# 🚀 ROOMVIBE — DEVELOPMENT TASK
+
+# **360° Virtual Exhibition – FULL MVP Build (Low‑Poly 3D Gallery)**
+
+## ⭐️ STRATEGIC GOAL
+
+Izgraditi prvu verziju (MVP) **360° Virtual Exhibition** sustava u RoomVibe aplikaciji koristeći:
+
+* **React + react-three-fiber (Three.js)**
+* **Low‑poly 3D gallery model** (1 velika prostorija ili 2 manje povezane prostorije)
+* hotspot navigaciju (kao Street View)
+* artwork slot sisteme na zidovima
+* public viewer + gallery editor
+
+Ovo je ključni premium feature za Gallery Plan i All‑Inclusive Plan.
+
+---
+
+# 📌 HIGH-LEVEL MVP FEATURES
+
+### 1️⃣ **3D prostor (low-poly gallery)**
+
+* Jedna 3D galerija (White Cube style)
+* Minimalistički zidovi, pod i plafon
+* Jedna soba ili dvije povezane
+* 4–8 zidnih površina za postavljanje radova
+* Jednostavna real-time rasvjeta
+* Optimizirano za web (low poly, bez teških shader-a)
+
+### 2️⃣ **Hotspot navigacija (Street View style)**
+
+* Definirati 2–4 “viewpointa” unutar prostora
+* Kretanje između viewpointova pomoću strelica
+* Kamera je zaključana u svakom viewpointu (orbit restrictions)
+
+### 3️⃣ **Zidni slotovi za umjetnine**
+
+* Svaki zid ima unaprijed definirane slotove (npr. Wall A: slot1, slot2 …)
+* Artwork se prikazuje kao quad plane s teksturom artwork slike
+* Size scaling i margine definirane prema zidu
+
+### 4️⃣ **Gallery Editor (admin/editor mode)**
+
+* Galerija ulazi u editor preko `/gallery/exhibitions/:id/360-editor`
+* Editor omogućava:
+
+  * odabir 360° prostora (za MVP imamo 1 prostor)
+  * pregled zidnih slotova
+  * dodjelu artworka svakom slotu (dropdown / side panel)
+  * preview u realnom 3D prikazu
+  * spremanje scene
+
+### 5️⃣ **Public 360° Viewer**
+
+* Ruta: `/exhibition/:slug/360`
+* Učitava spremljeni layout (slot → artwork)
+* Prikazuje 3D galeriju
+* Posjetitelj se kreće kao u Street Viewu
+* Klik na artwork otvara modal:
+
+  * naziv
+  * autor
+  * dimenzije
+  * gumb “View in your room” → vodi u Studio
+
+### 6️⃣ **Backend podrška (minimalna)**
+
+* DTO struktura za 360 scene:
+
+  ```ts
+  interface Exhibition360Scene {
+    exhibitionId: string;
+    galleryId: string;
+    preset: string; // "white-cube-v1"
+    slots: Array<{
+      slotId: string;
+      artworkId: string | null;
+    }>;
+  }
+  ```
+
+---
+
+# 📁 FILE STRUCTURE (AGENT MUST FOLLOW)
+
+### **Frontend (/src)**
+
+```
+src/
+  components/360/
+    Viewer360.tsx
+    Gallery360Editor.tsx
+    Gallery360Scene.tsx
+    useHotspots.ts
+    useArtworkSlots.ts
+  assets/360/
+    gallery-lowpoly.glb  (3D model)
+  pages/gallery/
+    Exhibition360Editor.tsx
+  pages/public/
+    Exhibition360Viewer.tsx
+  config/
+    gallery360Presets.ts
+```
+
+### **Backend (/api or server folder)**
+
+```
+server/
+  routes/exhibition360.ts
+  controllers/exhibition360Controller.ts
+  models/Exhibition360Scene.ts
+```
+
+---
+
+# 🔧 DEVELOPMENT SPECIFICATIONS
+
+## 1️⃣ 3D MODEL (LOW-POLY WHITE CUBE GALLERY)
+
+Agent treba:
+
+* generirati jednostavan low-poly prostor (glTF / GLB format)
+* koristiti 1 sobu dimenzija ~ 14m × 10m
+* zidovi: 4 velike površine
+* plafon: ravna ploha + linear lights
+* floor: neutral surface, light gray
+* bez ljudi, objekata ili dekoracije
+* minimalno polygon count radi performansi
+
+### Export requirements:
+
+* format: **GLB**
+* scale: 1 unit = 1 meter
+* pivot: 0,0,0 u centru galerije
+
+## 2️⃣ CAMERA & CONTROLS
+
+* emulated Street View navigation
+* svaki viewpoint ima:
+
+  * position (x,y,z)
+  * lookAt direction
+* strelice mijenjaju viewpoint
+* orbit controls: ograničiti rotaciju da posjetitelj ne može “gledati pod pod” ili “u strop” (±50°)
+
+## 3️⃣ HOTSPOTS
+
+Hotspot = strelica u 3D prostoru:
+
+```ts
+interface Hotspot {
+  id: string;
+  position: [number, number, number];
+  targetViewpoint: string;
+}
+```
+
+* renderirani kao transparent plane sa strelicom
+* hover efekt (highlight)
+* klikom se mijenja viewpoint transition animacijom
+
+## 4️⃣ SLOT SYSTEM (WALL FRAMES)
+
+Svaki zid ima 1–4 slota.
+Slot definicija:
+
+```ts
+interface Slot {
+  id: string;
+  wallId: string;
+  position: [x,y,z];
+  width: number;  // u metrima
+  height: number; // u metrima
+}
+```
+
+Agent mora:
+
+* odrediti slot pozicije ručno na temelju modela
+* postaviti quad plane gdje će se renderirati artwork texture
+* artwork image učitava se iz URL-a
+
+## 5️⃣ EDITOR (ADMIN MODE)
+
+Editor uključuje:
+
+* side panel s listom slotova
+* svaki slot ima dropdown za artwork
+* preview 3D scene live
+* Save scene → POST → backend
+
+## 6️⃣ PUBLIC VIEWER
+
+* učitava scenu iz backend API-ja
+* prikazuje artworke na zidovima
+* navigacija pomoću hotspotova
+* modal na klik artworka
+
+---
+
+# 🧠 NON-SCOPE (FOR MVP)
+
+* više od 1 3D prostora
+* VR headset način
+* real-time shadows i PBR materijali
+* drag-and-drop u 3D prostoru
+* animirani posjetitelji
+* audio
+
+---
+
+# 📌 STOP CONDITIONS (AGENT MUST CONFIRM ALL)
+
+1. **3D galerija (GLB) uspješno integrirana** i renderira se u React-u preko R3F.
+2. Definirana **min. 2 viewpointa** + hotspot navigacija radi.
+3. Definiran **slot system** i artworki se pravilno renderiraju.
+4. Editor omogućava izbor artworka po slotu.
+5. Spremanje i učitavanje scene radi preko backend API-ja.
+6. Public viewer omogućava virtualno kretanje i pregled radova.
+7. Agent navodi sve izmijenjene datoteke i tehničke detalje.
+
+---
+
+# 🎯 PRIORITY MODE
+
+**FAST MODE: ON**
+Ovaj je task prioritetan za RoomVibe Premium Plan i mora se izvesti efikasno.
+
+---
+
+# ✅ READY FOR IMPLEMENTATION
+
+Kad završiš ovaj task, RoomVibe ulazi u kategoriju **profesionalnih virtualnih izložbenih sustava** na razini ili boljoj od Artplacera.
+
+LET'S BUILD IT. 🔥

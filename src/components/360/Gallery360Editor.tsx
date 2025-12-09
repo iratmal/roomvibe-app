@@ -1,0 +1,229 @@
+import React, { useState, useEffect } from 'react';
+import { Gallery360Scene } from './Gallery360Scene';
+import { useHotspots } from './useHotspots';
+import { useArtworkSlots, SlotAssignment } from './useArtworkSlots';
+import { gallery360Presets, getPresetById, Slot } from '../../config/gallery360Presets';
+
+interface Artwork {
+  id: number;
+  title: string;
+  artist_name?: string;
+  image_url: string;
+  width?: number;
+  height?: number;
+}
+
+interface Gallery360EditorProps {
+  exhibitionId: string;
+  presetId?: string;
+  availableArtworks: Artwork[];
+  initialAssignments?: SlotAssignment[];
+  onSave: (presetId: string, assignments: SlotAssignment[]) => Promise<void>;
+  onBack?: () => void;
+  className?: string;
+}
+
+export function Gallery360Editor({
+  exhibitionId,
+  presetId = 'white-cube-v1',
+  availableArtworks,
+  initialAssignments = [],
+  onSave,
+  onBack,
+  className = ''
+}: Gallery360EditorProps) {
+  const [selectedPresetId, setSelectedPresetId] = useState(presetId);
+  const preset = getPresetById(selectedPresetId) || gallery360Presets[0];
+  
+  const { 
+    currentViewpoint, 
+    navigateToViewpoint 
+  } = useHotspots(preset.viewpoints, preset.hotspots, 'center');
+  
+  const { 
+    slotAssignments, 
+    assignArtwork,
+    loadAssignments,
+    clearSlot
+  } = useArtworkSlots(preset.slots);
+
+  const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  useEffect(() => {
+    if (initialAssignments.length > 0) {
+      loadAssignments(initialAssignments);
+    }
+  }, [initialAssignments, loadAssignments]);
+
+  const handleAssignArtwork = (slotId: string, artwork: Artwork | null) => {
+    if (artwork) {
+      assignArtwork(slotId, String(artwork.id), {
+        artworkUrl: artwork.image_url,
+        artworkTitle: artwork.title,
+        artistName: artwork.artist_name,
+        width: artwork.width,
+        height: artwork.height
+      });
+    } else {
+      clearSlot(slotId);
+    }
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    setSaveSuccess(false);
+    try {
+      await onSave(selectedPresetId, slotAssignments);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      console.error('Failed to save 360 scene:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const selectedSlot = preset.slots.find(s => s.id === selectedSlotId);
+  const selectedAssignment = slotAssignments.find(sa => sa.slotId === selectedSlotId);
+
+  return (
+    <div className={`flex h-full ${className}`}>
+      <div className="w-80 bg-white border-r border-gray-200 flex flex-col overflow-hidden">
+        <div className="p-4 border-b border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            {onBack && (
+              <button 
+                onClick={onBack}
+                className="text-[#264C61] hover:text-[#1D3A4A] flex items-center gap-1"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                Back
+              </button>
+            )}
+            <h2 className="text-lg font-semibold text-[#264C61]">360° Editor</h2>
+          </div>
+          
+          <select
+            value={selectedPresetId}
+            onChange={(e) => setSelectedPresetId(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded-lg text-sm"
+          >
+            {gallery360Presets.map(p => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4">
+          <h3 className="text-sm font-medium text-gray-700 mb-3">Wall Slots</h3>
+          <div className="space-y-2">
+            {preset.slots.map(slot => {
+              const assignment = slotAssignments.find(sa => sa.slotId === slot.id);
+              const isSelected = selectedSlotId === slot.id;
+              
+              return (
+                <div
+                  key={slot.id}
+                  onClick={() => setSelectedSlotId(slot.id)}
+                  className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                    isSelected 
+                      ? 'border-[#C9A24A] bg-[#C9A24A]/10' 
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-900">{slot.label}</span>
+                    {assignment?.artworkId && (
+                      <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                    )}
+                  </div>
+                  {assignment?.artworkTitle && (
+                    <p className="text-xs text-gray-500 mt-1 truncate">{assignment.artworkTitle}</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {selectedSlot && (
+          <div className="p-4 border-t border-gray-200 bg-gray-50">
+            <h4 className="text-sm font-medium text-gray-900 mb-2">{selectedSlot.label}</h4>
+            <select
+              value={selectedAssignment?.artworkId || ''}
+              onChange={(e) => {
+                const artworkId = e.target.value;
+                if (artworkId) {
+                  const artwork = availableArtworks.find(a => String(a.id) === artworkId);
+                  if (artwork) handleAssignArtwork(selectedSlot.id, artwork);
+                } else {
+                  handleAssignArtwork(selectedSlot.id, null);
+                }
+              }}
+              className="w-full p-2 border border-gray-300 rounded-lg text-sm mb-2"
+            >
+              <option value="">-- Select Artwork --</option>
+              {availableArtworks.map(artwork => (
+                <option key={artwork.id} value={String(artwork.id)}>
+                  {artwork.title}
+                </option>
+              ))}
+            </select>
+            
+            {selectedAssignment?.artworkUrl && (
+              <div className="mt-2">
+                <img 
+                  src={selectedAssignment.artworkUrl} 
+                  alt={selectedAssignment.artworkTitle}
+                  className="w-full h-24 object-contain bg-gray-100 rounded"
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="p-4 border-t border-gray-200">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="w-full py-2 px-4 bg-[#264C61] text-white rounded-lg hover:bg-[#1D3A4A] disabled:opacity-50 transition-colors"
+          >
+            {saving ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save Scene'}
+          </button>
+        </div>
+      </div>
+
+      <div className="flex-1 relative">
+        <Gallery360Scene
+          preset={preset}
+          slotAssignments={slotAssignments}
+          currentViewpoint={currentViewpoint}
+          onNavigate={navigateToViewpoint}
+          isEditor={true}
+          selectedSlotId={selectedSlotId || undefined}
+          onSlotSelect={setSelectedSlotId}
+        />
+
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/50 rounded-lg px-3 py-2">
+          {preset.viewpoints.map(vp => (
+            <button
+              key={vp.id}
+              onClick={() => navigateToViewpoint(vp.id)}
+              className={`px-3 py-1 rounded text-sm transition-colors ${
+                currentViewpoint.id === vp.id
+                  ? 'bg-[#C9A24A] text-white'
+                  : 'bg-white/20 text-white hover:bg-white/30'
+              }`}
+            >
+              {vp.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -876,18 +876,21 @@ export function GalleryDashboard() {
                         >
                           View
                         </button>
-                        <div className="flex-1 relative">
-                          <a
-                            href={`#/gallery/exhibitions/${collection.id}`}
-                            className="peer block w-full px-3 py-2 text-sm bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-all font-semibold text-center"
-                          >
-                            Virtual Room
-                          </a>
-                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded-lg opacity-0 peer-hover:opacity-100 peer-focus:opacity-100 transition-opacity pointer-events-none w-56 text-center leading-snug z-10">
-                            Preview this collection in a gallery-style mockup. Interactive 360° view is coming soon.
-                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800"></div>
-                          </div>
-                        </div>
+                        <a
+                          href={`#/gallery/exhibitions/${collection.id}`}
+                          className="flex-1 px-3 py-2 text-sm bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 transition-all font-semibold text-center"
+                        >
+                          Virtual Room
+                        </a>
+                        <a
+                          href={`#/gallery/exhibitions/${collection.id}/360-editor`}
+                          className="flex-1 px-3 py-2 text-sm bg-gradient-to-r from-[#264C61] to-[#1D3A4A] text-white rounded-lg hover:opacity-90 transition-all font-semibold text-center flex items-center justify-center gap-1"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                          </svg>
+                          360°
+                        </a>
                       </div>
                       <div className="flex gap-2">
                         <button

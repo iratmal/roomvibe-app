@@ -37,6 +37,8 @@ import { SiteHeader } from "./components/SiteHeader";
 import { initGA4, resetGA4, GA4Events } from "./utils/analytics";
 import { initHotjar, resetHotjar } from "./utils/hotjar";
 import { getRecommendedUpgradePlan, getUpgradeMessageForFeature, type FeatureKey, type PlanKey } from "./utils/upgradeLogic";
+import { Gallery360Editor } from "./components/360/Gallery360Editor";
+import { Viewer360 } from "./components/360/Viewer360";
 
 /**
  * RoomVibe — App + Landing + Studio + Authentication
@@ -123,6 +125,10 @@ function AppContent() {
         <Exhibition />
       ) : normalizedHash.startsWith("#/exhibitions/") && normalizedHash.endsWith("/public") ? (
         <PublicExhibitionPage />
+      ) : normalizedHash.startsWith("#/exhibitions/") && normalizedHash.endsWith("/360") ? (
+        <Exhibition360Viewer />
+      ) : normalizedHash.startsWith("#/gallery/exhibitions/") && normalizedHash.endsWith("/360-editor") ? (
+        <Exhibition360EditorPage />
       ) : normalizedHash.startsWith("#/gallery/exhibitions/") ? (
         <VirtualExhibitionRoom />
       ) : normalizedHash === "#/docs" ? (
@@ -3366,6 +3372,267 @@ function VirtualExhibitionEditor({ preset, availableArtworks, placedArtworks, on
   );
 }
 
+/* ------------- 360° Virtual Exhibition Editor Page ------------- */
+
+function Exhibition360EditorPage() {
+  const hash = window.location.hash;
+  const match = hash.match(/^#\/gallery\/exhibitions\/(\d+)\/360-editor/);
+  const collectionId = match ? match[1] : null;
+  
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [availableArtworks, setAvailableArtworks] = useState<any[]>([]);
+  const [initialAssignments, setInitialAssignments] = useState<any[]>([]);
+  const [presetId, setPresetId] = useState('white-cube-v1');
+  const [collectionTitle, setCollectionTitle] = useState('');
+  
+  const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, []);
+
+  useEffect(() => {
+    if (!collectionId) return;
+    
+    const fetchData = async () => {
+      try {
+        const [sceneRes, artworksRes] = await Promise.all([
+          fetch(`${API_URL}/api/gallery/collections/${collectionId}/360-scene`, { credentials: 'include' }),
+          fetch(`${API_URL}/api/gallery/collections/${collectionId}/artworks`, { credentials: 'include' })
+        ]);
+        
+        if (artworksRes.ok) {
+          const artData = await artworksRes.json();
+          setAvailableArtworks(artData.artworks || []);
+        }
+        
+        if (sceneRes.ok) {
+          const sceneData = await sceneRes.json();
+          setCollectionTitle(sceneData.title || '');
+          if (sceneData.scene360Data) {
+            setPresetId(sceneData.scene360Data.presetId || 'white-cube-v1');
+            setInitialAssignments(sceneData.scene360Data.slots || []);
+          }
+        }
+      } catch (err) {
+        console.error('Error loading 360 editor data:', err);
+        setError('Failed to load exhibition data');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, [collectionId, API_URL]);
+
+  const handleSave = async (newPresetId: string, slots: any[]) => {
+    const res = await fetch(`${API_URL}/api/gallery/collections/${collectionId}/360-scene`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ presetId: newPresetId, slots })
+    });
+    
+    if (!res.ok) {
+      throw new Error('Failed to save scene');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-[#C9A24A] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-white/70">Loading 360° Editor...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-400 mb-4">{error}</p>
+          <a href="#/dashboard/gallery" className="text-[#C9A24A] hover:underline">Back to Gallery</a>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-screen bg-[#1a1a1a]">
+      <Gallery360Editor
+        exhibitionId={collectionId || ''}
+        presetId={presetId}
+        availableArtworks={availableArtworks}
+        initialAssignments={initialAssignments}
+        onSave={handleSave}
+        onBack={() => window.location.hash = '#/dashboard/gallery'}
+      />
+    </div>
+  );
+}
+
+/* ------------- 360° Public Exhibition Viewer ------------- */
+
+function Exhibition360Viewer() {
+  const hash = window.location.hash;
+  const match = hash.match(/^#\/exhibitions\/(\d+)\/360/);
+  const exhibitionId = match ? match[1] : null;
+  
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [exhibition, setExhibition] = useState<any>(null);
+  const [scene360Data, setScene360Data] = useState<any>(null);
+  const [selectedArtwork, setSelectedArtwork] = useState<any>(null);
+  
+  const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, []);
+
+  useEffect(() => {
+    if (!exhibitionId) return;
+    
+    const fetchData = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/gallery/exhibitions/${exhibitionId}/360-public`);
+        if (!res.ok) {
+          const errData = await res.json();
+          setError(errData.error || 'Exhibition not found');
+          setLoading(false);
+          return;
+        }
+        const data = await res.json();
+        setExhibition(data);
+        setScene360Data(data.scene360Data);
+      } catch (err) {
+        setError('Failed to load exhibition');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, [exhibitionId, API_URL]);
+
+  const handleArtworkClick = (slotId: string, assignment: any) => {
+    setSelectedArtwork(assignment);
+  };
+
+  if (loading) {
+    return (
+      <div className="h-screen bg-[#1a1a1a] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-[#C9A24A] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-white/70">Entering virtual gallery...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-screen bg-[#1a1a1a] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-400 mb-4">{error}</p>
+          <a href="#/" className="text-[#C9A24A] hover:underline">Back to Home</a>
+        </div>
+      </div>
+    );
+  }
+
+  if (!scene360Data) {
+    return (
+      <div className="h-screen bg-[#1a1a1a] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-white/70 mb-4">This exhibition doesn't have a 360° view configured.</p>
+          <a href={`#/exhibitions/${exhibitionId}/public`} className="text-[#C9A24A] hover:underline">View Standard Exhibition</a>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-screen bg-[#1a1a1a] relative">
+      <div className="absolute top-4 left-4 z-10 bg-black/60 backdrop-blur-sm rounded-lg p-4 max-w-sm">
+        <h1 className="text-white font-semibold text-lg">{exhibition?.title}</h1>
+        <p className="text-white/60 text-sm">{exhibition?.galleryName}</p>
+        {exhibition?.description && (
+          <p className="text-white/50 text-xs mt-2 line-clamp-2">{exhibition.description}</p>
+        )}
+      </div>
+
+      <Viewer360
+        exhibitionId={exhibitionId || ''}
+        presetId={scene360Data.presetId}
+        initialAssignments={scene360Data.slots || []}
+        onArtworkClick={handleArtworkClick}
+        className="w-full h-full"
+      />
+
+      {selectedArtwork && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setSelectedArtwork(null)}
+        >
+          <div 
+            className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="relative">
+              <img 
+                src={selectedArtwork.artworkUrl} 
+                alt={selectedArtwork.artworkTitle}
+                className="w-full max-h-[50vh] object-contain bg-gray-100"
+              />
+              <button 
+                onClick={() => setSelectedArtwork(null)}
+                className="absolute top-4 right-4 w-10 h-10 bg-white/90 rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors"
+              >
+                <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6">
+              <h2 className="text-xl font-semibold text-[#264C61]">{selectedArtwork.artworkTitle}</h2>
+              {selectedArtwork.artistName && (
+                <p className="text-gray-600 mt-1">{selectedArtwork.artistName}</p>
+              )}
+              {(selectedArtwork.width && selectedArtwork.height) && (
+                <p className="text-sm text-gray-500 mt-2">
+                  {selectedArtwork.width} × {selectedArtwork.height} {selectedArtwork.dimensionUnit || 'cm'}
+                </p>
+              )}
+              <a
+                href={`#/studio?artwork=${selectedArtwork.artworkId}`}
+                className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-[#264C61] text-white rounded-lg hover:bg-[#1D3A4A] transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                View in Your Room
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <a
+        href={`#/exhibitions/${exhibitionId}/public`}
+        className="absolute bottom-4 right-4 z-10 bg-white/90 backdrop-blur-sm rounded-lg px-4 py-2 text-sm text-[#264C61] hover:bg-white transition-colors shadow-lg"
+      >
+        View Standard Mode
+      </a>
+    </div>
+  );
+}
+
 /* ------------- Public Exhibition Page ------------- */
 
 function PublicExhibitionPage() {
@@ -3497,6 +3764,15 @@ function PublicExhibitionPage() {
           <h1 className="text-3xl md:text-4xl font-bold text-[#264C61] mb-2">{exhibition?.title || 'Gallery Exhibition'}</h1>
           {exhibition?.subtitle && <p className="text-lg text-slate-600">{exhibition.subtitle}</p>}
           {exhibition?.description && <p className="text-slate-500 mt-2 max-w-2xl mx-auto">{exhibition.description}</p>}
+          <a
+            href={`#/exhibitions/${exhibitionId}/360`}
+            className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-gradient-to-r from-[#264C61] to-[#1D3A4A] text-white rounded-lg hover:opacity-90 transition-all font-semibold shadow-lg"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+            </svg>
+            Enter 360° Virtual Gallery
+          </a>
         </div>
         
         <div
