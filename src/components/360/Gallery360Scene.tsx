@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback, Suspense } from 'react';
+import React, { useRef, useState, useEffect, useCallback, Suspense, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Html, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
@@ -16,42 +16,153 @@ interface Gallery360SceneProps {
   onSlotSelect?: (slotId: string) => void;
 }
 
+function CeilingBeam({ position, rotation, width, height, depth }: { 
+  position: [number, number, number]; 
+  rotation?: [number, number, number];
+  width: number;
+  height: number;
+  depth: number;
+}) {
+  return (
+    <mesh position={position} rotation={rotation || [0, 0, 0]} castShadow>
+      <boxGeometry args={[width, height, depth]} />
+      <meshStandardMaterial color="#2a2a2a" roughness={0.7} metalness={0.1} />
+    </mesh>
+  );
+}
+
+function CeilingSpotlight({ position, targetPosition }: { 
+  position: [number, number, number]; 
+  targetPosition: [number, number, number];
+}) {
+  const spotlightRef = useRef<THREE.SpotLight>(null);
+  const { scene } = useThree();
+  
+  useEffect(() => {
+    if (spotlightRef.current) {
+      spotlightRef.current.target.position.set(...targetPosition);
+      scene.add(spotlightRef.current.target);
+      spotlightRef.current.target.updateMatrixWorld();
+    }
+    return () => {
+      if (spotlightRef.current) {
+        scene.remove(spotlightRef.current.target);
+      }
+    };
+  }, [targetPosition, scene]);
+
+  return (
+    <group position={position}>
+      <mesh>
+        <cylinderGeometry args={[0.08, 0.12, 0.15, 16]} />
+        <meshStandardMaterial color="#1a1a1a" roughness={0.3} metalness={0.8} />
+      </mesh>
+      <spotLight
+        ref={spotlightRef}
+        position={[0, -0.1, 0]}
+        angle={0.45}
+        penumbra={0.85}
+        intensity={1.5}
+        distance={8}
+        color="#fff5e0"
+        castShadow
+        shadow-mapSize={[512, 512]}
+        shadow-bias={-0.0002}
+      />
+    </group>
+  );
+}
+
 function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
   const { width, height, depth } = preset.dimensions;
   const halfW = width / 2;
   const halfD = depth / 2;
 
+  const beamPositions = useMemo(() => {
+    const beams: Array<{ pos: [number, number, number]; rot?: [number, number, number]; w: number; h: number; d: number }> = [];
+    const beamSpacing = 3.5;
+    const numBeams = Math.floor(depth / beamSpacing);
+    
+    for (let i = 0; i <= numBeams; i++) {
+      const z = -halfD + 1.5 + (i * beamSpacing);
+      if (z > halfD - 1) break;
+      beams.push({ pos: [0, height - 0.08, z], w: width - 0.5, h: 0.15, d: 0.25 });
+    }
+    
+    beams.push({ pos: [-halfW + 0.15, height - 0.08, 0], rot: [0, Math.PI / 2, 0], w: depth - 0.5, h: 0.15, d: 0.25 });
+    beams.push({ pos: [halfW - 0.15, height - 0.08, 0], rot: [0, Math.PI / 2, 0], w: depth - 0.5, h: 0.15, d: 0.25 });
+    
+    return beams;
+  }, [width, height, depth, halfW, halfD]);
+
+  const spotlightPositions = useMemo(() => {
+    const spots: Array<{ pos: [number, number, number]; target: [number, number, number] }> = [];
+    
+    for (let x = -halfW + 3; x < halfW - 2; x += 4) {
+      spots.push({ pos: [x, height - 0.3, -halfD + 1.5], target: [x, 1.6, -halfD + 0.1] });
+    }
+    for (let x = -halfW + 3; x < halfW - 2; x += 4) {
+      spots.push({ pos: [x, height - 0.3, halfD - 1.5], target: [x, 1.6, halfD - 0.1] });
+    }
+    
+    spots.push({ pos: [-halfW + 1.5, height - 0.3, -2], target: [-halfW + 0.1, 1.6, -2] });
+    spots.push({ pos: [-halfW + 1.5, height - 0.3, 2], target: [-halfW + 0.1, 1.6, 2] });
+    spots.push({ pos: [halfW - 1.5, height - 0.3, -2], target: [halfW - 0.1, 1.6, -2] });
+    spots.push({ pos: [halfW - 1.5, height - 0.3, 2], target: [halfW - 0.1, 1.6, 2] });
+    
+    return spots;
+  }, [width, height, depth, halfW, halfD]);
+
   return (
     <group>
       <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[width, depth]} />
-        <meshStandardMaterial color={preset.floorColor} roughness={0.8} />
+        <meshStandardMaterial 
+          color="#c4b8a8"
+          roughness={0.85}
+          metalness={0.02}
+        />
       </mesh>
 
       <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
-        <meshStandardMaterial color={preset.ceilingColor} roughness={0.9} />
+        <meshStandardMaterial color="#f0ede8" roughness={0.9} />
       </mesh>
+
+      {beamPositions.map((beam, i) => (
+        <CeilingBeam 
+          key={`beam-${i}`}
+          position={beam.pos}
+          rotation={beam.rot}
+          width={beam.w}
+          height={beam.h}
+          depth={beam.d}
+        />
+      ))}
 
       <mesh position={[0, height / 2, -halfD]} receiveShadow>
         <planeGeometry args={[width, height]} />
-        <meshStandardMaterial color={preset.wallColor} side={THREE.DoubleSide} roughness={0.95} />
+        <meshStandardMaterial color="#ddd8d0" side={THREE.DoubleSide} roughness={0.92} />
       </mesh>
 
       <mesh position={[0, height / 2, halfD]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[width, height]} />
-        <meshStandardMaterial color={preset.wallColor} side={THREE.DoubleSide} roughness={0.95} />
+        <meshStandardMaterial color="#ddd8d0" side={THREE.DoubleSide} roughness={0.92} />
       </mesh>
 
       <mesh position={[halfW, height / 2, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
-        <meshStandardMaterial color={preset.wallColor} side={THREE.DoubleSide} roughness={0.95} />
+        <meshStandardMaterial color="#ddd8d0" side={THREE.DoubleSide} roughness={0.92} />
       </mesh>
 
       <mesh position={[-halfW, height / 2, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
-        <meshStandardMaterial color={preset.wallColor} side={THREE.DoubleSide} roughness={0.95} />
+        <meshStandardMaterial color="#ddd8d0" side={THREE.DoubleSide} roughness={0.92} />
       </mesh>
+
+      {spotlightPositions.map((spot, i) => (
+        <CeilingSpotlight key={`spot-${i}`} position={spot.pos} targetPosition={spot.target} />
+      ))}
     </group>
   );
 }
@@ -73,29 +184,41 @@ function ArtworkPlane({
   const [hovered, setHovered] = useState(false);
 
   const hasArtwork = assignment?.artworkUrl;
-  const frameDepth = 0.025;
-  const frameWidth = 0.035;
-  const wallOffset = 0.015;
+  
+  const frameWidth = 0.045;
+  const passepartoutWidth = 0.06;
+  const frameDepth = 0.035;
+  const wallOffset = 0.04;
+  
+  const totalFrameW = slot.width + (passepartoutWidth * 2) + (frameWidth * 2);
+  const totalFrameH = slot.height + (passepartoutWidth * 2) + (frameWidth * 2);
 
   return (
     <group position={slot.position} rotation={slot.rotation}>
+      {hasArtwork && (
+        <mesh position={[0, -0.02, 0.005]} rotation={[0, 0, 0]}>
+          <planeGeometry args={[totalFrameW * 1.1, totalFrameH * 0.15]} />
+          <meshBasicMaterial color="#000000" transparent opacity={0.12} />
+        </mesh>
+      )}
+      
       <group position={[0, 0, wallOffset]}>
         {hasArtwork ? (
           <>
             <mesh castShadow position={[0, 0, -frameDepth / 2]}>
-              <boxGeometry args={[slot.width + frameWidth * 2, slot.height + frameWidth * 2, frameDepth]} />
-              <meshStandardMaterial color="#303030" roughness={0.7} metalness={0.05} />
+              <boxGeometry args={[totalFrameW, totalFrameH, frameDepth]} />
+              <meshStandardMaterial color="#2a2420" roughness={0.6} metalness={0.08} />
             </mesh>
 
             <mesh position={[0, 0, 0.001]}>
-              <planeGeometry args={[slot.width, slot.height]} />
-              <meshStandardMaterial color="#fafafa" />
+              <planeGeometry args={[slot.width + (passepartoutWidth * 2), slot.height + (passepartoutWidth * 2)]} />
+              <meshStandardMaterial color="#f5f5f2" roughness={0.95} />
             </mesh>
 
             <Suspense fallback={
-              <mesh position={[0, 0, 0.002]}>
+              <mesh position={[0, 0, 0.003]}>
                 <planeGeometry args={[slot.width, slot.height]} />
-                <meshBasicMaterial color="#e0e0e0" />
+                <meshBasicMaterial color="#e8e4e0" />
               </mesh>
             }>
               <ArtworkImage 
@@ -120,9 +243,9 @@ function ArtworkPlane({
           >
             <planeGeometry args={[slot.width, slot.height]} />
             <meshStandardMaterial 
-              color={isSelected ? '#C9A24A' : (hovered ? '#e8e8e8' : '#e0e0e0')}
+              color={isSelected ? '#C9A24A' : (hovered ? '#d5d0c8' : '#ccc8c0')}
               transparent
-              opacity={0.5}
+              opacity={0.6}
             />
           </mesh>
         )}
@@ -136,8 +259,8 @@ function ArtworkPlane({
         )}
 
         {(isSelected || (hovered && isEditor)) && (
-          <mesh position={[0, 0, hasArtwork ? 0.01 : 0.001]}>
-            <planeGeometry args={[slot.width + 0.08, slot.height + 0.08]} />
+          <mesh position={[0, 0, hasArtwork ? 0.015 : 0.001]}>
+            <planeGeometry args={[hasArtwork ? totalFrameW + 0.1 : slot.width + 0.1, hasArtwork ? totalFrameH + 0.1 : slot.height + 0.1]} />
             <meshBasicMaterial color="#C9A24A" transparent opacity={0.35} depthTest={false} />
           </mesh>
         )}
@@ -326,11 +449,11 @@ function CameraController({
       ref={controlsCallback}
       enableZoom={isEditor}
       enablePan={false}
-      minPolarAngle={Math.PI * 0.35}
-      maxPolarAngle={Math.PI * 0.65}
+      minPolarAngle={Math.PI * 0.38}
+      maxPolarAngle={Math.PI * 0.62}
       minDistance={0.5}
-      maxDistance={isEditor ? 10 : 5}
-      rotateSpeed={0.4}
+      maxDistance={isEditor ? 8 : 4}
+      rotateSpeed={0.35}
     />
   );
 }
@@ -348,26 +471,25 @@ export function Gallery360Scene({
   return (
     <Canvas
       shadows
-      camera={{ fov: 60, near: 0.1, far: 100 }}
-      style={{ background: '#f0f0f0' }}
+      camera={{ fov: 55, near: 0.1, far: 100 }}
+      style={{ background: '#e8e4e0' }}
     >
-      <ambientLight intensity={0.9} />
+      <ambientLight intensity={0.7} />
       <hemisphereLight
-        args={['#fffef8', '#e0e0e8', 0.6]}
+        args={['#fffaf0', '#d0ccc4', 0.4]}
         position={[0, preset.dimensions.height, 0]}
       />
       <directionalLight 
-        position={[3, preset.dimensions.height - 0.5, 2]} 
-        intensity={0.5}
+        position={[4, preset.dimensions.height, 3]} 
+        intensity={0.35}
         castShadow
         shadow-mapSize={[1024, 1024]}
         shadow-bias={-0.0001}
       />
       <directionalLight 
-        position={[-3, preset.dimensions.height - 0.5, -2]} 
-        intensity={0.3}
+        position={[-4, preset.dimensions.height, -3]} 
+        intensity={0.25}
       />
-      <pointLight position={[0, preset.dimensions.height - 0.5, 0]} intensity={0.4} />
 
       <GalleryRoom preset={preset} />
 

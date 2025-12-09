@@ -1,0 +1,66 @@
+360° Gallery – Visual Style Upgrade (ArtPlacer Reference)
+
+Poruka za agenta:
+
+U prilogu ti šaljem 4 screenshot-a virtualne galerije (ArtPlacer) koje želim koristiti kao vizualnu referencu.
+
+Molim te da naš 360° viewer i editor stilom približiš ovom primjeru, uz zadržavanje postojeće funkcionalnosti i pozicija slika.
+
+1) Opći vizual (prostor)
+
+Pogledaj referentne screenshotove: prostor izgleda kao realna suvremena galerija / muzej (ne “kocka u svemiru”).
+
+Zidovi: svijetlo topla siva (ne prebijela, ne tamna), s blagim sjenama u kutevima.
+
+Pod: tekstura svijetlog betona / kamena s diskretnim šarama (slično kao na referenci).
+
+Strop: moderan (kao na screenu) – svijetla ploha + tamni gredasti elementi ili rasvjetne tračnice.
+
+Kad korisnik gleda prema gore ili dolje, smije se vidjeti SAMO strop ili pod, nikakav “prazan” bijeli prostor ili crne rupe.
+
+Molim te ukloni “white void” / “space” oko scene – kamera nikad ne smije izaći iz galerije.
+
+2) Okviri i prikaz slika
+
+Slike u 360° vieweru sada izgledaju kao naljepnice. Želim da izgledaju što bliže referenci:
+
+tanki moderan okvir oko slike (tamno siva / tamno smeđa),
+
+tanki svijetli passepartout između slike i okvira (kao kod ArtPlacera).
+
+Održati ispravan omjer stranica slike:
+
+npr. 100x100 cm = kvadrat
+
+150x100 cm = horizontalni pravokutnik
+
+100x40 cm = uski panoramski format itd.
+
+Trenutno naš 100×100 rad izgleda kao drugačiji format od 100×70 – molim te ispravi matrix skaliranja tako da dimenzije u cm mapiraju na realistične proporcije u 3D-u.
+
+Slike neka budu malo “odmaknute” od zida (par cm), kao stvarni okvir, s blagom sjenom na zidu.
+
+3) Svjetlo i svjetlina
+
+Trenutno su slike u našem vieweru dosta tamne.
+
+Podesi osvjetljenje da slike budu svijetle i čitke, kao na referentnim screenshotovima (ali bez spaljenih bijelih tonova).
+
+Dodaj galerijsku rasvjetu (spotovi na stropu) koja baca mekane svjetlosne stožce na zidove i pod, po uzoru na ArtPlacer primjer.
+
+4) Zidovi i kompozicija
+
+Širinu glavnih zidova na kojima vise radovi možeš malo povećati (otprilike 1.5–2× u odnosu na sada), da pogled može “šetati” lijevo–desno bez da kamera odmah “bježi” u pod ili strop.
+
+Zadrži postojeće slotove (North Wall Left/Center/Right itd.), ali prilagodi pozicije tako da slike uvijek izgledaju “na oku ugodno” – okvirno u visini očiju, s logičnim razmakom.
+
+Ako je moguće, blago smanji nagib kamere pri gledanju prema gore/dolje – cilj je da korisnik i dalje vidi zid + sliku + dio poda/stropa, a ne da odmah “izleti” iz prostora.
+
+5) UX detalji (samo ako je lagano)
+
+Neka se početni view u javnom vieweru pozicionira na “idealnu” scenu (npr. glavna slika u centru zida, kao u muzeju).
+
+Ako nije već, poravnaj “hodanje” po prostoru (hotspoti) tako da se osjećaj kretanja više približi referentnoj galeriji – mekani prijelazi, kamera na visini očiju.
+
+Nemoj mijenjati postojeću logiku spremanja scene i slotova, fokus je sada na vizualu i osjećaju prostora.
+Ako imaš prijedloge kako da prostor izgleda još realnije i premium (materijali, svjetlo, mali UI detalji) – slobodno ih implementiraj.
