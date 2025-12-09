@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState, useMemo } from "react";
+import React, { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import localArtworks from "./data/artworks.json";
 import presets from "./data/presets.json";
 import { premiumRooms, getCategoryDisplayName, type PremiumRoom } from "./data/premiumRooms";
+import { galleryPresets } from "./data/galleryPresets";
 import { getSmartScalePlacement, shouldUseSmartScale } from "./lib/studio/smartScale";
 import { getTopSuggestedRooms } from "./lib/ai/roomSuggest";
 import { PLAN_LIMITS, type PlanType } from "./config/planLimits";
@@ -2910,89 +2911,456 @@ function CTASection() {
 }
 
 
-/* ------------- Virtual Exhibition Room (MVP Placeholder) ------------- */
+/* ------------- Virtual Exhibition Room (MVP Editor) ------------- */
 
 function VirtualExhibitionRoom() {
   const hash = window.location.hash;
   const match = hash.match(/^#\/gallery\/exhibitions\/(\d+)/);
-  const exhibitionId = match ? match[1] : null;
+  const collectionId = match ? match[1] : null;
+  
+  const [step, setStep] = useState<'preset' | 'editor'>('preset');
+  const [selectedPreset, setSelectedPreset] = useState<any>(null);
+  const [placedArtworks, setPlacedArtworks] = useState<any[]>([]);
+  const [collectionArtworks, setCollectionArtworks] = useState<any[]>([]);
+  const [collectionTitle, setCollectionTitle] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [error, setError] = useState('');
+  const [copiedLink, setCopiedLink] = useState(false);
+  
+  const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   }, []);
 
+  useEffect(() => {
+    if (!collectionId) return;
+    
+    const fetchData = async () => {
+      try {
+        const [sceneRes, artworksRes] = await Promise.all([
+          fetch(`${API_URL}/api/gallery/collections/${collectionId}/scene`, { credentials: 'include' }),
+          fetch(`${API_URL}/api/gallery/collections/${collectionId}/artworks`, { credentials: 'include' })
+        ]);
+        
+        let fetchedArtworks: any[] = [];
+        if (artworksRes.ok) {
+          const artData = await artworksRes.json();
+          fetchedArtworks = artData.artworks || [];
+          setCollectionArtworks(fetchedArtworks);
+        }
+        
+        if (sceneRes.ok) {
+          const sceneData = await sceneRes.json();
+          setCollectionTitle(sceneData.title || '');
+          if (sceneData.sceneData) {
+            const savedPreset = galleryPresets.find(p => p.id === sceneData.sceneData.presetId);
+            if (savedPreset) {
+              setSelectedPreset(savedPreset);
+              const hydratedPlacements: any[] = [];
+              const missingArtworks: number[] = [];
+              
+              for (const p of (sceneData.sceneData.placements || [])) {
+                const artwork = fetchedArtworks.find(a => a.id === p.artworkId);
+                if (!artwork) {
+                  missingArtworks.push(p.artworkId);
+                  continue;
+                }
+                hydratedPlacements.push({
+                  id: artwork.id,
+                  artworkId: artwork.id,
+                  title: artwork.title,
+                  artistName: artwork.artist_name,
+                  imageUrl: artwork.image_url,
+                  width: artwork.width,
+                  height: artwork.height,
+                  dimensionUnit: artwork.dimension_unit,
+                  x: p.x,
+                  y: p.y,
+                  scale: p.scale
+                });
+              }
+              
+              if (missingArtworks.length > 0) {
+                console.warn('[VirtualExhibition] Some placed artworks no longer exist in collection:', missingArtworks);
+              }
+              setPlacedArtworks(hydratedPlacements);
+              setStep('editor');
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching exhibition data:', err);
+        setError('Failed to load exhibition data');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, [collectionId, API_URL]);
+
+  const handlePresetSelect = (preset: any) => {
+    setSelectedPreset(preset);
+    setStep('editor');
+  };
+
+  const handleSave = async () => {
+    if (!collectionId || !selectedPreset) return;
+    
+    setSaving(true);
+    setSaveSuccess(false);
+    
+    try {
+      const sceneData = {
+        presetId: selectedPreset.id,
+        placements: placedArtworks.map(a => ({
+          artworkId: a.artworkId || a.id,
+          x: a.x,
+          y: a.y,
+          scale: a.scale
+        })),
+        updatedAt: new Date().toISOString()
+      };
+      
+      const res = await fetch(`${API_URL}/api/gallery/collections/${collectionId}/scene`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ sceneData })
+      });
+      
+      if (res.ok) {
+        setSaveSuccess(true);
+        setTimeout(() => setSaveSuccess(false), 3000);
+      } else {
+        setError('Failed to save exhibition');
+      }
+    } catch (err) {
+      setError('Failed to save exhibition');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCopyLink = () => {
+    const publicUrl = `${window.location.origin}/#/exhibitions/${collectionId}/public`;
+    navigator.clipboard.writeText(publicUrl);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f7f8fa] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-[#264C61] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-600">Loading exhibition...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#f7f8fa]">
       <SiteHeader showPlanBadge={false} />
-      <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-        <div className="mb-8">
-          <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-amber-100 flex items-center justify-center">
-            <svg className="w-12 h-12 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-            </svg>
-          </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-[#264C61] mb-4" style={{ fontFamily: 'Inter, sans-serif' }}>
-            Virtual Exhibition Room
-          </h1>
-          <p className="text-lg text-slate-600 mb-2">Exhibition ID: {exhibitionId}</p>
-          <p className="text-slate-500 max-w-xl mx-auto">
-            The virtual exhibition room experience is coming soon. You'll be able to walk through your collection in an immersive 3D environment.
-          </p>
-        </div>
-        
-        <div className="p-8 bg-white rounded-2xl shadow-lg border border-slate-100 mb-8">
-          <h2 className="text-xl font-semibold text-[#264C61] mb-2">Coming Soon Features</h2>
-          <p className="text-sm text-slate-500 mb-6">An immersive 360° gallery experience is currently in development. Expected early 2026.</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
-            <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-xl">
-              <svg className="w-6 h-6 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+      
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <a
+              href="#/dashboard/gallery"
+              className="flex items-center gap-2 text-slate-600 hover:text-[#264C61] transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              <div>
-                <h3 className="font-semibold text-[#264C61]">360° Gallery View</h3>
-                <p className="text-sm text-slate-500">Walk through your exhibition in a virtual space</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-xl">
-              <svg className="w-6 h-6 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              <div>
-                <h3 className="font-semibold text-[#264C61]">Artwork Placement</h3>
-                <p className="text-sm text-slate-500">Arrange artworks on virtual gallery walls</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-xl">
-              <svg className="w-6 h-6 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-              </svg>
-              <div>
-                <h3 className="font-semibold text-[#264C61]">Share & Invite</h3>
-                <p className="text-sm text-slate-500">Send virtual tour links to collectors</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 p-4 bg-slate-50 rounded-xl">
-              <svg className="w-6 h-6 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              <div>
-                <h3 className="font-semibold text-[#264C61]">Multi-device Support</h3>
-                <p className="text-sm text-slate-500">View on desktop, tablet, or VR headset</p>
-              </div>
+              Back
+            </a>
+            <div>
+              <h1 className="text-2xl font-bold text-[#264C61]">Virtual Exhibition Editor</h1>
+              <p className="text-sm text-slate-500">{collectionTitle || `Collection #${collectionId}`}</p>
             </div>
           </div>
+          
+          {step === 'editor' && (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleCopyLink}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#264C61] border border-[#264C61]/30 rounded-lg hover:bg-[#264C61]/5 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+                {copiedLink ? 'Link Copied!' : 'Share Link'}
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-[#264C61] rounded-lg hover:bg-[#1D3A4A] transition-colors disabled:opacity-50"
+              >
+                {saving ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Saving...
+                  </>
+                ) : saveSuccess ? (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Saved!
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                    </svg>
+                    Save Exhibition
+                  </>
+                )}
+              </button>
+            </div>
+          )}
         </div>
-        
-        <a
-          href="#/dashboard/gallery"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-[#264C61] text-white rounded-[8px] hover:bg-[#1D3A4A] transition-colors font-semibold"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
-          Back to Gallery Dashboard
-        </a>
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            {error}
+          </div>
+        )}
+
+        {step === 'preset' && (
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <div className="text-center mb-8">
+              <h2 className="text-xl font-semibold text-[#264C61] mb-2">Step 1: Choose Your Gallery Space</h2>
+              <p className="text-slate-500">Select a virtual gallery environment for your exhibition</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+              {galleryPresets.map((preset) => (
+                <button
+                  key={preset.id}
+                  onClick={() => handlePresetSelect(preset)}
+                  className="relative overflow-hidden rounded-xl border-2 border-slate-200 hover:border-[#264C61] transition-all group"
+                >
+                  <div
+                    className="aspect-[16/10] bg-cover bg-center group-hover:scale-105 transition-transform duration-300"
+                    style={{ backgroundImage: `url(${preset.image})` }}
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                    <h3 className="text-lg font-semibold text-white text-left">{preset.name}</h3>
+                    <p className="text-sm text-white/70 text-left">{preset.description}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {step === 'editor' && selectedPreset && (
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setStep('preset')}
+                  className="text-sm text-[#264C61] hover:underline"
+                >
+                  ← Change Gallery
+                </button>
+                <span className="text-slate-300">|</span>
+                <span className="text-sm text-slate-600">{selectedPreset.name}</span>
+              </div>
+              <span className="text-xs text-slate-500">
+                {placedArtworks.length} / {selectedPreset.maxArtworks} artworks placed
+              </span>
+            </div>
+            
+            <VirtualExhibitionEditor
+              preset={selectedPreset}
+              availableArtworks={collectionArtworks}
+              placedArtworks={placedArtworks}
+              onPlacementsChange={setPlacedArtworks}
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function VirtualExhibitionEditor({ preset, availableArtworks, placedArtworks, onPlacementsChange }: {
+  preset: any;
+  availableArtworks: any[];
+  placedArtworks: any[];
+  onPlacementsChange: (placements: any[]) => void;
+}) {
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const [draggingId, setDraggingId] = useState<number | null>(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+
+  const getArtworkSizeInCanvas = (artwork: any, canvasWidth: number, canvasHeight: number) => {
+    const baseSize = 120;
+    const aspectRatio = artwork.width / artwork.height;
+    let width = baseSize * (artwork.scale || 1);
+    let height = width / aspectRatio;
+    const maxWidth = canvasWidth * 0.25;
+    const maxHeight = canvasHeight * 0.35;
+    if (width > maxWidth) { width = maxWidth; height = width / aspectRatio; }
+    if (height > maxHeight) { height = maxHeight; width = height * aspectRatio; }
+    return { width, height };
+  };
+
+  const handleDragStart = useCallback((e: React.MouseEvent | React.TouchEvent, artworkId: number) => {
+    e.preventDefault();
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const artwork = placedArtworks.find(a => a.id === artworkId);
+    if (!artwork || !canvasRef.current) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    setDragOffset({ x: clientX - rect.left - (artwork.x * rect.width), y: clientY - rect.top - (artwork.y * rect.height) });
+    setDraggingId(artworkId);
+    setSelectedId(artworkId);
+  }, [placedArtworks]);
+
+  const handleDragMove = useCallback((e: MouseEvent | TouchEvent) => {
+    if (draggingId === null || !canvasRef.current) return;
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const rect = canvasRef.current.getBoundingClientRect();
+    const newX = Math.max(0.05, Math.min(0.95, (clientX - rect.left - dragOffset.x) / rect.width));
+    const newY = Math.max(0.05, Math.min(0.95, (clientY - rect.top - dragOffset.y) / rect.height));
+    onPlacementsChange(placedArtworks.map(a => a.id === draggingId ? { ...a, x: newX, y: newY } : a));
+  }, [draggingId, dragOffset, placedArtworks, onPlacementsChange]);
+
+  const handleDragEnd = useCallback(() => { setDraggingId(null); }, []);
+
+  useEffect(() => {
+    if (draggingId !== null) {
+      window.addEventListener('mousemove', handleDragMove);
+      window.addEventListener('mouseup', handleDragEnd);
+      window.addEventListener('touchmove', handleDragMove, { passive: false });
+      window.addEventListener('touchend', handleDragEnd);
+      return () => {
+        window.removeEventListener('mousemove', handleDragMove);
+        window.removeEventListener('mouseup', handleDragEnd);
+        window.removeEventListener('touchmove', handleDragMove);
+        window.removeEventListener('touchend', handleDragEnd);
+      };
+    }
+  }, [draggingId, handleDragMove, handleDragEnd]);
+
+  const handleAddArtwork = (artwork: any) => {
+    if (placedArtworks.length >= preset.maxArtworks) return;
+    if (placedArtworks.some(p => p.id === artwork.id)) return;
+    const newPlacement = {
+      id: artwork.id,
+      title: artwork.title,
+      artistName: artwork.artist_name,
+      imageUrl: artwork.image_url,
+      width: artwork.width,
+      height: artwork.height,
+      dimensionUnit: artwork.dimension_unit,
+      x: 0.3 + (placedArtworks.length * 0.12) % 0.4,
+      y: 0.4,
+      scale: 1.0
+    };
+    onPlacementsChange([...placedArtworks, newPlacement]);
+    setSelectedId(artwork.id);
+  };
+
+  const handleRemove = (id: number) => {
+    onPlacementsChange(placedArtworks.filter(a => a.id !== id));
+    if (selectedId === id) setSelectedId(null);
+  };
+
+  const handleScaleChange = (id: number, scale: number) => {
+    onPlacementsChange(placedArtworks.map(a => a.id === id ? { ...a, scale } : a));
+  };
+
+  const availableToAdd = availableArtworks.filter(a => !placedArtworks.some(p => p.id === a.id));
+
+  return (
+    <div className="flex gap-6" style={{ minHeight: '500px' }}>
+      <div className="w-52 flex-shrink-0 flex flex-col">
+        <h4 className="text-sm font-semibold text-[#264C61] mb-3">Collection Artworks</h4>
+        <div className="flex-1 overflow-y-auto space-y-2 pr-1" style={{ maxHeight: '360px' }}>
+          {availableToAdd.length === 0 && placedArtworks.length === 0 && (
+            <p className="text-xs text-slate-500 italic">No artworks in collection</p>
+          )}
+          {availableToAdd.map(artwork => (
+            <button key={artwork.id} onClick={() => handleAddArtwork(artwork)} className="w-full flex items-center gap-2 p-2 rounded-lg border border-slate-200 hover:border-[#264C61]/40 hover:bg-slate-50 transition-all text-left">
+              <img src={artwork.image_url} alt={artwork.title} className="w-10 h-10 object-cover rounded" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-slate-800 truncate">{artwork.title}</p>
+                <p className="text-[10px] text-slate-500 truncate">{artwork.artist_name}</p>
+              </div>
+              <svg className="w-4 h-4 text-[#264C61] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+            </button>
+          ))}
+        </div>
+        {placedArtworks.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-slate-200">
+            <h4 className="text-xs font-semibold text-slate-600 mb-2">Placed ({placedArtworks.length}/{preset.maxArtworks})</h4>
+            <div className="space-y-1">
+              {placedArtworks.map(artwork => (
+                <div key={artwork.id} className={`flex items-center gap-2 p-1.5 rounded ${selectedId === artwork.id ? 'bg-[#264C61]/10' : 'bg-slate-50'}`}>
+                  <img src={artwork.imageUrl} alt={artwork.title} className="w-7 h-7 object-cover rounded" />
+                  <span className="flex-1 text-[10px] text-slate-700 truncate">{artwork.title}</span>
+                  <button onClick={() => handleRemove(artwork.id)} className="p-0.5 hover:bg-red-100 rounded">
+                    <svg className="w-3 h-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      
+      <div className="flex-1 flex flex-col">
+        <div ref={canvasRef} className="relative flex-1 rounded-xl overflow-hidden bg-cover bg-center shadow-lg" style={{ backgroundImage: `url(${preset.image})`, minHeight: '420px' }} onClick={() => setSelectedId(null)}>
+          {placedArtworks.map(artwork => {
+            const cw = canvasRef.current?.clientWidth || 800;
+            const ch = canvasRef.current?.clientHeight || 500;
+            const size = getArtworkSizeInCanvas(artwork, cw, ch);
+            return (
+              <div key={artwork.id} className={`absolute cursor-move transition-shadow ${selectedId === artwork.id ? 'ring-2 ring-[#C9A24A] ring-offset-2 shadow-xl z-10' : 'shadow-lg hover:shadow-xl'}`}
+                style={{ left: `calc(${artwork.x * 100}% - ${size.width / 2}px)`, top: `calc(${artwork.y * 100}% - ${size.height / 2}px)`, width: size.width, height: size.height }}
+                onMouseDown={(e) => handleDragStart(e, artwork.id)} onTouchStart={(e) => handleDragStart(e, artwork.id)} onClick={(e) => { e.stopPropagation(); setSelectedId(artwork.id); }}>
+                <img src={artwork.imageUrl} alt={artwork.title} className="w-full h-full object-cover bg-white p-1" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }} draggable={false} />
+              </div>
+            );
+          })}
+          {placedArtworks.length === 0 && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="bg-white/90 backdrop-blur-sm rounded-xl p-6 text-center max-w-xs">
+                <svg className="w-12 h-12 mx-auto mb-3 text-[#264C61]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                <p className="text-sm text-slate-600">Click artworks from the sidebar to place them in your exhibition</p>
+              </div>
+            </div>
+          )}
+        </div>
+        {selectedId !== null && (
+          <div className="mt-4 p-4 bg-slate-50 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-semibold text-[#264C61]">{placedArtworks.find(a => a.id === selectedId)?.title}</h4>
+                <p className="text-xs text-slate-500">{placedArtworks.find(a => a.id === selectedId)?.artistName}</p>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <label className="text-xs text-slate-600">Size:</label>
+                  <input type="range" min="0.5" max="2" step="0.1" value={placedArtworks.find(a => a.id === selectedId)?.scale || 1} onChange={(e) => handleScaleChange(selectedId, parseFloat(e.target.value))} className="w-24" />
+                  <span className="text-xs text-slate-600 w-10">{((placedArtworks.find(a => a.id === selectedId)?.scale || 1) * 100).toFixed(0)}%</span>
+                </div>
+                <button onClick={() => handleRemove(selectedId)} className="px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 rounded-lg transition-colors">Remove</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -3004,37 +3372,222 @@ function PublicExhibitionPage() {
   const hash = window.location.hash;
   const match = hash.match(/^#\/exhibitions\/(\d+)\/public/);
   const exhibitionId = match ? match[1] : null;
+  
+  const [exhibition, setExhibition] = useState<any>(null);
+  const [artworks, setArtworks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [selectedArtwork, setSelectedArtwork] = useState<any>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  
+  const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
 
-  return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-6xl mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold text-[#264C61] mb-4" style={{ fontFamily: 'Inter, sans-serif' }}>
-            Gallery Exhibition
-          </h1>
-          <p className="text-slate-500">
-            Exhibition #{exhibitionId} - Public View
-          </p>
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, []);
+
+  useEffect(() => {
+    if (!exhibitionId) return;
+    
+    const fetchExhibition = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/gallery/exhibitions/${exhibitionId}/public`);
+        if (!res.ok) {
+          const errData = await res.json();
+          setError(errData.error || 'Exhibition not found');
+          setLoading(false);
+          return;
+        }
+        const data = await res.json();
+        setExhibition(data.exhibition);
+        setArtworks(data.artworks || []);
+      } catch (err) {
+        setError('Failed to load exhibition');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchExhibition();
+  }, [exhibitionId, API_URL]);
+
+  const getArtworkSizeInCanvas = (artwork: any, canvasWidth: number, canvasHeight: number) => {
+    const baseSize = 120;
+    const aspectRatio = (artwork.width || 100) / (artwork.height || 70);
+    let width = baseSize * (artwork.scale || 1);
+    let height = width / aspectRatio;
+    const maxWidth = canvasWidth * 0.25;
+    const maxHeight = canvasHeight * 0.35;
+    if (width > maxWidth) { width = maxWidth; height = width / aspectRatio; }
+    if (height > maxHeight) { height = maxHeight; width = height * aspectRatio; }
+    return { width, height };
+  };
+
+  const buildPlacedArtworks = () => {
+    if (!exhibition?.sceneData?.placements) return [];
+    return exhibition.sceneData.placements.map((p: any) => {
+      const artwork = artworks.find(a => a.id === p.artworkId);
+      if (!artwork) return null;
+      return {
+        ...artwork,
+        imageUrl: artwork.image_url,
+        artistName: artwork.artist_name,
+        dimensionUnit: artwork.dimension_unit,
+        x: p.x,
+        y: p.y,
+        scale: p.scale
+      };
+    }).filter(Boolean);
+  };
+
+  const placedArtworks = buildPlacedArtworks();
+  const preset = exhibition?.sceneData?.presetId 
+    ? galleryPresets.find(p => p.id === exhibition.sceneData.presetId) 
+    : null;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f7f8fa] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-[#264C61] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-slate-600">Loading exhibition...</p>
         </div>
-        
-        <div className="p-8 bg-slate-50 rounded-2xl text-center">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-[#264C61]/10 flex items-center justify-center">
-            <svg className="w-10 h-10 text-[#264C61]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-[#264C61] mb-2">Public Exhibition Coming Soon</h2>
-          <p className="text-slate-500 max-w-md mx-auto">
-            This exhibition will be publicly viewable once the gallery curator publishes their collection.
-          </p>
+          <h2 className="text-xl font-semibold text-[#264C61] mb-2">Exhibition Unavailable</h2>
+          <p className="text-slate-500 mb-6">{error}</p>
+          <a href="#/" className="text-[#264C61] hover:underline font-medium">← Back to RoomVibe</a>
+        </div>
+      </div>
+    );
+  }
+
+  if (!preset || placedArtworks.length === 0) {
+    return (
+      <div className="min-h-screen bg-white">
+        <div className="max-w-4xl mx-auto px-4 py-16 text-center">
+          <h1 className="text-3xl font-bold text-[#264C61] mb-4">{exhibition?.title || 'Exhibition'}</h1>
+          {exhibition?.subtitle && <p className="text-lg text-slate-600 mb-8">{exhibition.subtitle}</p>}
+          <div className="p-8 bg-slate-50 rounded-2xl">
+            <p className="text-slate-500">This exhibition has not been set up yet. Please check back later.</p>
+          </div>
+          <div className="mt-8">
+            <a href="#/" className="text-[#264C61] hover:underline font-medium">← Back to RoomVibe</a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#f7f8fa]">
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-[#264C61] mb-2">{exhibition?.title || 'Gallery Exhibition'}</h1>
+          {exhibition?.subtitle && <p className="text-lg text-slate-600">{exhibition.subtitle}</p>}
+          {exhibition?.description && <p className="text-slate-500 mt-2 max-w-2xl mx-auto">{exhibition.description}</p>}
+        </div>
+        
+        <div
+          ref={canvasRef}
+          className="relative rounded-2xl overflow-hidden shadow-xl bg-cover bg-center mx-auto"
+          style={{ backgroundImage: `url(${preset.image})`, aspectRatio: '16/10', maxWidth: '1000px' }}
+        >
+          {placedArtworks.map((artwork: any) => {
+            const cw = canvasRef.current?.clientWidth || 800;
+            const ch = canvasRef.current?.clientHeight || 500;
+            const size = getArtworkSizeInCanvas(artwork, cw, ch);
+            return (
+              <button
+                key={artwork.id}
+                className="absolute shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+                style={{
+                  left: `calc(${artwork.x * 100}% - ${size.width / 2}px)`,
+                  top: `calc(${artwork.y * 100}% - ${size.height / 2}px)`,
+                  width: size.width,
+                  height: size.height
+                }}
+                onClick={() => setSelectedArtwork(artwork)}
+              >
+                <img
+                  src={artwork.imageUrl}
+                  alt={artwork.title}
+                  className="w-full h-full object-cover bg-white p-1"
+                  style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}
+                />
+              </button>
+            );
+          })}
         </div>
         
         <div className="mt-8 text-center">
-          <a href="#/" className="text-[#264C61] hover:underline font-medium">
-            ← Back to RoomVibe
-          </a>
+          <p className="text-sm text-slate-500 mb-4">Click on any artwork to view details</p>
+          <a href="#/" className="text-[#264C61] hover:underline font-medium">← Back to RoomVibe</a>
         </div>
       </div>
+      
+      {selectedArtwork && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={() => setSelectedArtwork(null)}>
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="relative">
+              <img
+                src={selectedArtwork.imageUrl}
+                alt={selectedArtwork.title}
+                className="w-full aspect-[4/3] object-contain bg-slate-100"
+              />
+              <button
+                onClick={() => setSelectedArtwork(null)}
+                className="absolute top-4 right-4 w-10 h-10 bg-white/90 rounded-full flex items-center justify-center shadow-lg hover:bg-white"
+              >
+                <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-[#264C61] mb-1">{selectedArtwork.title}</h3>
+              <p className="text-slate-600 mb-4">{selectedArtwork.artistName}</p>
+              <div className="flex items-center gap-4 text-sm text-slate-500 mb-6">
+                <span>{selectedArtwork.width} × {selectedArtwork.height} {selectedArtwork.dimensionUnit}</span>
+                {selectedArtwork.price && (
+                  <span className="font-semibold text-[#264C61]">
+                    {selectedArtwork.currency || '€'}{selectedArtwork.price}
+                  </span>
+                )}
+              </div>
+              <div className="flex gap-3">
+                <a
+                  href={`#/studio?artworkId=${selectedArtwork.id}`}
+                  className="flex-1 py-3 px-4 bg-[#264C61] text-white text-center rounded-lg font-semibold hover:bg-[#1D3A4A] transition-colors"
+                >
+                  View In Your Room
+                </a>
+                {selectedArtwork.buy_url && (
+                  <a
+                    href={selectedArtwork.buy_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 py-3 px-4 border-2 border-[#C9A24A] text-[#264C61] text-center rounded-lg font-semibold hover:bg-[#C9A24A]/10 transition-colors"
+                  >
+                    Buy Now
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

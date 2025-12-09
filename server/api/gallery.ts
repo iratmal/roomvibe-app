@@ -471,4 +471,159 @@ router.delete('/artworks/:id', authenticateToken, async (req: any, res) => {
   }
 });
 
+router.get('/collections/:id/scene', authenticateToken, async (req: any, res) => {
+  try {
+    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    
+    if (!['gallery', 'allaccess', 'admin'].includes(effectivePlan) && 
+        !(req.user.entitlements?.gallery_access)) {
+      return res.status(403).json({ error: 'Gallery access required' });
+    }
+
+    const collectionId = req.params.id;
+    
+    const result = await query(
+      `SELECT c.id, c.title, c.scene_data, c.gallery_id
+       FROM gallery_collections c
+       WHERE c.id = $1`,
+      [collectionId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Collection not found' });
+    }
+
+    const collection = result.rows[0];
+    
+    if (effectivePlan !== 'admin' && collection.gallery_id !== req.user.id) {
+      return res.status(403).json({ error: 'Access denied to this collection' });
+    }
+
+    res.json({ 
+      collectionId: collection.id,
+      title: collection.title,
+      sceneData: collection.scene_data || null
+    });
+  } catch (error: any) {
+    console.error('Error fetching scene:', error);
+    res.status(500).json({ error: 'Failed to fetch scene', details: error.message });
+  }
+});
+
+router.put('/collections/:id/scene', authenticateToken, async (req: any, res) => {
+  try {
+    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    
+    if (!['gallery', 'allaccess', 'admin'].includes(effectivePlan) && 
+        !(req.user.entitlements?.gallery_access)) {
+      return res.status(403).json({ error: 'Gallery access required' });
+    }
+
+    const collectionId = req.params.id;
+    const { sceneData } = req.body;
+
+    const validPresetIds = ['white-cube', 'modern-loft', 'concrete-room', 'classic-museum'];
+    
+    if (!sceneData || typeof sceneData !== 'object') {
+      return res.status(400).json({ error: 'Invalid scene data format' });
+    }
+    
+    if (!sceneData.presetId || !validPresetIds.includes(sceneData.presetId)) {
+      return res.status(400).json({ error: 'Invalid or missing preset ID' });
+    }
+    
+    if (!Array.isArray(sceneData.placements)) {
+      return res.status(400).json({ error: 'Invalid placements format' });
+    }
+    
+    for (const placement of sceneData.placements) {
+      if (typeof placement.artworkId !== 'number' ||
+          typeof placement.x !== 'number' || placement.x < 0 || placement.x > 1 ||
+          typeof placement.y !== 'number' || placement.y < 0 || placement.y > 1 ||
+          typeof placement.scale !== 'number' || placement.scale < 0.1 || placement.scale > 5) {
+        return res.status(400).json({ error: 'Invalid artwork placement data' });
+      }
+    }
+
+    const checkResult = await query(
+      'SELECT gallery_id FROM gallery_collections WHERE id = $1',
+      [collectionId]
+    );
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Collection not found' });
+    }
+
+    if (effectivePlan !== 'admin' && checkResult.rows[0].gallery_id !== req.user.id) {
+      return res.status(403).json({ error: 'You can only update your own collections' });
+    }
+
+    const result = await query(
+      `UPDATE gallery_collections 
+       SET scene_data = $1, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $2
+       RETURNING id, title, scene_data`,
+      [JSON.stringify(sceneData), collectionId]
+    );
+
+    console.log('Scene saved for collection:', collectionId);
+    res.json({ 
+      message: 'Scene saved successfully',
+      collectionId: result.rows[0].id,
+      sceneData: result.rows[0].scene_data
+    });
+  } catch (error: any) {
+    console.error('Error saving scene:', error);
+    res.status(500).json({ error: 'Failed to save scene', details: error.message });
+  }
+});
+
+router.get('/exhibitions/:id/public', async (req, res) => {
+  try {
+    const collectionId = req.params.id;
+    
+    const result = await query(
+      `SELECT c.id, c.title, c.subtitle, c.description, c.scene_data, c.status,
+              u.email as gallery_email
+       FROM gallery_collections c
+       LEFT JOIN users u ON c.gallery_id = u.id
+       WHERE c.id = $1`,
+      [collectionId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Exhibition not found' });
+    }
+
+    const collection = result.rows[0];
+    
+    if (collection.status !== 'published') {
+      return res.status(403).json({ error: 'This exhibition is not published' });
+    }
+
+    const artworksResult = await query(
+      `SELECT id, title, artist_name, image_url, width, height, dimension_unit, price, currency, buy_url
+       FROM gallery_artworks
+       WHERE collection_id = $1
+       ORDER BY position ASC, created_at ASC`,
+      [collectionId]
+    );
+
+    res.json({ 
+      exhibition: {
+        id: collection.id,
+        title: collection.title,
+        subtitle: collection.subtitle,
+        description: collection.description,
+        sceneData: collection.scene_data || null,
+        galleryEmail: collection.gallery_email
+      },
+      artworks: artworksResult.rows
+    });
+  } catch (error: any) {
+    console.error('Error fetching public exhibition:', error);
+    res.status(500).json({ error: 'Failed to fetch exhibition', details: error.message });
+  }
+});
+
 export default router;
