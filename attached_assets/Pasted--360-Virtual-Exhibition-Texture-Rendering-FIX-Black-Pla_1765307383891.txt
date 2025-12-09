@@ -1,0 +1,164 @@
+# 360° Virtual Exhibition – Texture Rendering FIX (Black Planes Bug)
+
+## Context
+
+In the 360° Editor (Modern Gallery), artwork planes are still rendered as **black rectangles**, even though the images are correctly uploaded and configured.
+
+From the browser console (F12 → Console), we see logs like:
+
+```text
+[ArtworkImage] Image size: 2988 x 1986
+[ArtworkImage] Texture configured, setting state...
+[ArtworkImage] State updated to loaded
+[ArtworkImage] RENDER – URL: /api/gallery-artwork-image/9 status: loaded texture: EXISTS
+[ArtworkImage] NET TEXTURE LOADED SUCCESS
+```
+
+This confirms:
+
+* Image URLs are valid
+* Images are loaded
+* Textures exist and are passed to the rendering pipeline
+
+Yet on screen, all artwork planes are still black. This means the bug is **not in image loading**, but in how the **Three.js material** is configured and applied to the artwork meshes.
+
+---
+
+## Goal
+
+Make the artwork images **actually visible** on the planes in the 360° Editor and Viewer (no black squares), with correct brightness and color.
+
+---
+
+## Hypothesis
+
+Black planes, despite successful texture loading, almost always indicate a **material / shading issue** in Three.js.
+
+Likely causes:
+
+* Using a light‑dependent material (e.g. `MeshStandardMaterial`, `MeshLambertMaterial`) with wrong lighting → everything appears black.
+* Material has `color: #000000` which multiplies the texture and darkens it to black.
+* Texture `map` is loaded but never actually assigned to the material used by the mesh.
+* Wrong encoding (linear vs sRGB) plus tone mapping.
+* Shader material that ignores the `map`.
+
+Since we previously saw a **pink test wall**, geometry + UVs are working. So the bug is almost certainly in **material configuration**, not UVs.
+
+---
+
+## Required Fix
+
+### 1. Use a simple, light‑independent material for artworks
+
+For the artwork planes, use **MeshBasicMaterial** so images render regardless of lighting:
+
+```ts
+// Pseudocode – adapt to your component structure
+
+const texture = useLoader(TextureLoader, imageUrl);
+
+texture.encoding = THREE.sRGBEncoding; // crucial for correct colors
+texture.needsUpdate = true;
+
+const material = new THREE.MeshBasicMaterial({
+  map: texture,
+  // IMPORTANT:
+  toneMapped: false,      // prevent renderer tone mapping from darkening the image
+  // DO NOT set color: '#000000' here
+});
+
+material.needsUpdate = true;
+```
+
+**Please ensure:**
+
+* No `color: '#000000'` or similar is applied on this material.
+* No additional shader or post‑processing is overriding the texture.
+
+If you currently share a single material instance across multiple planes, make sure the `map` is correctly set per artwork, or create dedicated materials when needed.
+
+### 2. Make sure the actual artwork mesh uses this material
+
+Where the artwork planes are created (likely in a component like `ArtworkPlane` or similar), ensure you actually assign the material that contains the texture map:
+
+```tsx
+// React Three Fiber example
+
+<mesh ref={meshRef} geometry={planeGeometry} material={material} />
+```
+
+If you are constructing the mesh manually:
+
+```js
+const plane = new THREE.Mesh(geometry, material);
+scene.add(plane);
+```
+
+Double‑check that you are **not later overwriting the material** with some default (e.g. a grey or black placeholder material).
+
+### 3. Encoding & tone mapping
+
+In the renderer setup, we most likely use sRGB encoding. Please verify:
+
+```js
+renderer.outputEncoding = THREE.sRGBEncoding;
+```
+
+For artwork textures:
+
+```js
+texture.encoding = THREE.sRGBEncoding;
+texture.needsUpdate = true;
+```
+
+If you keep `toneMapping` enabled on the renderer, it can make things darker. For artworks specifically, `toneMapped: false` on `MeshBasicMaterial` helps keep them bright and true to the source file.
+
+### 4. Sanity check on UVs
+
+Just to be 100% safe, log the UV attribute once:
+
+```js
+console.log('Artwork plane UVs:', geometry.attributes.uv);
+```
+
+We only need to confirm that UVs exist and have reasonable values. If there are no UVs, the texture can’t map properly.
+
+### 5. Remove any experimental shader material (if present)
+
+If at any point a custom ShaderMaterial was used for artwork planes, please simplify and remove it for now. We just need a robust baseline:
+
+```js
+new THREE.MeshBasicMaterial({ map: texture, toneMapped: false })
+```
+
+Later we can enhance with subtle effects, but first we need **simple, reliable, realistic image display**.
+
+---
+
+## What to Test
+
+1. Open **360 Editor** for an exhibition with artworks assigned to wall slots.
+2. Refresh the page (hard refresh) and open DevTools → **Console**.
+3. Confirm logs still show:
+
+   * `NET TEXTURE LOADED SUCCESS`
+   * `loaded texture: EXISTS`
+4. Visually verify:
+
+   * Artwork planes now display images (no more black squares).
+   * Colors are not washed out or too dark.
+5. Move between viewpoints (Entrance, Center, Back Left, Back Right) and ensure all visible planes render correctly.
+
+---
+
+## Acceptance Criteria
+
+* ✅ In the 360° Editor, all assigned artworks are visible on the walls (no black rectangles).
+* ✅ Images look reasonably similar in brightness/contrast to the original uploads.
+* ✅ Console shows successful texture loading without errors.
+* ✅ Same correct rendering appears in the **public 360 Viewer** route.
+
+When done, please:
+
+* briefly describe what material / renderer changes you applied
+* paste a short code snippet of the final `ArtworkPlane` (or equivalent) component/material setup.

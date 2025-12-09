@@ -346,7 +346,7 @@ function ArtworkPlane({
   );
 }
 
-// Artwork image component using manual TextureLoader with CORS handling
+// Artwork image component using ref-based material for reliable texture binding
 function ArtworkImage({ 
   url, 
   width, 
@@ -362,8 +362,9 @@ function ArtworkImage({
   hovered: boolean;
   setHovered: (h: boolean) => void;
 }) {
-  const [texture, setTexture] = useState<THREE.Texture | null>(null);
+  const materialRef = useRef<THREE.MeshBasicMaterial>(null);
   const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
+  const textureRef = useRef<THREE.Texture | null>(null);
   
   useEffect(() => {
     if (!url) {
@@ -374,11 +375,8 @@ function ArtworkImage({
     
     console.log('[ArtworkImage] === STARTING TEXTURE LOAD ===');
     console.log('[ArtworkImage] URL:', url);
-    console.log('[ArtworkImage] Dimensions: width=', width, 'height=', height);
     setStatus('loading');
-    setTexture(null);
     
-    // Create loader with CORS support for WebGL
     const loader = new THREE.TextureLoader();
     loader.crossOrigin = 'anonymous';
     
@@ -386,12 +384,9 @@ function ArtworkImage({
       url,
       (loadedTexture) => {
         console.log('[ArtworkImage] === TEXTURE LOADED SUCCESS ===');
-        console.log('[ArtworkImage] URL:', url);
-        console.log('[ArtworkImage] Image element:', loadedTexture.image);
         console.log('[ArtworkImage] Image size:', loadedTexture.image?.width, 'x', loadedTexture.image?.height);
-        console.log('[ArtworkImage] Texture UUID:', loadedTexture.uuid);
         
-        // Configure texture for proper WebGL rendering
+        // Configure texture
         loadedTexture.colorSpace = THREE.SRGBColorSpace;
         loadedTexture.magFilter = THREE.LinearFilter;
         loadedTexture.minFilter = THREE.LinearFilter;
@@ -399,31 +394,45 @@ function ArtworkImage({
         loadedTexture.flipY = true;
         loadedTexture.needsUpdate = true;
         
-        console.log('[ArtworkImage] Texture configured, setting state...');
-        setTexture(loadedTexture);
+        textureRef.current = loadedTexture;
+        
+        // CRITICAL: Directly assign texture to material ref if it exists
+        if (materialRef.current) {
+          console.log('[ArtworkImage] Assigning texture directly to material');
+          materialRef.current.map = loadedTexture;
+          materialRef.current.color.set(0xffffff);
+          materialRef.current.needsUpdate = true;
+          console.log('[ArtworkImage] Material updated:', materialRef.current);
+        }
+        
         setStatus('loaded');
-        console.log('[ArtworkImage] State updated to loaded');
       },
-      (progress) => {
-        console.log('[ArtworkImage] Loading progress for', url, ':', progress);
-      },
+      undefined,
       (error) => {
-        console.error('[ArtworkImage] === TEXTURE LOAD FAILED ===');
-        console.error('[ArtworkImage] URL:', url);
-        console.error('[ArtworkImage] Error:', error);
+        console.error('[ArtworkImage] === TEXTURE LOAD FAILED ===', error);
         setStatus('error');
       }
     );
     
     return () => {
-      if (texture) {
-        console.log('[ArtworkImage] Disposing texture for:', url);
-        texture.dispose();
+      if (textureRef.current) {
+        textureRef.current.dispose();
+        textureRef.current = null;
       }
     };
   }, [url]);
+  
+  // When material ref becomes available, apply texture if already loaded
+  useEffect(() => {
+    if (materialRef.current && textureRef.current && status === 'loaded') {
+      console.log('[ArtworkImage] Applying preloaded texture to material');
+      materialRef.current.map = textureRef.current;
+      materialRef.current.color.set(0xffffff);
+      materialRef.current.needsUpdate = true;
+    }
+  }, [status]);
 
-  console.log('[ArtworkImage] RENDER - URL:', url, 'status:', status, 'texture:', texture ? 'EXISTS' : 'NULL');
+  console.log('[ArtworkImage] RENDER - status:', status, 'texture:', textureRef.current ? 'EXISTS' : 'NULL', 'material:', materialRef.current ? 'EXISTS' : 'NULL');
 
   return (
     <mesh 
@@ -436,15 +445,12 @@ function ArtworkImage({
       onPointerOut={() => setHovered(false)}
     >
       <planeGeometry args={[width, height]} />
-      {status === 'loaded' && texture ? (
-        <meshBasicMaterial 
-          map={texture} 
-          color="#ffffff"
-          toneMapped={false}
-        />
-      ) : (
-        <meshBasicMaterial color={status === 'error' ? '#ffcccc' : '#e8e4e0'} />
-      )}
+      <meshBasicMaterial 
+        ref={materialRef}
+        map={textureRef.current}
+        color={status === 'error' ? '#ffcccc' : '#ffffff'}
+        toneMapped={false}
+      />
     </mesh>
   );
 }
