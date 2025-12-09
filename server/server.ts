@@ -23,10 +23,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-// For Autoscale deployments, listen on port 80. In development, use 3001.
+// For Autoscale deployments, internal port 5000 is forwarded to external port 80.
+// In development, API uses 3001 while Vite dev server uses 5000.
 const PORT = parseInt(
   process.env.PORT || 
-  (process.env.NODE_ENV === 'production' ? '80' : '3001'), 
+  (process.env.NODE_ENV === 'production' ? '5000' : '3001'), 
   10
 );
 
