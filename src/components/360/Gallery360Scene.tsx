@@ -185,10 +185,10 @@ function ArtworkPlane({
 
   const hasArtwork = assignment?.artworkUrl;
   
-  const frameWidth = 0.045;
-  const passepartoutWidth = 0.06;
-  const frameDepth = 0.035;
-  const wallOffset = 0.04;
+  const frameWidth = 0.025;
+  const passepartoutWidth = 0.05;
+  const frameDepth = 0.03;
+  const wallOffset = 0.025;
   
   const CM_TO_METERS = 0.01;
   const artworkDimensions = useMemo(() => {
@@ -232,12 +232,17 @@ function ArtworkPlane({
           <>
             <mesh castShadow position={[0, 0, -frameDepth / 2]}>
               <boxGeometry args={[totalFrameW, totalFrameH, frameDepth]} />
-              <meshStandardMaterial color="#2a2420" roughness={0.6} metalness={0.08} />
+              <meshStandardMaterial color="#1a1816" roughness={0.55} metalness={0.05} />
+            </mesh>
+
+            <mesh position={[0, 0, -0.001]}>
+              <boxGeometry args={[totalFrameW - frameWidth * 0.5, totalFrameH - frameWidth * 0.5, frameDepth * 0.6]} />
+              <meshStandardMaterial color="#2d2926" roughness={0.5} metalness={0.08} />
             </mesh>
 
             <mesh position={[0, 0, 0.001]}>
               <planeGeometry args={[artWidth + (passepartoutWidth * 2), artHeight + (passepartoutWidth * 2)]} />
-              <meshStandardMaterial color="#f5f5f2" roughness={0.95} />
+              <meshStandardMaterial color="#faf9f6" roughness={0.92} />
             </mesh>
 
             <Suspense fallback={
@@ -349,6 +354,21 @@ function HotspotMarker({
   currentViewpointId: string;
 }) {
   const [hovered, setHovered] = useState(false);
+  const pulseRef = useRef<THREE.Mesh>(null);
+  const ringRef = useRef<THREE.Mesh>(null);
+  
+  useFrame(({ clock }) => {
+    if (pulseRef.current) {
+      const pulse = Math.sin(clock.elapsedTime * 2.5) * 0.5 + 0.5;
+      pulseRef.current.scale.setScalar(1 + pulse * 0.15);
+      (pulseRef.current.material as THREE.MeshBasicMaterial).opacity = 0.4 + pulse * 0.3;
+    }
+    if (ringRef.current) {
+      const ringPulse = Math.sin(clock.elapsedTime * 1.8 + 0.5) * 0.5 + 0.5;
+      ringRef.current.scale.setScalar(1.3 + ringPulse * 0.2);
+      (ringRef.current.material as THREE.MeshBasicMaterial).opacity = 0.15 + ringPulse * 0.2;
+    }
+  });
   
   if (hotspot.targetViewpoint === currentViewpointId) return null;
 
@@ -358,6 +378,21 @@ function HotspotMarker({
       rotation={[0, hotspot.rotation, 0]}
     >
       <mesh
+        ref={ringRef}
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, 0.005, 0]}
+      >
+        <ringGeometry args={[0.42, 0.52, 32]} />
+        <meshBasicMaterial 
+          color="#C9A24A"
+          transparent 
+          opacity={0.25}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+      
+      <mesh
+        ref={pulseRef}
         onClick={(e) => {
           e.stopPropagation();
           onNavigate(hotspot.targetViewpoint);
@@ -365,21 +400,22 @@ function HotspotMarker({
         onPointerOver={() => setHovered(true)}
         onPointerOut={() => setHovered(false)}
         rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, 0.01, 0]}
       >
-        <circleGeometry args={[0.4, 32]} />
+        <circleGeometry args={[0.38, 32]} />
         <meshBasicMaterial 
           color={hovered ? '#C9A24A' : '#264C61'} 
           transparent 
-          opacity={hovered ? 0.9 : 0.7} 
+          opacity={hovered ? 0.95 : 0.7} 
         />
       </mesh>
       
       <mesh 
-        position={[0, 0.01, -0.15]} 
+        position={[0, 0.015, -0.18]} 
         rotation={[-Math.PI / 2, 0, 0]}
       >
-        <coneGeometry args={[0.15, 0.3, 3]} />
-        <meshBasicMaterial color={hovered ? '#C9A24A' : '#ffffff'} />
+        <coneGeometry args={[0.12, 0.25, 3]} />
+        <meshBasicMaterial color={hovered ? '#C9A24A' : '#ffffff'} transparent opacity={0.9} />
       </mesh>
     </group>
   );
@@ -426,6 +462,8 @@ function CameraController({
     }
   }, [controlsReady, camera]);
 
+  const animationProgress = useRef(0);
+  
   useEffect(() => {
     const isNewViewpoint = lastViewpointId.current !== viewpoint.id;
     
@@ -434,6 +472,7 @@ function CameraController({
     lastViewpointId.current = viewpoint.id;
     
     if (isNewViewpoint) {
+      animationProgress.current = 0;
       if (controlsReady && controlsRef.current && !needsInitialSync.current) {
         isAnimating.current = true;
       } else {
@@ -441,7 +480,9 @@ function CameraController({
       }
     }
   }, [viewpoint, controlsReady]);
-
+  
+  const animationDuration = 0.5;
+  
   useFrame((_, delta) => {
     if (!controlsRef.current || !controlsReady) return;
     
@@ -451,21 +492,27 @@ function CameraController({
       controlsRef.current.update();
       needsInitialSync.current = false;
       isAnimating.current = false;
+      animationProgress.current = 0;
       return;
     }
     
     if (!isAnimating.current) return;
     
-    const lerpFactor = Math.min(5 * delta, 0.2);
-    camera.position.lerp(targetPosition.current, lerpFactor);
-    controlsRef.current.target.lerp(targetLookAt.current, lerpFactor);
+    animationProgress.current = Math.min(animationProgress.current + delta / animationDuration, 1);
+    const t = animationProgress.current;
+    const easeT = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    
+    const lerpAmount = easeT > 0.99 ? 1 : easeT * 0.08 + 0.04;
+    camera.position.lerp(targetPosition.current, lerpAmount);
+    controlsRef.current.target.lerp(targetLookAt.current, lerpAmount);
     controlsRef.current.update();
     
-    if (camera.position.distanceTo(targetPosition.current) < 0.03) {
+    if (animationProgress.current >= 1 || camera.position.distanceTo(targetPosition.current) < 0.02) {
       camera.position.copy(targetPosition.current);
       controlsRef.current.target.copy(targetLookAt.current);
       controlsRef.current.update();
       isAnimating.current = false;
+      animationProgress.current = 0;
     }
   });
 

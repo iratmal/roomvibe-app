@@ -48,25 +48,25 @@ export const gallery360Presets: Gallery360Preset[] = [
       {
         id: 'entrance',
         position: [0, 1.65, 5],
-        lookAt: [0, 1.7, -6],
+        lookAt: [0, 1.65, -7],
         label: 'Entrance'
       },
       {
         id: 'center',
         position: [0, 1.65, 0],
-        lookAt: [0, 1.7, -6.5],
+        lookAt: [0, 1.65, -7],
         label: 'Center'
       },
       {
         id: 'back-left',
         position: [-5, 1.65, -3],
-        lookAt: [8, 1.7, 0],
+        lookAt: [-9, 1.65, -3],
         label: 'Back Left'
       },
       {
         id: 'back-right',
         position: [5, 1.65, -3],
-        lookAt: [-8, 1.7, 0],
+        lookAt: [9, 1.65, -3],
         label: 'Back Right'
       }
     ],

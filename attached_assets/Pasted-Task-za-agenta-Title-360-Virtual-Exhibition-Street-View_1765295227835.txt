@@ -1,0 +1,131 @@
+Task za agenta
+
+Title: 360° Virtual Exhibition – Street View Navigation & Realism Upgrade (V2)
+
+Goal:
+Upgrade the existing 360° Virtual Exhibition so it feels like walking through a real gallery (similar to Artsteps), with Street-View style navigation and more realistic visuals (walls, floor, lighting, artwork scale & frames).
+
+1) Street-View style navigation (public viewer)
+
+Current:
+User jumps between fixed camera viewpoints via bottom buttons.
+
+Update to:
+
+Keep the four main viewpoints (Entrance, Center, Back Left, Back Right), but:
+
+Replace or complement the bottom buttons with floor hotspots (round markers or subtle circles on the floor).
+
+Clicking a hotspot teleports the camera smoothly to that position.
+
+Navigation behaviour:
+
+Mouse/touch drag to look around (left–right & slightly up–down), with smooth, limited rotation.
+
+Camera height stays constant at eye level (no tilting into the ceiling or floor).
+
+Transition between hotspots uses a short lerp animation (0.4–0.6s), no abrupt jumps.
+
+Constraints:
+
+Prevent the camera from ever ending up outside the gallery volume (no seeing “void” above or below).
+
+FOV and distance tuned so artworks feel like a real viewing distance in a mid-size gallery.
+
+2) More realistic gallery space (Modern Gallery first)
+
+Use the Modern Gallery environment as the primary reference for realism.
+
+Walls & floor
+
+Walls: slightly warm neutral gray, smooth PBR material with subtle roughness, no banding.
+
+Floor: light stone / polished concrete look (similar feel to Artsteps example), with soft reflection/roughness.
+
+Make the main wall planes wider so the user doesn’t immediately see edges/void when rotating the camera.
+
+Ceiling & lights
+
+Simple, elegant modern ceiling beams or tracks (we already have something similar – refine it).
+
+Add a row of spotlights above artworks that:
+
+Cast soft, oval light on the wall.
+
+Optionally cast a very soft shadow just under the frame.
+
+No visible “space void”
+
+Ensure the full 360° view is always inside the gallery geometry:
+
+Closed ceiling and continuous floor.
+
+Camera clipping or sky color tuned so user never sees pure black/white outside.
+
+3) Artwork realism (scale, proportions, frames)
+
+Correct physical scaling
+
+Use the artwork’s real dimensions from the database (width/height in cm) to calculate the scale of the plane in 3D.
+
+Paintings with different formats (e.g. 150×100 vs 100×100) must clearly look different in size on the wall, matching real-world proportions.
+
+Frames
+
+Each artwork should be rendered as:
+
+A main artwork plane.
+
+A thin frame around it (slightly darker or lighter, with bevel).
+
+The frame should add a bit of depth from the wall (few centimeters), so it doesn’t look like a sticker.
+
+Brightness & color
+
+Ensure that artwork textures are not darkened:
+
+Gamma/tonemapping so colors look close to the original image (compare to Studio preview).
+
+Light intensity balanced so whites are not blown out, but paintings look vivid and not dull.
+
+4) Editor UX tweaks (360° Editor)
+
+Always show a stable wall view
+
+For each camera position (Entrance / Center / Back Left / Back Right), default camera angle should:
+
+Look straight at the relevant wall segment.
+
+Keep horizon straight (no heavy tilt towards floor/ceiling).
+
+Avoid camera angles where the user sees mostly ceiling or floor.
+
+Wall labels & slots
+
+Keep the left sidebar with wall slots as is (it works well).
+
+Make sure that when a user clicks a wall slot, the camera smoothly rotates so that slot’s wall is clearly visible.
+
+5) Technical notes
+
+Keep using React Three Fiber + Three.js, but refactor if needed:
+
+Encapsulate gallery geometry + lights into a reusable component (ModernGalleryScene).
+
+Encapsulate camera + hotspots logic into something like StreetViewController.
+
+No backend changes to schema for now – reuse existing exhibition & artwork assignments.
+
+6) Acceptance criteria
+
+From a gallery collection card, clicking “360°” opens the editor. Editor shows a realistic Modern Gallery space with correctly scaled artworks and frames.
+
+In the public 360° viewer, users:
+
+Rotate view with mouse/touch.
+
+Move by clicking floor hotspots, with smooth teleport and no “falling out” of the room.
+
+Artworks clearly differ in size according to their real dimensions.
+
+Overall impression: feels like you are inside a real, modern gallery (similar realism level to Artsteps), not a simple gray box.
