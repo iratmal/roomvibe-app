@@ -450,18 +450,12 @@ function ArtworkImage({
     >
       <planeGeometry args={[width, height]} />
       {loadError || !texture ? (
-        <meshStandardMaterial 
+        <meshBasicMaterial 
           color="#d4cfc7"
-          roughness={0.8}
         />
       ) : (
-        <meshStandardMaterial 
+        <meshBasicMaterial 
           map={texture}
-          color="#ffffff"
-          emissive={hovered ? '#333333' : '#000000'}
-          emissiveIntensity={hovered ? 0.12 : 0}
-          roughness={0.35}
-          metalness={0}
           toneMapped={false}
         />
       )}
