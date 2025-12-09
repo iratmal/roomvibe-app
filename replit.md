@@ -23,14 +23,11 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 - **Unified Widget System**: A single embeddable JavaScript widget adapts its functionality based on user entitlements (Artist, Designer, Gallery modes).
 - **Virtual Exhibition Editor**: MVP feature for Gallery plan users to create immersive virtual exhibitions. It includes preset selection, artwork placement via drag-and-drop, and scene persistence.
 - **360° Virtual Exhibition**: Immersive 3D gallery experience using React Three Fiber (R3F) featuring:
-  - ArtPlacer-style professional gallery aesthetics with warm gray walls (#ddd8d0), concrete floor, and cream ceiling
-  - Modern ceiling with dark beams and visible spotlight fixtures
-  - Gallery spotlights casting warm light cones on artwork walls (properly targeted via scene attachment)
-  - Museum-quality framing with thin dark bevel frame (2.5cm), white passepartout mat (5cm), and subtle wall offset
-  - True-to-scale artwork rendering: cm dimensions convert to meters, only scaling down when exceeding slot bounds
-  - Street-View style navigation with pulsing floor hotspots and smooth 0.5s camera transitions
-  - Camera constraints preventing floor/ceiling "escape" with eye-level viewpoints (1.65m)
-  - Expanded gallery dimensions (18x14m) for spacious contemporary museum feel
+  - Clean gallery aesthetics with configurable wall/floor/ceiling colors from presets
+  - Artwork textures use meshBasicMaterial (lighting-independent) for reliable rendering
+  - Image proxy endpoint (`/api/image-proxy`) handles CORS for external artwork URLs with SSRF protection
+  - Street-View style navigation with floor hotspots and smooth camera transitions
+  - Camera constraints with configurable polar angle limits
 - **Onboarding Flow**: A 3-screen introductory wizard for first-time users, guiding them through the application's modules and features.
 - **Artwork Management**: Includes artwork upload, editing, and automated enrichment from Shopify.
 - **Real-Scale Rendering**: Achieves accurate artwork sizing using physical dimensions and standardized room wall heights.
