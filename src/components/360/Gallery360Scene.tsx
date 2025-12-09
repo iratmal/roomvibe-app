@@ -346,7 +346,7 @@ function ArtworkPlane({
   );
 }
 
-// Artwork image component using the WORKING manual TextureLoader approach
+// Artwork image component using manual TextureLoader with CORS handling
 function ArtworkImage({ 
   url, 
   width, 
@@ -367,36 +367,63 @@ function ArtworkImage({
   
   useEffect(() => {
     if (!url) {
+      console.warn('[ArtworkImage] No URL provided');
       setStatus('error');
       return;
     }
     
-    console.log('[ArtworkImage] Loading texture:', url);
+    console.log('[ArtworkImage] === STARTING TEXTURE LOAD ===');
+    console.log('[ArtworkImage] URL:', url);
+    console.log('[ArtworkImage] Dimensions: width=', width, 'height=', height);
     setStatus('loading');
+    setTexture(null);
     
+    // Create loader with CORS support for WebGL
     const loader = new THREE.TextureLoader();
+    loader.crossOrigin = 'anonymous';
+    
     loader.load(
       url,
       (loadedTexture) => {
-        console.log('[ArtworkImage] SUCCESS! Texture loaded:', url, 'size:', loadedTexture.image?.width, 'x', loadedTexture.image?.height);
+        console.log('[ArtworkImage] === TEXTURE LOADED SUCCESS ===');
+        console.log('[ArtworkImage] URL:', url);
+        console.log('[ArtworkImage] Image element:', loadedTexture.image);
+        console.log('[ArtworkImage] Image size:', loadedTexture.image?.width, 'x', loadedTexture.image?.height);
+        console.log('[ArtworkImage] Texture UUID:', loadedTexture.uuid);
+        
+        // Configure texture for proper WebGL rendering
         loadedTexture.colorSpace = THREE.SRGBColorSpace;
+        loadedTexture.magFilter = THREE.LinearFilter;
+        loadedTexture.minFilter = THREE.LinearFilter;
+        loadedTexture.generateMipmaps = false;
+        loadedTexture.flipY = true;
         loadedTexture.needsUpdate = true;
+        
+        console.log('[ArtworkImage] Texture configured, setting state...');
         setTexture(loadedTexture);
         setStatus('loaded');
+        console.log('[ArtworkImage] State updated to loaded');
       },
-      undefined,
+      (progress) => {
+        console.log('[ArtworkImage] Loading progress for', url, ':', progress);
+      },
       (error) => {
-        console.error('[ArtworkImage] FAILED to load texture:', url, error);
+        console.error('[ArtworkImage] === TEXTURE LOAD FAILED ===');
+        console.error('[ArtworkImage] URL:', url);
+        console.error('[ArtworkImage] Error:', error);
         setStatus('error');
       }
     );
     
     return () => {
       if (texture) {
+        console.log('[ArtworkImage] Disposing texture for:', url);
         texture.dispose();
       }
     };
   }, [url]);
+
+  console.log('[ArtworkImage] RENDER - URL:', url, 'status:', status, 'texture:', texture ? 'EXISTS' : 'NULL');
 
   return (
     <mesh 
@@ -416,7 +443,7 @@ function ArtworkImage({
           toneMapped={false}
         />
       ) : (
-        <meshBasicMaterial color={status === 'error' ? '#f5e5e0' : '#e8e4e0'} />
+        <meshBasicMaterial color={status === 'error' ? '#ffcccc' : '#e8e4e0'} />
       )}
     </mesh>
   );
