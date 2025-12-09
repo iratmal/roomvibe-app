@@ -26,10 +26,11 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
   - ArtPlacer-style professional gallery aesthetics with warm gray walls (#ddd8d0), concrete floor, and cream ceiling
   - Modern ceiling with dark beams and visible spotlight fixtures
   - Gallery spotlights casting warm light cones on artwork walls (properly targeted via scene attachment)
-  - Premium framing with dark wood frame (#2a2420), white passepartout mat, and wall offset for 3D depth
+  - Museum-quality framing with thin dark bevel frame (2.5cm), white passepartout mat (5cm), and subtle wall offset
   - True-to-scale artwork rendering: cm dimensions convert to meters, only scaling down when exceeding slot bounds
-  - Camera constraints preventing floor/ceiling "escape" and limiting zoom distance
-  - Expanded gallery dimensions (18x14m) with eye-level viewing positions
+  - Street-View style navigation with pulsing floor hotspots and smooth 0.5s camera transitions
+  - Camera constraints preventing floor/ceiling "escape" with eye-level viewpoints (1.65m)
+  - Expanded gallery dimensions (18x14m) for spacious contemporary museum feel
 - **Onboarding Flow**: A 3-screen introductory wizard for first-time users, guiding them through the application's modules and features.
 - **Artwork Management**: Includes artwork upload, editing, and automated enrichment from Shopify.
 - **Real-Scale Rendering**: Achieves accurate artwork sizing using physical dimensions and standardized room wall heights.
