@@ -110,7 +110,7 @@ router.get('/exhibitions/:id/360-public', async (req, res) => {
 
     const result = await query(
       `SELECT c.id, c.title, c.description, c.scene_360_data, c.status,
-              u.display_name as gallery_name
+              u.email as gallery_name
        FROM gallery_collections c
        JOIN users u ON c.gallery_id = u.id
        WHERE c.id = $1`,
@@ -132,11 +132,10 @@ router.get('/exhibitions/:id/360-public', async (req, res) => {
     }
 
     const artworksResult = await query(
-      `SELECT a.id, a.title, a.artist_name, a.image_url, a.width, a.height, a.dimension_unit
-       FROM gallery_artworks ga
-       JOIN artworks a ON ga.artwork_id = a.id
-       WHERE ga.collection_id = $1
-       ORDER BY ga.display_order`,
+      `SELECT id, title, artist_name, image_url, width_value as width, height_value as height, dimension_unit
+       FROM gallery_artworks
+       WHERE collection_id = $1
+       ORDER BY id`,
       [collectionId]
     );
 

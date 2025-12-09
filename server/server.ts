@@ -194,7 +194,9 @@ app.get('/api/gallery-artwork-image/:id', async (req: any, res) => {
     res.set({
       'Content-Type': mimeType,
       'Content-Length': buffer.length,
-      'Cache-Control': 'public, max-age=31536000'
+      'Cache-Control': 'public, max-age=31536000',
+      'Access-Control-Allow-Origin': '*',
+      'Cross-Origin-Resource-Policy': 'cross-origin'
     });
     
     res.send(buffer);

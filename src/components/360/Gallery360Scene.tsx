@@ -350,17 +350,31 @@ function ArtworkPlane({
 function getProxiedImageUrl(url: string): string {
   if (!url) return '';
   
+  // Check if it's an internal API URL - these don't need proxying
+  // as they're served from the same origin with proper headers
+  if (url.startsWith('/api/') || url.startsWith('/api/gallery-artwork-image/')) {
+    // For dev, prepend the backend server URL for internal API calls
+    if (import.meta.env.DEV) {
+      return `http://localhost:3001${url}`;
+    }
+    return url;
+  }
+  
   // Check if already a proxy URL by parsing the URL properly
   try {
     const parsedUrl = new URL(url, window.location.origin);
     if (parsedUrl.pathname === '/api/image-proxy') {
       return url; // Already proxied
     }
+    // Also check for internal API paths
+    if (parsedUrl.pathname.startsWith('/api/')) {
+      return url;
+    }
   } catch {
     // URL parsing failed, proceed with proxying
   }
   
-  // Use backend proxy to ensure CORS headers for WebGL
+  // External URLs need the proxy to fix CORS for WebGL
   const baseUrl = import.meta.env.DEV ? 'http://localhost:3001' : '';
   return `${baseUrl}/api/image-proxy?url=${encodeURIComponent(url)}`;
 }
@@ -391,9 +405,12 @@ function ArtworkImage({
     
     setLoadError(false);
     const loader = new THREE.TextureLoader();
+    loader.crossOrigin = 'anonymous';
     
     // Use proxied URL to fix CORS issues for WebGL textures
     const proxiedUrl = getProxiedImageUrl(url);
+    
+    console.log('[360] Loading artwork texture:', proxiedUrl);
     
     loader.load(
       proxiedUrl,
@@ -402,6 +419,8 @@ function ArtworkImage({
         loadedTexture.minFilter = THREE.LinearFilter;
         loadedTexture.magFilter = THREE.LinearFilter;
         loadedTexture.generateMipmaps = false;
+        loadedTexture.needsUpdate = true;
+        console.log('[360] Texture loaded successfully:', url);
         setTexture(loadedTexture);
         setLoadError(false);
       },
@@ -437,11 +456,13 @@ function ArtworkImage({
         />
       ) : (
         <meshStandardMaterial 
-          map={texture} 
+          map={texture}
+          color="#ffffff"
           emissive={hovered ? '#333333' : '#000000'}
           emissiveIntensity={hovered ? 0.12 : 0}
           roughness={0.35}
           metalness={0}
+          toneMapped={false}
         />
       )}
     </mesh>
