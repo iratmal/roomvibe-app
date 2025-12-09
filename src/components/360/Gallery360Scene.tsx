@@ -299,6 +299,15 @@ function ArtworkPlane({
   );
 }
 
+function getProxiedImageUrl(url: string): string {
+  // If it's already a local URL or data URL, use it directly
+  if (url.startsWith('/') || url.startsWith('data:')) {
+    return url;
+  }
+  // For external URLs, route through our proxy
+  return `/api/image-proxy?url=${encodeURIComponent(url)}`;
+}
+
 function ArtworkImage({ 
   url, 
   width, 
@@ -314,7 +323,8 @@ function ArtworkImage({
   hovered: boolean;
   setHovered: (h: boolean) => void;
 }) {
-  const texture = useTexture(url);
+  const proxiedUrl = getProxiedImageUrl(url);
+  const texture = useTexture(proxiedUrl);
   
   useEffect(() => {
     if (texture) {

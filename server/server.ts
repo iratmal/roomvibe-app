@@ -204,6 +204,102 @@ app.get('/api/gallery-artwork-image/:id', async (req: any, res) => {
   }
 });
 
+// Image proxy for loading external images with CORS headers (needed for WebGL textures)
+app.get('/api/image-proxy', async (req: any, res) => {
+  try {
+    const imageUrl = req.query.url as string;
+    
+    if (!imageUrl) {
+      return res.status(400).json({ error: 'Missing url parameter' });
+    }
+
+    // Validate URL
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(imageUrl);
+    } catch {
+      return res.status(400).json({ error: 'Invalid URL' });
+    }
+
+    // Only allow http/https protocols
+    if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+      return res.status(400).json({ error: 'Invalid protocol' });
+    }
+
+    // Block private/internal IPs (SSRF protection)
+    const hostname = parsedUrl.hostname.toLowerCase();
+    const blockedPatterns = [
+      /^localhost$/i,
+      /^127\./,
+      /^10\./,
+      /^172\.(1[6-9]|2[0-9]|3[01])\./,
+      /^192\.168\./,
+      /^0\./,
+      /^169\.254\./,
+      /\.local$/i,
+      /^::1$/,
+      /^fc00:/i,
+      /^fe80:/i
+    ];
+    
+    if (blockedPatterns.some(pattern => pattern.test(hostname))) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    // Fetch the image with timeout
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    
+    const response = await fetch(imageUrl, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'RoomVibe-ImageProxy/1.0',
+        'Accept': 'image/*'
+      }
+    });
+    
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      return res.status(response.status).json({ error: `Failed to fetch image: ${response.statusText}` });
+    }
+
+    // Verify content type is an image
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.startsWith('image/')) {
+      return res.status(400).json({ error: 'URL does not point to an image' });
+    }
+
+    // Check content length (max 10MB)
+    const contentLength = response.headers.get('content-length');
+    if (contentLength && parseInt(contentLength) > 10 * 1024 * 1024) {
+      return res.status(413).json({ error: 'Image too large (max 10MB)' });
+    }
+
+    // Stream the response with proper headers
+    res.set({
+      'Content-Type': contentType,
+      'Cache-Control': 'public, max-age=86400',
+      'Access-Control-Allow-Origin': '*'
+    });
+
+    if (contentLength) {
+      res.set('Content-Length', contentLength);
+    }
+
+    // Stream the image data
+    const buffer = await response.arrayBuffer();
+    res.send(Buffer.from(buffer));
+    
+  } catch (error: any) {
+    if (error.name === 'AbortError') {
+      return res.status(504).json({ error: 'Request timeout' });
+    }
+    console.error('Error proxying image:', error);
+    res.status(500).json({ error: 'Failed to proxy image' });
+  }
+});
+
 app.get('/api/artwork/:id', async (req: any, res) => {
   try {
     const artworkId = parseInt(req.params.id);
