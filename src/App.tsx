@@ -2069,16 +2069,6 @@ function Studio() {
                       style={{ backgroundImage: `url(${room.image})` }}
                     />
                     
-                    {/* Premium star badge - hidden for basic and standard rooms */}
-                    {!hasCleanThumbnail && (
-                      <div className="absolute top-1.5 left-1.5">
-                        <div className="bg-[#D8B46A] rounded-full p-1 shadow-sm">
-                          <svg className="h-2 w-2 text-white" viewBox="0 0 24 24" fill="currentColor">
-                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                          </svg>
-                        </div>
-                      </div>
-                    )}
                     
                     {/* Locked overlay with gold-styled lock */}
                     {isLocked && (
@@ -2092,14 +2082,6 @@ function Studio() {
                       </div>
                     )}
                     
-                    {/* Room name label - hidden for basic and standard rooms (clean thumbnails) */}
-                    {!hasCleanThumbnail && (
-                      <div className={`absolute bottom-0 left-0 right-0 px-2 py-1 text-[9px] font-medium ${
-                        isLocked ? "bg-[#264C61]/80 text-white" : "bg-gradient-to-t from-[#D8B46A]/80 to-[#D8B46A]/60 text-white"
-                      }`}>
-                        {room.name}
-                      </div>
-                    )}
                   </button>
                 );
               })}

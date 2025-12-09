@@ -1,0 +1,143 @@
+# ✅ ROOMVIBE — TASK: Studio Sidebar Polish + Dashboard Scroll Fix
+
+Ovo je fokusirani UI/UX task za Replit Agenta. Sve promjene su vizualne, bez backend zahvata.
+
+Koristi **Fast Mode**.
+
+---
+
+## 🎯 GOAL
+
+1. U **Studio** ekranu očistiti izgled lijevog sidebar stupca sa scenama:
+
+   * ukloniti žute zvjezdice
+   * ukloniti tekstualne nazive soba ispod thumbnailova
+   * ostaviti čist grid/lisnu sliku scena (image-only), jer korisnik već filtrira sobe preko kategorijskih tabova na vrhu.
+
+2. Popraviti scroll ponašanje pri povratku iz **Studio** ekrana na **Gallery Dashboard**:
+
+   * kada korisnik izađe iz Studija natrag na dashboard, stranica dashboarda treba se otvoriti **od vrha** (ne na dnu).
+
+---
+
+## 📌 KONTEKST
+
+* Projekt: **RoomVibe**
+* Studio ruta: `/studio` (ili odgovarajuća Studio stranica koja se koristi za sve role)
+* Gallery dashboard ruta: `/dashboard/gallery`
+
+Relevantni folderi (Agent neka radi u ovim područjima):
+
+* `src/pages/studio` ili `src/pages/Studio.tsx` (ovisno o strukturi)
+* `src/components/studio` (sidebar liste scena, scene kartice)
+* `src/pages/dashboard/gallery` i/ili `src/components/dashboards/GalleryDashboard.tsx`
+* `src/App.tsx` (router setup, samo ako je potrebno za scroll behaviour)
+
+---
+
+# 1️⃣ STUDIO SIDEBAR POLISH — Ukloniti zvjezdice i nazive soba
+
+**Trenutno stanje:**
+
+* U lijevom sidebaru Studija prikazuje se lista/mockup scena (bathroom, bedroom, café itd.).
+* Svaka scena ima:
+
+  * thumbnail slike
+  * žutu zvjezdicu (star icon) u gornjem lijevom ili desnom uglu
+  * naziv sobe ("Bathroom 01", "Bedroom 02"...) ispod ili preko thumbnaila.
+
+**Željeno stanje:**
+
+* Lijevi sidebar prikazuje **samo slike scena** (image-only).
+* Nema žute zvjezdice.
+* Nema tekstualnog naziva sobe ispod.
+* Vizualna indikacija odabrane scene i dalje treba postojati (npr. border, lagana pozadina, overlay), ali minimalna i čista.
+
+### ✅ Što treba napraviti
+
+1. **Lokacija komponente:**
+
+   * Pronađi komponentu koja rendera pojedinu scene karticu u Studiju (npr. `SceneThumbnail`, `RoomSceneItem`, `StudioSceneCard` ili slično) unutar `src/components/studio`.
+
+2. **Ukloni star icon (žutu zvjezdicu):**
+
+   * Makni JSX koji rendera zvjezdicu ili ukloni `icon`/`badge` prop ako dolazi iz parenta.
+   * Provjeri da ne ostaje prazan container koji stvara nepotrebni padding.
+
+3. **Ukloni tekstualni naziv sobe:**
+
+   * U istoj komponenti ukloni `title`/`label` tekst koji se prikazuje ispod thumbnaila.
+   * Po potrebi prilagodi stil da thumbnail zauzme kompletan prostor kartice.
+
+4. **Zadrži vizualni state odabrane scene:**
+
+   * Osiguraj da i dalje postoji vizualna razlika između **odabrane** i **neodabrane** scene (npr. border boja, svijetla pozadina, thin outline, itd.).
+   * Koristi postojeći dizajn koliko je moguće, samo bez zvjezdice i teksta.
+
+5. **Test:**
+
+   * Otvori `/studio`.
+   * Provjeri da svi thumbnailovi scena u lijevom stupcu:
+
+     * nemaju zvjezdicu
+     * nemaju naziv sobe
+     * i dalje je jasno vidljivo koja scena je odabrana.
+
+---
+
+# 2️⃣ DASHBOARD SCROLL FIX — Povratak iz Studija na Gallery Dashboard
+
+**Problem:**
+
+* Kada je korisnik u Studiju (`/studio`) i vrati se na **Gallery Dashboard** (kroz link/gumb Dashboard/Back), stranica dashboarda se otvara skrolana **na dnu**, umjesto od vrha.
+
+**Željeno ponašanje:**
+
+* Svaki put kada se korisnik iz Studija vrati na Gallery Dashboard (`/dashboard/gallery`), dashboard se treba prikazati skrolan na **top: 0**.
+
+### ✅ Što treba napraviti
+
+1. **Identificiraj način povratka iz Studija:**
+
+   * Pronađi gumb/link koji iz Studija vodi na dashboard (npr. "Dashboard" u top navigationu ili "Back to Dashboard").
+   * Provjeri da link vodi na `/dashboard/gallery` ili generički `/dashboard/...` za trenutnu rolu.
+
+2. **Resetiraj scroll pri mountu dashboarda ili pri navigaciji:**
+
+   * U Gallery Dashboard komponenti (npr. `GalleryDashboard.tsx`) dodaj `useEffect` koji na mountu radi:
+
+     ```ts
+     useEffect(() => {
+       window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+     }, []);
+     ```
+   * Alternativno, ako postoji globalni `ScrollToTop` komponent povezan s routerom, osiguraj da se primjenjuje i na rutu `/dashboard/gallery`.
+
+3. **Test:**
+
+   * Otvori `/dashboard/gallery`, skrolaj do dna.
+   * Ode u `/studio`.
+   * Iz Studija klikni na Dashboard / Back link koji vodi na Gallery Dashboard.
+   * Potvrdi da se dashboard otvara skrolan na vrh (vidljiv naslov "Gallery Dashboard" + Gallery Hub sekcija bez dodatnog scrollanja).
+
+---
+
+# 🚫 NON-SCOPE
+
+* Ne dirati backend, API-jeve, niti logiku za učitavanje scena/artworka.
+* Ne mijenjati dizajn Studija izvan uklanjanja zvjezdice i teksta u sidebaru.
+* Ne mijenjati druge dashboarde (Artist/Designer) osim ako dijele istu komponentu i promjena je nužna.
+
+---
+
+# ✅ STOP CONDITION
+
+Agent treba završiti task tek kada:
+
+1. Lijevi sidebar u Studiju prikazuje **samo slike scena**, bez žutih zvjezdica i bez naziva soba, uz jasnu indikaciju odabrane scene.
+2. Povratak iz Studija na Gallery Dashboard **uvijek** otvara dashboard skrolan na vrh.
+3. U outputu Agent jasno navede:
+
+   * koje je fileove mijenjao
+   * kako je implementirao Studio sidebar promjenu
+   * kako je riješio scroll reset za dashboard.

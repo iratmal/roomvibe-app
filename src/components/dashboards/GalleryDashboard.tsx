@@ -172,6 +172,10 @@ export function GalleryDashboard() {
   const publishedCount = collections.filter(c => c.status === 'published').length;
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, []);
+
+  useEffect(() => {
     fetchCollections();
     fetchArtworks();
     
