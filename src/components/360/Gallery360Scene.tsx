@@ -408,11 +408,12 @@ function ArtworkImage({
           loadedTexture.dispose();
           return;
         }
-        console.log('[Gallery360] Texture loaded successfully:', fullUrl);
+        console.log('[Gallery360] Texture loaded successfully:', fullUrl, 'image size:', loadedTexture.image?.width, 'x', loadedTexture.image?.height);
         loadedTexture.colorSpace = THREE.SRGBColorSpace;
         loadedTexture.minFilter = THREE.LinearFilter;
         loadedTexture.magFilter = THREE.LinearFilter;
         loadedTexture.generateMipmaps = false;
+        loadedTexture.flipY = true;
         loadedTexture.needsUpdate = true;
         
         if (textureRef.current) {
@@ -457,14 +458,9 @@ function ArtworkImage({
       ) : loadError || !texture ? (
         <meshBasicMaterial color="#f0e8e0" />
       ) : (
-        <meshStandardMaterial 
-          map={texture} 
-          color="#ffffff"
-          emissive={hovered ? '#222222' : '#000000'}
-          emissiveIntensity={hovered ? 0.1 : 0}
-          roughness={0.3}
-          metalness={0}
-          toneMapped={true}
+        <meshBasicMaterial 
+          map={texture}
+          toneMapped={false}
         />
       )}
     </mesh>
