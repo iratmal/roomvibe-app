@@ -3000,7 +3000,7 @@ function VirtualExhibitionRoom() {
         
         <a
           href="#/dashboard/gallery"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-[#264C61] text-white rounded-lg hover:bg-[#1D3A4A] transition-colors font-semibold"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-[#264C61] text-white rounded-[8px] hover:bg-[#1D3A4A] transition-colors font-semibold"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />

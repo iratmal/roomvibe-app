@@ -685,7 +685,7 @@ export function GalleryDashboard() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="title" className="block text-[15px] font-semibold text-slate-800 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+                <label htmlFor="title" className="block text-[16px] font-semibold text-slate-800 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
                   Collection Title <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
@@ -700,7 +700,7 @@ export function GalleryDashboard() {
                     name="title"
                     value={formData.title}
                     onChange={handleInputChange}
-                    className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] focus:border-transparent transition-all bg-slate-50 hover:bg-white text-[15px] placeholder:text-slate-500"
+                    className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] focus:border-transparent transition-all bg-slate-50 hover:bg-white text-[16px] placeholder:text-slate-600"
                     placeholder="Modern Gallery Showcase 2025"
                     required
                   />
@@ -708,7 +708,7 @@ export function GalleryDashboard() {
               </div>
 
               <div>
-                <label htmlFor="subtitle" className="block text-[15px] font-semibold text-slate-800 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+                <label htmlFor="subtitle" className="block text-[16px] font-semibold text-slate-800 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
                   Subtitle
                 </label>
                 <div className="relative">
@@ -723,7 +723,7 @@ export function GalleryDashboard() {
                     name="subtitle"
                     value={formData.subtitle}
                     onChange={handleInputChange}
-                    className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] focus:border-transparent transition-all bg-slate-50 hover:bg-white text-[15px] placeholder:text-slate-500"
+                    className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] focus:border-transparent transition-all bg-slate-50 hover:bg-white text-[16px] placeholder:text-slate-600"
                     placeholder="Contemporary Abstracts & Landscapes"
                   />
                 </div>
@@ -731,7 +731,7 @@ export function GalleryDashboard() {
             </div>
 
             <div>
-              <label htmlFor="description" className="block text-[15px] font-semibold text-slate-800 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
+              <label htmlFor="description" className="block text-[16px] font-semibold text-slate-800 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
                 Description
               </label>
               <div className="relative">
@@ -746,7 +746,7 @@ export function GalleryDashboard() {
                   value={formData.description}
                   onChange={handleInputChange}
                   rows={3}
-                  className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] focus:border-transparent transition-all bg-slate-50 hover:bg-white resize-none text-[15px] placeholder:text-slate-500"
+                  className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] focus:border-transparent transition-all bg-slate-50 hover:bg-white resize-none text-[16px] placeholder:text-slate-600"
                   placeholder="Tell visitors about the theme of this exhibition..."
                 />
               </div>
@@ -968,7 +968,7 @@ export function GalleryDashboard() {
         </div>
 
         {/* Your Plan Section */}
-        <div className="mb-16 p-8 bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100">
+        <div className="mb-[88px] p-8 bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-semibold text-[#264C61]" style={{ fontFamily: 'Inter, sans-serif' }}>
               Your Plan

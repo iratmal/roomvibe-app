@@ -1,0 +1,122 @@
+# ✅ ROOMVIBE — Precizni POLISH TASK 2.0 za Replit Agenta (Gallery Dashboard + Virtual Exhibition UI)
+
+Ovaj task je izuzetno precizno definiran, vezan uz točne UI dijelove i uključuje mehanizme provjere, tako da agent **mora** izvršiti vidljive promjene.
+
+Koristi **Fast Mode** jer se radi o isključivo vizualnim doradama.
+
+---
+
+## 🎯 GOAL
+
+Izvesti niz konkretnih UI dorada na Gallery Dashboardu i Virtual Exhibition (Coming Soon) ekranu. Sve promjene moraju biti **vidljive u previewu** i Agent mora pokazati izmijenjene fileove.
+
+---
+
+## 📌 KONTEKST
+
+Projekt: **RoomVibe**
+Dashboard: **Gallery Dashboard**
+URL segment: `/dashboard/gallery`
+Virtual Exhibition: `/gallery/exhibitions/:id`
+
+Relevantni folderi (Agent mora raditi samo ovdje):
+
+* `src/pages/dashboard/gallery`
+* `src/components/gallery`
+* `src/components/ui`
+
+---
+
+# ✅ SCOPE — OVO TOČNO NAPRAVITI
+
+## **1) Poboljšati čitljivost placeholdera i labela u "Create New Exhibition" sekciji**
+
+**Lokacija:** komponenta za kreiranje izložbe (najčešće `CreateExhibitionForm.tsx` ili sličan file unutar `src/pages/dashboard/gallery`).
+
+### Promjene:
+
+* Povećati font-size placeholdera i labela za **+1 ili +2 px**.
+* Pojačati kontrast placeholdera (trenutno presvijetlo). Koristi tamniju varijantu trenutne neutralne boje iz dizajn sistema.
+* Postaviti ove primjere placeholdera:
+
+  * **Collection Title:** "Modern Gallery Showcase 2025"
+  * **Subtitle:** "Contemporary Abstracts & Landscapes"
+  * **Description:** "Tell visitors about the theme of this exhibition…"
+
+---
+
+## **2) Dodati više prostora (spacing) između sekcija "Your Plan" i "Account Details"**
+
+**Lokacija:** Gallery Dashboard layout file (`GalleryDashboard.tsx` ili `index.tsx` u folderu dashboard/gallery).
+
+### Promjene:
+
+* Dodati **+24 px** vertikalnog razmaka između sekcija.
+* Ne mijenjati padding unutar boxeva — samo razmak između njih.
+
+---
+
+## **3) Dodati micro-description na Virtual Exhibition Coming Soon ekran**
+
+**Lokacija:** Virtual Exhibition page component (`VirtualExhibitionRoom.tsx` ili slično).
+
+### Dodati ispod "Coming Soon Features":
+
+> **"An immersive 360° gallery experience is currently in development. Expected early 2026."**
+
+* Tekst stil mora pratiti postojeći secondary description stil.
+
+---
+
+## **4) Uskladiti border-radius gumba "Back to Gallery Dashboard"**
+
+**Lokacija:** isti Virtual Exhibition page.
+
+### Promjena:
+
+* Trenutni radius je prevelik. Uskladi ga s drugim primarnim gumbima u aplikaciji (6–8 px).
+* Ništa drugo ne mijenjati.
+
+---
+
+## **5) Dodati tooltip uz gumb "Virtual Room" u kolekcijama**
+
+**Lokacija:** komponenta pojedinačne kolekcijske kartice (`CollectionCard.tsx` ili slično).
+
+### Tooltip tekst:
+
+> **"Preview this collection in a gallery-style mockup. Interactive 360° view is coming soon."**
+
+* Tooltip se može prikazati na hover ili klik (koristiti postojeći Tooltip UI ako postoji).
+
+---
+
+# 🚫 NON-SCOPE — NE RADITI
+
+* Bez backend promjena
+* Bez novih API ruta
+* Ne dirati logiku kolekcija
+* Ne raditi refaktore
+* Ne dodavati nove funkcionalnosti
+
+---
+
+# ✅ STOP CONDITION
+
+Agent **mora** stati tek kada:
+
+1. Sve UI promjene rade i vide se u previewu.
+2. Prikazuje *točne fileove* koje je mijenjao.
+3. U outputu prikazuje screenshot ili vizualnu usporedbu (koliko je moguće).
+
+---
+
+# 🔧 NAPOMENA ZA AGENTA
+
+* Koristi **Fast Mode** jer je ovo mali UI polish task.
+* Fokusiraj se SAMO na navedene fileove.
+* Ne skenirati cijeli projekt.
+
+---
+
+Ovo je finalni precizni i sigurni zadatak. Nakon ovoga lako provjeravamo je li sve implementirano i vidljivo.
