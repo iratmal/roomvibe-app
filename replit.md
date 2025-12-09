@@ -23,17 +23,11 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 - **Unified Widget System**: A single embeddable JavaScript widget adapts its functionality based on user entitlements (Artist, Designer, Gallery modes).
 - **Virtual Exhibition Editor**: MVP feature for Gallery plan users to create immersive virtual exhibitions. It includes preset selection, artwork placement via drag-and-drop, and scene persistence.
 - **360° Virtual Exhibition**: Immersive 3D gallery experience using React Three Fiber (R3F) featuring:
-  - ArtSteps-inspired professional gallery aesthetics with soft warm white-gray walls (#e8e4df)
-  - Polished concrete floor (#a8a095) with subtle grid lines for tile effect
-  - Soft warm white ceiling (#f5f2ed) with dark architectural beams
-  - Track-mounted spotlight fixtures with visible housing and warm light cones (#fff8f0)
-  - Baseboard trim at floor level for architectural detail
+  - ArtPlacer-style professional gallery aesthetics with warm gray walls (#ddd8d0), concrete floor, and cream ceiling
+  - Modern ceiling with dark beams and visible spotlight fixtures
+  - Gallery spotlights casting warm light cones on artwork walls (properly targeted via scene attachment)
   - Museum-quality framing with thin dark bevel frame (2.5cm), white passepartout mat (5cm), and subtle wall offset
   - True-to-scale artwork rendering: cm dimensions convert to meters, only scaling down when exceeding slot bounds
-  - Robust texture loading with error handling and fallback placeholder for failed loads
-  - Backend image proxy (`/api/image-proxy`) for external URLs with CORS and SSRF protection
-  - Gallery artwork images served with proper CORS headers (`Access-Control-Allow-Origin`, `Cross-Origin-Resource-Policy`)
-  - Soft ambient lighting with hemisphere fill and corner point lights to prevent harsh shadows
   - Street-View style navigation with pulsing floor hotspots and smooth 0.5s camera transitions
   - Camera constraints preventing floor/ceiling "escape" with eye-level viewpoints (1.65m)
   - Expanded gallery dimensions (18x14m) for spacious contemporary museum feel

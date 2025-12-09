@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback, Suspense, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Html } from '@react-three/drei';
+import { OrbitControls, Html, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import { Gallery360Preset, Slot, Hotspot, Viewpoint } from '../../config/gallery360Presets';
 import { SlotAssignment } from './useArtworkSlots';
@@ -53,32 +53,21 @@ function CeilingSpotlight({ position, targetPosition }: {
 
   return (
     <group position={position}>
-      {/* Track rail segment */}
-      <mesh position={[0, 0.08, 0]}>
-        <boxGeometry args={[0.04, 0.04, 0.6]} />
-        <meshStandardMaterial color="#2a2725" roughness={0.6} metalness={0.4} />
-      </mesh>
-      {/* Spotlight housing */}
       <mesh>
-        <cylinderGeometry args={[0.06, 0.09, 0.12, 12]} />
-        <meshStandardMaterial color="#1a1816" roughness={0.35} metalness={0.7} />
-      </mesh>
-      {/* Light cone rim */}
-      <mesh position={[0, -0.07, 0]}>
-        <ringGeometry args={[0.04, 0.065, 16]} />
-        <meshBasicMaterial color="#fff8f0" transparent opacity={0.6} side={THREE.DoubleSide} />
+        <cylinderGeometry args={[0.08, 0.12, 0.15, 16]} />
+        <meshStandardMaterial color="#1a1a1a" roughness={0.3} metalness={0.8} />
       </mesh>
       <spotLight
         ref={spotlightRef}
-        position={[0, -0.08, 0]}
-        angle={0.42}
-        penumbra={0.9}
-        intensity={1.8}
-        distance={7}
-        color="#fff8f0"
+        position={[0, -0.1, 0]}
+        angle={0.45}
+        penumbra={0.85}
+        intensity={1.5}
+        distance={8}
+        color="#fff5e0"
         castShadow
         shadow-mapSize={[512, 512]}
-        shadow-bias={-0.0001}
+        shadow-bias={-0.0002}
       />
     </group>
   );
@@ -91,17 +80,17 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
 
   const beamPositions = useMemo(() => {
     const beams: Array<{ pos: [number, number, number]; rot?: [number, number, number]; w: number; h: number; d: number }> = [];
-    const beamSpacing = 4;
+    const beamSpacing = 3.5;
     const numBeams = Math.floor(depth / beamSpacing);
     
     for (let i = 0; i <= numBeams; i++) {
-      const z = -halfD + 2 + (i * beamSpacing);
-      if (z > halfD - 1.5) break;
-      beams.push({ pos: [0, height - 0.1, z], w: width - 0.6, h: 0.18, d: 0.3 });
+      const z = -halfD + 1.5 + (i * beamSpacing);
+      if (z > halfD - 1) break;
+      beams.push({ pos: [0, height - 0.08, z], w: width - 0.5, h: 0.15, d: 0.25 });
     }
     
-    beams.push({ pos: [-halfW + 0.18, height - 0.1, 0], rot: [0, Math.PI / 2, 0], w: depth - 0.6, h: 0.18, d: 0.3 });
-    beams.push({ pos: [halfW - 0.18, height - 0.1, 0], rot: [0, Math.PI / 2, 0], w: depth - 0.6, h: 0.18, d: 0.3 });
+    beams.push({ pos: [-halfW + 0.15, height - 0.08, 0], rot: [0, Math.PI / 2, 0], w: depth - 0.5, h: 0.15, d: 0.25 });
+    beams.push({ pos: [halfW - 0.15, height - 0.08, 0], rot: [0, Math.PI / 2, 0], w: depth - 0.5, h: 0.15, d: 0.25 });
     
     return beams;
   }, [width, height, depth, halfW, halfD]);
@@ -109,54 +98,37 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
   const spotlightPositions = useMemo(() => {
     const spots: Array<{ pos: [number, number, number]; target: [number, number, number] }> = [];
     
-    for (let x = -halfW + 4; x < halfW - 3; x += 4.5) {
-      spots.push({ pos: [x, height - 0.35, -halfD + 1.8], target: [x, 1.5, -halfD + 0.15] });
+    for (let x = -halfW + 3; x < halfW - 2; x += 4) {
+      spots.push({ pos: [x, height - 0.3, -halfD + 1.5], target: [x, 1.6, -halfD + 0.1] });
     }
-    for (let x = -halfW + 4; x < halfW - 3; x += 4.5) {
-      spots.push({ pos: [x, height - 0.35, halfD - 1.8], target: [x, 1.5, halfD - 0.15] });
+    for (let x = -halfW + 3; x < halfW - 2; x += 4) {
+      spots.push({ pos: [x, height - 0.3, halfD - 1.5], target: [x, 1.6, halfD - 0.1] });
     }
     
-    spots.push({ pos: [-halfW + 1.8, height - 0.35, -2.5], target: [-halfW + 0.15, 1.5, -2.5] });
-    spots.push({ pos: [-halfW + 1.8, height - 0.35, 2.5], target: [-halfW + 0.15, 1.5, 2.5] });
-    spots.push({ pos: [halfW - 1.8, height - 0.35, -2.5], target: [halfW - 0.15, 1.5, -2.5] });
-    spots.push({ pos: [halfW - 1.8, height - 0.35, 2.5], target: [halfW - 0.15, 1.5, 2.5] });
+    spots.push({ pos: [-halfW + 1.5, height - 0.3, -2], target: [-halfW + 0.1, 1.6, -2] });
+    spots.push({ pos: [-halfW + 1.5, height - 0.3, 2], target: [-halfW + 0.1, 1.6, 2] });
+    spots.push({ pos: [halfW - 1.5, height - 0.3, -2], target: [halfW - 0.1, 1.6, -2] });
+    spots.push({ pos: [halfW - 1.5, height - 0.3, 2], target: [halfW - 0.1, 1.6, 2] });
     
     return spots;
   }, [width, height, depth, halfW, halfD]);
 
   return (
     <group>
-      {/* Floor - polished concrete look with subtle warmth */}
       <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[width, depth]} />
         <meshStandardMaterial 
-          color="#a8a095"
-          roughness={0.75}
-          metalness={0.08}
+          color="#c4b8a8"
+          roughness={0.85}
+          metalness={0.02}
         />
       </mesh>
-      
-      {/* Subtle floor grid lines for realism */}
-      {[-halfW + 3, -halfW + 6, -halfW + 9, -halfW + 12, -halfW + 15].filter(x => x < halfW - 1).map((x, i) => (
-        <mesh key={`floor-line-v-${i}`} position={[x, 0.002, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[0.015, depth - 0.5]} />
-          <meshBasicMaterial color="#8a837a" transparent opacity={0.25} />
-        </mesh>
-      ))}
-      {[-halfD + 3, -halfD + 6, -halfD + 9, -halfD + 12].filter(z => z < halfD - 1).map((z, i) => (
-        <mesh key={`floor-line-h-${i}`} position={[0, 0.002, z]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[width - 0.5, 0.015]} />
-          <meshBasicMaterial color="#8a837a" transparent opacity={0.25} />
-        </mesh>
-      ))}
 
-      {/* Ceiling - soft warm white */}
       <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
-        <meshStandardMaterial color="#f5f2ed" roughness={0.95} metalness={0} />
+        <meshStandardMaterial color="#f0ede8" roughness={0.9} />
       </mesh>
 
-      {/* Ceiling beams */}
       {beamPositions.map((beam, i) => (
         <CeilingBeam 
           key={`beam-${i}`}
@@ -168,43 +140,24 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         />
       ))}
 
-      {/* Walls with subtle warmth - soft gallery white-gray */}
       <mesh position={[0, height / 2, -halfD]} receiveShadow>
         <planeGeometry args={[width, height]} />
-        <meshStandardMaterial color="#e8e4df" side={THREE.DoubleSide} roughness={0.88} metalness={0} />
+        <meshStandardMaterial color="#ddd8d0" side={THREE.DoubleSide} roughness={0.92} />
       </mesh>
 
       <mesh position={[0, height / 2, halfD]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[width, height]} />
-        <meshStandardMaterial color="#e8e4df" side={THREE.DoubleSide} roughness={0.88} metalness={0} />
+        <meshStandardMaterial color="#ddd8d0" side={THREE.DoubleSide} roughness={0.92} />
       </mesh>
 
       <mesh position={[halfW, height / 2, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
-        <meshStandardMaterial color="#e8e4df" side={THREE.DoubleSide} roughness={0.88} metalness={0} />
+        <meshStandardMaterial color="#ddd8d0" side={THREE.DoubleSide} roughness={0.92} />
       </mesh>
 
       <mesh position={[-halfW, height / 2, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
-        <meshStandardMaterial color="#e8e4df" side={THREE.DoubleSide} roughness={0.88} metalness={0} />
-      </mesh>
-      
-      {/* Baseboard trim - subtle dark line at floor level */}
-      <mesh position={[0, 0.04, -halfD + 0.02]}>
-        <boxGeometry args={[width - 0.1, 0.08, 0.02]} />
-        <meshStandardMaterial color="#4a4540" roughness={0.7} />
-      </mesh>
-      <mesh position={[0, 0.04, halfD - 0.02]}>
-        <boxGeometry args={[width - 0.1, 0.08, 0.02]} />
-        <meshStandardMaterial color="#4a4540" roughness={0.7} />
-      </mesh>
-      <mesh position={[-halfW + 0.02, 0.04, 0]}>
-        <boxGeometry args={[0.02, 0.08, depth - 0.1]} />
-        <meshStandardMaterial color="#4a4540" roughness={0.7} />
-      </mesh>
-      <mesh position={[halfW - 0.02, 0.04, 0]}>
-        <boxGeometry args={[0.02, 0.08, depth - 0.1]} />
-        <meshStandardMaterial color="#4a4540" roughness={0.7} />
+        <meshStandardMaterial color="#ddd8d0" side={THREE.DoubleSide} roughness={0.92} />
       </mesh>
 
       {spotlightPositions.map((spot, i) => (
@@ -346,40 +299,6 @@ function ArtworkPlane({
   );
 }
 
-// Helper to get the correct URL for WebGL texture loading
-// In production, CDN serves frontend so we must use absolute backend URL
-function getProxiedImageUrl(url: string): string {
-  if (!url) return '';
-  
-  const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
-  
-  // For internal gallery artwork URLs, construct the full backend URL
-  if (url.startsWith('/api/gallery-artwork-image/')) {
-    // In production, we need to use the same origin for API calls
-    // The backend serves both frontend and API in autoscale deployment
-    return `${API_URL}${url}`;
-  }
-  
-  // For other internal API URLs
-  if (url.startsWith('/api/')) {
-    return `${API_URL}${url}`;
-  }
-  
-  // For external URLs, use the image proxy to handle CORS
-  try {
-    const parsedUrl = new URL(url);
-    // Already a full URL - check if it's already proxied
-    if (parsedUrl.pathname === '/api/image-proxy') {
-      return url;
-    }
-    // External image - proxy it
-    return `${API_URL}/api/image-proxy?url=${encodeURIComponent(url)}`;
-  } catch {
-    // Not a valid absolute URL - proxy it
-    return `${API_URL}/api/image-proxy?url=${encodeURIComponent(url)}`;
-  }
-}
-
 function ArtworkImage({ 
   url, 
   width, 
@@ -395,49 +314,13 @@ function ArtworkImage({
   hovered: boolean;
   setHovered: (h: boolean) => void;
 }) {
-  const [texture, setTexture] = useState<THREE.Texture | null>(null);
-  const [loadError, setLoadError] = useState(false);
+  const texture = useTexture(url);
   
   useEffect(() => {
-    if (!url) {
-      setLoadError(true);
-      return;
+    if (texture) {
+      texture.colorSpace = THREE.SRGBColorSpace;
     }
-    
-    setLoadError(false);
-    const loader = new THREE.TextureLoader();
-    loader.crossOrigin = 'anonymous';
-    
-    // Use proxied URL to fix CORS issues for WebGL textures
-    const proxiedUrl = getProxiedImageUrl(url);
-    
-    console.log('[360] Loading artwork texture:', proxiedUrl);
-    
-    loader.load(
-      proxiedUrl,
-      (loadedTexture) => {
-        loadedTexture.colorSpace = THREE.SRGBColorSpace;
-        loadedTexture.minFilter = THREE.LinearFilter;
-        loadedTexture.magFilter = THREE.LinearFilter;
-        loadedTexture.generateMipmaps = false;
-        loadedTexture.needsUpdate = true;
-        console.log('[360] Texture loaded successfully:', url);
-        setTexture(loadedTexture);
-        setLoadError(false);
-      },
-      undefined,
-      (error) => {
-        console.warn('Failed to load artwork texture:', url, error);
-        setLoadError(true);
-      }
-    );
-    
-    return () => {
-      if (texture) {
-        texture.dispose();
-      }
-    };
-  }, [url]);
+  }, [texture]);
 
   return (
     <mesh 
@@ -450,16 +333,11 @@ function ArtworkImage({
       onPointerOut={() => setHovered(false)}
     >
       <planeGeometry args={[width, height]} />
-      {loadError || !texture ? (
-        <meshBasicMaterial 
-          color="#d4cfc7"
-        />
-      ) : (
-        <meshBasicMaterial 
-          map={texture}
-          toneMapped={false}
-        />
-      )}
+      <meshBasicMaterial 
+        map={texture} 
+        transparent
+        toneMapped={false}
+      />
     </mesh>
   );
 }
@@ -664,36 +542,23 @@ export function Gallery360Scene({
     <Canvas
       shadows
       camera={{ fov: 55, near: 0.1, far: 100 }}
-      style={{ background: '#ddd9d4' }}
+      style={{ background: '#e8e4e0' }}
     >
-      {/* Soft ambient fill - prevents harsh black areas */}
-      <ambientLight intensity={0.55} color="#f5f3f0" />
-      
-      {/* Hemisphere light - sky/ground color blending for natural feel */}
+      <ambientLight intensity={0.7} />
       <hemisphereLight
-        args={['#f8f6f2', '#c8c4bc', 0.5]}
+        args={['#fffaf0', '#d0ccc4', 0.4]}
         position={[0, preset.dimensions.height, 0]}
       />
-      
-      {/* Main soft directional light - simulates diffuse ceiling light */}
       <directionalLight 
-        position={[0, preset.dimensions.height - 0.5, 0]} 
-        intensity={0.4}
-        color="#fff9f4"
+        position={[4, preset.dimensions.height, 3]} 
+        intensity={0.35}
+        castShadow
+        shadow-mapSize={[1024, 1024]}
+        shadow-bias={-0.0001}
       />
-      
-      {/* Subtle fill lights from corners - reduce harsh shadows */}
-      <pointLight 
-        position={[-preset.dimensions.width/2 + 1, preset.dimensions.height - 1, -preset.dimensions.depth/2 + 1]} 
-        intensity={0.15}
-        color="#fff5e8"
-        distance={12}
-      />
-      <pointLight 
-        position={[preset.dimensions.width/2 - 1, preset.dimensions.height - 1, preset.dimensions.depth/2 - 1]} 
-        intensity={0.15}
-        color="#fff5e8"
-        distance={12}
+      <directionalLight 
+        position={[-4, preset.dimensions.height, -3]} 
+        intensity={0.25}
       />
 
       <GalleryRoom preset={preset} />
