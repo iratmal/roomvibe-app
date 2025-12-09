@@ -74,11 +74,17 @@ app.use('/api/exports', exportsRoutes);
 let isServerReady = false;
 
 app.get('/api/health', (req, res) => {
-  // Always respond immediately to health checks - this is critical for deployment
-  res.json({ 
+  if (!isServerReady) {
+    return res.status(503).json({ 
+      status: 'starting', 
+      message: 'Server initializing, please wait',
+      ready: false
+    });
+  }
+  res.status(200).json({ 
     status: 'ok', 
     message: 'RoomVibe API server running',
-    ready: isServerReady
+    ready: true
   });
 });
 
@@ -280,28 +286,26 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 async function startServer() {
-  // Start listening IMMEDIATELY so health checks pass during deployment
-  // Database initialization happens in the background
+  // Start listening so health checks can respond (with 503 until ready)
   const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`✓ RoomVibe API server listening on port ${PORT}`);
     console.log(`  Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`  Health check available at /api/health`);
-    
-    // Mark server as ready immediately for health checks
-    // Database initialization happens asynchronously
-    isServerReady = true;
+    console.log(`  Health check available at /api/health (waiting for DB...)`);
   });
 
-  // Initialize database in background - no timeout, handles errors gracefully
-  initializeDatabase()
-    .then(() => {
-      console.log(`✓ Database initialized successfully`);
-    })
-    .catch((error) => {
-      console.error('Database initialization warning:', error instanceof Error ? error.message : error);
-      console.log('  Server continues running - some features may be unavailable until DB is ready');
-      // Don't crash - server stays up for health checks and retries
-    });
+  // Initialize database - server is only ready after this completes
+  try {
+    await initializeDatabase();
+    console.log(`✓ Database initialized successfully`);
+    isServerReady = true;
+    console.log(`✓ Server is now ready to accept requests`);
+  } catch (error) {
+    console.error('Database initialization failed:', error instanceof Error ? error.message : error);
+    // Still mark as ready so deployment doesn't hang indefinitely
+    // The server can handle requests that don't require DB
+    isServerReady = true;
+    console.log('  Server marked ready despite DB error - some features may be unavailable');
+  }
 }
 
 startServer();
