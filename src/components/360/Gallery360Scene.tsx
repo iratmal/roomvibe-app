@@ -169,10 +169,9 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       ))}
 
       {/* Walls with subtle warmth - soft gallery white-gray */}
-      {/* DEBUG: North wall is PINK to confirm deployment */}
       <mesh position={[0, height / 2, -halfD]} receiveShadow>
         <planeGeometry args={[width, height]} />
-        <meshStandardMaterial color="#FF69B4" side={THREE.DoubleSide} roughness={0.88} metalness={0} />
+        <meshStandardMaterial color="#e8e4df" side={THREE.DoubleSide} roughness={0.88} metalness={0} />
       </mesh>
 
       <mesh position={[0, height / 2, halfD]} rotation={[0, Math.PI, 0]} receiveShadow>
@@ -347,122 +346,7 @@ function ArtworkPlane({
   );
 }
 
-// DEBUG: Hard-coded test image to verify texture rendering works
-const DEBUG_TEST_IMAGE = '/art/gv-2025-001.jpg';
-const DEBUG_USE_TEST_IMAGE = true; // Set to false to use real artwork URLs
-
-// Inner component that uses useLoader - must be wrapped in Suspense
-function ArtworkTextureLoader({ 
-  url, 
-  width, 
-  height,
-  onClick,
-  hovered,
-  setHovered
-}: { 
-  url: string; 
-  width: number; 
-  height: number;
-  onClick?: () => void;
-  hovered: boolean;
-  setHovered: (h: boolean) => void;
-}) {
-  // DEBUG: Use test image or real URL
-  const textureUrl = DEBUG_USE_TEST_IMAGE ? DEBUG_TEST_IMAGE : url;
-  
-  console.log('[Gallery360] STEP 1: Starting texture load for URL:', textureUrl, '(original:', url, ')');
-  
-  const texture = useLoader(THREE.TextureLoader, textureUrl);
-  
-  // Configure texture for proper display
-  useEffect(() => {
-    if (texture) {
-      console.log('[Gallery360] STEP 2: Texture object received');
-      console.log('[Gallery360]   - texture:', texture);
-      console.log('[Gallery360]   - texture.image:', texture.image);
-      console.log('[Gallery360]   - image dimensions:', texture.image?.width, 'x', texture.image?.height);
-      console.log('[Gallery360]   - texture.source.data:', texture.source?.data);
-      
-      texture.colorSpace = THREE.SRGBColorSpace;
-      texture.magFilter = THREE.LinearFilter;
-      texture.minFilter = THREE.LinearFilter;
-      texture.generateMipmaps = false;
-      texture.needsUpdate = true;
-      
-      console.log('[Gallery360] STEP 3: Texture configured, needsUpdate set to true');
-    } else {
-      console.error('[Gallery360] ERROR: texture is null/undefined after useLoader');
-    }
-  }, [texture, textureUrl]);
-
-  console.log('[Gallery360] STEP 4: Rendering mesh with texture map');
-
-  return (
-    <mesh 
-      position={[0, 0, 0.005]}
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick?.();
-      }}
-      onPointerOver={() => setHovered(true)}
-      onPointerOut={() => setHovered(false)}
-    >
-      <planeGeometry args={[width, height]} />
-      <meshBasicMaterial 
-        map={texture}
-        toneMapped={false}
-        onUpdate={(material) => {
-          console.log('[Gallery360] STEP 5: Material updated, map assigned:', material.map ? 'YES' : 'NO');
-        }}
-      />
-    </mesh>
-  );
-}
-
-// Fallback placeholder while texture loads
-function ArtworkPlaceholder({ 
-  width, 
-  height,
-  color = "#e8e4e0"
-}: { 
-  width: number; 
-  height: number;
-  color?: string;
-}) {
-  return (
-    <mesh position={[0, 0, 0.005]}>
-      <planeGeometry args={[width, height]} />
-      <meshBasicMaterial color={color} />
-    </mesh>
-  );
-}
-
-// Error boundary wrapper for texture loading
-class TextureErrorBoundary extends React.Component<
-  { children: React.ReactNode; fallback: React.ReactNode },
-  { hasError: boolean }
-> {
-  constructor(props: { children: React.ReactNode; fallback: React.ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-
-  componentDidCatch(error: Error) {
-    console.error('[Gallery360] Texture loading error:', error);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return this.props.fallback;
-    }
-    return this.props.children;
-  }
-}
-
+// Artwork image component using the WORKING manual TextureLoader approach
 function ArtworkImage({ 
   url, 
   width, 
@@ -478,23 +362,63 @@ function ArtworkImage({
   hovered: boolean;
   setHovered: (h: boolean) => void;
 }) {
-  if (!url) {
-    return <ArtworkPlaceholder width={width} height={height} color="#f0e8e0" />;
-  }
+  const [texture, setTexture] = useState<THREE.Texture | null>(null);
+  const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
+  
+  useEffect(() => {
+    if (!url) {
+      setStatus('error');
+      return;
+    }
+    
+    console.log('[ArtworkImage] Loading texture:', url);
+    setStatus('loading');
+    
+    const loader = new THREE.TextureLoader();
+    loader.load(
+      url,
+      (loadedTexture) => {
+        console.log('[ArtworkImage] SUCCESS! Texture loaded:', url, 'size:', loadedTexture.image?.width, 'x', loadedTexture.image?.height);
+        loadedTexture.colorSpace = THREE.SRGBColorSpace;
+        loadedTexture.needsUpdate = true;
+        setTexture(loadedTexture);
+        setStatus('loaded');
+      },
+      undefined,
+      (error) => {
+        console.error('[ArtworkImage] FAILED to load texture:', url, error);
+        setStatus('error');
+      }
+    );
+    
+    return () => {
+      if (texture) {
+        texture.dispose();
+      }
+    };
+  }, [url]);
 
   return (
-    <TextureErrorBoundary fallback={<ArtworkPlaceholder width={width} height={height} color="#f0e8e0" />}>
-      <Suspense fallback={<ArtworkPlaceholder width={width} height={height} />}>
-        <ArtworkTextureLoader
-          url={url}
-          width={width}
-          height={height}
-          onClick={onClick}
-          hovered={hovered}
-          setHovered={setHovered}
+    <mesh 
+      position={[0, 0, 0.005]}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick?.();
+      }}
+      onPointerOver={() => setHovered(true)}
+      onPointerOut={() => setHovered(false)}
+    >
+      <planeGeometry args={[width, height]} />
+      {status === 'loaded' && texture ? (
+        <meshBasicMaterial 
+          map={texture} 
+          color="#ffffff"
+          toneMapped={false}
         />
-      </Suspense>
-    </TextureErrorBoundary>
+      ) : (
+        <meshBasicMaterial color={status === 'error' ? '#f5e5e0' : '#e8e4e0'} />
+      )}
+    </mesh>
   );
 }
 
@@ -684,83 +608,6 @@ function CameraController({
   );
 }
 
-// DEBUG: Standalone test plane to verify texture rendering works independently
-function DebugTestPlane() {
-  const [texture, setTexture] = useState<THREE.Texture | null>(null);
-  const [status, setStatus] = useState('loading');
-  
-  useEffect(() => {
-    console.log('[DEBUG TEST PLANE] Starting to load test texture...');
-    
-    const loader = new THREE.TextureLoader();
-    loader.load(
-      '/art/gv-2025-001.jpg',
-      (loadedTexture) => {
-        console.log('[DEBUG TEST PLANE] SUCCESS! Texture loaded:', {
-          image: loadedTexture.image,
-          width: loadedTexture.image?.width,
-          height: loadedTexture.image?.height,
-          uuid: loadedTexture.uuid
-        });
-        
-        loadedTexture.colorSpace = THREE.SRGBColorSpace;
-        loadedTexture.needsUpdate = true;
-        setTexture(loadedTexture);
-        setStatus('loaded');
-      },
-      (progress) => {
-        console.log('[DEBUG TEST PLANE] Loading progress:', progress);
-      },
-      (error) => {
-        console.error('[DEBUG TEST PLANE] FAILED to load texture:', error);
-        setStatus('error');
-      }
-    );
-  }, []);
-  
-  console.log('[DEBUG TEST PLANE] Render - status:', status, 'texture:', texture ? 'exists' : 'null');
-
-  return (
-    <group>
-      {/* Debug label */}
-      <Html position={[0, 3.2, -5]} center>
-        <div style={{ background: 'yellow', padding: '4px 8px', fontSize: '12px', fontWeight: 'bold' }}>
-          DEBUG TEST: {status}
-        </div>
-      </Html>
-      
-      {/* Test plane with texture */}
-      <mesh position={[0, 2.5, -5]}>
-        <planeGeometry args={[2, 1.4]} />
-        {texture ? (
-          <meshBasicMaterial 
-            map={texture} 
-            color="#ffffff"
-            toneMapped={false}
-          />
-        ) : (
-          <meshBasicMaterial color={status === 'error' ? '#ff0000' : '#00ff00'} />
-        )}
-      </mesh>
-      
-      {/* Also try meshStandardMaterial version below it */}
-      <mesh position={[0, 1, -5]}>
-        <planeGeometry args={[2, 1.4]} />
-        {texture ? (
-          <meshStandardMaterial 
-            map={texture} 
-            color="#ffffff"
-            metalness={0}
-            roughness={0.5}
-          />
-        ) : (
-          <meshBasicMaterial color={status === 'error' ? '#ff0000' : '#ffff00'} />
-        )}
-      </mesh>
-    </group>
-  );
-}
-
 export function Gallery360Scene({
   preset,
   slotAssignments,
@@ -815,9 +662,6 @@ export function Gallery360Scene({
       />
 
       <GalleryRoom preset={preset} />
-      
-      {/* DEBUG: Standalone test plane to verify textures work */}
-      <DebugTestPlane />
 
       {preset.slots.map(slot => {
         const assignment = slotAssignments.find(sa => sa.slotId === slot.id);
