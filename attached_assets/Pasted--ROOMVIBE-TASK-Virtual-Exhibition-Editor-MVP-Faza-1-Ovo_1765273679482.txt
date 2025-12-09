@@ -1,0 +1,209 @@
+# ✅ ROOMVIBE — TASK: Virtual Exhibition Editor — MVP (Faza 1)
+
+Ovo je veliki, strateški i jasno definiran development task za Replit Agenta.
+
+Cilj: izgraditi **prvu verziju Virtual Exhibition room editora** za galerije (MVP verzija), potpuno funkcionalnu, ali jednostavnu. Sve logike i UI trebaju biti čisti, stabilni i modularni, tako da se u kasnijoj fazi može lako nadograditi u 360° VR verziju.
+
+Koristi **Design Mode** samo za layout ako je korisno, ali glavna logika treba biti ručno implementirana.
+
+---
+
+# 🎯 GLAVNI CILJ (MVP)
+
+Galerije trebaju mogućnost:
+
+1. otvaranja izložbe → **Virtual Room**
+2. odabira jednog od nekoliko gallery prostora (preseta)
+3. postavljanja 1–6 radova iz kolekcije u prostor (drag & drop)
+4. automatskog skaliranja rada prema zidu
+5. spremanja izložbe kao scene
+6. prikaza izložbe putem *public share* linka
+
+MVP NE uključuje 360° virtualni obilazak — to dolazi u Fazi 2.
+
+---
+
+# 📌 KONTEKST
+
+Projekt: **RoomVibe**
+Role: **Gallery**
+Ruta Virtual Exhibition: `/gallery/exhibitions/:id`
+
+Ovo je trenutno samo "Coming Soon" ekran — sada ga pretvaramo u kompletno funkcionalan MVP editor.
+
+Relevantni folderi (Agent neka radi u ovim područjima):
+
+* `src/pages/gallery/VirtualExhibitionRoom.tsx` (ili ekvivalent)
+* `src/components/gallery/` (novi editor moduli)
+* `src/types` (ako treba definirati tipove za scene, artwork placement itd.)
+* `src/hooks` (ako se radi custom hook za drag & drop i scaling)
+* `src/services` (ako se sprema JSON scena na backendu)
+
+---
+
+# 1️⃣ FUNKCIJA: Gallery Preset Selection
+
+### Željeno ponašanje
+
+Korisnik treba vidjeti 3–4 predefinirana galerijska prostora (preset rooms):
+
+* White Cube Gallery
+* Modern Loft Gallery
+* Minimalist Concrete Room
+* Classic Museum Wall
+
+Preset je jednostavna slika ili komponenta s pozadinskim zidom i podom.
+
+### Implementacija
+
+* Kreirati novi komponent: `GalleryPresetSelector.tsx`
+* Prikazati grid sa 3–4 preseta
+* Kada korisnik klikne preset → postavlja se kao trenutni aktivni prostor za izložbu
+* Pohraniti odabir u lokalni state (npr. `useState`) i/ili backend DB (ovisno o postojećoj arhitekturi)
+
+---
+
+# 2️⃣ FUNKCIJA: Artwork Placement (drag & drop)
+
+### Željeno ponašanje
+
+Unutar odabranog prostora galerije korisnik može:
+
+* povući artwork iz liste svoje kolekcije na zid
+* artwork se pozicionira na zid i može ga se pomicati
+* artwork se automatski skalira prema dimenzijama zida (komponenta "auto wall scale" već postoji u Studiju, može se reciklirati)
+
+### Implementacija
+
+1. Kreirati komponentu: `GalleryWallEditor.tsx`
+
+2. Render prostora (background image)
+
+3. Lista artworkova iz kolekcije (dobiti iz API poziva već postojećeg kolekcijskog sustava)
+
+4. Drag & drop sustav:
+
+   * koristiti `react-dnd` ili postojeću internu implementaciju ako već postoji u Studiju
+   * artwork se mora moći:
+
+     * povući na zid
+     * premještati
+     * ukloniti
+
+5. Skaliranje:
+
+   * artwork width/height treba se prikazati približno realno u prostoru
+   * koristiti istu logiku kao Studio → *auto-scale to wall*
+
+---
+
+# 3️⃣ FUNKCIJA: Save Exhibition Scene
+
+### Željeno ponašanje
+
+Korisnik klikne **Save Exhibition** i:
+
+* scena se sprema kao JSON objekt u backend
+* JSON treba sadržavati:
+
+  * ID izložbe
+  * ID odabranog gallery preseta
+  * lista artworkova (id, x pozicija, y pozicija, scale faktor)
+
+### Implementacija
+
+1. Kreirati model tipova u `src/types/VirtualExhibition.ts`
+2. Kreirati servis funkcije:
+
+   * `saveExhibitionScene(exhibitionId, sceneData)`
+   * `loadExhibitionScene(exhibitionId)`
+3. Backend endpointi ako već ne postoje (GET i POST)
+
+---
+
+# 4️⃣ FUNKCIJA: Public Exhibition Link (View Mode)
+
+### Željeno ponašanje
+
+Galerija može kliknuti **Copy Link / View Exhibition** → javna stranica treba prikazati:
+
+* odabrani gallery prostor
+* artworkove na zidu (bez edit mogućnosti)
+* klikom na artwork otvara se modal sa detaljima (title, artist, dimensions)
+* gumb "View In Your Room" (koristi Studio upload zid funkciju)
+
+### Implementacija
+
+1. Kreirati novu rutu: `/exhibition/:id` (public)
+2. Render vizualne scene na temelju spremljenog JSON-a
+3. Artwork modal:
+
+   * koristi već postojeći modal iz Studija
+4. "View In Your Room" gumb:
+
+   * redirect u Studio sa query parametrom artwork ID
+
+---
+
+# 5️⃣ UI LAYOUT (MVP)
+
+### Editor Mode (private):
+
+* Header: Exhibition Title
+* Step 1: Preset selector (grid)
+* Step 2: Wall editor (drag & drop)
+* Step 3: Save button (primary)
+* Sidebar: list of artworks (scrollable)
+
+### Public Mode:
+
+* No editing tools
+* Background gallery preset
+* Artwork positioned based on saved coordinates
+* Modal on click
+
+Agent može koristiti **Design Mode** za UI scaffolding
+
+---
+
+# 🚫 NON-SCOPE
+
+* 360° panorama rendering
+* VR headset mode
+* više zidova (za MVP koristimo jedan zid)
+* AI auto-curation (dolazi kasnije)
+* PDF katalog visoke kvalitete (bit će u Fazi 2)
+
+---
+
+# ✅ STOP CONDITION
+
+Agent mora završiti task tek kada:
+
+1. Virtual Exhibition Room više nije "Coming Soon" nego stvarni editor.
+2. Korisnik može:
+
+   * odabrati gallery preset
+   * povući artwork na zid
+   * urediti poziciju / scale
+   * spremiti scenu
+   * ponovno učitati scenu
+3. Postoji javni link `/exhibition/:id` koji prikazuje scenu bez editiranja.
+4. Agent navede:
+
+   * sve fileove koje je kreirao / mijenjao
+   * arhitekturu komponenti
+   * implementirane modele podataka
+   * kako rješava drag & drop i scaling
+
+---
+
+# 📌 NAPOMENA ZA AGENTA
+
+Ovo je kompleksan zadatak — koristi standardne modele osim ako nije nužno koristiti naprednije.
+
+Dizajn možeš prototipirati kroz **Design Mode**, ali logiku i strukturu implementiraj ručno.
+
+---
+
+Kada MVP bude gotov → krećemo u Fazu 2: **360° Walkthrough**.
