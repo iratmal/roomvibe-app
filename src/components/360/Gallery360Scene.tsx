@@ -346,10 +346,10 @@ function ArtworkPlane({
   );
 }
 
-const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
-
+// Use relative URLs - Vite proxy forwards /api requests to backend in dev mode
 function getFullImageUrl(url: string): string {
   if (!url) return '';
+  // Already absolute URL - return as-is
   if (
     url.startsWith('http://') || 
     url.startsWith('https://') || 
@@ -359,9 +359,7 @@ function getFullImageUrl(url: string): string {
   ) {
     return url;
   }
-  if (url.startsWith('/api/') || url.startsWith('/objects/')) {
-    return `${API_URL}${url}`;
-  }
+  // Relative API or object storage URL - return as-is (Vite proxy handles in dev)
   return url;
 }
 

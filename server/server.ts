@@ -166,9 +166,18 @@ app.get('/api/room-image/:id', async (req: any, res) => {
 });
 
 // Serve gallery artwork images from database (for Gallery uploads)
+// This endpoint is public and needs explicit CORS for THREE.TextureLoader
 app.get('/api/gallery-artwork-image/:id', async (req: any, res) => {
   try {
+    // Set CORS headers for cross-origin texture loading
+    res.set({
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET',
+      'Access-Control-Allow-Headers': 'Content-Type'
+    });
+
     const artworkId = parseInt(req.params.id);
+    console.log('[Gallery Image] Serving artwork image:', artworkId);
     
     if (isNaN(artworkId)) {
       return res.status(400).json({ error: 'Invalid gallery artwork ID' });
@@ -177,6 +186,7 @@ app.get('/api/gallery-artwork-image/:id', async (req: any, res) => {
     const result = await query('SELECT image_data FROM gallery_artworks WHERE id = $1', [artworkId]);
 
     if (result.rows.length === 0 || !result.rows[0].image_data) {
+      console.log('[Gallery Image] Image not found for artwork:', artworkId);
       return res.status(404).json({ error: 'Gallery artwork image not found' });
     }
 
@@ -184,6 +194,7 @@ app.get('/api/gallery-artwork-image/:id', async (req: any, res) => {
     const matches = imageData.match(/^data:([^;]+);base64,(.+)$/);
     
     if (!matches) {
+      console.error('[Gallery Image] Invalid image data format for artwork:', artworkId);
       return res.status(500).json({ error: 'Invalid image data format' });
     }
 
@@ -191,10 +202,13 @@ app.get('/api/gallery-artwork-image/:id', async (req: any, res) => {
     const base64Data = matches[2];
     const buffer = Buffer.from(base64Data, 'base64');
 
+    console.log('[Gallery Image] Serving', mimeType, 'image, size:', buffer.length, 'bytes');
+    
     res.set({
       'Content-Type': mimeType,
       'Content-Length': buffer.length,
-      'Cache-Control': 'public, max-age=31536000'
+      'Cache-Control': 'public, max-age=31536000',
+      'Access-Control-Allow-Origin': '*'
     });
     
     res.send(buffer);
