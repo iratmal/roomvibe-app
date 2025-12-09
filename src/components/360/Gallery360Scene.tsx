@@ -346,6 +346,25 @@ function ArtworkPlane({
   );
 }
 
+const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
+
+function getFullImageUrl(url: string): string {
+  if (!url) return '';
+  if (
+    url.startsWith('http://') || 
+    url.startsWith('https://') || 
+    url.startsWith('data:') ||
+    url.startsWith('//') ||
+    url.startsWith('blob:')
+  ) {
+    return url;
+  }
+  if (url.startsWith('/api/') || url.startsWith('/objects/')) {
+    return `${API_URL}${url}`;
+  }
+  return url;
+}
+
 function ArtworkImage({ 
   url, 
   width, 
@@ -363,37 +382,63 @@ function ArtworkImage({
 }) {
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
   const [loadError, setLoadError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const textureRef = useRef<THREE.Texture | null>(null);
   
   useEffect(() => {
     if (!url) {
       setLoadError(true);
+      setIsLoading(false);
       return;
     }
     
     setLoadError(false);
+    setIsLoading(true);
+    
+    const fullUrl = getFullImageUrl(url);
+    console.log('[Gallery360] Loading artwork texture:', fullUrl);
+    
     const loader = new THREE.TextureLoader();
     loader.crossOrigin = 'anonymous';
     
+    let cancelled = false;
+    
     loader.load(
-      url,
+      fullUrl,
       (loadedTexture) => {
+        if (cancelled) {
+          loadedTexture.dispose();
+          return;
+        }
+        console.log('[Gallery360] Texture loaded successfully:', fullUrl);
         loadedTexture.colorSpace = THREE.SRGBColorSpace;
         loadedTexture.minFilter = THREE.LinearFilter;
         loadedTexture.magFilter = THREE.LinearFilter;
         loadedTexture.generateMipmaps = false;
+        loadedTexture.needsUpdate = true;
+        
+        if (textureRef.current) {
+          textureRef.current.dispose();
+        }
+        textureRef.current = loadedTexture;
         setTexture(loadedTexture);
         setLoadError(false);
+        setIsLoading(false);
       },
       undefined,
       (error) => {
-        console.warn('Failed to load artwork texture:', url, error);
+        if (cancelled) return;
+        console.error('[Gallery360] Failed to load artwork texture:', fullUrl, error);
         setLoadError(true);
+        setIsLoading(false);
       }
     );
     
     return () => {
-      if (texture) {
-        texture.dispose();
+      cancelled = true;
+      if (textureRef.current) {
+        textureRef.current.dispose();
+        textureRef.current = null;
       }
     };
   }, [url]);
@@ -409,18 +454,19 @@ function ArtworkImage({
       onPointerOut={() => setHovered(false)}
     >
       <planeGeometry args={[width, height]} />
-      {loadError || !texture ? (
-        <meshStandardMaterial 
-          color="#d4cfc7"
-          roughness={0.8}
-        />
+      {isLoading ? (
+        <meshBasicMaterial color="#e8e4e0" />
+      ) : loadError || !texture ? (
+        <meshBasicMaterial color="#f0e8e0" />
       ) : (
         <meshStandardMaterial 
           map={texture} 
-          emissive={hovered ? '#333333' : '#000000'}
-          emissiveIntensity={hovered ? 0.12 : 0}
-          roughness={0.35}
+          color="#ffffff"
+          emissive={hovered ? '#222222' : '#000000'}
+          emissiveIntensity={hovered ? 0.1 : 0}
+          roughness={0.3}
           metalness={0}
+          toneMapped={true}
         />
       )}
     </mesh>
