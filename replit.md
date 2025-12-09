@@ -31,6 +31,7 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
   - Museum-quality framing with thin dark bevel frame (2.5cm), white passepartout mat (5cm), and subtle wall offset
   - True-to-scale artwork rendering: cm dimensions convert to meters, only scaling down when exceeding slot bounds
   - Robust texture loading with error handling and fallback placeholder for failed loads
+  - Backend image proxy (`/api/image-proxy`) for WebGL texture CORS compatibility with SSRF protection
   - Soft ambient lighting with hemisphere fill and corner point lights to prevent harsh shadows
   - Street-View style navigation with pulsing floor hotspots and smooth 0.5s camera transitions
   - Camera constraints preventing floor/ceiling "escape" with eye-level viewpoints (1.65m)
