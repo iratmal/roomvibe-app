@@ -1,0 +1,86 @@
+🎨 360° VIRTUAL EXHIBITION – REALISM & NAVIGATION UPGRADE (TASK V2)
+
+(copy / paste for Replit Agent)
+
+1) Real Artwork Dimensions (CRITICAL)
+
+Implement correct physical scaling based on artwork dimensions (cm → meters).
+All images must appear in their true aspect ratios and relative sizes.
+
+2) Wider Walls (x2)
+
+Expand all wall planes to at least double their current width.
+This prevents the camera from “falling off” edges and creates a real gallery feel.
+
+3) Camera Limits (No Sky / No Floor View)
+
+Add pitch constraints so camera cannot tilt into ceiling void or floor void.
+Allow rotation within natural gallery viewing angles only.
+
+4) Realistic Gallery Lighting
+
+Replace current flat lighting with:
+
+Soft ambient base light
+
+Spotlights above each artwork (slight cone spread)
+
+Gentle halo on the wall behind artworks (museum effect)
+
+Warm tone lighting (temperature ~3500–4000K)
+
+5) Frames + Shadows
+
+Add realistic:
+
+Thin frames (black or white, ~2–3 cm real-world thickness)
+
+Slight offset from wall (1–2 cm)
+
+Soft wall shadow behind frame
+
+This removes the “sticker on wall” effect.
+
+6) Street-View Navigation
+
+Replace the current movement UI with:
+
+Floor hotspots → click to move
+
+Smooth lerp camera transitions
+
+Soft ease-in / ease-out animation
+
+Optional small directional arrows, but floor hotspots are primary
+
+Goal: movement identical to Artplacer 360° examples.
+
+7) Better Materials
+
+Update:
+
+Ceiling: add gallery-style beams or track lighting rails
+
+Floor: polished concrete or gallery wood (PBR texture)
+
+Walls: subtle texture (not pure flat gray)
+
+8) Remove Auto-Selected Artwork
+
+Currently one artwork is always highlighted.
+Remove default selection → highlight only on user click.
+
+9) Update Collection Cards
+
+In Gallery Dashboard:
+
+Add Edit button
+
+Replace yellow “Virtual Room” with “Virtual Exhibition”
+
+This button opens the 360° Editor
+
+10) Fix Artwork Placement Proportions
+
+Some paintings appear distorted (square artworks shown as rectangles, etc.).
+Ensure the plane mesh scales correctly based on original image dimensions.
