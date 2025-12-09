@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback, Suspense, useMemo } from 'react';
+import React, { useRef, useState, useEffect, useCallback, Suspense } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Html, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
@@ -16,61 +16,11 @@ interface Gallery360SceneProps {
   onSlotSelect?: (slotId: string) => void;
 }
 
-function CeilingBeam({ position, rotation, width, height, depth }: { 
-  position: [number, number, number]; 
-  rotation?: [number, number, number];
-  width: number;
-  height: number;
-  depth: number;
-}) {
-  return (
-    <mesh position={position} rotation={rotation || [0, 0, 0]} castShadow>
-      <boxGeometry args={[width, height, depth]} />
-      <meshStandardMaterial color="#2a2a2a" roughness={0.7} metalness={0.1} />
-    </mesh>
-  );
-}
-
-function CeilingSpotlight({ position, targetPosition }: { 
-  position: [number, number, number]; 
-  targetPosition: [number, number, number];
-}) {
-  const spotlightRef = useRef<THREE.SpotLight>(null);
-  const { scene } = useThree();
-  
-  useEffect(() => {
-    if (spotlightRef.current) {
-      spotlightRef.current.target.position.set(...targetPosition);
-      scene.add(spotlightRef.current.target);
-      spotlightRef.current.target.updateMatrixWorld();
-    }
-    return () => {
-      if (spotlightRef.current) {
-        scene.remove(spotlightRef.current.target);
-      }
-    };
-  }, [targetPosition, scene]);
-
-  return (
-    <group position={position}>
-      <mesh>
-        <cylinderGeometry args={[0.08, 0.12, 0.15, 16]} />
-        <meshStandardMaterial color="#1a1a1a" roughness={0.3} metalness={0.8} />
-      </mesh>
-      <spotLight
-        ref={spotlightRef}
-        position={[0, -0.1, 0]}
-        angle={0.45}
-        penumbra={0.85}
-        intensity={1.5}
-        distance={8}
-        color="#fff5e0"
-        castShadow
-        shadow-mapSize={[512, 512]}
-        shadow-bias={-0.0002}
-      />
-    </group>
-  );
+function getProxiedImageUrl(url: string): string {
+  if (url.startsWith('/') || url.startsWith('data:')) {
+    return url;
+  }
+  return `/api/image-proxy?url=${encodeURIComponent(url)}`;
 }
 
 function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
@@ -78,91 +28,37 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
   const halfW = width / 2;
   const halfD = depth / 2;
 
-  const beamPositions = useMemo(() => {
-    const beams: Array<{ pos: [number, number, number]; rot?: [number, number, number]; w: number; h: number; d: number }> = [];
-    const beamSpacing = 3.5;
-    const numBeams = Math.floor(depth / beamSpacing);
-    
-    for (let i = 0; i <= numBeams; i++) {
-      const z = -halfD + 1.5 + (i * beamSpacing);
-      if (z > halfD - 1) break;
-      beams.push({ pos: [0, height - 0.08, z], w: width - 0.5, h: 0.15, d: 0.25 });
-    }
-    
-    beams.push({ pos: [-halfW + 0.15, height - 0.08, 0], rot: [0, Math.PI / 2, 0], w: depth - 0.5, h: 0.15, d: 0.25 });
-    beams.push({ pos: [halfW - 0.15, height - 0.08, 0], rot: [0, Math.PI / 2, 0], w: depth - 0.5, h: 0.15, d: 0.25 });
-    
-    return beams;
-  }, [width, height, depth, halfW, halfD]);
-
-  const spotlightPositions = useMemo(() => {
-    const spots: Array<{ pos: [number, number, number]; target: [number, number, number] }> = [];
-    
-    for (let x = -halfW + 3; x < halfW - 2; x += 4) {
-      spots.push({ pos: [x, height - 0.3, -halfD + 1.5], target: [x, 1.6, -halfD + 0.1] });
-    }
-    for (let x = -halfW + 3; x < halfW - 2; x += 4) {
-      spots.push({ pos: [x, height - 0.3, halfD - 1.5], target: [x, 1.6, halfD - 0.1] });
-    }
-    
-    spots.push({ pos: [-halfW + 1.5, height - 0.3, -2], target: [-halfW + 0.1, 1.6, -2] });
-    spots.push({ pos: [-halfW + 1.5, height - 0.3, 2], target: [-halfW + 0.1, 1.6, 2] });
-    spots.push({ pos: [halfW - 1.5, height - 0.3, -2], target: [halfW - 0.1, 1.6, -2] });
-    spots.push({ pos: [halfW - 1.5, height - 0.3, 2], target: [halfW - 0.1, 1.6, 2] });
-    
-    return spots;
-  }, [width, height, depth, halfW, halfD]);
-
   return (
     <group>
       <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[width, depth]} />
-        <meshStandardMaterial 
-          color="#c4b8a8"
-          roughness={0.85}
-          metalness={0.02}
-        />
+        <meshStandardMaterial color={preset.floorColor} />
       </mesh>
 
       <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
-        <meshStandardMaterial color="#f0ede8" roughness={0.9} />
+        <meshStandardMaterial color={preset.ceilingColor} />
       </mesh>
-
-      {beamPositions.map((beam, i) => (
-        <CeilingBeam 
-          key={`beam-${i}`}
-          position={beam.pos}
-          rotation={beam.rot}
-          width={beam.w}
-          height={beam.h}
-          depth={beam.d}
-        />
-      ))}
 
       <mesh position={[0, height / 2, -halfD]} receiveShadow>
         <planeGeometry args={[width, height]} />
-        <meshStandardMaterial color="#ddd8d0" side={THREE.DoubleSide} roughness={0.92} />
+        <meshStandardMaterial color={preset.wallColor} side={THREE.DoubleSide} />
       </mesh>
 
       <mesh position={[0, height / 2, halfD]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[width, height]} />
-        <meshStandardMaterial color="#ddd8d0" side={THREE.DoubleSide} roughness={0.92} />
+        <meshStandardMaterial color={preset.wallColor} side={THREE.DoubleSide} />
       </mesh>
 
       <mesh position={[halfW, height / 2, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
-        <meshStandardMaterial color="#ddd8d0" side={THREE.DoubleSide} roughness={0.92} />
+        <meshStandardMaterial color={preset.wallColor} side={THREE.DoubleSide} />
       </mesh>
 
       <mesh position={[-halfW, height / 2, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
-        <meshStandardMaterial color="#ddd8d0" side={THREE.DoubleSide} roughness={0.92} />
+        <meshStandardMaterial color={preset.wallColor} side={THREE.DoubleSide} />
       </mesh>
-
-      {spotlightPositions.map((spot, i) => (
-        <CeilingSpotlight key={`spot-${i}`} position={spot.pos} targetPosition={spot.target} />
-      ))}
     </group>
   );
 }
@@ -184,128 +80,60 @@ function ArtworkPlane({
   const [hovered, setHovered] = useState(false);
 
   const hasArtwork = assignment?.artworkUrl;
-  
-  const frameWidth = 0.025;
-  const passepartoutWidth = 0.05;
-  const frameDepth = 0.03;
-  const wallOffset = 0.025;
-  
-  const CM_TO_METERS = 0.01;
-  const artworkDimensions = useMemo(() => {
-    if (!hasArtwork || !assignment?.width || !assignment?.height) {
-      return { width: slot.width, height: slot.height };
-    }
-    
-    let artW = assignment.width * CM_TO_METERS;
-    let artH = assignment.height * CM_TO_METERS;
-    
-    if (artW > slot.width) {
-      const scale = slot.width / artW;
-      artW *= scale;
-      artH *= scale;
-    }
-    
-    if (artH > slot.height) {
-      const scale = slot.height / artH;
-      artW *= scale;
-      artH *= scale;
-    }
-    
-    return { width: artW, height: artH };
-  }, [hasArtwork, assignment?.width, assignment?.height, slot.width, slot.height]);
-  
-  const { width: artWidth, height: artHeight } = artworkDimensions;
-  const totalFrameW = artWidth + (passepartoutWidth * 2) + (frameWidth * 2);
-  const totalFrameH = artHeight + (passepartoutWidth * 2) + (frameWidth * 2);
 
   return (
     <group position={slot.position} rotation={slot.rotation}>
+      <mesh
+        ref={meshRef}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick?.();
+        }}
+        onPointerOver={() => setHovered(true)}
+        onPointerOut={() => setHovered(false)}
+      >
+        <planeGeometry args={[slot.width, slot.height]} />
+        <meshStandardMaterial 
+          color={isSelected ? '#C9A24A' : (hovered ? '#e0e0e0' : '#d0d0d0')}
+          transparent
+          opacity={hasArtwork ? 0 : 0.3}
+        />
+      </mesh>
+
       {hasArtwork && (
-        <mesh position={[0, -0.02, 0.005]} rotation={[0, 0, 0]}>
-          <planeGeometry args={[totalFrameW * 1.1, totalFrameH * 0.15]} />
-          <meshBasicMaterial color="#000000" transparent opacity={0.12} />
+        <Suspense fallback={
+          <mesh>
+            <planeGeometry args={[slot.width, slot.height]} />
+            <meshBasicMaterial color="#cccccc" />
+          </mesh>
+        }>
+          <ArtworkImage 
+            url={assignment!.artworkUrl!} 
+            width={slot.width} 
+            height={slot.height}
+            onClick={onClick}
+            hovered={hovered}
+            setHovered={setHovered}
+          />
+        </Suspense>
+      )}
+
+      {!hasArtwork && isEditor && (
+        <Html center>
+          <div className="bg-white/80 px-2 py-1 rounded text-xs text-gray-600 whitespace-nowrap pointer-events-none">
+            {slot.label}
+          </div>
+        </Html>
+      )}
+
+      {(isSelected || (hovered && isEditor)) && (
+        <mesh position={[0, 0, -0.01]}>
+          <planeGeometry args={[slot.width + 0.1, slot.height + 0.1]} />
+          <meshBasicMaterial color="#C9A24A" transparent opacity={0.5} />
         </mesh>
       )}
-      
-      <group position={[0, 0, wallOffset]}>
-        {hasArtwork ? (
-          <>
-            <mesh castShadow position={[0, 0, -frameDepth / 2]}>
-              <boxGeometry args={[totalFrameW, totalFrameH, frameDepth]} />
-              <meshStandardMaterial color="#1a1816" roughness={0.55} metalness={0.05} />
-            </mesh>
-
-            <mesh position={[0, 0, -0.001]}>
-              <boxGeometry args={[totalFrameW - frameWidth * 0.5, totalFrameH - frameWidth * 0.5, frameDepth * 0.6]} />
-              <meshStandardMaterial color="#2d2926" roughness={0.5} metalness={0.08} />
-            </mesh>
-
-            <mesh position={[0, 0, 0.001]}>
-              <planeGeometry args={[artWidth + (passepartoutWidth * 2), artHeight + (passepartoutWidth * 2)]} />
-              <meshStandardMaterial color="#faf9f6" roughness={0.92} />
-            </mesh>
-
-            <Suspense fallback={
-              <mesh position={[0, 0, 0.003]}>
-                <planeGeometry args={[artWidth, artHeight]} />
-                <meshBasicMaterial color="#e8e4e0" />
-              </mesh>
-            }>
-              <ArtworkImage 
-                url={assignment!.artworkUrl!} 
-                width={artWidth} 
-                height={artHeight}
-                onClick={onClick}
-                hovered={hovered}
-                setHovered={setHovered}
-              />
-            </Suspense>
-          </>
-        ) : (
-          <mesh
-            ref={meshRef}
-            onClick={(e) => {
-              e.stopPropagation();
-              onClick?.();
-            }}
-            onPointerOver={() => setHovered(true)}
-            onPointerOut={() => setHovered(false)}
-          >
-            <planeGeometry args={[slot.width, slot.height]} />
-            <meshStandardMaterial 
-              color={isSelected ? '#C9A24A' : (hovered ? '#d5d0c8' : '#ccc8c0')}
-              transparent
-              opacity={0.6}
-            />
-          </mesh>
-        )}
-
-        {isEditor && !hasArtwork && (
-          <Html center>
-            <div className="bg-white/90 px-3 py-1.5 rounded-lg text-xs text-gray-600 whitespace-nowrap pointer-events-none shadow-sm border border-gray-200">
-              {slot.label}
-            </div>
-          </Html>
-        )}
-
-        {(isSelected || (hovered && isEditor)) && (
-          <mesh position={[0, 0, hasArtwork ? 0.015 : 0.001]}>
-            <planeGeometry args={[hasArtwork ? totalFrameW + 0.1 : slot.width + 0.1, hasArtwork ? totalFrameH + 0.1 : slot.height + 0.1]} />
-            <meshBasicMaterial color="#C9A24A" transparent opacity={0.35} depthTest={false} />
-          </mesh>
-        )}
-      </group>
     </group>
   );
-}
-
-function getProxiedImageUrl(url: string): string {
-  // If it's already a local URL or data URL, use it directly
-  if (url.startsWith('/') || url.startsWith('data:')) {
-    return url;
-  }
-  // For external URLs, route through our proxy
-  return `/api/image-proxy?url=${encodeURIComponent(url)}`;
 }
 
 function ArtworkImage({ 
@@ -334,7 +162,7 @@ function ArtworkImage({
 
   return (
     <mesh 
-      position={[0, 0, 0.005]}
+      position={[0, 0, 0.01]}
       onClick={(e) => {
         e.stopPropagation();
         onClick?.();
@@ -362,21 +190,6 @@ function HotspotMarker({
   currentViewpointId: string;
 }) {
   const [hovered, setHovered] = useState(false);
-  const pulseRef = useRef<THREE.Mesh>(null);
-  const ringRef = useRef<THREE.Mesh>(null);
-  
-  useFrame(({ clock }) => {
-    if (pulseRef.current) {
-      const pulse = Math.sin(clock.elapsedTime * 2.5) * 0.5 + 0.5;
-      pulseRef.current.scale.setScalar(1 + pulse * 0.15);
-      (pulseRef.current.material as THREE.MeshBasicMaterial).opacity = 0.4 + pulse * 0.3;
-    }
-    if (ringRef.current) {
-      const ringPulse = Math.sin(clock.elapsedTime * 1.8 + 0.5) * 0.5 + 0.5;
-      ringRef.current.scale.setScalar(1.3 + ringPulse * 0.2);
-      (ringRef.current.material as THREE.MeshBasicMaterial).opacity = 0.15 + ringPulse * 0.2;
-    }
-  });
   
   if (hotspot.targetViewpoint === currentViewpointId) return null;
 
@@ -386,21 +199,6 @@ function HotspotMarker({
       rotation={[0, hotspot.rotation, 0]}
     >
       <mesh
-        ref={ringRef}
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, 0.005, 0]}
-      >
-        <ringGeometry args={[0.42, 0.52, 32]} />
-        <meshBasicMaterial 
-          color="#C9A24A"
-          transparent 
-          opacity={0.25}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-      
-      <mesh
-        ref={pulseRef}
         onClick={(e) => {
           e.stopPropagation();
           onNavigate(hotspot.targetViewpoint);
@@ -408,22 +206,21 @@ function HotspotMarker({
         onPointerOver={() => setHovered(true)}
         onPointerOut={() => setHovered(false)}
         rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, 0.01, 0]}
       >
-        <circleGeometry args={[0.38, 32]} />
+        <circleGeometry args={[0.4, 32]} />
         <meshBasicMaterial 
           color={hovered ? '#C9A24A' : '#264C61'} 
           transparent 
-          opacity={hovered ? 0.95 : 0.7} 
+          opacity={hovered ? 0.9 : 0.7} 
         />
       </mesh>
       
       <mesh 
-        position={[0, 0.015, -0.18]} 
+        position={[0, 0.01, -0.15]} 
         rotation={[-Math.PI / 2, 0, 0]}
       >
-        <coneGeometry args={[0.12, 0.25, 3]} />
-        <meshBasicMaterial color={hovered ? '#C9A24A' : '#ffffff'} transparent opacity={0.9} />
+        <coneGeometry args={[0.15, 0.3, 3]} />
+        <meshBasicMaterial color={hovered ? '#C9A24A' : '#ffffff'} />
       </mesh>
     </group>
   );
@@ -470,8 +267,6 @@ function CameraController({
     }
   }, [controlsReady, camera]);
 
-  const animationProgress = useRef(0);
-  
   useEffect(() => {
     const isNewViewpoint = lastViewpointId.current !== viewpoint.id;
     
@@ -480,7 +275,6 @@ function CameraController({
     lastViewpointId.current = viewpoint.id;
     
     if (isNewViewpoint) {
-      animationProgress.current = 0;
       if (controlsReady && controlsRef.current && !needsInitialSync.current) {
         isAnimating.current = true;
       } else {
@@ -488,9 +282,7 @@ function CameraController({
       }
     }
   }, [viewpoint, controlsReady]);
-  
-  const animationDuration = 0.5;
-  
+
   useFrame((_, delta) => {
     if (!controlsRef.current || !controlsReady) return;
     
@@ -500,27 +292,21 @@ function CameraController({
       controlsRef.current.update();
       needsInitialSync.current = false;
       isAnimating.current = false;
-      animationProgress.current = 0;
       return;
     }
     
     if (!isAnimating.current) return;
     
-    animationProgress.current = Math.min(animationProgress.current + delta / animationDuration, 1);
-    const t = animationProgress.current;
-    const easeT = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-    
-    const lerpAmount = easeT > 0.99 ? 1 : easeT * 0.08 + 0.04;
-    camera.position.lerp(targetPosition.current, lerpAmount);
-    controlsRef.current.target.lerp(targetLookAt.current, lerpAmount);
+    const lerpFactor = Math.min(5 * delta, 0.2);
+    camera.position.lerp(targetPosition.current, lerpFactor);
+    controlsRef.current.target.lerp(targetLookAt.current, lerpFactor);
     controlsRef.current.update();
     
-    if (animationProgress.current >= 1 || camera.position.distanceTo(targetPosition.current) < 0.02) {
+    if (camera.position.distanceTo(targetPosition.current) < 0.03) {
       camera.position.copy(targetPosition.current);
       controlsRef.current.target.copy(targetLookAt.current);
       controlsRef.current.update();
       isAnimating.current = false;
-      animationProgress.current = 0;
     }
   });
 
@@ -528,12 +314,10 @@ function CameraController({
     <OrbitControls 
       ref={controlsCallback}
       enableZoom={isEditor}
-      enablePan={false}
-      minPolarAngle={Math.PI * 0.38}
-      maxPolarAngle={Math.PI * 0.62}
-      minDistance={0.5}
-      maxDistance={isEditor ? 8 : 4}
-      rotateSpeed={0.35}
+      enablePan={isEditor}
+      minPolarAngle={Math.PI / 4}
+      maxPolarAngle={Math.PI * 0.65}
+      rotateSpeed={0.5}
     />
   );
 }
@@ -550,26 +334,12 @@ export function Gallery360Scene({
 }: Gallery360SceneProps) {
   return (
     <Canvas
-      shadows
-      camera={{ fov: 55, near: 0.1, far: 100 }}
-      style={{ background: '#e8e4e0' }}
+      camera={{ fov: 60, near: 0.1, far: 100 }}
+      style={{ background: '#1a1a1a' }}
     >
-      <ambientLight intensity={0.7} />
-      <hemisphereLight
-        args={['#fffaf0', '#d0ccc4', 0.4]}
-        position={[0, preset.dimensions.height, 0]}
-      />
-      <directionalLight 
-        position={[4, preset.dimensions.height, 3]} 
-        intensity={0.35}
-        castShadow
-        shadow-mapSize={[1024, 1024]}
-        shadow-bias={-0.0001}
-      />
-      <directionalLight 
-        position={[-4, preset.dimensions.height, -3]} 
-        intensity={0.25}
-      />
+      <ambientLight intensity={0.6} />
+      <directionalLight position={[5, 10, 5]} intensity={0.8} />
+      <pointLight position={[0, 3.5, 0]} intensity={0.4} />
 
       <GalleryRoom preset={preset} />
 
