@@ -708,10 +708,9 @@ const SCROLL_DAMPING = 0.88;
 const MIN_WALL_DISTANCE = 1.0;
 // Vertical look limits (polar angle in radians):
 // 0 = looking straight up, π/2 ≈ 1.57 = horizontal, π = looking straight down
-// minPolarAngle = 0.95 → can see a bit of floor but not too much (~54° from up)
-// maxPolarAngle = 1.35 → can see a bit of ceiling but not too much (~77° from up)
-const MIN_POLAR_ANGLE = 0.95;
-const MAX_POLAR_ANGLE = 1.35;
+// Minimal ceiling/floor visibility - almost horizontal view only
+const MIN_POLAR_ANGLE = 1.30;  // Max looking up: ~15° above horizontal (minimal ceiling)
+const MAX_POLAR_ANGLE = 1.75;  // Max looking down: ~10° below horizontal (minimal floor)
 // Mouse sensitivity: very slow rotation for precise control (like OrbitControls rotateSpeed = 0.35)
 // TODO: Fine-tune (0.0001-0.0003) based on user feedback
 const MOUSE_SENSITIVITY = 0.00015;
