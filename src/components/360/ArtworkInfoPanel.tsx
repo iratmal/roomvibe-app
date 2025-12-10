@@ -116,8 +116,11 @@ export function ArtworkInfoPanel({ artwork, open, onClose }: ArtworkInfoPanelPro
               href={artwork.externalUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-5 inline-block px-5 py-2.5 bg-[#0b1f2a] text-white rounded text-sm font-medium hover:bg-[#1a3847] transition-colors"
+              className="mt-5 inline-flex items-center justify-center gap-2 w-full px-6 py-3 bg-[#264C61] text-white rounded-xl text-sm font-semibold hover:bg-[#1D3A4A] transition-all shadow-sm"
             >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
               View Details / Buy
             </a>
           )}
