@@ -6,6 +6,7 @@ import { gallery360Presets, getPresetById, Slot } from '../../config/gallery360P
 
 interface Artwork {
   id: number;
+  artwork_id?: number;
   title: string;
   artist_name?: string;
   image_url: string;
@@ -65,14 +66,20 @@ export function Gallery360Editor({
       const hydratedAssignments = initialAssignments.map(assignment => {
         if (!assignment.artworkId) return assignment;
         
-        // Find the artwork in availableArtworks to get current dimensions
-        const artwork = availableArtworks.find(a => String(a.id) === String(assignment.artworkId));
+        // Find the artwork in availableArtworks - check both id and artwork_id for compatibility
+        // Saved scenes may use gallery_artworks.id while API may return different ID structure
+        const artwork = availableArtworks.find(a => 
+          String(a.id) === String(assignment.artworkId) || 
+          String(a.artwork_id) === String(assignment.artworkId)
+        );
         
         if (artwork) {
           const widthCm = artwork.width_cm || artwork.width_value || artwork.width || assignment.width || 100;
           const heightCm = artwork.height_cm || artwork.height_value || artwork.height || assignment.height || 70;
           
           console.log('[HydrateAssignment]', artwork.title, {
+            matchedId: artwork.id,
+            assignmentId: assignment.artworkId,
             savedDimensions: `${assignment.width}x${assignment.height}`,
             freshDimensions: `${widthCm}x${heightCm}`,
             orientation: heightCm > widthCm ? 'PORTRAIT' : 'LANDSCAPE'
@@ -86,6 +93,9 @@ export function Gallery360Editor({
             width: widthCm,
             height: heightCm
           };
+        } else {
+          console.warn('[HydrateAssignment] No match found for artworkId:', assignment.artworkId, 
+            'Available IDs:', availableArtworks.map(a => ({ id: a.id, artwork_id: a.artwork_id })));
         }
         
         return assignment;
