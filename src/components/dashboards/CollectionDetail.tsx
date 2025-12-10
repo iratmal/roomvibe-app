@@ -430,6 +430,18 @@ export default function CollectionDetail() {
           {collection.description && (
             <p className="text-slate-600 mb-6 max-w-3xl">{collection.description}</p>
           )}
+
+          <a
+            href={`#/gallery/exhibitions/${collection.id}/360-editor`}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#C9A24A] to-[#B8933F] text-[#0B1F2A] rounded-xl font-semibold text-sm hover:from-[#B8933F] hover:to-[#A7842E] transition-all shadow-md hover:shadow-lg mb-6"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            <span className="hidden sm:inline">Open 360° Virtual Exhibition</span>
+            <span className="sm:hidden">Virtual Exhibition</span>
+          </a>
           
           <div className="flex flex-wrap gap-4 text-sm text-slate-400 mb-6 pt-4 border-t border-slate-100">
             <div className="flex items-center gap-2">
