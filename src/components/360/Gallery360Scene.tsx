@@ -729,7 +729,7 @@ function easeInOutCubic(t: number): number {
 }
 
 const ARTWORK_FOCUS_DURATION = 0.7;
-const ARTWORK_FOCUS_DISTANCE = 2.0;
+const ARTWORK_FOCUS_DISTANCE = 3.5;
 
 function FirstPersonController({ 
   viewpoint,
@@ -822,37 +822,30 @@ function FirstPersonController({
     const artworkRotY = focusTarget.rotation[1];
     
     // Calculate the direction the artwork is facing (normal pointing OUTWARD from wall)
-    // Artwork rotation[1] is the Y rotation of the artwork plane
-    // We need to position camera in front of the artwork, looking at it
     const facingDirection = new THREE.Vector3(
       Math.sin(artworkRotY),
       0,
       Math.cos(artworkRotY)
     );
     
-    // Camera position: 2m in front of artwork center, at eye level (1.6m)
+    // Camera position: 3.5m in front of artwork, at SAME HEIGHT as artwork center
+    // This ensures we look straight at the artwork, not up or down
     const cameraTargetPos = new THREE.Vector3(
       artworkPos.x + facingDirection.x * ARTWORK_FOCUS_DISTANCE,
-      1.6, // Eye level
+      artworkPos.y, // Same height as artwork center - looking straight at it
       artworkPos.z + facingDirection.z * ARTWORK_FOCUS_DISTANCE
     );
     clampPosition(cameraTargetPos);
     
     // Calculate theta (horizontal angle) to look directly at artwork
-    // We want to look from camera towards artwork
     const dx = artworkPos.x - cameraTargetPos.x;
     const dz = artworkPos.z - cameraTargetPos.z;
     const theta = Math.atan2(dx, dz);
     
-    // Phi should be horizontal (π/2 = 1.5708) for looking straight ahead
-    // Adjust slightly if artwork center is above/below eye level
-    const dy = artworkPos.y - cameraTargetPos.y;
-    const horizontalDist = Math.sqrt(dx * dx + dz * dz);
-    const phi = Math.PI / 2 - Math.atan2(dy, horizontalDist);
+    // Phi = π/2 (exactly horizontal) - looking straight ahead, no tilt
+    const phi = Math.PI / 2;
     
     const newTargetSpherical = new THREE.Spherical(1, phi, theta);
-    // Clamp phi to allowed range
-    newTargetSpherical.phi = Math.max(MIN_POLAR_ANGLE, Math.min(MAX_POLAR_ANGLE, newTargetSpherical.phi));
     
     artworkFocusStartPos.current.copy(camera.position);
     artworkFocusTargetPos.current.copy(cameraTargetPos);
