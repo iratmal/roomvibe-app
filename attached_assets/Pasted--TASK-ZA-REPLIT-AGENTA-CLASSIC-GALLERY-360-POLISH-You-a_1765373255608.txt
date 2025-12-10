@@ -1,0 +1,214 @@
+**TASK ZA REPLIT AGENTA – CLASSIC GALLERY 360 (POLISH)**
+
+You are updating the 360° **“Classic Gallery”** scene in the RoomVibe app.
+Do **not** change any backend logic or API calls. Only adjust the 3D scene / rendering logic on the frontend.
+
+---
+
+### MAIN GOAL
+
+Make the Classic Gallery look like a realistic gallery space (similar to Artsteps), where:
+
+* artworks are shown in **correct physical proportions** (both **relative to each other** and **relative to the wall**),
+* each artwork has a simple but realistic **frame**, and
+* there is **no yellow debug rectangle** behind artworks when selecting a wall slot in the editor.
+
+Street‑view–style movement on the floor (hotspots) will be done **later** in a separate task – *do not implement that now*.
+
+---
+
+### 1. Artwork scaling – MUST USE REAL DIMENSIONS
+
+Right now artwork sizes are **not correct**:
+
+* they are too small in relation to the wall, and
+* the proportions **between artworks are also wrong**.
+
+We already store the real artwork dimensions in the dashboard (width and height in cm). The 360 gallery must read and use those dimensions.
+
+**REQUIRED:**
+
+1. In the 360 scene code, use the artwork’s stored dimensions (e.g. width_cm, height_cm or similar fields) as the **source of truth**.
+2. Convert them to meters (cm / 100).
+3. Apply a global scale factor for the Classic Gallery (to make them visually larger on the wall, but keep correct proportions between artworks).
+
+> If those exact field names are different, please locate the artwork type/interface used for the 360 exhibition (the one that comes from the gallery/exhibition API) and use its real dimension fields.
+
+**Implementation pattern (pseudo‑code – adapt to actual types):**
+
+```tsx
+// Somewhere in your Classic Gallery 360 code, e.g. in Gallery360Scene.tsx
+
+const CLASSIC_GALLERY_ARTWORK_SCALE = 1.4; // tweakable factor to control overall size on the wall
+
+interface ArtworkWithPlacement {
+  // adapt to real type
+  widthCm: number;   // or artwork.width_cm, etc.
+  heightCm: number;  // or artwork.height_cm, etc.
+  position: [number, number, number];
+  rotation: [number, number, number];
+  // ...other fields (texture URL, id, etc.)
+}
+
+function ArtworkMesh({ artwork }: { artwork: ArtworkWithPlacement }) {
+  const widthMeters = (artwork.widthCm ?? 100) / 100;  // fallback 1.0m if missing
+  const heightMeters = (artwork.heightCm ?? 100) / 100;
+
+  // global scale for this gallery preset
+  const scaledWidth = widthMeters * CLASSIC_GALLERY_ARTWORK_SCALE;
+  const scaledHeight = heightMeters * CLASSIC_GALLERY_ARTWORK_SCALE;
+
+  // use scaledWidth & scaledHeight everywhere you define geometry
+  // ...
+}
+```
+
+**Important:**
+
+* Landscape vs portrait orientation must follow the real width/height data (no forced rotation to landscape).
+* After your change, if we have an artwork 100×100 cm and another 150×100 cm, this second one must clearly look wider on the wall – both in the editor and in the viewer.
+
+---
+
+### 2. Add a realistic frame around each artwork
+
+Currently, artworks look like flat stickers. We want a simple, clean frame around each artwork, with a bit of depth.
+
+Requirements:
+
+* Thin frame (approx. 3–5 cm wide in real‑world terms).
+* Slight depth (shallow box) so it looks like a frame, not just a border.
+* Neutral dark color (black or dark charcoal grey).
+* The image sits slightly **inside** the frame, not overlapping it.
+
+**Implementation pattern (build on top of the scaling logic above):**
+
+```tsx
+// Continuing inside ArtworkMesh
+
+const FRAME_DEPTH = 0.04;     // ~4 cm
+const FRAME_BORDER = 0.03;    // ~3 cm visible border
+const frameColor = "#111111";
+
+const outerWidth = scaledWidth + FRAME_BORDER * 2;
+const outerHeight = scaledHeight + FRAME_BORDER * 2;
+
+return (
+  <group position={artwork.position} rotation={artwork.rotation}>
+    {/* Frame – shallow box flush with the wall */}
+    <mesh>
+      <boxGeometry args={[outerWidth, outerHeight, FRAME_DEPTH]} />
+      <meshStandardMaterial
+        color={frameColor}
+        roughness={0.4}
+        metalness={0.0}
+      />
+    </mesh>
+
+    {/* Artwork image – plane slightly in front of frame */}
+    <mesh position={[0, 0, FRAME_DEPTH / 2 + 0.001]}>
+      <planeGeometry args={[scaledWidth, scaledHeight]} />
+      {/* Re‑use existing artwork texture/material logic here */}
+      {/* Example: */}
+      {/* <meshBasicMaterial map={artworkTexture} toneMapped={false} /> */}
+    </mesh>
+  </group>
+);
+```
+
+Use your existing texture loading logic (`ArtworkImage`, `useTexture`, etc.) – **do not** rewrite that part, just plug the material into this mesh.
+
+The final effect should be:
+
+* from the Entrance/Center views, each artwork clearly looks like a framed painting or print,
+* the frame aligns with the wall exactly where the old plane mesh was.
+
+---
+
+### 3. Remove the yellow selection rectangle / highlight
+
+Right now, when selecting a wall slot in the left panel, a large yellow rectangle appears behind the artwork. This is likely a debug or selection highlight. We don’t want to see it in the 360 editor.
+
+**Requirements:**
+
+* For the Classic Gallery 360 editor view, this yellow rectangle must not be visible at all.
+
+**Implementation hints:**
+
+* Search for components or meshes related to selection, e.g.:
+  `SelectedWallHighlight`, `selectionPlane`, `highlightRect`, or code using a yellowish color (e.g. `#f2d25c`, `#ffd65a`).
+* You will probably find another `<mesh>` or `<planeGeometry>` rendered behind the artwork when a slot is active.
+
+Options (pick one and explain which in your final answer):
+
+1. Remove that mesh from the JSX for the 360 Classic Gallery editor, **or**
+2. Keep the logic but set `visible={false}` for this scene, **or**
+3. Restrict it to some debug mode that is always off in production.
+
+After the change, selecting wall slots should **not** visually add any yellow rectangle behind artworks – only the artwork and its frame with light on the wall.
+
+---
+
+### 4. What **not** to change in this task
+
+Please **do not**:
+
+* Change camera positions or the basic navigation buttons (Entrance / Center / Back Left / Back Right).
+* Implement floor hotspots or street‑view movement (this is Phase 2).
+* Change backend logic, artwork APIs, or how textures are loaded, other than wiring in the existing artwork dimensions.
+
+We only want: correct physical scaling, frames, and no yellow highlight.
+
+---
+
+### 5. Files you will probably need to edit
+
+(Names are based on the current codebase – use the actual ones in the project.)
+
+* `src/components/gallery/360/Gallery360Scene.tsx` (or similar 360 scene file)
+  – where the Classic Gallery layout, camera positions and artwork meshes are defined.
+* Any component responsible for rendering a single artwork in 360 view, e.g. `ArtworkImage`, `ArtworkPlane`, etc.
+* The selection/highlight component for wall slots, if it is separate.
+
+In your final answer, please explicitly list the files you changed.
+
+---
+
+### 6. Acceptance criteria (for QA)
+
+I will consider this task successful only if, after refreshing the app and opening the 360 Editor for Classic Gallery, the following is true:
+
+1. **Correct proportions & size**
+
+   * The three artworks on the north wall clearly look larger than before (they fill the wall more, similar to Artsteps galleries).
+   * Their relative sizes follow the real dimensions from the dashboard (e.g. 100×100 vs 150×100 vs 80×120 cm).
+
+2. **Frames**
+
+   * Every artwork has a clean, thin, dark frame with visible depth.
+   * The image sits nicely inside the frame without being cropped or overlapped.
+
+3. **No yellow selection rectangle**
+
+   * Clicking different wall slots in the left panel does **not** produce any yellow rectangle or colored background behind the artwork.
+
+4. **Nothing else is broken**
+
+   * Floor tiles, lighting, wall colors and camera positions behave exactly as before your changes.
+
+---
+
+### 7. What to include in your reply
+
+When you’re done, please reply with:
+
+1. A short summary of what you did.
+2. A list of the files you modified.
+3. The main constants you introduced (e.g. `CLASSIC_GALLERY_ARTWORK_SCALE`, `FRAME_DEPTH`, `FRAME_BORDER`) and where they are defined.
+4. Clear instructions: **“To adjust artwork size later, change CLASSIC_GALLERY_ARTWORK_SCALE in file X at line Y.”**
+5. Final code snippets for the key parts:
+
+   * The function/component that renders a framed artwork with correct scaling.
+   * The change that removes/hides the yellow rectangle.
+
+This will let us quickly verify the implementation and fine‑tune the look without another long iteration loop.

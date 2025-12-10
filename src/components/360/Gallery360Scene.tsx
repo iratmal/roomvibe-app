@@ -405,7 +405,7 @@ function ArtworkPlane({
       >
         <planeGeometry args={[slot.width, slot.height]} />
         <meshStandardMaterial 
-          color={isSelected ? '#C9A24A' : (hovered ? '#e0e0e0' : '#d0d0d0')}
+          color={hovered ? '#e0e0e0' : '#d0d0d0'}
           transparent
           opacity={hasArtwork ? 0 : 0.3}
         />
@@ -439,13 +439,6 @@ function ArtworkPlane({
             {slot.label}
           </div>
         </Html>
-      )}
-
-      {(isSelected || (hovered && isEditor)) && (
-        <mesh position={[0, 0, -0.02]}>
-          <planeGeometry args={[slot.width + 0.1, slot.height + 0.1]} />
-          <meshBasicMaterial color="#C9A24A" transparent opacity={0.5} />
-        </mesh>
       )}
     </group>
   );
