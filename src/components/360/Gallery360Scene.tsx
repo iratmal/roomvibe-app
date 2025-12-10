@@ -80,21 +80,91 @@ function WallSpotlight({ position, targetY }: {
   return (
     <group position={position}>
       <mesh>
-        <cylinderGeometry args={[0.05, 0.08, 0.1, 8]} />
-        <meshStandardMaterial color="#2a2a2a" roughness={0.3} metalness={0.7} />
+        <cylinderGeometry args={[0.06, 0.1, 0.12, 12]} />
+        <meshStandardMaterial color="#4a4a4a" roughness={0.4} metalness={0.5} />
+      </mesh>
+      <mesh position={[0, -0.04, 0]}>
+        <cylinderGeometry args={[0.04, 0.04, 0.02, 12]} />
+        <meshBasicMaterial color="#fff8e8" />
       </mesh>
       <spotLight
         ref={spotlightRef}
-        position={[0, -0.05, 0]}
-        angle={0.5}
-        penumbra={0.8}
-        intensity={2}
-        distance={6}
-        color="#fff5e6"
+        position={[0, -0.06, 0]}
+        angle={0.4}
+        penumbra={0.95}
+        intensity={4}
+        distance={8}
+        color="#fffaf0"
         castShadow
-        shadow-mapSize={[256, 256]}
+        shadow-mapSize={[512, 512]}
       />
     </group>
+  );
+}
+
+function TiledFloor({ width, depth, color }: { width: number; depth: number; color: string }) {
+  const tiles = useMemo(() => {
+    const tileSize = 0.6;
+    const groutWidth = 0.015;
+    const rows = Math.ceil(depth / tileSize);
+    const cols = Math.ceil(width / tileSize);
+    const result: Array<{ x: number; z: number; shade: number }> = [];
+    
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const x = -width / 2 + col * tileSize + tileSize / 2;
+        const z = -depth / 2 + row * tileSize + tileSize / 2;
+        if (x < width / 2 && x > -width / 2 && z < depth / 2 && z > -depth / 2) {
+          const shade = 0.95 + Math.random() * 0.1;
+          result.push({ x, z, shade });
+        }
+      }
+    }
+    return result;
+  }, [width, depth]);
+
+  const baseColor = new THREE.Color(color);
+
+  return (
+    <group position={[0, 0.001, 0]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[width, depth]} />
+        <meshStandardMaterial 
+          color="#d8d4cc"
+          roughness={0.95}
+          metalness={0.0}
+        />
+      </mesh>
+      {tiles.map((tile, i) => {
+        const tileColor = baseColor.clone().multiplyScalar(tile.shade);
+        return (
+          <mesh
+            key={i}
+            position={[tile.x, 0.002, tile.z]}
+            rotation={[-Math.PI / 2, 0, 0]}
+            receiveShadow
+          >
+            <planeGeometry args={[0.58, 0.58]} />
+            <meshStandardMaterial
+              color={tileColor}
+              roughness={0.75}
+              metalness={0.02}
+            />
+          </mesh>
+        );
+      })}
+    </group>
+  );
+}
+
+function OuterEnclosure({ width, height, depth }: { width: number; height: number; depth: number }) {
+  const size = Math.max(width, depth) * 2;
+  
+  return (
+    <mesh>
+      <boxGeometry args={[size, size, size]} />
+      <meshBasicMaterial color="#1a1a1a" side={THREE.BackSide} />
+    </mesh>
   );
 }
 
@@ -201,8 +271,12 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
 
   return (
     <group>
+      <OuterEnclosure width={width} height={height} depth={depth} />
+      
       {preset.floorType === 'wood' ? (
         <WoodFloor width={width} depth={depth} color={preset.floorColor} />
+      ) : preset.floorType === 'tile' ? (
+        <TiledFloor width={width} depth={depth} color={preset.floorColor} />
       ) : (
         <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
           <planeGeometry args={[width, depth]} />

@@ -33,7 +33,7 @@ export interface Gallery360Preset {
   hasColumns?: boolean;
   columnColor?: string;
   hasSkylights?: boolean;
-  floorType?: 'solid' | 'wood';
+  floorType?: 'solid' | 'wood' | 'tile';
   viewpoints: Viewpoint[];
   hotspots: Hotspot[];
   slots: Slot[];
@@ -101,55 +101,56 @@ export const gallery360Presets: Gallery360Preset[] = [
   {
     id: 'white-cube-v1',
     name: 'Classic Gallery',
-    description: 'Contemporary museum space with warm walls and modern ceiling',
-    dimensions: { width: 18, height: 4.2, depth: 14 },
-    wallColor: '#ddd8d0',
-    floorColor: '#c4b8a8',
-    ceilingColor: '#f0ede8',
+    description: 'Contemporary museum space with gallery lighting and tiled floor',
+    dimensions: { width: 20, height: 4.5, depth: 16 },
+    wallColor: '#f5f2ed',
+    floorColor: '#e8e4dc',
+    ceilingColor: '#faf9f7',
+    floorType: 'tile',
     viewpoints: [
       {
         id: 'entrance',
-        position: [0, 1.65, 5],
-        lookAt: [0, 1.65, -7],
+        position: [0, 1.65, 6],
+        lookAt: [0, 1.65, -8],
         label: 'Entrance'
       },
       {
         id: 'center',
         position: [0, 1.65, 0],
-        lookAt: [0, 1.65, -7],
+        lookAt: [0, 1.65, -8],
         label: 'Center'
       },
       {
         id: 'back-left',
-        position: [-5, 1.65, -3],
-        lookAt: [-9, 1.65, -3],
+        position: [-6, 1.65, -4],
+        lookAt: [-10, 1.65, -4],
         label: 'Back Left'
       },
       {
         id: 'back-right',
-        position: [5, 1.65, -3],
-        lookAt: [9, 1.65, -3],
+        position: [6, 1.65, -4],
+        lookAt: [10, 1.65, -4],
         label: 'Back Right'
       }
     ],
     hotspots: [
-      { id: 'h1', position: [0, 0.1, 2.5], targetViewpoint: 'center', rotation: 0 },
-      { id: 'h2', position: [0, 0.1, -2.5], targetViewpoint: 'entrance', rotation: Math.PI },
-      { id: 'h3', position: [-3.5, 0.1, -1.5], targetViewpoint: 'back-left', rotation: -Math.PI / 4 },
-      { id: 'h4', position: [3.5, 0.1, -1.5], targetViewpoint: 'back-right', rotation: Math.PI / 4 },
+      { id: 'h1', position: [0, 0.1, 3], targetViewpoint: 'center', rotation: 0 },
+      { id: 'h2', position: [0, 0.1, -3], targetViewpoint: 'entrance', rotation: Math.PI },
+      { id: 'h3', position: [-4, 0.1, -2], targetViewpoint: 'back-left', rotation: -Math.PI / 4 },
+      { id: 'h4', position: [4, 0.1, -2], targetViewpoint: 'back-right', rotation: Math.PI / 4 },
       { id: 'h5', position: [0, 0.1, 0], targetViewpoint: 'center', rotation: Math.PI },
-      { id: 'h6', position: [-3, 0.1, 1.5], targetViewpoint: 'back-left', rotation: Math.PI / 2 },
-      { id: 'h7', position: [3, 0.1, 1.5], targetViewpoint: 'back-right', rotation: -Math.PI / 2 }
+      { id: 'h6', position: [-3.5, 0.1, 2], targetViewpoint: 'back-left', rotation: Math.PI / 2 },
+      { id: 'h7', position: [3.5, 0.1, 2], targetViewpoint: 'back-right', rotation: -Math.PI / 2 }
     ],
     slots: [
-      { id: 'wall-north-1', wallId: 'north', position: [-5.5, 1.9, -6.95], rotation: [0, 0, 0], width: 1.8, height: 1.4, label: 'North Wall - Left' },
-      { id: 'wall-north-2', wallId: 'north', position: [0, 1.9, -6.95], rotation: [0, 0, 0], width: 2.2, height: 1.8, label: 'North Wall - Center' },
-      { id: 'wall-north-3', wallId: 'north', position: [5.5, 1.9, -6.95], rotation: [0, 0, 0], width: 1.8, height: 1.4, label: 'North Wall - Right' },
-      { id: 'wall-east-1', wallId: 'east', position: [8.95, 1.9, -3], rotation: [0, -Math.PI / 2, 0], width: 1.8, height: 1.4, label: 'East Wall - Upper' },
-      { id: 'wall-east-2', wallId: 'east', position: [8.95, 1.9, 3], rotation: [0, -Math.PI / 2, 0], width: 1.8, height: 1.4, label: 'East Wall - Lower' },
-      { id: 'wall-west-1', wallId: 'west', position: [-8.95, 1.9, -3], rotation: [0, Math.PI / 2, 0], width: 1.8, height: 1.4, label: 'West Wall - Upper' },
-      { id: 'wall-west-2', wallId: 'west', position: [-8.95, 1.9, 3], rotation: [0, Math.PI / 2, 0], width: 1.8, height: 1.4, label: 'West Wall - Lower' },
-      { id: 'wall-south-1', wallId: 'south', position: [0, 1.9, 6.95], rotation: [0, Math.PI, 0], width: 2.5, height: 1.8, label: 'South Wall - Center' }
+      { id: 'wall-north-1', wallId: 'north', position: [-6, 1.9, -7.95], rotation: [0, 0, 0], width: 1.8, height: 1.4, label: 'North Wall - Left' },
+      { id: 'wall-north-2', wallId: 'north', position: [0, 1.9, -7.95], rotation: [0, 0, 0], width: 2.2, height: 1.8, label: 'North Wall - Center' },
+      { id: 'wall-north-3', wallId: 'north', position: [6, 1.9, -7.95], rotation: [0, 0, 0], width: 1.8, height: 1.4, label: 'North Wall - Right' },
+      { id: 'wall-east-1', wallId: 'east', position: [9.95, 1.9, -4], rotation: [0, -Math.PI / 2, 0], width: 1.8, height: 1.4, label: 'East Wall - Upper' },
+      { id: 'wall-east-2', wallId: 'east', position: [9.95, 1.9, 4], rotation: [0, -Math.PI / 2, 0], width: 1.8, height: 1.4, label: 'East Wall - Lower' },
+      { id: 'wall-west-1', wallId: 'west', position: [-9.95, 1.9, -4], rotation: [0, Math.PI / 2, 0], width: 1.8, height: 1.4, label: 'West Wall - Upper' },
+      { id: 'wall-west-2', wallId: 'west', position: [-9.95, 1.9, 4], rotation: [0, Math.PI / 2, 0], width: 1.8, height: 1.4, label: 'West Wall - Lower' },
+      { id: 'wall-south-1', wallId: 'south', position: [0, 1.9, 7.95], rotation: [0, Math.PI, 0], width: 2.5, height: 1.8, label: 'South Wall - Center' }
     ]
   }
 ];

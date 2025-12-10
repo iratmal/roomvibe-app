@@ -1,0 +1,59 @@
+Naslov: Classic Gallery – prvi vizualni polishing korak (svjetla, pod, “svemir” bug)
+
+Context:
+Trenutno smo se vratili na stabilnu verziju 360 galerije gdje se slike ponovno ispravno prikazuju. Molim te da NE diraš logiku prikaza slika i 360 kretanja, nego samo vizual scena za prostor „Classic Gallery“.
+
+Želim da Classic Gallery krene vizualno prema referenci s ArtSteps (realističan svijetli galerijski prostor), ali za ovaj korak fokusiraj se na ova 3 problema:
+
+Rasvjeta iznad slika
+
+Zadrži raster svjetala iznad slika, ali:
+
+Pojačaj intenzitet svjetla na zidu (spotlight/area light) da dobijemo jači, čišći oval svjetla, kao u pravoj galeriji.
+
+Ublaži oštre rubove svjetlosne mrlje (mekši falloff).
+
+Provjeri da sama “glava lampe” na stropu ne izgleda kao crna grudica – ili je smanji ili joj dodaj malo svjetla/boje da izgleda kao realna galerijska spot svjetla.
+
+Pod – od “generičkog” poda do galerijskog poda
+
+Umjesto sadašnjeg ravnog “beton” poda, napravi realističan pod:
+
+Materijal koji izgleda kao pločice ili svijetli kameni/keramički pod (galerijski stil).
+
+Blagi uzorak / fuga da se vidi da su to pločice (ali diskretno, da ne odvlači pozornost sa slika).
+
+Dodaj barem minimalni normal/roughness da pod ne izgleda potpuno plosnato.
+
+Boja: svjetlija neutralna nijansa (svijetlo bež / svijetli kamen), da prostor djeluje svijetlo i moderno.
+
+“Svemir” / bijela praznina izvan prostorije
+
+Kad nagnem kameru ili se pomaknem, još uvijek se vidi bijela praznina / “svemir” izvan prostora.
+
+Cilj: korisnik ne smije nikad vidjeti “van” galerije.
+
+Produži zidove i strop, ili prilagodi geometriju prostorije tako da u svim standardnim pogledima (Entrance, Center, Back Left, Back Right) kamera uvijek gleda u zidove/strop/pod, a ne u prazninu.
+
+Po potrebi prilagodi clipping/camera limites da se ne može “izletjeti” iz sobe.
+
+Ograničenja:
+
+Ne diraj:
+
+Artwork rendering (teksture, veličine, pozicije slika na zidovima)
+
+Logiku 360 slotova i postojeće nazive wall slotova
+
+Radi ove promjene u branchu feature-360-gallery-upgrade (ako već postoji; ako ne – kreiraj ga iz trenutačnog main koji je označen kao stabilan sa safe-360-stable-* tagovima).
+
+Nakon što završiš, molim te:
+
+Napiši koje si fileove mijenjao (npr. 3D scena / materials / lighting konfiguracija).
+
+Kratko objasni što je konkretno promijenjeno po točkama gore (svjetla, pod, “svemir”).
+
+Deployaj verziju i potvrdi da su slike i dalje vidljive kao i do sada.
+
+Cilj ovog zadatka:
+Classic Gallery treba izgledati čistije i realističnije, s boljom rasvjetom, galerijskim podom i bez “svemira” / praznine, dok sve funkcionalnosti i prikaz slika ostaju stabilni kao sada.
