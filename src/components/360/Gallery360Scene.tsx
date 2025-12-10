@@ -703,6 +703,8 @@ const CAMERA_MOVE_DURATION = 0.85;
 const SCROLL_SPEED = 0.004;
 const SCROLL_DAMPING = 0.92;
 const MIN_WALL_DISTANCE = 1.0;
+const MIN_POLAR_ANGLE = 1.05;
+const MAX_POLAR_ANGLE = 2.0;
 
 function smoothstep(t: number): number {
   return t * t * (3 - 2 * t);
@@ -795,7 +797,7 @@ function FirstPersonController({
       
       spherical.current.theta -= deltaX * 0.003;
       spherical.current.phi += deltaY * 0.003;
-      spherical.current.phi = Math.max(0.85, Math.min(2.3, spherical.current.phi));
+      spherical.current.phi = Math.max(MIN_POLAR_ANGLE, Math.min(MAX_POLAR_ANGLE, spherical.current.phi));
       
       previousMousePosition.current = { x: e.clientX, y: e.clientY };
     };
@@ -825,7 +827,7 @@ function FirstPersonController({
       
       spherical.current.theta -= deltaX * 0.003;
       spherical.current.phi += deltaY * 0.003;
-      spherical.current.phi = Math.max(0.85, Math.min(2.3, spherical.current.phi));
+      spherical.current.phi = Math.max(MIN_POLAR_ANGLE, Math.min(MAX_POLAR_ANGLE, spherical.current.phi));
       
       previousMousePosition.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
     };
