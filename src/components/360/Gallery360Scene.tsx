@@ -821,18 +821,37 @@ function FirstPersonController({
     const artworkPos = new THREE.Vector3(...focusTarget.position);
     const artworkRotY = focusTarget.rotation[1];
     
-    const normal = new THREE.Vector3(0, 0, 1);
-    normal.applyAxisAngle(new THREE.Vector3(0, 1, 0), artworkRotY);
-    
-    const cameraTargetPos = artworkPos.clone().add(
-      normal.multiplyScalar(ARTWORK_FOCUS_DISTANCE)
+    // Calculate the direction the artwork is facing (normal pointing OUTWARD from wall)
+    // Artwork rotation[1] is the Y rotation of the artwork plane
+    // We need to position camera in front of the artwork, looking at it
+    const facingDirection = new THREE.Vector3(
+      Math.sin(artworkRotY),
+      0,
+      Math.cos(artworkRotY)
     );
-    cameraTargetPos.y = 1.6;
+    
+    // Camera position: 2m in front of artwork center, at eye level (1.6m)
+    const cameraTargetPos = new THREE.Vector3(
+      artworkPos.x + facingDirection.x * ARTWORK_FOCUS_DISTANCE,
+      1.6, // Eye level
+      artworkPos.z + facingDirection.z * ARTWORK_FOCUS_DISTANCE
+    );
     clampPosition(cameraTargetPos);
     
-    const lookDirection = artworkPos.clone().sub(cameraTargetPos).normalize();
-    const newTargetSpherical = new THREE.Spherical();
-    newTargetSpherical.setFromVector3(lookDirection);
+    // Calculate theta (horizontal angle) to look directly at artwork
+    // We want to look from camera towards artwork
+    const dx = artworkPos.x - cameraTargetPos.x;
+    const dz = artworkPos.z - cameraTargetPos.z;
+    const theta = Math.atan2(dx, dz);
+    
+    // Phi should be horizontal (π/2 = 1.5708) for looking straight ahead
+    // Adjust slightly if artwork center is above/below eye level
+    const dy = artworkPos.y - cameraTargetPos.y;
+    const horizontalDist = Math.sqrt(dx * dx + dz * dz);
+    const phi = Math.PI / 2 - Math.atan2(dy, horizontalDist);
+    
+    const newTargetSpherical = new THREE.Spherical(1, phi, theta);
+    // Clamp phi to allowed range
     newTargetSpherical.phi = Math.max(MIN_POLAR_ANGLE, Math.min(MAX_POLAR_ANGLE, newTargetSpherical.phi));
     
     artworkFocusStartPos.current.copy(camera.position);
@@ -845,7 +864,12 @@ function FirstPersonController({
     animationStartTime.current = null;
     scrollVelocity.current = 0;
     
-    console.log('[CameraNav] focusOnArtwork', focusTarget.slotId);
+    console.log('[CameraNav] focusOnArtwork', focusTarget.slotId, { 
+      artworkPos: artworkPos.toArray(), 
+      cameraPos: cameraTargetPos.toArray(),
+      theta: theta * 180 / Math.PI,
+      phi: phi * 180 / Math.PI
+    });
   }, [focusTarget, camera, clampPosition]);
   
   useEffect(() => {

@@ -1,0 +1,189 @@
+**Task: Dodaj zlatni gumb "Open 360° Virtual Exhibition" na Gallery Collection detail page**
+
+---
+
+### Cilj
+
+Na stranici kolekcije u Gallery dashboardu (Collection detail page, npr. `.../dashboard/gallery/collection/2`) dodati jasno vidljiv zlatni gumb koji galeriji omogućuje da jednim klikom otvori svoju 360° virtualnu izložbu povezanu s tom kolekcijom.
+
+Ovaj gumb je *najvažniji ulaz* u 360° Editor / Viewer za tu kolekciju.
+
+---
+
+### UX zahtjevi
+
+1. **Lokacija gumba**
+
+   * Stranica: Gallery Collection detail page (kao na screenshotu koji prikazuje:
+
+     * naslov: *"Irena's Modern Abstract Art"*
+     * ispod: opis kolekcije
+     * status (Published) + gumb **Update Status**
+   * Gumb treba biti u gornjem dijelu stranice, unutar header sekcije kolekcije.
+   * Pozicija:
+
+     * Lijevo poravnat uz naslov / ispod naslova, ili
+     * u istom horizontalnom redu s gumbom **Update Status**, ali *vizualno prominentniji*.
+   * Ako moraš birati: prioritet je da bude **odmah vidljiv na prvu** kad se otvori stranica, bez skrolanja.
+
+2. **Tekst gumba**
+
+   * Desktop: `Open 360° Virtual Exhibition`
+   * Mobile (ako treba kraća verzija): `Virtual Exhibition`
+
+3. **Stil gumba (vizual)**
+
+   * Koristi **zlatni stil** koji je usklađen s RoomVibe brendom (isti ili vrlo sličan zlatni stil kao ostali premium gumbi na sajtu).
+   * Ako već postoji "gold" / "premium" varijanta Button komponenti — iskoristi je.
+   * Ako ne postoji, kreiraj varijantu, npr.:
+
+     * pozadina: zlatna (#d4a650 ili odgovarajući RoomVibe gold)
+     * tekst: tamni (npr. #0B1F2A)
+     * lagani hover efekti (malo tamnija zlatna, suptilan shadow).
+
+4. **Stanje gumba ovisno o 360° izložbi**
+
+   * Ako kolekcija **već ima** kreiranu 360° izložbu:
+
+     * Gumb je **aktivan**.
+     * Klik otvara 360° editor / viewer povezane izložbe.
+   * Ako kolekcija **nema** kreiranu 360° izložbu:
+
+     * Imaš dvije mogućnosti (izaberi onu koja je jednostavnija za trenutnu arhitekturu):
+
+       1. Gumb vodi na flow za kreiranje nove 360° izložbe (npr. "Create 360° Exhibition for this Collection").
+       2. Gumb je disabled + tooltip: `Create a 360° exhibition for this collection first`.
+
+---
+
+### Logika i routing
+
+1. **Pronađi postojeći route za 360° Editor**
+
+   * U kodu pronađi postojeći route / komponentu koji se koristi kada korisnik već sada otvara 360° editor.
+   * Primjeri URL-a koje trenutno koristimo (čisti primjer, provjeri u kodu pravu putanju):
+
+     * `/gallery/exhibitions/:exhibitionId/360-editor`
+     * ili `/gallery/collections/:collectionId/360-editor`
+   * **Ključno:** Nemoj izmišljati novu rutu ako već postoji standardni način na koji dolazimo u 360° editor. Samo ponovno iskoristi taj postojeći route.
+
+2. **Povezivanje Collection → Exhibition**
+
+   * Na Collection detail pageu već imamo podatke o kolekciji (id, naziv, opis, broj artworka…).
+   * Potrebno je dobiti **podatak o pripadajućoj 360° izložbi**, npr.:
+
+     * `collection.exhibition360Id`
+     * ili kroz API `GET /gallery/collections/:id` dobiti polje tipa `virtualExhibition` / `exhibition_360`.
+   * Ako takvo polje **već postoji u API odgovoru** – iskoristi ga.
+   * Ako ne postoji, **nemoj mijenjati API** u ovom tasku, nego:
+
+     * za sada hardkodiraj mapiranje kao privremeno rješenje ili
+     * koristi postojeći način na koji druga mjesta u aplikaciji dolaze do `exhibitionId`.
+
+3. **OnClick handler gumba**
+
+   * Kada gumb ima `exhibitionId`, onClick treba:
+
+```tsx
+const handleOpenVirtualExhibition = () => {
+  if (!collection.exhibition360Id) {
+    // optional: show toast/alert
+    toast.info("This collection doesn't have a 360° exhibition yet.");
+    return;
+  }
+
+  navigate(`/gallery/exhibitions/${collection.exhibition360Id}/360-editor`);
+};
+```
+
+* Prilagodi path točnoj rutini koja se već koristi u aplikaciji.
+
+---
+
+### Implementacija – gdje mijenjati kod
+
+> Nazivi datoteka su pretpostavka – ti točno pronađi odgovarajuće.
+
+1. **Pronađi komponentu za Collection detail page**, npr.:
+
+   * `src/pages/dashboard/gallery/CollectionDetailPage.tsx`
+   * ili `src/features/gallery/collections/CollectionDetail.tsx`
+   * potraži po stringu: `Add Artwork to Collection` ili `Artworks in this Collection` – to je siguran tekst s tog viewa.
+
+2. **Unutar header sekcije** (gdje se renderira naslov kolekcije, opis i status):
+
+   * Dodaj gold gumb.
+
+Primjer strukture (pseudo-kod, prilagodi stvarnom layoutu):
+
+```tsx
+return (
+  <PageLayout>
+    <HeaderSection>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div>
+          <h1>{collection.title}</h1>
+          {collection.subtitle && <p>{collection.subtitle}</p>}
+        </div>
+
+        <div className="flex items-center gap-3">
+          <Button
+            variant="gold"
+            size="md"
+            onClick={handleOpenVirtualExhibition}
+          >
+            Open 360° Virtual Exhibition
+          </Button>
+
+          <StatusBadge status={collection.status} />
+          <UpdateStatusButton collection={collection} />
+        </div>
+      </div>
+    </HeaderSection>
+
+    {/* ostatak stranice: Add Artwork to Collection, Artworks in this Collection, ... */}
+  </PageLayout>
+);
+```
+
+3. **Button stil – ako nemaš već gold varijantu**
+
+   * U komponenti za gumb (npr. `src/components/ui/Button.tsx` ili slično) dodaj varijantu `gold`:
+
+```tsx
+const buttonVariants = cva(
+  "inline-flex items-center justify-center rounded-xl font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2",
+  {
+    variants: {
+      variant: {
+        // ... postojeće varijante
+        gold: "bg-[#d4a650] text-[#0B1F2A] hover:bg-[#c1913f] focus:ring-[#d4a650]",
+      },
+      size: {
+        md: "px-4 py-2 text-sm",
+        // ... ostalo
+      },
+    },
+    defaultVariants: {
+      variant: "primary",
+      size: "md",
+    },
+  }
+);
+```
+
+* Ako se koristi Tailwind + utility klasa, prilagodi naming i paletu boja prema postojećim tokenima.
+
+---
+
+### Acceptance kriteriji
+
+1. Na Collection detail pageu se vidi **zlatni gumb** "Open 360° Virtual Exhibition" odmah pri otvaranju stranice, bez skrolanja.
+2. Klik na gumb:
+
+   * ako kolekcija ima pridruženu 360° izložbu – otvara **postojeći 360° Editor/Viewer** za tu izložbu.
+   * ako nema izložbu – ponašanje je jedno od dogovorenih (tooltip / info poruka / redirect na "Create 360° Exhibition" flow) i nije bugovito.
+3. Gumb vizualno odgovara RoomVibe brandu (zlatna, premium stil) i lijepo se uklapa u postojeći layout.
+4. Na mobilnom ekranu gumb je i dalje vidljiv iznad folda i lako klikabilan.
+
+Ako ti treba još konteksta, možeš pregledati i postojeće view-e koji već otvaraju 360° editor (pretraži po `"360 Editor"` i `"/gallery/exhibitions"` u kod bazi) i uskladiti routing s tim rješenjem.
