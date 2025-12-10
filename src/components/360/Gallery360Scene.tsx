@@ -700,11 +700,13 @@ function HotspotMarker({
 }
 
 const CAMERA_MOVE_DURATION = 0.85;
-const SCROLL_SPEED = 0.004;
+const SCROLL_SPEED = 0.003;
 const SCROLL_DAMPING = 0.92;
 const MIN_WALL_DISTANCE = 1.0;
-const MIN_POLAR_ANGLE = 1.05;
-const MAX_POLAR_ANGLE = 2.0;
+const MIN_POLAR_ANGLE = 1.35;
+const MAX_POLAR_ANGLE = 1.85;
+const MOUSE_SENSITIVITY = 0.002;
+const ROTATION_DAMPING = 0.85;
 
 function smoothstep(t: number): number {
   return t * t * (3 - 2 * t);
@@ -730,6 +732,7 @@ function FirstPersonController({
   const lastViewpointId = useRef(viewpoint.id);
   
   const scrollVelocity = useRef(0);
+  const rotationVelocity = useRef({ theta: 0, phi: 0 });
   
   const bounds = useMemo(() => ({
     minX: -galleryDimensions.width / 2 + MIN_WALL_DISTANCE,
@@ -795,9 +798,8 @@ function FirstPersonController({
       const deltaX = e.clientX - previousMousePosition.current.x;
       const deltaY = e.clientY - previousMousePosition.current.y;
       
-      spherical.current.theta -= deltaX * 0.003;
-      spherical.current.phi += deltaY * 0.003;
-      spherical.current.phi = Math.max(MIN_POLAR_ANGLE, Math.min(MAX_POLAR_ANGLE, spherical.current.phi));
+      rotationVelocity.current.theta -= deltaX * MOUSE_SENSITIVITY;
+      rotationVelocity.current.phi += deltaY * MOUSE_SENSITIVITY;
       
       previousMousePosition.current = { x: e.clientX, y: e.clientY };
     };
@@ -825,9 +827,8 @@ function FirstPersonController({
       const deltaX = e.touches[0].clientX - previousMousePosition.current.x;
       const deltaY = e.touches[0].clientY - previousMousePosition.current.y;
       
-      spherical.current.theta -= deltaX * 0.003;
-      spherical.current.phi += deltaY * 0.003;
-      spherical.current.phi = Math.max(MIN_POLAR_ANGLE, Math.min(MAX_POLAR_ANGLE, spherical.current.phi));
+      rotationVelocity.current.theta -= deltaX * MOUSE_SENSITIVITY;
+      rotationVelocity.current.phi += deltaY * MOUSE_SENSITIVITY;
       
       previousMousePosition.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
     };
@@ -871,6 +872,19 @@ function FirstPersonController({
         spherical.current.copy(targetSpherical.current);
         animationStartTime.current = null;
       }
+    }
+    
+    if (Math.abs(rotationVelocity.current.theta) > 0.00001 || 
+        Math.abs(rotationVelocity.current.phi) > 0.00001) {
+      spherical.current.theta += rotationVelocity.current.theta;
+      spherical.current.phi += rotationVelocity.current.phi;
+      spherical.current.phi = Math.max(MIN_POLAR_ANGLE, Math.min(MAX_POLAR_ANGLE, spherical.current.phi));
+      
+      rotationVelocity.current.theta *= ROTATION_DAMPING;
+      rotationVelocity.current.phi *= ROTATION_DAMPING;
+      
+      if (Math.abs(rotationVelocity.current.theta) < 0.00001) rotationVelocity.current.theta = 0;
+      if (Math.abs(rotationVelocity.current.phi) < 0.00001) rotationVelocity.current.phi = 0;
     }
     
     if (Math.abs(scrollVelocity.current) > 0.0001) {
