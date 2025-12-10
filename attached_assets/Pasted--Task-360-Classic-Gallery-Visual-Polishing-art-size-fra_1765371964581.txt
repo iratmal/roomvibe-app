@@ -1,0 +1,243 @@
+**Task: 360° Classic Gallery – Visual Polishing (art size, frames, navigation)**
+
+Hi! 👋
+
+The 360° Classic Gallery is now stable and rendering artworks correctly. Thank you for that – it’s a huge relief. 🙌 Now we want to polish the *visuals* of this one gallery space before cloning it into other gallery styles.
+
+Below is a focused polishing task based on the current live state (screenshots sent in the chat).
+
+---
+
+## GOALS
+
+1. **Artworks should feel like real paintings on a gallery wall**, not stickers:
+
+   * Correct relative sizes between artworks are already good ✅
+   * But all artworks are currently too small in relation to the wall/room
+   * They also lack frames or depth, so they look like flat decals
+
+2. **Movement should feel more like a 3D gallery / street-view style experience**:
+
+   * Viewer should feel like they are *standing in the room* and moving between a few key spots
+
+3. **This should all stay within the existing Classic Gallery preset**:
+
+   * Don’t break existing slot IDs or API contract
+   * Keep current layout logic, just visually improve
+
+---
+
+## 1) Artwork Size vs Room (Global Scale)
+
+**Problem now:**
+
+* The relative proportions between artworks look correct (square vs vertical vs horizontal ✅), but all paintings are too small compared to the wall and room.
+* From the default "Center" view, they look like A4 posters in a giant hall.
+
+**What we want:**
+
+* Increase the *global* artwork scale so that paintings look like realistic gallery sizes.
+* Keep the **relative** size logic (based on real-world width/height or aspect ratio) exactly as it is now.
+
+**Implementation direction:**
+
+* In the part of the code where you convert artwork dimensions / aspect ratio into world units (very likely in `Gallery360Scene`, `ArtworkImage`, or the slot config), add a global scale multiplier, for example:
+
+```ts
+const ARTWORK_GLOBAL_SCALE = 1.6; // tweak value until it looks right
+
+const widthWorld  = baseWidthWorld  * ARTWORK_GLOBAL_SCALE;
+const heightWorld = baseHeightWorld * ARTWORK_GLOBAL_SCALE;
+```
+
+* The exact value is up to you, but visually we want something like this:
+
+  * From the `Center` viewpoint, a 100×100cm painting should look like a **dominant object on the wall**, not a tiny square.
+  * Horizontals and verticals must keep their correct proportions and not be squashed.
+
+* Please keep this:
+
+  * ✅ Relative sizing between artworks (already correct)
+  * ❌ Do **not** hardcode anything specific for my artworks; this must work generically for any uploaded painting.
+
+If helpful, you can add a temporary debug overlay (or console logs) to confirm the final world size in meters for a few artworks.
+
+---
+
+## 2) Frames & Depth (No More “Stickers”)
+
+**Problem now:**
+
+* Artworks are rendered as flat planes on the wall.
+* They visually read as stickers or decals, not framed canvas.
+
+**What we want:**
+
+* A simple, clean **frame + canvas depth** so it feels like a real painting:
+
+  * Thin frame around the artwork
+  * 3D depth (a few cm) so the painting stands slightly off the wall
+  * Subtle shadow on the wall from the frame
+
+**Implementation direction:**
+
+In the component where you render the artwork (likely `ArtworkImage`):
+
+1. **Add a shallow box for the canvas** behind the image plane:
+
+```tsx
+// Pseudo-code
+const FRAME_DEPTH = 0.04; // 4 cm
+const CANVAS_OFFSET_FROM_WALL = 0.02; // 2 cm
+
+<group position={[0, 0, CANVAS_OFFSET_FROM_WALL]}>
+  {/* Canvas body */}
+  <mesh>
+    <boxGeometry args={[widthWorld, heightWorld, FRAME_DEPTH]} />
+    <meshStandardMaterial
+      color="#f5f5f5" // subtle off-white canvas edge
+      roughness={0.9}
+      metalness={0.0}
+    />
+  </mesh>
+
+  {/* Image plane on top of canvas */}
+  <mesh position={[0, 0, FRAME_DEPTH / 2 + 0.001]}>
+    <planeGeometry args={[widthWorld * 0.96, heightWorld * 0.96]} />
+    <meshStandardMaterial map={artworkTexture} />
+  </mesh>
+</group>
+```
+
+2. **Add a thin black/dark frame around the canvas**:
+
+   * Either as an inset/outline geometry or a slightly larger box behind the image.
+
+Example idea:
+
+```tsx
+const FRAME_THICKNESS = 0.03; // 3 cm border
+
+<mesh>
+  <boxGeometry args={[widthWorld + FRAME_THICKNESS, heightWorld + FRAME_THICKNESS, FRAME_DEPTH]} />
+  <meshStandardMaterial
+    color="#111111"
+    roughness={0.4}
+    metalness={0.1}
+  />
+</mesh>
+```
+
+3. **Shadows:**
+
+   * Make sure the frame + canvas group `castShadow` and `receiveShadow` are configured so we get a subtle shadow on the wall.
+
+This doesn’t have to be perfect first try – just enough that from the `Center` viewpoint, the artworks clearly look like framed objects, not stickers.
+
+---
+
+## 3) Movement & Navigation – First Step Toward "Street View"
+
+We *don’t* want to implement full free-fly movement yet, but we want a more natural navigation feeling, closer to ArtSteps or Google Street View.
+
+**Current behavior:**
+
+* We already have the 4 main camera presets: `Entrance`, `Center`, `Back Left`, `Back Right`.
+* Movement is done via the buttons at the bottom.
+
+**What we’d like to add now (minimal first version):**
+
+* **Floor markers / hotspots** that represent these 4 camera positions.
+* When user clicks a floor marker, the camera jumps to the corresponding preset (same as clicking the buttons).
+
+**Implementation direction:**
+
+* Create a small component, e.g. `GalleryNavigationMarker`, rendered on the floor at the 4 positions that correspond to the existing camera presets.
+* Visually, something simple like:
+
+  * A small round disk on the floor (e.g. teal circle) with subtle opacity
+  * Always facing up, not affected by camera rotation
+
+Pseudo-code idea:
+
+```tsx
+function NavMarker({ position, label, onClick }) {
+  return (
+    <mesh
+      position={position}
+      rotation={[-Math.PI / 2, 0, 0]}
+      onClick={onClick}
+    >
+      <circleGeometry args={[0.4, 32]} />
+      <meshStandardMaterial
+        color="#2bb7a9"
+        transparent
+        opacity={0.65}
+      />
+    </mesh>
+  );
+}
+```
+
+* For now, hook them directly to the existing camera logic, e.g.:
+
+```tsx
+<NavMarker
+  position={[xEntrance, 0.01, zEntrance]}
+  label="Entrance"
+  onClick={() => setActiveView("entrance")}
+/>
+
+<NavMarker
+  position={[xCenter, 0.01, zCenter]}
+  label="Center"
+  onClick={() => setActiveView("center")}
+/>
+// etc.
+```
+
+* Make sure markers are only visible in the 360° editor / gallery view, not in other parts of the app.
+
+This gives us the first version of a more immersive, "I walk through the space" feeling without adding complex free-movement controls.
+
+---
+
+## 4) Camera Constraints (Vertical Scrolling)
+
+**Small tweak:**
+
+* When I scroll up/down a lot, the camera can still reach angles where I see too much ceiling or floor.
+
+If it’s not too much trouble in this round, please:
+
+* Clamp the vertical orbit so the user can’t tilt fully up or fully down.
+* The viewer should feel like a person standing in the room, roughly 1.6–1.7m tall.
+
+Example idea (depending on your orbit controls):
+
+* Limit polar angle between something like `minPolarAngle = 0.9` and `maxPolarAngle = 2.4` (values to be tuned to your control setup).
+
+---
+
+## 5) What Not to Touch (Yet)
+
+Please **do not** change in this task:
+
+* Artwork loading logic, textures, or CORS setup (this now works, and we have a safe baseline ✅)
+* API contracts for exhibitions/artworks
+* Wall slot IDs or naming
+* Any Phase 2 features (artwork info panel, comments, music, etc.) – we’ll do that in a separate task.
+
+---
+
+## Definition of Done
+
+From the `Classic Gallery` preset in the 360 editor:
+
+* [ ] Artworks look significantly larger and more proportionate to the room, while keeping their relative size differences and aspect ratios.
+* [ ] Each artwork clearly looks like a framed object with depth, not a flat sticker.
+* [ ] Moving between `Entrance`, `Center`, `Back Left`, and `Back Right` via floor markers feels intuitive.
+* [ ] Camera cannot tilt into weird extreme angles that break the illusion of being in a room.
+* [ ] No regressions in artwork rendering (images still load correctly).
+
+Thank you! 🙏 Once this Classic Gallery is visually polished and stable, we’ll reuse the same system for additional gallery styles (Industrial, Loft, Modern, etc.) and then move to Phase 2 features (artwork info panels, comments, external purchase links, etc.).

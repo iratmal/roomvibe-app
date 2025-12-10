@@ -451,18 +451,17 @@ function ArtworkPlane({
   );
 }
 
-// Preset-specific artwork scale factors for visual realism
-const ARTWORK_SCALE_FACTORS: Record<string, number> = {
-  'white-cube-v1': 2.2,    // Classic Gallery: large artworks to look dominant on 4.5m walls
-  'modern-gallery-v2': 1.8  // Modern Gallery: substantial size for 6m walls
-};
+// Global artwork scale multiplier - makes all artworks larger relative to room
+const ARTWORK_GLOBAL_SCALE = 1.6;
 
-// Frame configuration
+// Frame and canvas configuration for realistic gallery look
 const FRAME_CONFIG = {
-  thickness: 0.04,     // 4cm visible frame width
-  depth: 0.03,         // 3cm frame depth
-  color: '#111111',    // Black frame for gallery look
-  innerBevel: 0.003    // Slight inner edge
+  thickness: 0.035,      // 3.5cm frame border width
+  depth: 0.045,          // 4.5cm total depth (frame + canvas)
+  canvasDepth: 0.025,    // 2.5cm canvas body depth
+  color: '#1a1a1a',      // Dark charcoal/black frame
+  canvasEdge: '#f0ede6', // Off-white canvas edge visible between frame and image
+  wallOffset: 0.02       // 2cm offset from wall
 };
 
 function ArtworkImage({ 
@@ -506,89 +505,85 @@ function ArtworkImage({
   }, [texture]);
 
   const dimensions = useMemo(() => {
-    // Max constraints based on wall, not slot - allows artwork to render at real size
-    const maxHeight = wallHeight ? wallHeight * 0.55 : 2.5;  // 55% of wall height max
-    const maxWidth = wallHeight ? wallHeight * 0.8 : 3.5;    // Max width relative to wall
+    // Max constraints based on wall height
+    const maxHeight = wallHeight ? wallHeight * 0.55 : 2.5;
+    const maxWidth = wallHeight ? wallHeight * 0.9 : 4.0;
     
-    let sourceWidth: number;
-    let sourceHeight: number;
+    let baseWidth: number;
+    let baseHeight: number;
 
-    // Priority 1: Use stored artwork dimensions (cm -> meters) - REAL SIZE
+    // Priority 1: Use stored artwork dimensions (cm -> meters)
     if (assignmentWidth && assignmentHeight && assignmentWidth > 0 && assignmentHeight > 0) {
-      // Convert cm to meters directly - no artificial scaling
-      sourceWidth = assignmentWidth / 100;
-      sourceHeight = assignmentHeight / 100;
+      baseWidth = assignmentWidth / 100;
+      baseHeight = assignmentHeight / 100;
     } 
     // Priority 2: Derive from actual image aspect ratio
     else if (imageDimensions && imageDimensions.width > 0 && imageDimensions.height > 0) {
       const aspect = imageDimensions.width / imageDimensions.height;
-      // Default to ~1.2m base size when no dimensions stored
-      const BASE_SIZE = 1.2;
+      const BASE_SIZE = 1.0;
       
-      // Portrait: taller than wide
       if (imageDimensions.height > imageDimensions.width) {
-        sourceHeight = BASE_SIZE;
-        sourceWidth = BASE_SIZE * aspect;
-      } 
-      // Landscape or square: wider or equal
-      else {
-        sourceWidth = BASE_SIZE;
-        sourceHeight = BASE_SIZE / aspect;
+        baseHeight = BASE_SIZE;
+        baseWidth = BASE_SIZE * aspect;
+      } else {
+        baseWidth = BASE_SIZE;
+        baseHeight = BASE_SIZE / aspect;
       }
     } 
-    // Fallback: reasonable default size
+    // Fallback
     else {
-      return { width: 1.0, height: 1.0 };
+      return { width: 1.0 * ARTWORK_GLOBAL_SCALE, height: 1.0 * ARTWORK_GLOBAL_SCALE };
     }
 
-    // Only apply wall-based constraints (not slot-based)
-    // This allows artwork to render at true dimensions unless they exceed wall limits
-    const widthRatio = maxWidth / sourceWidth;
-    const heightRatio = maxHeight / sourceHeight;
+    // Apply global scale multiplier to make artworks larger in the room
+    const scaledWidth = baseWidth * ARTWORK_GLOBAL_SCALE;
+    const scaledHeight = baseHeight * ARTWORK_GLOBAL_SCALE;
+
+    // Constrain to wall limits
+    const widthRatio = maxWidth / scaledWidth;
+    const heightRatio = maxHeight / scaledHeight;
     const constraintFactor = Math.min(widthRatio, heightRatio, 1);
 
     return {
-      width: sourceWidth * constraintFactor,
-      height: sourceHeight * constraintFactor
+      width: scaledWidth * constraintFactor,
+      height: scaledHeight * constraintFactor
     };
   }, [assignmentWidth, assignmentHeight, imageDimensions, wallHeight]);
 
   const frameT = FRAME_CONFIG.thickness;
   const frameD = FRAME_CONFIG.depth;
+  const canvasD = FRAME_CONFIG.canvasDepth;
+  const wallOffset = FRAME_CONFIG.wallOffset;
 
   return (
-    <group>
-      {/* Outer frame - 4 box segments forming elegant border */}
-      {/* Top frame bar */}
-      <mesh position={[0, dimensions.height / 2 + frameT / 2, frameD / 2 - 0.01]} castShadow>
-        <boxGeometry args={[dimensions.width + frameT * 2, frameT, frameD]} />
-        <meshStandardMaterial color={FRAME_CONFIG.color} roughness={0.3} metalness={0.05} />
+    <group position={[0, 0, wallOffset]}>
+      {/* Frame - solid box behind canvas, slightly larger */}
+      <mesh position={[0, 0, 0]} castShadow receiveShadow>
+        <boxGeometry args={[
+          dimensions.width + frameT * 2, 
+          dimensions.height + frameT * 2, 
+          frameD
+        ]} />
+        <meshStandardMaterial 
+          color={FRAME_CONFIG.color} 
+          roughness={0.35} 
+          metalness={0.1} 
+        />
       </mesh>
-      {/* Bottom frame bar */}
-      <mesh position={[0, -dimensions.height / 2 - frameT / 2, frameD / 2 - 0.01]} castShadow>
-        <boxGeometry args={[dimensions.width + frameT * 2, frameT, frameD]} />
-        <meshStandardMaterial color={FRAME_CONFIG.color} roughness={0.3} metalness={0.05} />
-      </mesh>
-      {/* Left frame bar */}
-      <mesh position={[-dimensions.width / 2 - frameT / 2, 0, frameD / 2 - 0.01]} castShadow>
-        <boxGeometry args={[frameT, dimensions.height, frameD]} />
-        <meshStandardMaterial color={FRAME_CONFIG.color} roughness={0.3} metalness={0.05} />
-      </mesh>
-      {/* Right frame bar */}
-      <mesh position={[dimensions.width / 2 + frameT / 2, 0, frameD / 2 - 0.01]} castShadow>
-        <boxGeometry args={[frameT, dimensions.height, frameD]} />
-        <meshStandardMaterial color={FRAME_CONFIG.color} roughness={0.3} metalness={0.05} />
-      </mesh>
-      
-      {/* Inner shadow line for depth illusion */}
-      <mesh position={[0, 0, -0.002]}>
-        <planeGeometry args={[dimensions.width + 0.01, dimensions.height + 0.01]} />
-        <meshBasicMaterial color="#2a2a2a" />
+
+      {/* Canvas body - off-white edge visible between frame and image */}
+      <mesh position={[0, 0, frameD / 2 + canvasD / 2 - 0.001]} castShadow>
+        <boxGeometry args={[dimensions.width, dimensions.height, canvasD]} />
+        <meshStandardMaterial 
+          color={FRAME_CONFIG.canvasEdge} 
+          roughness={0.85} 
+          metalness={0.0} 
+        />
       </mesh>
       
-      {/* Artwork image */}
+      {/* Artwork image - on front of canvas */}
       <mesh 
-        position={[0, 0, 0.005]}
+        position={[0, 0, frameD / 2 + canvasD + 0.001]}
         onClick={(e) => {
           e.stopPropagation();
           onClick?.();
@@ -596,7 +591,7 @@ function ArtworkImage({
         onPointerOver={() => setHovered(true)}
         onPointerOut={() => setHovered(false)}
       >
-        <planeGeometry args={[dimensions.width, dimensions.height]} />
+        <planeGeometry args={[dimensions.width * 0.98, dimensions.height * 0.98]} />
         <meshBasicMaterial 
           map={texture} 
           transparent
@@ -733,7 +728,8 @@ function FirstPersonController({
       spherical.current.theta -= deltaX * 0.003;
       spherical.current.phi += deltaY * 0.003;
       
-      spherical.current.phi = Math.max(0.2, Math.min(Math.PI - 0.2, spherical.current.phi));
+      // Clamp vertical tilt: ~50° up to ~130° down (feels like standing person looking around)
+      spherical.current.phi = Math.max(0.85, Math.min(2.3, spherical.current.phi));
       
       previousMousePosition.current = { x: e.clientX, y: e.clientY };
     };
@@ -758,7 +754,8 @@ function FirstPersonController({
       spherical.current.theta -= deltaX * 0.003;
       spherical.current.phi += deltaY * 0.003;
       
-      spherical.current.phi = Math.max(0.2, Math.min(Math.PI - 0.2, spherical.current.phi));
+      // Clamp vertical tilt: ~50° up to ~130° down (feels like standing person looking around)
+      spherical.current.phi = Math.max(0.85, Math.min(2.3, spherical.current.phi));
       
       previousMousePosition.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
     };
