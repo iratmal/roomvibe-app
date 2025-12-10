@@ -14,6 +14,10 @@ interface SlotAssignment {
   width?: number;
   height?: number;
   dimensionUnit?: string;
+  priceAmount?: number | null;
+  priceCurrency?: string;
+  buyUrl?: string | null;
+  description?: string | null;
 }
 
 interface Exhibition360Scene {
@@ -43,10 +47,56 @@ router.get('/collections/:id/360-scene', authenticateToken, async (req: any, res
       return res.status(403).json({ error: 'Not authorized' });
     }
 
+    let scene360Data = collection.scene_360_data || null;
+    
+    if (scene360Data) {
+      const parsedScene = typeof scene360Data === 'string' 
+        ? JSON.parse(scene360Data) 
+        : scene360Data;
+      
+      const artworksResult = await query(
+        `SELECT id, title, artist_name, image_url, 
+                width_value, height_value, dimension_unit,
+                price_amount, price_currency, buy_url, description
+         FROM gallery_artworks
+         WHERE collection_id = $1`,
+        [collectionId]
+      );
+      
+      const hydratedSlots = (parsedScene.slots || []).map((slot: SlotAssignment) => {
+        if (!slot.artworkId) return slot;
+        
+        const artwork = artworksResult.rows.find(a => String(a.id) === slot.artworkId);
+        
+        if (!artwork) {
+          return slot;
+        }
+        
+        return {
+          ...slot,
+          artworkUrl: artwork.image_url || slot.artworkUrl,
+          artworkTitle: artwork.title || slot.artworkTitle,
+          artistName: artwork.artist_name || slot.artistName,
+          width: artwork.width_value || slot.width || 100,
+          height: artwork.height_value || slot.height || 70,
+          dimensionUnit: artwork.dimension_unit || 'cm',
+          priceAmount: artwork.price_amount || null,
+          priceCurrency: artwork.price_currency || 'EUR',
+          buyUrl: artwork.buy_url || null,
+          description: artwork.description || null
+        };
+      });
+      
+      scene360Data = {
+        ...parsedScene,
+        slots: hydratedSlots
+      };
+    }
+
     res.json({
       collectionId: collection.id,
       title: collection.title,
-      scene360Data: collection.scene_360_data || null
+      scene360Data
     });
   } catch (err) {
     console.error('Error fetching 360 scene:', err);
