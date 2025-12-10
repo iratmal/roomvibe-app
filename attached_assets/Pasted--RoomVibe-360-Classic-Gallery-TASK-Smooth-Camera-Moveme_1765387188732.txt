@@ -1,0 +1,286 @@
+# RoomVibe – 360 Classic Gallery
+
+## TASK: Smooth Camera Movement (Option 1), Better Limits & Cleaner Navigation
+
+### 0. Kontekst
+
+Radimo isključivo na **Classic Gallery** preset-u u 360° Editoru (Gallery view za umjetnike/galerije).
+
+Trenutno stanje:
+
+* Kamera se kreće **prebrzo i pregrubo** – osjeća se kao skakanje iz točke u točku.
+* Korisnik može gledati **previše u strop**, što kvari dojam i izgleda nerealno.
+* Hotspotovi su renderirani kao **velike plave strelice/krugovi na podu** – to izgleda ne-estetski i ne-premium.
+* Korisnik ne dobiva osjećaj **glatkog prolaska kroz prostor** (Option 1 – very smooth real-time movement).
+
+Cilj ovog taska je:
+
+1. Implementirati **VRLO GLADAK" (Option 1) način kretanja kamere**.
+2. Ispravno ograničiti pogled (strop/pod) tako da uvijek vidimo malo poda i malo stropa, ali nikad ekstrem.
+3. Učiniti navigaciju **čistom i nenametljivom** – bez ružnih plavih krugova; kretanje treba izgledati prirodno.
+
+> VAŽNO: Nemoj mijenjati artwork scaling, zidne dimenzije i frames – to trenutno konačno dobro radi.
+
+---
+
+## 1. Datoteke koje ćeš vjerojatno mijenjati
+
+Molim te da sve promjene radiš **što lokalnije** i s jasnim komentarima.
+
+Najvjerojatnije datoteke:
+
+* `src/components/360/Gallery360Scene.tsx`
+* `src/components/360/cameraController.ts` (ako postoji – u suprotnom kreiraj ga)
+* `src/components/360/hotspotManager.ts` ili dio unutar `Gallery360Scene.tsx` gdje se definiraju hotspotovi
+
+Ako neka od ovih datoteka ne postoji, prilagodi kod postojećoj strukturi, ali zadrži istu logiku i imena funkcija/konstanti koliko god je moguće.
+
+---
+
+## 2. Kamera – Option 1: "Very Smooth Movement"
+
+### 2.1. OrbitControls konfiguracija
+
+Koristimo OrbitControls ili ekvivalentan controller. Treba ga podesiti ovako (pseudo-kod / TypeScript primjer):
+
+```ts
+// unutar inicijalizacije kamere u Gallery360Scene.tsx
+const controls = new OrbitControls(camera, renderer.domElement)
+
+controls.enableDamping = true
+controls.dampingFactor = 0.12         // dovoljno visoko da bude "mekano"
+
+controls.rotateSpeed = 0.35           // uspori rotaciju mišem – trenutno je prebrzo
+controls.zoomSpeed = 0.5              // umjeren zoom
+controls.panSpeed = 0.4               // ako je pan dopušten
+
+controls.enablePan = false            // u galeriji tipično ne trebamo pan – krećemo se po podu
+
+// OGRANIČENJA VERTIKALNOG POGLEDA (polarAngle)
+// tako da uvijek vidimo malo poda i malo stropa, ali nikad ekstrem
+controls.minPolarAngle = 0.95         // ~54° od "gore" – korisnik nikad ne gleda skroz u pod
+controls.maxPolarAngle = 1.35         // ~77° od "gore" – korisnik ne može gledati ravno u plafon
+
+// OGRANIČENJE ZOOMA
+controls.minDistance = 2.0            // ne želimo da kamera uđe "u sliku"
+controls.maxDistance = 18.0           // ne želimo previše udaljavanje
+```
+
+### 2.2. Smooth movement između točaka (bez "skakanja")
+
+Trenutno kamera radi **skok** između pozicija (hotspotova). To treba zamijeniti **glatkom animacijom**.
+
+Implementiraj helper funkciju, npr. u `cameraController.ts`:
+
+```ts
+// cameraController.ts
+import { Vector3, PerspectiveCamera } from 'three'
+
+export interface CameraMoveOptions {
+  durationMs?: number
+  easingFn?: (t: number) => number
+}
+
+const DEFAULT_CAMERA_DURATION = 900 // ~0.9s
+
+export function smoothMoveCamera(
+  camera: PerspectiveCamera,
+  controls: any,
+  targetPosition: Vector3,
+  lookAt: Vector3,
+  options: CameraMoveOptions = {}
+) {
+  const duration = options.durationMs ?? DEFAULT_CAMERA_DURATION
+
+  const startTime = performance.now()
+
+  const startPos = camera.position.clone()
+  const startTarget = controls.target.clone()
+
+  const endPos = targetPosition.clone()
+  const endTarget = lookAt.clone()
+
+  const easing = options.easingFn ?? easeInOutCubic
+
+  function animate() {
+    const now = performance.now()
+    const t = Math.min(1, (now - startTime) / duration)
+    const k = easing(t)
+
+    camera.position.lerpVectors(startPos, endPos, k)
+    controls.target.lerpVectors(startTarget, endTarget, k)
+
+    controls.update()
+
+    if (t < 1) {
+      requestAnimationFrame(animate)
+    }
+  }
+
+  requestAnimationFrame(animate)
+}
+
+function easeInOutCubic(t: number): number {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+}
+```
+
+Zatim u `Gallery360Scene.tsx` (ili gdje već handlaš klik na hotspot/točku navigacije) umjesto direktnog:
+
+```ts
+camera.position.copy(targetPosition)
+controls.target.copy(lookAt)
+controls.update()
+```
+
+koristi:
+
+```ts
+smoothMoveCamera(camera, controls, targetPosition, lookAt, {
+  durationMs: 900, // 0.9s, glatko ali dovoljno brzo
+})
+```
+
+Time dobivamo **kontinuirano, mekano kretanje kamere**, bez trzanja.
+
+### 2.3. Osjećaj stvarnog prolaska kroz prostor
+
+Kada korisnik:
+
+* **klikne na drugi hotspot** → kamera mora glatko kliziti (0.8–1.0s) prema sljedećoj poziciji, ne "teleportirati".
+* **scrolla za zoom** → približavanje slici treba biti glatko, ali ograničeno `minDistance`/`maxDistance` (gore navedeno).
+* **drži lijevi klik i vuče mišem** → rotacija treba biti mekana zbog `enableDamping`.
+
+Ako treba, u animacijskom loopu (render funkcija) obavezno pozivati `controls.update()`.
+
+```ts
+function renderLoop() {
+  requestAnimationFrame(renderLoop)
+  controls.update()   // zbog damping-a
+  renderer.render(scene, camera)
+}
+```
+
+---
+
+## 3. Usporavanje miša / rotacije
+
+Irena koristi Mac miš koji je već sam po sebi "brz".
+
+Zato treba dodatno smanjiti osjetljivost rotacije:
+
+* `controls.rotateSpeed = 0.35` (ili čak 0.3 – po potrebi testiraj)
+* Ako se u kodu negdje multipicira delta pokreta miša (npr. `deltaX * someFactor`), smanji **taj faktor** za cca 50–70%.
+
+Cilj: **da korisnica mora napraviti vidljivo veći pokret mišem da bi kamera napravila veći zakret** (umjesto da "leti" pri svakom minimalnom pokretu).
+
+---
+
+## 4. Vertikalni pogled – ograničiti strop i pod
+
+Trenutno korisnik može vidjeti previše stropa.
+
+Konačno stanje koje želimo:
+
+* **Uvijek se vidi malo stropa** (radi osjećaja prostora).
+* **Uvijek se vidi malo poda** (da znamo gdje stojimo).
+* Nikad ne gledamo *samo* plafon ili *samo* pod.
+
+Vrijednosti gore su ključne:
+
+```ts
+controls.minPolarAngle = 0.95 // ne dopušta da gledamo "skroz dolje" u pod
+controls.maxPolarAngle = 1.35 // ne dopušta da gledamo "skroz gore" u plafon
+```
+
+Molim te osiguraj da **nigdje drugdje u kodu** ne override-aš `minPolarAngle` / `maxPolarAngle` nakon ove inicijalne postavke.
+
+---
+
+## 5. Navigacija – Hotspotovi & pod
+
+Trenutno imamo vidljive plave krugove/strelice na podu.
+
+### 5.1. Vizual
+
+Molim te napravi sljedeće:
+
+1. **Smanji** vizualni indikator hotspotova:
+
+   * umjesto velikih krugova, koristi manji, diskretan marker (npr. sivi krug ili mali suptilni outline).
+   * ili još bolje – hotspot neka bude **nevidljiv**, a indikator se pojavljuje samo na **hover** (kad mišem prijeđem preko poda na mjestu gdje je dozvoljeno kretanje).
+
+2. Ako je jednostavnije, za **prvu fazu** možeš:
+
+   * ostaviti hotspotove potpuno nevidljive,
+   * i koristiti samo gumbe `Entrance / Center / Back Left / Back Right` za skokove,
+   * ali uz **smoothMoveCamera** (nema teleportiranja).
+
+Bitno je samo da **plavi krugovi i strelice nestanu** iz prvog plana – ciljamo na čist, premium galerijski izgled.
+
+### 5.2. Logika kretanja
+
+* Klik na gumb `Entrance / Center / Back Left / Back Right` → koristi `smoothMoveCamera` prema unaprijed zadanoj poziciji.
+* Klik na hotspot na podu (ako ostaju) → isto koristi `smoothMoveCamera`.
+
+NIKADA više ne koristiti direktan:
+
+```ts
+camera.position.copy(...)
+controls.target.copy(...)
+```
+
+bez animacije.
+
+---
+
+## 6. Broj slika po zidu (priprema za sljedeći task – optional ako ti je blizu)
+
+> Ovo je **nice-to-have** ako je relativno jednostavno sada, ali može biti i zaseban task. Navodim da imaš kontekst.
+
+Trenutno Classic Gallery ima:
+
+* malo wall slotova (praktički 2–3 slike po zidu)
+* rezultat: ogromni prazni zidovi
+
+Željeni smjer (za sljedeći korak):
+
+* barem **duplo više** slotova po zidu,
+* npr. 4–5 slotova po zidu u dvije visine (gore/dolje) → ukupno 16–20 slika u prostoriji,
+* slotovi se definiraju parametrizirano (ne hardcodano za svaku ID).
+
+Ako već sada diraš strukturu slotova i ti je jednostavno:
+
+* dodaj nekoliko novih slotova (još 1–2 po zidu),
+* rasporedi ih razumno i simetrično,
+* zadrži postojeće nazive ID-jeva (radi kompatibilnosti) i dodaj nove ID-jeve na konzistentan način.
+
+Ako nije trivijalno – slobodno sve oko broja slotova ostavi za poseban task. Primarni fokus ovog zadatka je **kamera + navigacija**.
+
+---
+
+## 7. Što da ja testiram nakon tvojih izmjena
+
+Molim te, kad završiš, napiši u odgovoru:
+
+1. U kojim datotekama si radio izmjene.
+2. Koje konkretne parametre si postavio za:
+
+   * `rotateSpeed`
+   * `dampingFactor`
+   * `minPolarAngle` / `maxPolarAngle`
+   * `minDistance` / `maxDistance`
+3. Potvrdu da:
+
+   * više nema plavih krugova/strelica na podu, ili su minimalni i diskretni,
+   * klik na `Entrance / Center / Back Left / Back Right` koristi **glatko kretanje** (bez skoka),
+   * rotacija mišem je usporena i mekana,
+   * ne mogu gledati skroz u plafon niti skroz u pod.
+
+Ja ću onda:
+
+* ući u 360° Editor → **Classic Gallery**,
+* proći kroz prostor mišem i gumbe,
+* i javiti ti dojmove.
+
+Hvala ti! 😊

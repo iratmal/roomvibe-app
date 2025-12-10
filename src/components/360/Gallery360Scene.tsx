@@ -666,55 +666,61 @@ function HotspotMarker({
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
       
-      {/* Subtle hover ring - only visible on hover */}
+      {/* Hover indicator - completely invisible by default, only shows on hover */}
       {hovered && (
-        <mesh 
-          position={[0, 0.005, 0]} 
-          rotation={[-Math.PI / 2, 0, 0]}
-        >
-          <ringGeometry args={[0.35, 0.5, 32]} />
-          <meshBasicMaterial 
-            color="#5a8cb8" 
-            transparent 
-            opacity={0.4} 
-            depthWrite={false}
-          />
-        </mesh>
+        <>
+          {/* Subtle outer ring */}
+          <mesh 
+            position={[0, 0.005, 0]} 
+            rotation={[-Math.PI / 2, 0, 0]}
+          >
+            <ringGeometry args={[0.3, 0.4, 32]} />
+            <meshBasicMaterial 
+              color="#ffffff" 
+              transparent 
+              opacity={0.35} 
+              depthWrite={false}
+            />
+          </mesh>
+          {/* Small center dot */}
+          <mesh 
+            position={[0, 0.006, 0]} 
+            rotation={[-Math.PI / 2, 0, 0]}
+          >
+            <circleGeometry args={[0.06, 16]} />
+            <meshBasicMaterial 
+              color="#C9A24A" 
+              transparent 
+              opacity={0.6} 
+              depthWrite={false}
+            />
+          </mesh>
+        </>
       )}
-      
-      {/* Small center dot - subtle indicator */}
-      <mesh 
-        position={[0, 0.003, 0]} 
-        rotation={[-Math.PI / 2, 0, 0]}
-      >
-        <circleGeometry args={[0.08, 16]} />
-        <meshBasicMaterial 
-          color={hovered ? '#C9A24A' : '#888888'} 
-          transparent 
-          opacity={hovered ? 0.7 : 0.25} 
-          depthWrite={false}
-        />
-      </mesh>
     </group>
   );
 }
 
-const CAMERA_MOVE_DURATION = 0.85;
-const SCROLL_SPEED = 0.003;
-const SCROLL_DAMPING = 0.92;
+// Camera movement: smooth 0.9s transitions
+const CAMERA_MOVE_DURATION = 0.9;
+const SCROLL_SPEED = 0.002;
+const SCROLL_DAMPING = 0.88;
 const MIN_WALL_DISTANCE = 1.0;
-// Vertical look limits: π/2 ≈ 1.57 is horizontal
-// ±0.35 rad from horizontal = comfortable gallery viewing range
-// TODO: Fine-tune these values (0.25-0.45) based on user feedback
-const MIN_POLAR_ANGLE = 1.22;  // Looking up limit (1.57 - 0.35)
-const MAX_POLAR_ANGLE = 1.92;  // Looking down limit (1.57 + 0.35)
-// Mouse sensitivity: ~10% of original for smooth, precise control
-// TODO: Fine-tune (0.0002-0.0005) based on user feedback
-const MOUSE_SENSITIVITY = 0.0003;
-const ROTATION_DAMPING = 0.85;
+// Vertical look limits (polar angle in radians):
+// 0 = looking straight up, π/2 ≈ 1.57 = horizontal, π = looking straight down
+// minPolarAngle = 0.95 → can see a bit of floor but not too much (~54° from up)
+// maxPolarAngle = 1.35 → can see a bit of ceiling but not too much (~77° from up)
+const MIN_POLAR_ANGLE = 0.95;
+const MAX_POLAR_ANGLE = 1.35;
+// Mouse sensitivity: very slow rotation for precise control (like OrbitControls rotateSpeed = 0.35)
+// TODO: Fine-tune (0.0001-0.0003) based on user feedback
+const MOUSE_SENSITIVITY = 0.00015;
+// Rotation damping: high value = smoother, slower deceleration (like OrbitControls dampingFactor = 0.12)
+const ROTATION_DAMPING = 0.92;
 
-function smoothstep(t: number): number {
-  return t * t * (3 - 2 * t);
+// Smooth easing function for camera transitions (easeInOutCubic)
+function easeInOutCubic(t: number): number {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
 function FirstPersonController({ 
@@ -863,7 +869,7 @@ function FirstPersonController({
     if (animationStartTime.current !== null) {
       const elapsed = (performance.now() - animationStartTime.current) / 1000;
       const tRaw = Math.min(elapsed / CAMERA_MOVE_DURATION, 1);
-      const t = smoothstep(tRaw);
+      const t = easeInOutCubic(tRaw);
       
       camera.position.lerpVectors(startPosition.current, targetPosition.current, t);
       
