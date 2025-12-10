@@ -504,11 +504,13 @@ function ArtworkImage({
     
     let baseWidth: number;
     let baseHeight: number;
+    let source: string;
 
     // Priority 1: Use stored artwork dimensions (cm -> meters)
     if (assignmentWidth && assignmentHeight && assignmentWidth > 0 && assignmentHeight > 0) {
       baseWidth = assignmentWidth / 100;
       baseHeight = assignmentHeight / 100;
+      source = 'stored_cm';
     } 
     // Priority 2: Derive from actual image aspect ratio
     else if (imageDimensions && imageDimensions.width > 0 && imageDimensions.height > 0) {
@@ -522,9 +524,11 @@ function ArtworkImage({
         baseWidth = BASE_SIZE;
         baseHeight = BASE_SIZE / aspect;
       }
+      source = 'image_aspect';
     } 
     // Fallback
     else {
+      console.log('[DebugSize] FALLBACK - no dimensions available', { assignmentWidth, assignmentHeight, imageDimensions });
       return { width: 1.0 * ARTWORK_GLOBAL_SCALE, height: 1.0 * ARTWORK_GLOBAL_SCALE };
     }
 
@@ -537,9 +541,23 @@ function ArtworkImage({
     const heightRatio = maxHeight / scaledHeight;
     const constraintFactor = Math.min(widthRatio, heightRatio, 1);
 
+    const finalWidth = scaledWidth * constraintFactor;
+    const finalHeight = scaledHeight * constraintFactor;
+
+    console.log('[DebugSize]', {
+      source,
+      inputCm: `${assignmentWidth}x${assignmentHeight}`,
+      baseMeters: `${baseWidth.toFixed(2)}x${baseHeight.toFixed(2)}`,
+      scaled: `${scaledWidth.toFixed(2)}x${scaledHeight.toFixed(2)}`,
+      wallHeight,
+      maxLimits: `${maxWidth.toFixed(2)}x${maxHeight.toFixed(2)}`,
+      constraintFactor: constraintFactor.toFixed(2),
+      finalMeters: `${finalWidth.toFixed(2)}x${finalHeight.toFixed(2)}`
+    });
+
     return {
-      width: scaledWidth * constraintFactor,
-      height: scaledHeight * constraintFactor
+      width: finalWidth,
+      height: finalHeight
     };
   }, [assignmentWidth, assignmentHeight, imageDimensions, wallHeight]);
 
