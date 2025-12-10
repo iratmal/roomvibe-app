@@ -375,13 +375,17 @@ function ArtworkPlane({
   assignment, 
   onClick,
   isSelected,
-  isEditor
+  isEditor,
+  presetId,
+  wallHeight
 }: { 
   slot: Slot; 
   assignment?: SlotAssignment;
   onClick?: () => void;
   isSelected?: boolean;
   isEditor?: boolean;
+  presetId?: string;
+  wallHeight?: number;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
@@ -423,6 +427,8 @@ function ArtworkPlane({
             onClick={onClick}
             hovered={hovered}
             setHovered={setHovered}
+            presetId={presetId}
+            wallHeight={wallHeight}
           />
         </Suspense>
       )}
@@ -445,6 +451,20 @@ function ArtworkPlane({
   );
 }
 
+// Preset-specific artwork scale factors for visual realism
+const ARTWORK_SCALE_FACTORS: Record<string, number> = {
+  'white-cube-v1': 1.4,    // Classic Gallery: larger artworks to look dominant
+  'modern-gallery-v2': 1.2  // Modern Gallery: slightly smaller for bigger space
+};
+
+// Frame configuration
+const FRAME_CONFIG = {
+  thickness: 0.03,     // 3cm visible frame width
+  depth: 0.025,        // 2.5cm frame depth
+  color: '#f5f2ed',    // Warm off-white/cream
+  innerBevel: 0.003    // Slight inner edge
+};
+
 function ArtworkImage({ 
   url, 
   slotWidth,
@@ -453,7 +473,9 @@ function ArtworkImage({
   assignmentHeight,
   onClick,
   hovered,
-  setHovered
+  setHovered,
+  presetId,
+  wallHeight
 }: { 
   url: string; 
   slotWidth: number;
@@ -463,6 +485,8 @@ function ArtworkImage({
   onClick?: () => void;
   hovered: boolean;
   setHovered: (h: boolean) => void;
+  presetId?: string;
+  wallHeight?: number;
 }) {
   const proxiedUrl = getProxiedImageUrl(url);
   const texture = useTexture(proxiedUrl);
@@ -482,44 +506,90 @@ function ArtworkImage({
   }, [texture]);
 
   const dimensions = useMemo(() => {
+    // Get preset-specific scale factor (defaults to 1.0)
+    const presetScale = presetId ? (ARTWORK_SCALE_FACTORS[presetId] || 1.0) : 1.0;
+    
+    // Max height constraint: artwork should not exceed 60% of wall height
+    const maxHeight = wallHeight ? wallHeight * 0.60 : slotHeight * 0.95;
+    const maxWidth = slotWidth * 0.95;
+    
     let sourceWidth: number;
     let sourceHeight: number;
 
+    // Priority 1: Use stored artwork dimensions (cm -> meters)
     if (assignmentWidth && assignmentHeight && assignmentWidth > 0 && assignmentHeight > 0) {
-      sourceWidth = assignmentWidth / 100;
-      sourceHeight = assignmentHeight / 100;
-    } else if (imageDimensions && imageDimensions.width > 0 && imageDimensions.height > 0) {
+      sourceWidth = (assignmentWidth / 100) * presetScale;
+      sourceHeight = (assignmentHeight / 100) * presetScale;
+    } 
+    // Priority 2: Derive from actual image aspect ratio
+    else if (imageDimensions && imageDimensions.width > 0 && imageDimensions.height > 0) {
       const aspect = imageDimensions.width / imageDimensions.height;
-      const BASE_SIZE = 0.8;
-      if (aspect >= 1) {
-        sourceWidth = BASE_SIZE * aspect;
+      // Base size scaled by preset factor
+      const BASE_SIZE = 0.9 * presetScale;
+      
+      // Portrait: taller than wide
+      if (imageDimensions.height > imageDimensions.width) {
         sourceHeight = BASE_SIZE;
-      } else {
+        sourceWidth = BASE_SIZE * aspect;
+      } 
+      // Landscape or square: wider or equal
+      else {
         sourceWidth = BASE_SIZE;
         sourceHeight = BASE_SIZE / aspect;
       }
-    } else {
-      return { width: slotWidth * 0.9, height: slotHeight * 0.9 };
+    } 
+    // Fallback: use slot dimensions
+    else {
+      return { width: slotWidth * 0.8, height: slotHeight * 0.8 };
     }
 
-    const widthRatio = slotWidth / sourceWidth;
-    const heightRatio = slotHeight / sourceHeight;
-    const scaleFactor = Math.min(widthRatio, heightRatio, 1);
+    // Apply constraints: fit within slot and max height
+    const widthRatio = maxWidth / sourceWidth;
+    const heightRatio = maxHeight / sourceHeight;
+    const constraintFactor = Math.min(widthRatio, heightRatio, 1);
 
     return {
-      width: sourceWidth * scaleFactor,
-      height: sourceHeight * scaleFactor
+      width: sourceWidth * constraintFactor,
+      height: sourceHeight * constraintFactor
     };
-  }, [assignmentWidth, assignmentHeight, imageDimensions, slotWidth, slotHeight]);
+  }, [assignmentWidth, assignmentHeight, imageDimensions, slotWidth, slotHeight, presetId, wallHeight]);
+
+  const frameT = FRAME_CONFIG.thickness;
+  const frameD = FRAME_CONFIG.depth;
 
   return (
     <group>
-      <mesh position={[0, 0, -0.015]} castShadow>
-        <boxGeometry args={[dimensions.width + 0.05, dimensions.height + 0.05, 0.03]} />
-        <meshStandardMaterial color="#1a1a1a" roughness={0.4} metalness={0.1} />
+      {/* Outer frame - 4 box segments forming elegant border */}
+      {/* Top frame bar */}
+      <mesh position={[0, dimensions.height / 2 + frameT / 2, frameD / 2 - 0.01]} castShadow>
+        <boxGeometry args={[dimensions.width + frameT * 2, frameT, frameD]} />
+        <meshStandardMaterial color={FRAME_CONFIG.color} roughness={0.3} metalness={0.05} />
       </mesh>
+      {/* Bottom frame bar */}
+      <mesh position={[0, -dimensions.height / 2 - frameT / 2, frameD / 2 - 0.01]} castShadow>
+        <boxGeometry args={[dimensions.width + frameT * 2, frameT, frameD]} />
+        <meshStandardMaterial color={FRAME_CONFIG.color} roughness={0.3} metalness={0.05} />
+      </mesh>
+      {/* Left frame bar */}
+      <mesh position={[-dimensions.width / 2 - frameT / 2, 0, frameD / 2 - 0.01]} castShadow>
+        <boxGeometry args={[frameT, dimensions.height, frameD]} />
+        <meshStandardMaterial color={FRAME_CONFIG.color} roughness={0.3} metalness={0.05} />
+      </mesh>
+      {/* Right frame bar */}
+      <mesh position={[dimensions.width / 2 + frameT / 2, 0, frameD / 2 - 0.01]} castShadow>
+        <boxGeometry args={[frameT, dimensions.height, frameD]} />
+        <meshStandardMaterial color={FRAME_CONFIG.color} roughness={0.3} metalness={0.05} />
+      </mesh>
+      
+      {/* Inner shadow line for depth illusion */}
+      <mesh position={[0, 0, -0.002]}>
+        <planeGeometry args={[dimensions.width + 0.01, dimensions.height + 0.01]} />
+        <meshBasicMaterial color="#2a2a2a" />
+      </mesh>
+      
+      {/* Artwork image */}
       <mesh 
-        position={[0, 0, 0.01]}
+        position={[0, 0, 0.005]}
         onClick={(e) => {
           e.stopPropagation();
           onClick?.();
@@ -780,6 +850,8 @@ export function Gallery360Scene({
             assignment={assignment}
             isSelected={selectedSlotId === slot.id}
             isEditor={isEditor}
+            presetId={preset.id}
+            wallHeight={preset.dimensions.height}
             onClick={() => {
               if (isEditor && onSlotSelect) {
                 onSlotSelect(slot.id);

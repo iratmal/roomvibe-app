@@ -1,0 +1,151 @@
+**Task: Classic Gallery – artwork scale, orientation & simple frames**
+
+You are working on the 360° Classic Gallery scene in RoomVibe.
+Current status:
+
+* Artwork rendering is fixed (no more black planes, CORS issue resolved).
+* Outer black "space" is now blocked – user cannot leave the gallery.
+* Floor tiles and lighting are improved, but still WIP for later polishing.
+* Artwork planes now respect relative dimensions *between artworks*, but they look too small compared to the gallery walls.
+* Portrait vs landscape orientation is sometimes handled incorrectly, and artworks look like stickers (no visible frame).
+
+Goal of this task
+
+1. Make artworks look correctly scaled relative to the room/walls (not tiny).
+2. Ensure portrait / landscape orientation is always correct, based on stored dimensions.
+3. Add a simple, elegant frame so artworks no longer look like flat stickers.
+4. Do *not* break the current stable rendering or CORS setup.
+
+---
+
+## 1. Artwork scaling relative to gallery space
+
+**Problem:**
+
+* In the Classic Gallery preset, artworks on the wall are currently too small relative to the wall height and the overall room scale.
+* Real-world ratios between artworks (e.g. 1×1 m vs 1.5×1 m) are now OK, but the **absolute scale** in the room is off.
+
+**What we want:**
+
+* Keep using real-world sizes for artworks (in meters), but adjust the mapping so that in the Classic Gallery preset:
+
+  * A 1.0 m high artwork appears visually as a dominant object on the wall, not a postcard.
+  * A 1.5 m high artwork is clearly larger but still comfortably fits under the gallery ceiling.
+* The current gallery dimensions are ~20×4.5×16 m. Within this, the typical artwork height range (say 0.7–1.8 m) should visually feel realistic.
+
+**Implementation guidance:**
+
+* Locate the code responsible for creating artwork planes and setting their dimensions for the 360° gallery (likely something like `ArtworkPlane`, `ArtworkImage`, `Gallery360Scene`, or similar).
+* Confirm how artwork width/height is currently computed from stored metadata (cm/m) → Three.js units.
+* Introduce a **scaling factor** for the Classic Gallery preset only, e.g. `CLASSIC_GALLERY_ARTWORK_SCALE = 1.3` (or slightly more, depending on tests).
+* Apply this factor to both width and height when creating the plane mesh **for this preset only**.
+* Optionally: clamp the resulting size to a safe max height vs. wall height (e.g. max artwork height ≈ 60–65% of wall height, to leave space above/below).
+
+**Acceptance criteria:**
+
+* When user loads the Classic Gallery with sample artworks:
+
+  * The 1×1 m artwork looks clearly larger and more dominant on the wall.
+  * The 1.5×1 m artworks look visibly larger but still fit nicely in the layout.
+* Relative proportions between artworks remain correct.
+* No stretching or distortion of images.
+
+---
+
+## 2. Portrait vs landscape orientation
+
+**Problem:**
+
+* Portrait artworks (taller than wide) sometimes appear as if they were landscape, or at least the visual orientation does not match how they were uploaded.
+
+**What we want:**
+
+* Orientation should be **derived from the artwork metadata**:
+
+  * If `height > width` → treat as portrait.
+  * If `width > height` → treat as landscape.
+  * If equal, leave as square.
+* The plane geometry and texture mapping should respect this, without rotating the actual image content.
+
+**Implementation guidance:**
+
+* In the artwork loading/rendering code, after you get `artworkWidth` and `artworkHeight` (in meters):
+
+  * Decide orientation based purely on numbers, not on original image pixel orientation.
+  * Ensure that the Three.js plane uses `width` and `height` in the same ratio as the metadata.
+* Check if there is any manual rotation applied on the texture or mesh for certain artworks – if yes, remove or normalize this so that orientation logic is consistent.
+
+**Acceptance criteria:**
+
+* Portrait artworks (e.g. 80×120 cm) show as vertical rectangles.
+* Landscape artworks (e.g. 120×80 cm) show as horizontal rectangles.
+* Square artworks (e.g. 100×100 cm) stay square.
+* The user no longer sees a portrait artwork displayed sideways.
+
+---
+
+## 3. Simple, elegant frames for artworks
+
+**Problem:**
+
+* Artworks currently look like stickers directly on the wall. The user wants a minimal, tasteful frame so it looks more like a real gallery.
+
+**What we want:**
+
+* Add a **simple frame** around each artwork in the 360° Classic Gallery scene:
+
+  * Thin, slightly raised border around the image.
+  * Neutral color (e.g. soft off-white or very light warm gray) for now; later we can make it configurable.
+  * Slight depth so it reads as a frame, not a 2D stroke.
+
+**Implementation guidance:**
+
+* Architecturally, please separate **frame** and **artwork image**:
+
+  * Option A: Use a slightly larger plane behind the artwork plane as a “mat/frame”, with a different material color.
+  * Option B: Build a simple box frame around the artwork using 4 thin box geometries (top, bottom, left, right) that sit slightly in front of the wall.
+* The frame should:
+
+  * Scale automatically with the artwork.
+  * Maintain a consistent visible thickness (e.g. 2–4 cm in world units) regardless of artwork size.
+  * Sit flush against the wall with a tiny offset so we don’t get z-fighting.
+
+**Acceptance criteria:**
+
+* Every artwork in the Classic Gallery has a minimal frame that looks like part of the gallery design.
+* Frame color and thickness are consistent across artworks.
+* No z-flickering or weird shadows between frame and artwork.
+
+---
+
+## 4. Don’t break current stability
+
+Very important:
+
+* Do **not** modify the existing CORS / image loading logic that we fought with previously.
+* Do not change the outer black enclosure logic that prevents the camera from seeing “space”.
+* Keep changes scoped to:
+
+  * Artwork scaling logic for Classic Gallery.
+  * Orientation handling based on width/height.
+  * New frame geometry/material around artworks.
+
+After implementation, please:
+
+1. Rebuild and test the Classic Gallery in the 360° Editor.
+2. Verify:
+
+   * Images load correctly (no black planes).
+   * Camera cannot escape the gallery.
+   * Artworks look larger and more realistic on the wall.
+   * Portrait vs landscape is correct.
+   * Frames are visible and clean.
+3. Leave console logs clean (no new warnings or errors related to these changes).
+
+If you need to touch specific files, it will likely involve:
+
+* `src/gallery/exhibition360.ts` (or equivalent)
+* `src/gallery/components/Gallery360Scene.tsx` (or equivalent)
+* `ArtworkPlane` / `ArtworkImage` components (wherever the mesh/texture is defined)
+
+Please keep the code well commented so we can easily adjust scale/frame parameters later without reworking the whole system.
