@@ -1,0 +1,266 @@
+# Task: Fix 360° Classic Gallery artwork dimensions (use real cm sizes + correct frame)
+
+**Context / Problem**
+
+In the 360° Editor for **Classic Gallery**, artworks still do **not** appear in correct proportions:
+
+* All artworks are too small relative to the wall.
+* Relative sizes between artworks are wrong – e.g. a 150×100 cm artwork doesn’t look clearly larger than a 100×100 cm piece.
+* Frames look flat / like stickers.
+* Console debug logs show:
+
+  * `fallback -> no dimensions available`
+  * `source: "image_aspect"`
+  * `assignmentWidth: undefined, assignmentHeight: undefined, imageDimensions: null`
+* When refreshing, large **light gray rectangles** briefly appear on walls (placeholders), then shrink into the small artworks – this suggests the **frame/canvas geometry** is using some size, but the **art image plane** is still using old/default sizing.
+
+Network tab confirms the app calls:
+
+* `GET https://app.roomvibe.app/api/gallery/collections/2/artworks` (20.30 MB JSON response)
+
+We want **Classic Gallery** to be fully polished before we clone logic/design to other gallery presets.
+
+---
+
+## Goal
+
+1. Artwork sizes in **Classic Gallery** must be based on their **stored physical dimensions** (cm) from the artworks API.
+2. Relative proportions must be correct: if Artwork A is 150×100 cm and Artwork B is 100×100 cm, A must appear visibly wider.
+3. The **image plane** (with the artwork texture) must match the same physical size as the **canvas/frame opening** – no shrinking inside.
+4. Frames must have a subtle depth and border, but not dominate the artwork.
+5. Yellow debug selection rectangles and placeholder artifacts must be removed in Classic Gallery.
+
+---
+
+## Step 1 – Wire real artwork dimensions from backend to frontend
+
+### 1.1 Backend: include width/height in `/api/gallery/collections/:id/artworks`
+
+1. Find the backend handler for:
+
+   * `GET /api/gallery/collections/:collectionId/artworks`
+     (In `server/` or `api/` – e.g. something like `server/api/gallery.ts`, `server/routes/gallery.ts`, etc.)
+
+2. For each artwork returned in that endpoint, make sure the JSON includes **numeric dimensions in cm**, for example:
+
+```ts
+{
+  id: number;
+  title: string;
+  imageUrl: string;
+  // ...existing fields...
+  width_cm: number | null;
+  height_cm: number | null;
+}
+```
+
+Use the existing artwork model/DB fields that are already used in the RoomVibe dashboard (the user inputs width/height there). If the DB field names are different (e.g. `width`, `height`, `size_width_cm`, `size_height_cm`), just map them to `width_cm` and `height_cm` in the DTO for this API.
+
+3. Make sure the route **always** sends these numerics (or `null` if truly unknown).
+
+---
+
+### 1.2 Frontend: add dimension fields to artwork types
+
+1. Locate the TypeScript types used by the gallery 360 system for artworks, e.g.:
+
+   * `src/types/artwork.ts`, `src/api/types.ts`, or wherever `Artwork` / `GalleryArtwork` is defined.
+
+2. Extend the type to include physical dimensions:
+
+```ts
+type Artwork = {
+  id: number;
+  title: string;
+  imageUrl: string;
+  // ...existing fields...
+  width_cm?: number | null;
+  height_cm?: number | null;
+};
+```
+
+3. In the hook / function that fetches artworks for the 360 gallery (e.g. `useGalleryArtworks`, `fetchGalleryArtworks`, etc.), map `width_cm` and `height_cm` from the API response into this type.
+
+---
+
+## Step 2 – Fix the Classic Gallery sizing logic
+
+All changes below are for **Classic Gallery** 360 scene.
+
+### 2.1 Locate the 360 Classic Gallery components
+
+You already modified:
+
+* `src/components/360/Gallery360Scene.tsx`
+
+Also find the component that actually renders a single artwork mesh, something like:
+
+* `src/components/360/ArtworkMesh.tsx`
+* or `src/components/360/ArtworkFrame.tsx`
+* or a nested component inside `Gallery360Scene` that returns `<group>` / `<mesh>` for each wall slot.
+
+We want a single place where the **frame**, **canvas**, and **art image plane** are all sized from the **same width/height in meters**.
+
+### 2.2 Define a helper to convert cm → meters with global scale
+
+In `src/components/360/Gallery360Scene.tsx` (or a shared 360 util file), define these constants/helpers:
+
+```ts
+const CM_TO_M = 0.01;
+
+const ARTWORK_GLOBAL_SCALE = 1.6; // as you already used; tweakable later
+
+export function getArtworkSizeMeters(artwork: Artwork) {
+  const DEFAULT_WIDTH_CM = 100;  // fallback if data missing
+  const DEFAULT_HEIGHT_CM = 100; // fallback if data missing
+
+  const widthCm = artwork.width_cm ?? DEFAULT_WIDTH_CM;
+  const heightCm = artwork.height_cm ?? DEFAULT_HEIGHT_CM;
+
+  const baseWidthM = widthCm * CM_TO_M;
+  const baseHeightM = heightCm * CM_TO_M;
+
+  return {
+    widthMeters: baseWidthM * ARTWORK_GLOBAL_SCALE,
+    heightMeters: baseHeightM * ARTWORK_GLOBAL_SCALE,
+    source: artwork.width_cm && artwork.height_cm ? "stored_cm" : "fallback_default",
+  } as const;
+}
+```
+
+Whenever you prepare data for a wall slot, call `getArtworkSizeMeters(artwork)` and pass `widthMeters` and `heightMeters` into the artwork mesh as props.
+
+Example inside `Gallery360Scene` when building slots:
+
+```tsx
+const { widthMeters, heightMeters } = getArtworkSizeMeters(artwork);
+
+<ArtworkMesh
+  key={slot.id}
+  artwork={artwork}
+  position={slotPosition}
+  widthMeters={widthMeters}
+  heightMeters={heightMeters}
+  // ...any other props...
+/>
+```
+
+Remove / comment out old debug logs (`[DebugSize] FALLBACK – no dimensions available`) or adjust them to log `source` from `getArtworkSizeMeters`.
+
+---
+
+### 2.3 Use width/height for BOTH frame and image plane
+
+In the `ArtworkMesh` component (or equivalent), adjust geometry so **everything** uses `widthMeters` / `heightMeters`.
+
+Assuming a structure similar to this, update it along these lines:
+
+```tsx
+const FRAME_CONFIG = {
+  borderThickness: 0.035, // 3.5 cm
+  depth: 0.045,           // 4.5 cm
+  color: "#1a1a1a",
+  canvasInset: 0.02,      // 2 cm inset for the visible art inside the frame
+  wallOffset: 0.02,       // distance from wall to frame back
+};
+
+interface ArtworkMeshProps {
+  artwork: Artwork;
+  widthMeters: number;
+  heightMeters: number;
+  position: [number, number, number];
+}
+
+export function ArtworkMesh({ artwork, widthMeters, heightMeters, position }: ArtworkMeshProps) {
+  const { texture } = useArtworkTexture(artwork); // existing hook
+
+  const frameOuterWidth = widthMeters + FRAME_CONFIG.borderThickness * 2;
+  const frameOuterHeight = heightMeters + FRAME_CONFIG.borderThickness * 2;
+
+  return (
+    <group position={position}>
+      {/* Frame body */}
+      <mesh position={[0, 0, FRAME_CONFIG.wallOffset + FRAME_CONFIG.depth / 2]}>
+        <boxGeometry
+          args={[frameOuterWidth, frameOuterHeight, FRAME_CONFIG.depth]}
+        />
+        <meshStandardMaterial color={FRAME_CONFIG.color} />
+      </mesh>
+
+      {/* Canvas plane (slightly in front of frame body) */}
+      <mesh position={[0, 0, FRAME_CONFIG.wallOffset + FRAME_CONFIG.depth + 0.001]}>
+        <planeGeometry args={[widthMeters, heightMeters]} />
+        <meshStandardMaterial color="#f5f2ed" />
+      </mesh>
+
+      {/* Artwork image plane – EXACT same size as canvas */}
+      {texture && (
+        <mesh position={[0, 0, FRAME_CONFIG.wallOffset + FRAME_CONFIG.depth + 0.002]}>
+          <planeGeometry args={[widthMeters, heightMeters]} />
+          <meshStandardMaterial map={texture} />
+        </mesh>
+      )}
+    </group>
+  );
+}
+```
+
+**Important:**
+
+* Remove any previous `planeGeometry` with hard-coded values (e.g. `[1, 1]`, `[1.2, 0.8]`, etc.).
+* Remove any extra `scale` props on the image plane like `scale={[0.7, 0.7, 1]}` – the geometry size already encodes scaling.
+* Make sure there isn’t another nested component that overrides scale (e.g. a wrapper `<group scale={...}>`). If there is, set that scale back to `[1,1,1]` for the artwork.
+
+This should eliminate the "white placeholder with small image inside" effect – there should be only one image plane, exactly matching the canvas.
+
+---
+
+## Step 3 – Clean up selection rectangles and hover
+
+1. Find any code that draws debug rectangles / outlines for selected slots, e.g. a `SelectionOverlay`, or a `RectangleHelper` created only in editor mode.
+2. For **Classic Gallery**, remove (or hide) the yellow rectangle that appears over the artwork when a slot is selected.
+
+   * Keep only subtle hover feedback in the left-side wall slot list (green dot), which already works.
+
+---
+
+## Step 4 – Acceptance Criteria
+
+Classic Gallery is considered **polished** when:
+
+1. **Artwork sizing**
+
+   * The middle artwork (`Mordor Veil`) appears ~100×100 cm relative to wall.
+   * The left and right artworks (150×100 cm) look clearly wider and larger than `Mordor Veil`.
+   * If we change any artwork’s cm dimensions in the dashboard and reload, its size changes in the 360 view accordingly.
+
+2. **Frames & depth**
+
+   * Frames are visible, slim dark borders with a bit of depth, but do **not** make artworks look like stickers.
+   * Art sits inside the frame, flush with the front.
+
+3. **No placeholder glitches**
+
+   * On refresh, there is **no moment** where a large gray rectangle shrinks into a small image – the image is correctly sized from the beginning.
+
+4. **No debug rectangles**
+
+   * Clicking a wall slot no longer shows a yellow rectangle over the artwork.
+
+5. **Debug logs** (temporary, for verification)
+
+   * Add a single console.log in `getArtworkSizeMeters` (and delete later):
+
+```ts
+console.log("[ArtworkSize]", artwork.title, {
+  width_cm: artwork.width_cm,
+  height_cm: artwork.height_cm,
+  widthMeters,
+  heightMeters,
+  source,
+});
+```
+
+* We should now see `source: "stored_cm"` for artworks that have physical dimensions entered in the dashboard.
+
+Once this works well in **Classic Gallery**, we will **reuse the same sizing + frame logic** in other gallery presets (Modern, Loft, Industrial, etc.), changing only room geometry and styling – not the core artwork scaling logic.

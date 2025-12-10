@@ -13,6 +13,9 @@ interface Artwork {
   height?: number;
   width_value?: number;
   height_value?: number;
+  width_cm?: number;
+  height_cm?: number;
+  orientation?: 'horizontal' | 'vertical' | 'square';
 }
 
 interface Gallery360EditorProps {
@@ -71,8 +74,20 @@ export function Gallery360Editor({
 
   const handleAssignArtwork = (slotId: string, artwork: Artwork | null) => {
     if (artwork) {
-      const widthCm = artwork.width_value || artwork.width || 100;
-      const heightCm = artwork.height_value || artwork.height || 70;
+      // Priority: width_cm > width_value > width > fallback
+      const widthCm = artwork.width_cm || artwork.width_value || artwork.width || 100;
+      const heightCm = artwork.height_cm || artwork.height_value || artwork.height || 70;
+      
+      console.log('[AssignArtwork]', artwork.title, { 
+        width_cm: artwork.width_cm, 
+        height_cm: artwork.height_cm,
+        width_value: artwork.width_value,
+        height_value: artwork.height_value,
+        width: artwork.width,
+        height: artwork.height,
+        resolved: { widthCm, heightCm }
+      });
+      
       assignArtwork(slotId, String(artwork.id), {
         artworkUrl: artwork.image_url,
         artworkTitle: artwork.title,
