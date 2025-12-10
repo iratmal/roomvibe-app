@@ -13,6 +13,7 @@ interface SlotAssignment {
   artistName?: string;
   width?: number;
   height?: number;
+  dimensionUnit?: string;
 }
 
 interface Exhibition360Scene {

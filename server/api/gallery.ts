@@ -229,15 +229,51 @@ router.get('/collections/:id/artworks', authenticateToken, async (req: any, res)
       return res.status(403).json({ error: 'You can only view artworks from your own collections' });
     }
 
+    // IMPORTANT: Do NOT use SELECT * - it includes image_data (base64) which makes response 20MB+
+    // Only select metadata fields needed for the 360 editor
     const result = await query(
-      `SELECT * FROM gallery_artworks
+      `SELECT id, collection_id, title, artist_name, image_url, 
+              width_value, height_value, dimension_unit,
+              price_amount, price_currency, buy_url, created_at
+       FROM gallery_artworks
        WHERE collection_id = $1
        ORDER BY created_at DESC`,
       [collectionId]
     );
 
-    console.log(`Found ${result.rows.length} artworks`);
-    res.json({ artworks: result.rows });
+    // Map to frontend-expected format with width_cm/height_cm
+    const artworks = result.rows.map(row => {
+      // Convert inches to cm if needed
+      const unit = row.dimension_unit || 'cm';
+      let widthCm = row.width_value || 100;
+      let heightCm = row.height_value || 70;
+      
+      if (unit === 'in') {
+        widthCm = widthCm * 2.54;
+        heightCm = heightCm * 2.54;
+      }
+
+      // Determine orientation
+      let orientation: 'horizontal' | 'vertical' | 'square' = 'horizontal';
+      if (Math.abs(widthCm - heightCm) < 1) {
+        orientation = 'square';
+      } else if (heightCm > widthCm) {
+        orientation = 'vertical';
+      }
+
+      return {
+        ...row,
+        // Add computed fields for 360 scene
+        width_cm: Math.round(widthCm),
+        height_cm: Math.round(heightCm),
+        width: Math.round(widthCm),  // Also expose as width/height for compatibility
+        height: Math.round(heightCm),
+        orientation
+      };
+    });
+
+    console.log(`Found ${artworks.length} artworks (metadata only, no binary data)`);
+    res.json({ artworks });
   } catch (error: any) {
     console.error('Error fetching artworks:', error);
     res.status(500).json({ error: 'Failed to fetch artworks', details: error.message });

@@ -1,0 +1,215 @@
+// RoomVibe – 360° Gallery backend fix
+// Endpoint: GET /api/gallery/collections/:id/artworks
+// Cilj: endpoint MORA vraćati čisti JSON s metapodacima o artworkovima (dimenzije, URL, orijentacija),
+// a NE binarne podatke slika, kako bi 360° scena mogla pravilno skalirati i prikazivati radove.
+
+/*
+====================================================
+1. SAŽETAK PROBLEMA
+====================================================
+
+• Network tab pokazuje poziv:
+    GET /api/gallery/collections/2/artworks
+    Type: json
+    Size: ~20.30 MB
+
+• To znači da backend u JSON response embedda binarne podatke slika (ili base64), umjesto da
+  vrati čisti JSON objekt.
+
+• Frontend debugger log (
+  "[DebugSize] FALLBACK – no dimensions available | source: 'image_aspect' ..."
+  ) pokazuje da 360 scena NE dobiva:
+    - width_cm
+    - height_cm
+    - orientation
+
+  pa mora koristiti fallback na "image_aspect" i zato slike izgledaju kao male naljepnice,
+  krivih proporcija i krivih odnosa dimenzija.
+
+====================================================
+2. KONAČNI OČEKIVANI RESPONSE
+====================================================
+
+Endpoint GET /api/gallery/collections/:collectionId/artworks treba vraćati OVO (primjer):
+
+{
+  "items": [
+    {
+      "id": "art_123",
+      "title": "Harmony",
+      "imageUrl": "https://cdn.roomvibe.app/uploads/harmony.jpg",
+      "width_cm": 150,
+      "height_cm": 100,
+      "orientation": "horizontal",   // "horizontal" | "vertical" | "square"
+      "wallSlotKey": "north_wall_center" // (opcionalno – za mapiranje na slotove)
+    },
+    {
+      "id": "art_456",
+      "title": "Mordor Veil",
+      "imageUrl": "https://cdn.roomvibe.app/uploads/mordor-veil.jpg",
+      "width_cm": 100,
+      "height_cm": 100,
+      "orientation": "square",
+      "wallSlotKey": "north_wall_left"
+    }
+  ]
+}
+
+• NI U KOM SLUČAJU nemoj embedati base64 ili binary image podatke.
+• Slike se dohvaćaju ISKLJUČIVO preko imageUrl (CDN / public/uploads / sl.).
+
+====================================================
+3. BACKEND IMPLEMENTACIJA (Express + Prisma – prilagodi po potrebi)
+====================================================
+
+// server/api/gallery/gallery.routes.ts (ili gdje već držite gallery rute)
+
+import { Router, Request, Response } from "express";
+import prisma from "../../db/client"; // prilagodi path Vašem projektu
+
+const router = Router();
+
+// ... ostale rute
+
+// GET /api/gallery/collections/:collectionId/artworks
+router.get("/collections/:collectionId/artworks", async (req: Request, res: Response) => {
+  try {
+    const rawId = req.params.collectionId;
+    const collectionId = Number(rawId);
+
+    if (!rawId || Number.isNaN(collectionId)) {
+      return res.status(400).json({ error: "Invalid collection id" });
+    }
+
+    // 1) Dohvati assignment-e za ovu kolekciju iz baze
+    // Pretpostavka: postoji tablica npr. GalleryArtworkAssignment koja povezuje kolekciju i artwork
+    // i tablica Artwork s metapodacima (dimenzije u cm, slika, itd.)
+    //
+    // PRILAGODI nazivima modela iz Prisma/ORM-a.
+
+    const assignments = await prisma.galleryArtworkAssignment.findMany({
+      where: { collectionId },
+      include: {
+        artwork: true, // očekujemo Artwork model
+      },
+      orderBy: {
+        sortOrder: "asc", // ili kako već sortirate radove (optional)
+      },
+    });
+
+    // 2) Mapiraj u čist JSON
+
+    const items = assignments
+      .filter((assignment) => assignment.artwork)
+      .map((assignment) => {
+        const a = assignment.artwork as any;
+
+        // Ovdje prilagodi nazivima polja u Artwork modelu:
+        //  - a.widthCm / a.heightCm
+        //  - a.width_cm / a.height_cm
+        //  - a.imageUrl ili kombinacija basePath + fileName
+
+        const widthCm = a.widthCm ?? a.width_cm ?? null;
+        const heightCm = a.heightCm ?? a.height_cm ?? null;
+
+        // heuristika za orijentaciju, ako nije eksplicitno pohranjena u bazi
+        let orientation: "horizontal" | "vertical" | "square" | null = null;
+        if (a.orientation) {
+          orientation = a.orientation;
+        } else if (widthCm && heightCm) {
+          if (Math.abs(widthCm - heightCm) < 1) {
+            orientation = "square";
+          } else if (widthCm > heightCm) {
+            orientation = "horizontal";
+          } else {
+            orientation = "vertical";
+          }
+        }
+
+        // Izgradi puni URL slike
+        const imageUrl = a.imageUrl
+          ? a.imageUrl
+          : a.imagePath
+          ? `${process.env.PUBLIC_ASSETS_BASE_URL ?? ""}${a.imagePath}`
+          : null;
+
+        return {
+          id: a.id,
+          title: a.title ?? a.name ?? "Untitled",
+          imageUrl,
+          width_cm: widthCm,
+          height_cm: heightCm,
+          orientation,
+          wallSlotKey: assignment.wallSlotKey ?? assignment.wallSlot ?? null,
+        };
+      });
+
+    return res.json({ items });
+  } catch (err) {
+    console.error("[Gallery] Error fetching collection artworks", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+export default router;
+
+
+====================================================
+4. PROVJERA DA VIŠE NE VRAĆAMO BINARNE SLIKE
+====================================================
+
+1) Pokreni backend (Run / Build & Run u Replitu).
+2) U browseru otvori 360 Editor (Classic Gallery).
+3) Otvori DevTools → Network.
+4) Filtriraj po "artworks".
+
+OČEKIVANO STANJE:
+• Status: 200
+• Type: json
+• Size: par KB – max par desetaka KB (NE 20 MB)
+• Kad klikneš na tab "Response", vidiš JSON s poljem `items` kao u primjeru iz točke 2.
+
+Ako još uvijek vidiš ogroman response (MB) – negdje se opet embedda binary/base64.
+
+====================================================
+5. KAKO FRONTEND KORISTI OVE PODATKE (info za provjeru)
+====================================================
+
+U 360° frontendu već postoji logika koja očekuje:
+
+• width_cm
+• height_cm
+• orientation
+
+Ako su width_cm/height_cm prisutni, frontend će:
+  - pretvoriti cm → metre,
+  - primijeniti globalni scale factor (npr. ARTWORK_GLOBAL_SCALE = 1.6),
+  - i postaviti realne proporcije slike.
+
+Dakle, nema potrebe dodatno mijenjati frontend dokle god backend vraća gore navedena polja.
+
+====================================================
+6. SAŽETAK ZA AGENTA
+====================================================
+
+1) Pronađi postojeću implementaciju endpointa:
+   GET /api/gallery/collections/:collectionId/artworks
+
+2) Ako endpoint embedda binary podatke (buffer/base64), izbaci to – backend treba vraćati isključivo
+   JSON metapodatke, a ne same slike.
+
+3) Implementiraj logiku kao u gornjem primjeru:
+   • dohvat assignmenta + artworka iz baze,
+   • mapiranje u JSON array `items[]` sa sljedećim poljima:
+       - id
+       - title
+       - imageUrl
+       - width_cm
+       - height_cm
+       - orientation
+       - wallSlotKey (po želji)
+
+4) Provjeri u Network tabu da response više nije 20 MB i da izgleda kao JSON iz točke 2.
+
+Kada ovo proradi, 360° scena će napokon imati realne dimenzije i proporcije.
+*/
