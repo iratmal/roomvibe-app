@@ -672,6 +672,14 @@ function HotspotMarker({
   );
 }
 
+const CAMERA_MOVE_DURATION = 0.6;
+const ZOOM_SPEED = 0.003;
+const MIN_WALL_DISTANCE = 1.0;
+
+function easeInOutCubic(t: number): number {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+
 function FirstPersonController({ 
   viewpoint,
   galleryDimensions
@@ -684,17 +692,19 @@ function FirstPersonController({
   const previousMousePosition = useRef({ x: 0, y: 0 });
   const spherical = useRef(new THREE.Spherical());
   const targetSpherical = useRef(new THREE.Spherical());
+  
+  const startPosition = useRef(new THREE.Vector3(...viewpoint.position));
   const targetPosition = useRef(new THREE.Vector3(...viewpoint.position));
+  const animationStartTime = useRef<number | null>(null);
   const lastViewpointId = useRef(viewpoint.id);
-  const isAnimating = useRef(false);
   
   const bounds = useMemo(() => ({
-    minX: -galleryDimensions.width / 2 + 0.5,
-    maxX: galleryDimensions.width / 2 - 0.5,
+    minX: -galleryDimensions.width / 2 + MIN_WALL_DISTANCE,
+    maxX: galleryDimensions.width / 2 - MIN_WALL_DISTANCE,
     minY: 1.3,
     maxY: galleryDimensions.height - 0.2,
-    minZ: -galleryDimensions.depth / 2 + 0.5,
-    maxZ: galleryDimensions.depth / 2 - 0.5
+    minZ: -galleryDimensions.depth / 2 + MIN_WALL_DISTANCE,
+    maxZ: galleryDimensions.depth / 2 - MIN_WALL_DISTANCE
   }), [galleryDimensions]);
   
   const clampPosition = useCallback((pos: THREE.Vector3) => {
@@ -704,21 +714,29 @@ function FirstPersonController({
     return pos;
   }, [bounds]);
   
+  const isWithinBounds = useCallback((pos: THREE.Vector3) => {
+    return pos.x >= bounds.minX && pos.x <= bounds.maxX &&
+           pos.y >= bounds.minY && pos.y <= bounds.maxY &&
+           pos.z >= bounds.minZ && pos.z <= bounds.maxZ;
+  }, [bounds]);
+  
   useEffect(() => {
     const pos = new THREE.Vector3(...viewpoint.position);
     const lookAt = new THREE.Vector3(...viewpoint.lookAt);
     clampPosition(pos);
     
-    const direction = lookAt.sub(pos).normalize();
-    spherical.current.setFromVector3(direction);
-    targetSpherical.current.copy(spherical.current);
+    const direction = lookAt.clone().sub(pos).normalize();
+    targetSpherical.current.setFromVector3(direction);
     
     if (lastViewpointId.current !== viewpoint.id) {
+      startPosition.current.copy(camera.position);
       targetPosition.current.copy(pos);
-      isAnimating.current = true;
+      animationStartTime.current = performance.now();
       lastViewpointId.current = viewpoint.id;
+      console.log('[CameraNav] goToView', viewpoint.id);
     } else {
       camera.position.copy(pos);
+      spherical.current.copy(targetSpherical.current);
     }
   }, [viewpoint, camera, clampPosition]);
   
@@ -742,11 +760,24 @@ function FirstPersonController({
       
       spherical.current.theta -= deltaX * 0.003;
       spherical.current.phi += deltaY * 0.003;
-      
-      // Clamp vertical tilt: ~50° up to ~130° down (feels like standing person looking around)
       spherical.current.phi = Math.max(0.85, Math.min(2.3, spherical.current.phi));
       
       previousMousePosition.current = { x: e.clientX, y: e.clientY };
+    };
+    
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      
+      const direction = new THREE.Vector3();
+      camera.getWorldDirection(direction);
+      
+      const step = -e.deltaY * ZOOM_SPEED;
+      const newPosition = camera.position.clone().add(direction.multiplyScalar(step));
+      
+      if (isWithinBounds(newPosition)) {
+        camera.position.copy(newPosition);
+        console.log('[CameraNav] wheel zoom, deltaY=', e.deltaY.toFixed(1));
+      }
     };
     
     const handleTouchStart = (e: TouchEvent) => {
@@ -768,8 +799,6 @@ function FirstPersonController({
       
       spherical.current.theta -= deltaX * 0.003;
       spherical.current.phi += deltaY * 0.003;
-      
-      // Clamp vertical tilt: ~50° up to ~130° down (feels like standing person looking around)
       spherical.current.phi = Math.max(0.85, Math.min(2.3, spherical.current.phi));
       
       previousMousePosition.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -779,6 +808,7 @@ function FirstPersonController({
     canvas.addEventListener('mouseup', handleMouseUp);
     canvas.addEventListener('mouseleave', handleMouseUp);
     canvas.addEventListener('mousemove', handleMouseMove);
+    canvas.addEventListener('wheel', handleWheel, { passive: false });
     canvas.addEventListener('touchstart', handleTouchStart);
     canvas.addEventListener('touchend', handleTouchEnd);
     canvas.addEventListener('touchmove', handleTouchMove);
@@ -788,22 +818,30 @@ function FirstPersonController({
       canvas.removeEventListener('mouseup', handleMouseUp);
       canvas.removeEventListener('mouseleave', handleMouseUp);
       canvas.removeEventListener('mousemove', handleMouseMove);
+      canvas.removeEventListener('wheel', handleWheel);
       canvas.removeEventListener('touchstart', handleTouchStart);
       canvas.removeEventListener('touchend', handleTouchEnd);
       canvas.removeEventListener('touchmove', handleTouchMove);
     };
-  }, [gl]);
+  }, [gl, camera, isWithinBounds]);
   
-  useFrame((_, delta) => {
-    if (isAnimating.current) {
-      const lerpFactor = Math.min(4 * delta, 0.15);
-      camera.position.lerp(targetPosition.current, lerpFactor);
-      spherical.current.theta += (targetSpherical.current.theta - spherical.current.theta) * lerpFactor;
-      spherical.current.phi += (targetSpherical.current.phi - spherical.current.phi) * lerpFactor;
+  useFrame(() => {
+    if (animationStartTime.current !== null) {
+      const elapsed = (performance.now() - animationStartTime.current) / 1000;
+      const t = Math.min(elapsed / CAMERA_MOVE_DURATION, 1);
+      const easedT = easeInOutCubic(t);
       
-      if (camera.position.distanceTo(targetPosition.current) < 0.05) {
+      camera.position.lerpVectors(startPosition.current, targetPosition.current, easedT);
+      
+      const thetaDiff = targetSpherical.current.theta - spherical.current.theta;
+      const phiDiff = targetSpherical.current.phi - spherical.current.phi;
+      spherical.current.theta += thetaDiff * easedT * 0.5;
+      spherical.current.phi += phiDiff * easedT * 0.5;
+      
+      if (t >= 1) {
         camera.position.copy(targetPosition.current);
-        isAnimating.current = false;
+        spherical.current.copy(targetSpherical.current);
+        animationStartTime.current = null;
       }
     }
     

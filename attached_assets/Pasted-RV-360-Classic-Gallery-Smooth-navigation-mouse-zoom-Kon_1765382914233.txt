@@ -1,0 +1,198 @@
+RV – 360 Classic Gallery – Smooth navigation & mouse zoom
+
+**Kontekst (trenutno stanje)**
+
+* Radimo u **Classic Gallery** preset-u u 360° Editoru.
+* Hotspotovi (krugovi na podu) su vidljivi i klikom se kamera premješta na različite pozicije (Entrance, Center, Back Left, Back Right).
+* Korisnik može rotirati pogled mišem.
+* Ograničenja trenutne verzije:
+
+  * prijelazi između pozicija su **grubi / instantni**, bez smooth animacije
+  * kretanje je moguće **samo skokovito** (od točke do točke), nema osjećaja da se "šetamo" kroz prostor
+  * scroll / zoom mišem ne približava se slici, već je korisnik prisiljen skakati s jedne točke na drugu
+  * granice prostora su ok, ne smije se izaći iz galerije – to trebamo zadržati
+
+Cilj ovog taska:
+
+1. Uvesti **glatke, animirane prijelaze** kamere između view point-ova (hotspotovi + gumbi Entrance/Center/Back Left/Back Right).
+2. Omogućiti **zoom naprijed/nazad kotačićem miša** (scroll) duž smjera gledanja, uz ograničenja da korisnik ne prođe kroz zid ili ne ode predaleko.
+3. Zadržati postojeće granice prostora i postojeći layout.
+
+---
+
+## 1. Smooth prijelaz kamere između view point-ova
+
+**File:** `src/components/360/Gallery360Scene.tsx`
+
+Umjesto trenutnog instant pomaka kamere na novu poziciju, trebaš uvesti **interpolaciju (lerp)** kroz određeno vrijeme.
+
+### 1.1. Dodaj konstante za navigaciju
+
+Na vrh file-a (ili blizu postojećih 360 konstanti) dodaj nešto u ovom stilu:
+
+```ts
+const CAMERA_MOVE_DURATION = 0.6; // u sekundama, osjećaj "laganog klizanja"
+const CAMERA_HEIGHT = 1.65;      // visina "očiju" (ostavi ako već postoji slično)
+```
+
+Ako već postoje konstante za height, možeš ih iskoristiti / uskladiti.
+
+### 1.2. Refovi za kameru i animaciju
+
+U React komponenti gdje se definira 360 scena (Classic Gallery), dodaj ref-ove i state potrebne za glatko kretanje:
+
+```ts
+const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+const [activeView, setActiveView] = useState<ViewpointKey>("entrance");
+
+const targetPositionRef = useRef<THREE.Vector3 | null>(null);
+const moveStartTimeRef = useRef<number | null>(null);
+```
+
+Pretpostavka: već postoji neka mapa `VIEWPOINTS` ili slično (Entrance, Center, BackLeft, BackRight) koja definira XYZ pozicije. Ako ne postoji, koristi postojeći način na koji određuješ poziciju kamere, samo ga prebaci na ovaj novi model.
+
+### 1.3. Funkcija za pokretanje kretanja kamere
+
+Definiraj helper funkciju unutar komponente:
+
+```ts
+const goToView = (key: ViewpointKey) => {
+  const base = VIEWPOINTS[key]; // npr. { x, y, z }
+  if (!cameraRef.current || !base) return;
+
+  const start = cameraRef.current.position.clone();
+  const target = new THREE.Vector3(base.x, CAMERA_HEIGHT, base.z);
+
+  targetPositionRef.current = target;
+  moveStartTimeRef.current = performance.now();
+  setActiveView(key);
+};
+```
+
+Ako već postoji `goToView` / slično, prilagodi ga tako da **ne postavlja odmah `camera.position`**, nego radi ovo gore.
+
+### 1.4. Animacija u `useFrame`
+
+U istom komponentu koristiš `useFrame`. Tu trebaš interpolirati između trenutne i ciljane pozicije:
+
+```ts
+useFrame(({ clock }) => {
+  const camera = cameraRef.current;
+  if (!camera) return;
+
+  if (targetPositionRef.current && moveStartTimeRef.current !== null) {
+    const elapsed = (performance.now() - moveStartTimeRef.current) / 1000;
+    const t = Math.min(elapsed / CAMERA_MOVE_DURATION, 1);
+
+    // ease-in-out (možeš zamijeniti vlastitom funkcijom ako već koristiš neku easing util)
+    const easedT = t * t * (3 - 2 * t);
+
+    camera.position.lerp(targetPositionRef.current, easedT);
+
+    if (t >= 1) {
+      // animacija gotova
+      moveStartTimeRef.current = null;
+    }
+  }
+});
+```
+
+Ako već imate globalni `useFrame` za rotaciju ili sl., integriraj ovaj dio u postojeći `useFrame` blok, nemoj kreirati dupli.
+
+### 1.5. Poveži hotspotove i gumbe s `goToView`
+
+* Hotspotovi na podu (plavi / žuti krugovi) trebaju na klik pozivati `goToView("center")`, `goToView("entrance")`, itd. ovisno o tipu hotspot-a.
+* Gumbi dolje (Entrance / Center / Back Left / Back Right) isto moraju pozivati `goToView` s odgovarajućim ključem, **ne smiju direktno postavljati kameru**.
+
+Primjer handlera:
+
+```ts
+const handleHotspotClick = (key: ViewpointKey) => {
+  goToView(key);
+};
+
+// Button
+<Button onClick={() => goToView("center")}>Center</Button>
+```
+
+Rezultat: svaki klik na hotspot ili gumb = glatko, animirano pomicanje kamere između pozicija, bez grubog skoka.
+
+---
+
+## 2. Zoom kotačićem miša (scroll dolly)
+
+Cilj: korisnik može **prići bliže ili se udaljiti** od trenutnog viewa samo kotačićem miša, bez promjene view point-a.
+
+### 2.1. Konstante za granice
+
+Negdje blizu navigacijskih konstanti dodaj:
+
+```ts
+const CAMERA_MIN_DISTANCE = 3.0;  // minimalna udaljenost od "centra" / fokusne točke
+const CAMERA_MAX_DISTANCE = 12.0; // maksimalna udaljenost (da ne ode predaleko)
+```
+
+Ove vrijednosti prilagodi prema trenutnom scale-u galerije.
+
+### 2.2. Handler za wheel event
+
+Na wrapper komponentu za 360 scenu (gdje se hvata mouse interakcija) dodaj `onWheel` handler.
+
+Pseudokod:
+
+```ts
+const handleWheel: WheelEventHandler<HTMLDivElement> = (event) => {
+  const camera = cameraRef.current;
+  if (!camera) return;
+
+  // event.deltaY > 0 = scroll down (udaljavanje), < 0 = približavanje
+  const direction = new THREE.Vector3();
+  camera.getWorldDirection(direction); // smjer gledanja
+
+  const step = event.deltaY * 0.0025; // osjeti se kao lagani zoom, možeš prilagoditi
+  const newPosition = camera.position.clone().add(direction.multiplyScalar(step));
+
+  // ograniči kretanje unutar min/max distance
+  const distanceFromCenter = newPosition.length();
+  if (distanceFromCenter < CAMERA_MIN_DISTANCE || distanceFromCenter > CAMERA_MAX_DISTANCE) {
+    return;
+  }
+
+  camera.position.copy(newPosition);
+};
+```
+
+Primijeni ovaj handler na glavni container koji već hvata klikove / drag za rotaciju (npr. `<div onWheel={handleWheel}>…</div>`).
+
+Važno: ovaj zoom ne smije probiti zidove. Ako već imate bounding box za galeriju, možeš umjesto `distanceFromCenter` koristiti provjeru da `newPosition` ostaje unutar tog bounding boxa.
+
+---
+
+## 3. Kontrole miša – opći osjećaj
+
+* Ostavi postojeći drag za rotaciju kamere, ali provjeri da je **osjetljivost** ugodna (ne presporo, ne prebrzo).
+* macOS ima tzv. *natural scrolling* (scroll u jednom smjeru pomiče sadržaj "kontra" očekivanog na Windowsima) – to je sistemska postavka i ne treba je ručno mijenjati u app-u.
+* Bitno nam je da **lijevi klik + drag** rotira pogled, dok scroll samo približava/udaljava, bez skokova.
+
+---
+
+## 4. Što testirati nakon implementacije
+
+Nakon što završiš, ja ću testirati sljedeće u **Classic Gallery**:
+
+1. Vidim hotspotove na podu (Entrance, Center, Back Left, Back Right).
+2. Klik na bilo koji hotspot:
+
+   * kamera se pomiče kroz ~0.6 s glatko (ease-in-out), ne skokovito
+   * mogu odmah nakon toga rotirati pogled mišem
+3. Klik na gumbe dolje (Entrance/Center/Back Left/Back Right) daje isti glatki efekt kao klik na hotspot.
+4. Scroll kotačićem miša:
+
+   * približava/udaljava se duž smjera gledanja
+   * ne mogu proći kroz zid
+   * ne mogu otići predaleko (osjećaj je kao kontrolirani zoom)
+5. Još uvijek **ne mogu napustiti galeriju** (nema crnog svemira, nema bijelog beskonačnog poda, ostajem u prostoru).
+
+Ako nešto od ovoga ne radi, molim te dodaj kratke debug logove u konzolu (npr. `[CameraNav] goToView entrance`, `[CameraNav] wheel deltaY=…`) kako bismo mogli lakše uočiti problem.
+
+Hvala! 😊
