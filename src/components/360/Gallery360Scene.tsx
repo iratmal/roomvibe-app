@@ -80,20 +80,26 @@ function WallSpotlight({ position, targetY }: {
   return (
     <group position={position}>
       <mesh>
-        <cylinderGeometry args={[0.06, 0.1, 0.12, 12]} />
-        <meshStandardMaterial color="#4a4a4a" roughness={0.4} metalness={0.5} />
+        <cylinderGeometry args={[0.08, 0.12, 0.15, 16]} />
+        <meshStandardMaterial color="#505050" roughness={0.5} metalness={0.4} />
       </mesh>
-      <mesh position={[0, -0.04, 0]}>
-        <cylinderGeometry args={[0.04, 0.04, 0.02, 12]} />
-        <meshBasicMaterial color="#fff8e8" />
+      <mesh position={[0, -0.06, 0]}>
+        <cylinderGeometry args={[0.05, 0.05, 0.03, 16]} />
+        <meshBasicMaterial color="#fffbe6" />
       </mesh>
+      <pointLight
+        position={[0, -0.08, 0]}
+        intensity={0.3}
+        distance={0.5}
+        color="#fff8e0"
+      />
       <spotLight
         ref={spotlightRef}
-        position={[0, -0.06, 0]}
-        angle={0.4}
-        penumbra={0.95}
-        intensity={4}
-        distance={8}
+        position={[0, -0.08, 0]}
+        angle={0.35}
+        penumbra={0.97}
+        intensity={5}
+        distance={10}
         color="#fffaf0"
         castShadow
         shadow-mapSize={[512, 512]}
@@ -104,19 +110,19 @@ function WallSpotlight({ position, targetY }: {
 
 function TiledFloor({ width, depth, color }: { width: number; depth: number; color: string }) {
   const tiles = useMemo(() => {
-    const tileSize = 0.6;
-    const groutWidth = 0.015;
+    const tileSize = 0.8;
     const rows = Math.ceil(depth / tileSize);
     const cols = Math.ceil(width / tileSize);
-    const result: Array<{ x: number; z: number; shade: number }> = [];
+    const result: Array<{ x: number; z: number; shade: number; roughnessVar: number }> = [];
     
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
         const x = -width / 2 + col * tileSize + tileSize / 2;
         const z = -depth / 2 + row * tileSize + tileSize / 2;
         if (x < width / 2 && x > -width / 2 && z < depth / 2 && z > -depth / 2) {
-          const shade = 0.95 + Math.random() * 0.1;
-          result.push({ x, z, shade });
+          const shade = 0.92 + Math.random() * 0.16;
+          const roughnessVar = 0.6 + Math.random() * 0.25;
+          result.push({ x, z, shade, roughnessVar });
         }
       }
     }
@@ -130,8 +136,8 @@ function TiledFloor({ width, depth, color }: { width: number; depth: number; col
       <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[width, depth]} />
         <meshStandardMaterial 
-          color="#d8d4cc"
-          roughness={0.95}
+          color="#c5bfb5"
+          roughness={0.98}
           metalness={0.0}
         />
       </mesh>
@@ -140,15 +146,15 @@ function TiledFloor({ width, depth, color }: { width: number; depth: number; col
         return (
           <mesh
             key={i}
-            position={[tile.x, 0.002, tile.z]}
+            position={[tile.x, 0.003, tile.z]}
             rotation={[-Math.PI / 2, 0, 0]}
             receiveShadow
           >
-            <planeGeometry args={[0.58, 0.58]} />
+            <planeGeometry args={[0.76, 0.76]} />
             <meshStandardMaterial
               color={tileColor}
-              roughness={0.75}
-              metalness={0.02}
+              roughness={tile.roughnessVar}
+              metalness={0.01}
             />
           </mesh>
         );
@@ -158,13 +164,20 @@ function TiledFloor({ width, depth, color }: { width: number; depth: number; col
 }
 
 function OuterEnclosure({ width, height, depth }: { width: number; height: number; depth: number }) {
-  const size = Math.max(width, depth) * 2;
+  const size = Math.max(width, depth) + 40;
+  const verticalSize = height + 40;
   
   return (
-    <mesh>
-      <boxGeometry args={[size, size, size]} />
-      <meshBasicMaterial color="#1a1a1a" side={THREE.BackSide} />
-    </mesh>
+    <group>
+      <mesh>
+        <boxGeometry args={[size, verticalSize, size]} />
+        <meshBasicMaterial color="#2a2a2a" side={THREE.BackSide} />
+      </mesh>
+      <mesh position={[0, -0.5, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[200, 200]} />
+        <meshStandardMaterial color="#3a3a3a" roughness={0.95} />
+      </mesh>
+    </group>
   );
 }
 
@@ -372,14 +385,32 @@ function ArtworkPlane({
 
   const hasArtwork = assignment?.artworkUrl;
 
-  const frameWidth = 0.02;
-  const frameDepth = 0.025;
+  const artworkDimensions = useMemo(() => {
+    if (!assignment?.width || !assignment?.height) {
+      return { width: slot.width, height: slot.height };
+    }
+    
+    const artWidthM = assignment.width / 100;
+    const artHeightM = assignment.height / 100;
+    
+    const widthRatio = slot.width / artWidthM;
+    const heightRatio = slot.height / artHeightM;
+    const scaleFactor = Math.min(widthRatio, heightRatio, 1);
+    
+    return {
+      width: artWidthM * scaleFactor,
+      height: artHeightM * scaleFactor
+    };
+  }, [assignment?.width, assignment?.height, slot.width, slot.height]);
+
+  const frameWidth = 0.025;
+  const frameDepth = 0.03;
 
   return (
     <group position={slot.position} rotation={slot.rotation}>
       {hasArtwork && (
         <mesh position={[0, 0, -frameDepth / 2]} castShadow>
-          <boxGeometry args={[slot.width + frameWidth * 2, slot.height + frameWidth * 2, frameDepth]} />
+          <boxGeometry args={[artworkDimensions.width + frameWidth * 2, artworkDimensions.height + frameWidth * 2, frameDepth]} />
           <meshStandardMaterial color="#1a1a1a" roughness={0.4} metalness={0.1} />
         </mesh>
       )}
@@ -404,14 +435,14 @@ function ArtworkPlane({
       {hasArtwork && (
         <Suspense fallback={
           <mesh>
-            <planeGeometry args={[slot.width, slot.height]} />
+            <planeGeometry args={[artworkDimensions.width, artworkDimensions.height]} />
             <meshBasicMaterial color="#cccccc" />
           </mesh>
         }>
           <ArtworkImage 
             url={assignment!.artworkUrl!} 
-            width={slot.width} 
-            height={slot.height}
+            width={artworkDimensions.width} 
+            height={artworkDimensions.height}
             onClick={onClick}
             hovered={hovered}
             setHovered={setHovered}
@@ -429,7 +460,7 @@ function ArtworkPlane({
 
       {(isSelected || (hovered && isEditor)) && (
         <mesh position={[0, 0, -0.01]}>
-          <planeGeometry args={[slot.width + 0.1, slot.height + 0.1]} />
+          <planeGeometry args={[artworkDimensions.width + 0.1, artworkDimensions.height + 0.1]} />
           <meshBasicMaterial color="#C9A24A" transparent opacity={0.5} />
         </mesh>
       )}
@@ -595,6 +626,10 @@ function CameraController({
 
   useFrame((_, delta) => {
     if (!controlsRef.current || !controlsReady) return;
+    
+    if (camera.position.y < 1.4) {
+      camera.position.y = 1.4;
+    }
     
     if (needsInitialSync.current) {
       camera.position.copy(targetPosition.current);

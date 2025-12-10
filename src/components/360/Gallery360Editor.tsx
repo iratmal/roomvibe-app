@@ -11,6 +11,8 @@ interface Artwork {
   image_url: string;
   width?: number;
   height?: number;
+  width_value?: number;
+  height_value?: number;
 }
 
 interface Gallery360EditorProps {
@@ -69,12 +71,14 @@ export function Gallery360Editor({
 
   const handleAssignArtwork = (slotId: string, artwork: Artwork | null) => {
     if (artwork) {
+      const widthCm = artwork.width_value || artwork.width || 100;
+      const heightCm = artwork.height_value || artwork.height || 70;
       assignArtwork(slotId, String(artwork.id), {
         artworkUrl: artwork.image_url,
         artworkTitle: artwork.title,
         artistName: artwork.artist_name,
-        width: artwork.width,
-        height: artwork.height
+        width: widthCm,
+        height: heightCm
       });
     } else {
       clearSlot(slotId);
