@@ -1,0 +1,362 @@
+# TASK ZA AGENTA — Faza 2 / Korak 1
+
+**Tema:** 360° Virtual Gallery – klik na sliku + info panel (Classic Gallery preset)
+
+---
+
+## 🎯 CILJ
+
+Implementirati novu interakciju u 360° galeriji (Classic Gallery):
+
+1. Kada korisnik **klikne na sliku na zidu**, kamera se **glatko približava** i centrira tu sliku u pogled.
+2. Otvara se **info panel** s detaljima o slici (thumbnail, naziv, autor, dimenzije, opis, cijena, link za kupnju).
+3. Sve radi i u **editor modu** i u **visitor modu**.
+
+Važno: ovaj task **ne dira** postojeće hotspotove, postojeće pozicije (Entrance / Center / Back Left / Back Right), niti skaliranje slika. Fokus je isključivo na: **klik → fokus kamere → info panel**.
+
+---
+
+## 1️⃣ Klik na sliku → fokus kamere
+
+Kada korisnik **klikne na mesh artworka u Three.js sceni** u 360 editoru:
+
+* Kamera se pomiče na poziciju **ispred slike**, u daljini ~1.5 m od centra slike.
+* Pogled kamere je rotiran tako da je slika **točno centrirana** u okviru.
+* Animacija treba biti **glatka** (za razliku od sadašnjeg "step/ frame" pomaka):
+
+  * trajanje animacije ≈ **600–800 ms**
+  * koristiti `gsap.to()` ili `tween` iz `three/examples/jsm/libs/tween.module.js` (što ti je jednostavnije uz postojeći setup)
+
+### Implementacija u `Gallery360Scene.tsx`
+
+Pretpostavka: već imaš listu Three.js mesh-eva za artworkove.
+
+Dodaj:
+
+* **raycaster** i **pointer** za detekciju kliknutog mesh-a
+* handler za `onClick` na canvasu (ili odgovarajući DOM element u kojem je 360 scena)
+
+#### Primjer koda (prilagodi prema postojećoj strukturi):
+
+```ts
+// unutar Gallery360Scene.tsx
+
+const raycaster = useRef(new THREE.Raycaster());
+const pointer = useRef(new THREE.Vector2());
+
+// Pretpostavimo da već imaš niz mesh-eva za artworkove
+const artworkMeshesRef = useRef<THREE.Mesh[]>([]);
+
+const handlePointerDown = (event: MouseEvent) => {
+  const canvas = rendererRef.current?.domElement;
+  if (!canvas) return;
+
+  const rect = canvas.getBoundingClientRect();
+
+  pointer.current.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  pointer.current.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+  const ray = raycaster.current;
+  ray.setFromCamera(pointer.current, cameraRef.current!);
+
+  const intersects = ray.intersectObjects(artworkMeshesRef.current, true);
+
+  if (intersects.length > 0) {
+    const mesh = intersects[0].object as THREE.Mesh;
+    const artwork = mesh.userData.artwork; // userData mora sadržavati artwork objekt
+
+    if (artwork) {
+      focusCameraOnArtwork(mesh);
+      setActiveArtwork(artwork);
+      setPanelOpen(true);
+    }
+  }
+};
+
+useEffect(() => {
+  const canvas = rendererRef.current?.domElement;
+  if (!canvas) return;
+
+  canvas.addEventListener("mousedown", handlePointerDown);
+
+  return () => {
+    canvas.removeEventListener("mousedown", handlePointerDown);
+  };
+}, [/* ovisi o načinu instanciranja scene */]);
+```
+
+### Funkcija za fokus kamere
+
+```ts
+const focusCameraOnArtwork = (mesh: THREE.Object3D) => {
+  const camera = cameraRef.current;
+  if (!camera) return;
+
+  const box = new THREE.Box3().setFromObject(mesh);
+  const center = box.getCenter(new THREE.Vector3());
+  const size = box.getSize(new THREE.Vector3());
+
+  // distanca ispred slike
+  const distance = 1.5; // u metrima; po potrebi prilagodi
+
+  // pretpostavka: zida je Z, pa dolazimo sprijeda po Z osi
+  const cameraTarget = new THREE.Vector3(center.x, center.y, center.z + distance);
+
+  // animacija kamere (koristi gsap ili tween prema preferenciji)
+  gsap.to(camera.position, {
+    duration: 0.7,
+    x: cameraTarget.x,
+    y: cameraTarget.y,
+    z: cameraTarget.z,
+    ease: "power2.out",
+    onUpdate: () => {
+      camera.lookAt(center);
+    },
+  });
+};
+```
+
+> Napomena: ako scena koristi drugačiju orijentaciju koordinata (npr. kamera se kreće po X, a zid je po Z), samo prilagodi osu na kojoj se dodaje `distance`.
+
+---
+
+## 2️⃣ Info panel — komponenta `ArtworkInfoPanel`
+
+Nakon što se kamera pozicionira ispred slike, otvara se **info panel** s lijeve strane ekrana.
+
+### Podaci potrebni u artwork objektu
+
+Pretpostavka: artwork objekt već sadrži barem:
+
+* `title`
+* `artist_name` ili slično
+* `width_cm`, `height_cm`
+* `medium` (tehnika) ako postoji
+* `collection` ako postoji
+* `description` (dodaj polje u backendu ako još ne postoji)
+* `price` (ako postoji)
+* `external_url` — link na stranicu za kupnju / detalje (ovo već imamo ili lako dodamo)
+
+### State u `Gallery360Scene.tsx`
+
+Dodaj u React state:
+
+```ts
+const [activeArtwork, setActiveArtwork] = useState<Artwork | null>(null);
+const [panelOpen, setPanelOpen] = useState(false);
+```
+
+Kad korisnik klikne na mesh:
+
+```ts
+if (artwork) {
+  focusCameraOnArtwork(mesh);
+  setActiveArtwork(artwork);
+  setPanelOpen(true);
+}
+```
+
+### Nova komponenta: `src/components/360/ArtworkInfoPanel.tsx`
+
+```tsx
+import React from "react";
+import { Artwork } from "../../types/artwork"; // prilagodi putanju
+
+interface ArtworkInfoPanelProps {
+  artwork: Artwork | null;
+  open: boolean;
+  onClose: () => void;
+}
+
+export const ArtworkInfoPanel: React.FC<ArtworkInfoPanelProps> = ({ artwork, open, onClose }) => {
+  if (!artwork) return null;
+
+  return (
+    <div
+      className={`rv-artwork-panel ${open ? "rv-artwork-panel--open" : ""}`}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button className="rv-artwork-panel__close" onClick={onClose}>
+        ×
+      </button>
+
+      <div className="rv-artwork-panel__thumbnail">
+        <img src={artwork.image_url} alt={artwork.title} />
+      </div>
+
+      <h2 className="rv-artwork-panel__title">{artwork.title}</h2>
+      {artwork.artist_name && (
+        <p className="rv-artwork-panel__artist">{artwork.artist_name}</p>
+      )}
+
+      <p className="rv-artwork-panel__dimensions">
+        {artwork.width_cm} × {artwork.height_cm} cm
+      </p>
+
+      {artwork.medium && <p className="rv-artwork-panel__medium">{artwork.medium}</p>}
+      {artwork.collection && (
+        <p className="rv-artwork-panel__collection">Collection: {artwork.collection}</p>
+      )}
+
+      {artwork.description && (
+        <p className="rv-artwork-panel__description">{artwork.description}</p>
+      )}
+
+      {artwork.price && (
+        <p className="rv-artwork-panel__price">{artwork.price}</p>
+      )}
+
+      {artwork.external_url && (
+        <a
+          href={artwork.external_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rv-artwork-panel__cta"
+        >
+          View details / Buy
+        </a>
+      )}
+    </div>
+  );
+};
+```
+
+### CSS / stil za panel
+
+Dodaj u odgovarajući CSS / SCSS (ili Tailwind klasu, ovisno što koristiš). Primjer vanilla CSS:
+
+```css
+.rv-artwork-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 340px;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-out;
+  padding: 16px 20px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+}
+
+.rv-artwork-panel--open {
+  transform: translateX(0);
+}
+
+.rv-artwork-panel__close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  align-self: flex-end;
+}
+
+.rv-artwork-panel__thumbnail img {
+  width: 100%;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+.rv-artwork-panel__title {
+  font-size: 20px;
+  margin: 0 0 4px;
+}
+
+.rv-artwork-panel__artist {
+  font-size: 14px;
+  margin: 0 0 8px;
+  color: #555;
+}
+
+.rv-artwork-panel__dimensions,
+.rv-artwork-panel__medium,
+.rv-artwork-panel__collection,
+.rv-artwork-panel__price {
+  font-size: 14px;
+  margin: 2px 0;
+}
+
+.rv-artwork-panel__description {
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.rv-artwork-panel__cta {
+  margin-top: 16px;
+  display: inline-block;
+  padding: 8px 14px;
+  background: #0b1f2a;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 4px;
+}
+```
+
+### Integracija u `Gallery360Scene.tsx`
+
+U JSX dijelu scene (React dio koji rendera overlay UI), dodaj:
+
+```tsx
+<ArtworkInfoPanel
+  artwork={activeArtwork}
+  open={panelOpen}
+  onClose={() => setPanelOpen(false)}
+/>
+```
+
+Također dodaj globalni listener za ESC i klik izvan panela (npr. na overlay div) ako želiš zatvaranje na taj način.
+
+---
+
+## 3️⃣ Visitor Mode — isto ponašanje, bez editor UI-a
+
+U visitor ruti (`/gallery/exhibitions/:id/view`):
+
+* Info panel radi **identično** kao u editor modu.
+* Lijevi editor panel (Wall Slots, dropdown za preset) je sakriven.
+* Donji gumbi (Entrance / Center / Back Left / Back Right) se mogu sakriti u visitor modu ili ostaviti – po mogućnosti sakriti radi čišćeg UI-a.
+
+Ovaj korak napraviš vrlo jednostavno provjerom moda (npr. prop `mode="editor" | "visitor"`).
+
+Primjer:
+
+```tsx
+if (mode === "visitor") {
+  showEditorSidebar = false;
+  showBottomControls = false; // ili true, po dogovoru, ali panel mora ostati
+}
+```
+
+---
+
+## 4️⃣ Što ovaj task NE SMIJE DIRATI
+
+Za ovaj konkretan task, molim da **ne mijenjaš**:
+
+* parametre kretanja miša (mouse look / osjetljivost)
+* logiku hotspotova i prijelaza između Entrance / Center / Back Left / Back Right
+* broj slika na zidu i njihove pozicije
+* dimenzije frameova i skaliranje artworkova
+
+To su odvojeni taskovi u sljedećim fazama poliranja. Ovdje je fokus isključivo:
+
+> **Klik na artwork u 360 prostoru → kamera se približi i centrira sliku → otvori se info panel s detaljima i linkom za kupnju.**
+
+---
+
+## 5️⃣ Expected result (što ću testirati)
+
+1. Otvorim **Classic Gallery 360 editor**.
+2. Kliknem na bilo koju sliku na zidu.
+3. Kamera me **glatko približi** toj slici i stane 1.5 m ispred nje.
+4. Slika je **u sredini ekrana**, frame izgleda prirodno.
+5. S lijeve strane se **otvori panel** sa svim podacima o slici i gumbom za View details / Buy.
+6. Kada kliknem na X ili izvan panela / ESC – panel se zatvori, ali ostajem u trenutnoj kameri.
+
+Kad to proradi u editor modu, jednako mora raditi i u visitor modu (bez lijevog editor panela).
+
+To je cijeli task za ovu fazu. Hvala! 🙌

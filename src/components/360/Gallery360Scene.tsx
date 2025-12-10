@@ -5,15 +5,22 @@ import * as THREE from 'three';
 import { Gallery360Preset, Slot, Hotspot, Viewpoint } from '../../config/gallery360Presets';
 import { SlotAssignment } from './useArtworkSlots';
 
+export interface ArtworkFocusTarget {
+  position: [number, number, number];
+  rotation: [number, number, number];
+  slotId: string;
+}
+
 interface Gallery360SceneProps {
   preset: Gallery360Preset;
   slotAssignments: SlotAssignment[];
   currentViewpoint: Viewpoint;
   onNavigate: (viewpointId: string) => void;
-  onArtworkClick?: (slotId: string, assignment: SlotAssignment) => void;
+  onArtworkClick?: (slotId: string, assignment: SlotAssignment, slot: Slot) => void;
   isEditor?: boolean;
   selectedSlotId?: string;
   onSlotSelect?: (slotId: string) => void;
+  focusTarget?: ArtworkFocusTarget | null;
 }
 
 function getProxiedImageUrl(url: string): string {
@@ -720,12 +727,17 @@ function easeInOutCubic(t: number): number {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
+const ARTWORK_FOCUS_DURATION = 0.7;
+const ARTWORK_FOCUS_DISTANCE = 2.0;
+
 function FirstPersonController({ 
   viewpoint,
-  galleryDimensions
+  galleryDimensions,
+  focusTarget
 }: { 
   viewpoint: Viewpoint;
   galleryDimensions: { width: number; height: number; depth: number };
+  focusTarget?: ArtworkFocusTarget | null;
 }) {
   const { camera, gl } = useThree();
   const isDragging = useRef(false);
@@ -741,6 +753,13 @@ function FirstPersonController({
   
   const scrollVelocity = useRef(0);
   const keysPressed = useRef<Set<string>>(new Set());
+  
+  const artworkFocusStartTime = useRef<number | null>(null);
+  const artworkFocusStartPos = useRef(new THREE.Vector3());
+  const artworkFocusTargetPos = useRef(new THREE.Vector3());
+  const artworkFocusStartSpherical = useRef(new THREE.Spherical());
+  const artworkFocusTargetSpherical = useRef(new THREE.Spherical());
+  const lastFocusTargetId = useRef<string | null>(null);
   
   const bounds = useMemo(() => ({
     minX: -galleryDimensions.width / 2 + MIN_WALL_DISTANCE,
@@ -787,6 +806,46 @@ function FirstPersonController({
       spherical.current.copy(newTargetSpherical);
     }
   }, [viewpoint, camera, clampPosition]);
+  
+  useEffect(() => {
+    if (!focusTarget) {
+      lastFocusTargetId.current = null;
+      return;
+    }
+    
+    if (lastFocusTargetId.current === focusTarget.slotId) {
+      return;
+    }
+    
+    const artworkPos = new THREE.Vector3(...focusTarget.position);
+    const artworkRotY = focusTarget.rotation[1];
+    
+    const normal = new THREE.Vector3(0, 0, 1);
+    normal.applyAxisAngle(new THREE.Vector3(0, 1, 0), artworkRotY);
+    
+    const cameraTargetPos = artworkPos.clone().add(
+      normal.multiplyScalar(ARTWORK_FOCUS_DISTANCE)
+    );
+    cameraTargetPos.y = 1.6;
+    clampPosition(cameraTargetPos);
+    
+    const lookDirection = artworkPos.clone().sub(cameraTargetPos).normalize();
+    const newTargetSpherical = new THREE.Spherical();
+    newTargetSpherical.setFromVector3(lookDirection);
+    newTargetSpherical.phi = Math.max(MIN_POLAR_ANGLE, Math.min(MAX_POLAR_ANGLE, newTargetSpherical.phi));
+    
+    artworkFocusStartPos.current.copy(camera.position);
+    artworkFocusTargetPos.current.copy(cameraTargetPos);
+    artworkFocusStartSpherical.current.copy(spherical.current);
+    artworkFocusTargetSpherical.current.copy(newTargetSpherical);
+    artworkFocusStartTime.current = performance.now();
+    lastFocusTargetId.current = focusTarget.slotId;
+    
+    animationStartTime.current = null;
+    scrollVelocity.current = 0;
+    
+    console.log('[CameraNav] focusOnArtwork', focusTarget.slotId);
+  }, [focusTarget, camera, clampPosition]);
   
   useEffect(() => {
     const canvas = gl.domElement;
@@ -914,7 +973,24 @@ function FirstPersonController({
       }
     }
     
-    if (animationStartTime.current !== null) {
+    if (artworkFocusStartTime.current !== null) {
+      const elapsed = (performance.now() - artworkFocusStartTime.current) / 1000;
+      const tRaw = Math.min(elapsed / ARTWORK_FOCUS_DURATION, 1);
+      const t = easeInOutCubic(tRaw);
+      
+      camera.position.lerpVectors(artworkFocusStartPos.current, artworkFocusTargetPos.current, t);
+      
+      spherical.current.theta = artworkFocusStartSpherical.current.theta + 
+        (artworkFocusTargetSpherical.current.theta - artworkFocusStartSpherical.current.theta) * t;
+      spherical.current.phi = artworkFocusStartSpherical.current.phi + 
+        (artworkFocusTargetSpherical.current.phi - artworkFocusStartSpherical.current.phi) * t;
+      
+      if (tRaw >= 1) {
+        camera.position.copy(artworkFocusTargetPos.current);
+        spherical.current.copy(artworkFocusTargetSpherical.current);
+        artworkFocusStartTime.current = null;
+      }
+    } else if (animationStartTime.current !== null) {
       const elapsed = (performance.now() - animationStartTime.current) / 1000;
       const tRaw = Math.min(elapsed / CAMERA_MOVE_DURATION, 1);
       const t = easeInOutCubic(tRaw);
@@ -971,7 +1047,8 @@ export function Gallery360Scene({
   onArtworkClick,
   isEditor = false,
   selectedSlotId,
-  onSlotSelect
+  onSlotSelect,
+  focusTarget
 }: Gallery360SceneProps) {
   return (
     <Canvas
@@ -1011,8 +1088,9 @@ export function Gallery360Scene({
             onClick={() => {
               if (isEditor && onSlotSelect) {
                 onSlotSelect(slot.id);
-              } else if (assignment?.artworkId && onArtworkClick) {
-                onArtworkClick(slot.id, assignment);
+              }
+              if (assignment?.artworkId && onArtworkClick) {
+                onArtworkClick(slot.id, assignment, slot);
               }
             }}
           />
@@ -1029,7 +1107,11 @@ export function Gallery360Scene({
         />
       ))}
 
-      <FirstPersonController viewpoint={currentViewpoint} galleryDimensions={preset.dimensions} />
+      <FirstPersonController 
+        viewpoint={currentViewpoint} 
+        galleryDimensions={preset.dimensions} 
+        focusTarget={focusTarget}
+      />
     </Canvas>
   );
 }
