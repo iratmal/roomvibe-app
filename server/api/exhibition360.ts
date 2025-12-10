@@ -134,9 +134,10 @@ router.get('/exhibitions/:id/360-public', async (req, res) => {
     }
 
     const artworksResult = await query(
-      `SELECT id, title, artist_name, image_url, width_value, height_value, dimension_unit
-       FROM gallery_artworks
-       WHERE collection_id = $1`,
+      `SELECT ga.id, ga.artwork_id, ga.title, ga.artist_name, ga.image_url, 
+              ga.width_value, ga.height_value, ga.dimension_unit
+       FROM gallery_artworks ga
+       WHERE ga.collection_id = $1`,
       [collectionId]
     );
 
@@ -147,11 +148,21 @@ router.get('/exhibitions/:id/360-public', async (req, res) => {
     const hydratedSlots = (scene360Data.slots || []).map((slot: SlotAssignment) => {
       if (!slot.artworkId) return slot;
       
-      const artwork = artworksResult.rows.find(a => String(a.id) === slot.artworkId);
+      let artwork = artworksResult.rows.find(a => String(a.id) === slot.artworkId);
+      
+      if (!artwork) {
+        artwork = artworksResult.rows.find(a => a.artwork_id && String(a.artwork_id) === slot.artworkId);
+      }
+      
       if (!artwork) {
         console.warn(`[360 Public] Artwork ${slot.artworkId} not found for slot ${slot.slotId}`);
-        if (slot.artworkUrl && slot.width && slot.height) {
-          return slot;
+        if (slot.artworkUrl) {
+          return {
+            ...slot,
+            width: slot.width || 100,
+            height: slot.height || 70,
+            dimensionUnit: slot.dimensionUnit || 'cm'
+          };
         }
         return slot;
       }
