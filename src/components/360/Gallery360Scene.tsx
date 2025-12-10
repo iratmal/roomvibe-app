@@ -710,12 +710,14 @@ const MIN_WALL_DISTANCE = 1.0;
 // Almost no ceiling/floor - focused on artworks only
 const MIN_POLAR_ANGLE = 1.50;  // Max ~4° above horizontal (almost no ceiling)
 const MAX_POLAR_ANGLE = 1.70;  // Max ~8° below horizontal (minimal floor)
-// Mouse sensitivity: slow rotation for cinematic feel
-const MOUSE_SENSITIVITY = 0.002;
-// Smoothing factor: how quickly camera catches up (0.05 = very smooth, 0.3 = responsive)
-const ROTATION_SMOOTHING = 0.08;
+// Mouse sensitivity for velocity accumulation
+const MOUSE_SENSITIVITY = 0.003;
+// Velocity damping (0.92 = smooth decay, higher = more inertia)
+const VELOCITY_DAMPING = 0.92;
 // Keyboard rotation speed (radians per frame when key held)
 const KEYBOARD_ROTATION_SPEED = 0.015;
+// Minimum velocity threshold to stop updates
+const VELOCITY_THRESHOLD = 0.0001;
 
 // Smooth easing function for camera transitions (easeInOutCubic)
 function easeInOutCubic(t: number): number {
@@ -742,9 +744,9 @@ function FirstPersonController({
   const lastViewpointId = useRef(viewpoint.id);
   
   const scrollVelocity = useRef(0);
-  const targetRotation = useRef({ theta: 0, phi: Math.PI / 2 });
-  const currentRotation = useRef({ theta: 0, phi: Math.PI / 2 });
+  const rotationVelocity = useRef({ theta: 0, phi: 0 });
   const keysPressed = useRef<Set<string>>(new Set());
+  const lastFrameTime = useRef(performance.now());
   
   const bounds = useMemo(() => ({
     minX: -galleryDimensions.width / 2 + MIN_WALL_DISTANCE,
@@ -785,20 +787,11 @@ function FirstPersonController({
       animationStartTime.current = performance.now();
       lastViewpointId.current = viewpoint.id;
       scrollVelocity.current = 0;
-      // Sync rotation tracking with new viewpoint
-      targetRotation.current.theta = newTargetSpherical.theta;
-      targetRotation.current.phi = newTargetSpherical.phi;
-      currentRotation.current.theta = spherical.current.theta;
-      currentRotation.current.phi = spherical.current.phi;
+      rotationVelocity.current = { theta: 0, phi: 0 };
       console.log('[CameraNav] goToView', viewpoint.id);
     } else {
       camera.position.copy(pos);
       spherical.current.copy(newTargetSpherical);
-      // Sync rotation tracking
-      targetRotation.current.theta = newTargetSpherical.theta;
-      targetRotation.current.phi = newTargetSpherical.phi;
-      currentRotation.current.theta = newTargetSpherical.theta;
-      currentRotation.current.phi = newTargetSpherical.phi;
     }
   }, [viewpoint, camera, clampPosition]);
   
@@ -820,11 +813,9 @@ function FirstPersonController({
       const deltaX = e.clientX - previousMousePosition.current.x;
       const deltaY = e.clientY - previousMousePosition.current.y;
       
-      // Directly update target rotation (no velocity/momentum)
-      targetRotation.current.theta -= deltaX * MOUSE_SENSITIVITY;
-      targetRotation.current.phi += deltaY * MOUSE_SENSITIVITY;
-      // Clamp vertical immediately
-      targetRotation.current.phi = Math.max(MIN_POLAR_ANGLE, Math.min(MAX_POLAR_ANGLE, targetRotation.current.phi));
+      // Add to velocity (accumulates for smooth continuous motion)
+      rotationVelocity.current.theta -= deltaX * MOUSE_SENSITIVITY;
+      rotationVelocity.current.phi += deltaY * MOUSE_SENSITIVITY;
       
       previousMousePosition.current = { x: e.clientX, y: e.clientY };
     };
@@ -852,11 +843,9 @@ function FirstPersonController({
       const deltaX = e.touches[0].clientX - previousMousePosition.current.x;
       const deltaY = e.touches[0].clientY - previousMousePosition.current.y;
       
-      // Directly update target rotation (no velocity/momentum)
-      targetRotation.current.theta -= deltaX * MOUSE_SENSITIVITY;
-      targetRotation.current.phi += deltaY * MOUSE_SENSITIVITY;
-      // Clamp vertical immediately
-      targetRotation.current.phi = Math.max(MIN_POLAR_ANGLE, Math.min(MAX_POLAR_ANGLE, targetRotation.current.phi));
+      // Add to velocity (accumulates for smooth continuous motion)
+      rotationVelocity.current.theta -= deltaX * MOUSE_SENSITIVITY;
+      rotationVelocity.current.phi += deltaY * MOUSE_SENSITIVITY;
       
       previousMousePosition.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
     };
@@ -898,13 +887,13 @@ function FirstPersonController({
   }, [gl]);
   
   useFrame(() => {
-    // Handle keyboard input for rotation
+    // Handle keyboard input - add to velocity for smooth motion
     const keys = keysPressed.current;
     if (keys.has('ArrowLeft') || keys.has('a') || keys.has('A')) {
-      targetRotation.current.theta += KEYBOARD_ROTATION_SPEED;
+      rotationVelocity.current.theta += KEYBOARD_ROTATION_SPEED * 0.5;
     }
     if (keys.has('ArrowRight') || keys.has('d') || keys.has('D')) {
-      targetRotation.current.theta -= KEYBOARD_ROTATION_SPEED;
+      rotationVelocity.current.theta -= KEYBOARD_ROTATION_SPEED * 0.5;
     }
     if (keys.has('ArrowUp') || keys.has('w') || keys.has('W')) {
       // Move forward
@@ -948,18 +937,30 @@ function FirstPersonController({
       }
     }
     
-    // Smooth interpolation to target rotation (no momentum - stops when mouse stops)
-    const thetaDiff = targetRotation.current.theta - currentRotation.current.theta;
-    const phiDiff = targetRotation.current.phi - currentRotation.current.phi;
+    // Time-based velocity integration for smooth rotation
+    const now = performance.now();
+    const deltaTime = Math.min((now - lastFrameTime.current) / 16.667, 2); // Normalize to ~60fps, cap at 2x
+    lastFrameTime.current = now;
     
-    if (Math.abs(thetaDiff) > 0.0001 || Math.abs(phiDiff) > 0.0001) {
-      // Lerp current rotation towards target
-      currentRotation.current.theta += thetaDiff * ROTATION_SMOOTHING;
-      currentRotation.current.phi += phiDiff * ROTATION_SMOOTHING;
+    // Apply velocity with time-based damping
+    if (Math.abs(rotationVelocity.current.theta) > VELOCITY_THRESHOLD || 
+        Math.abs(rotationVelocity.current.phi) > VELOCITY_THRESHOLD) {
       
-      // Apply to spherical
-      spherical.current.theta = currentRotation.current.theta;
-      spherical.current.phi = currentRotation.current.phi;
+      // Integrate velocity into position
+      spherical.current.theta += rotationVelocity.current.theta * deltaTime;
+      spherical.current.phi += rotationVelocity.current.phi * deltaTime;
+      
+      // Clamp vertical angle
+      spherical.current.phi = Math.max(MIN_POLAR_ANGLE, Math.min(MAX_POLAR_ANGLE, spherical.current.phi));
+      
+      // Apply damping (exponential decay based on deltaTime)
+      const damping = Math.pow(VELOCITY_DAMPING, deltaTime);
+      rotationVelocity.current.theta *= damping;
+      rotationVelocity.current.phi *= damping;
+      
+      // Zero out tiny velocities
+      if (Math.abs(rotationVelocity.current.theta) < VELOCITY_THRESHOLD) rotationVelocity.current.theta = 0;
+      if (Math.abs(rotationVelocity.current.phi) < VELOCITY_THRESHOLD) rotationVelocity.current.phi = 0;
     }
     
     if (Math.abs(scrollVelocity.current) > 0.0001) {
