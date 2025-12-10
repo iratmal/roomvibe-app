@@ -710,10 +710,10 @@ const MIN_WALL_DISTANCE = 1.0;
 // Almost no ceiling/floor - focused on artworks only
 const MIN_POLAR_ANGLE = 1.50;  // Max ~4° above horizontal (almost no ceiling)
 const MAX_POLAR_ANGLE = 1.70;  // Max ~8° below horizontal (minimal floor)
-// Mouse sensitivity: extremely slow rotation for cinematic feel
-const MOUSE_SENSITIVITY = 0.00005;
-// Rotation damping: maximum smoothness, like professional gimbal
-const ROTATION_DAMPING = 0.985;
+// Mouse sensitivity: slow rotation for cinematic feel
+const MOUSE_SENSITIVITY = 0.002;
+// Smoothing factor: how quickly camera catches up (0.05 = very smooth, 0.3 = responsive)
+const ROTATION_SMOOTHING = 0.08;
 
 // Smooth easing function for camera transitions (easeInOutCubic)
 function easeInOutCubic(t: number): number {
@@ -740,7 +740,8 @@ function FirstPersonController({
   const lastViewpointId = useRef(viewpoint.id);
   
   const scrollVelocity = useRef(0);
-  const rotationVelocity = useRef({ theta: 0, phi: 0 });
+  const targetRotation = useRef({ theta: 0, phi: Math.PI / 2 });
+  const currentRotation = useRef({ theta: 0, phi: Math.PI / 2 });
   
   const bounds = useMemo(() => ({
     minX: -galleryDimensions.width / 2 + MIN_WALL_DISTANCE,
@@ -781,10 +782,20 @@ function FirstPersonController({
       animationStartTime.current = performance.now();
       lastViewpointId.current = viewpoint.id;
       scrollVelocity.current = 0;
+      // Sync rotation tracking with new viewpoint
+      targetRotation.current.theta = newTargetSpherical.theta;
+      targetRotation.current.phi = newTargetSpherical.phi;
+      currentRotation.current.theta = spherical.current.theta;
+      currentRotation.current.phi = spherical.current.phi;
       console.log('[CameraNav] goToView', viewpoint.id);
     } else {
       camera.position.copy(pos);
       spherical.current.copy(newTargetSpherical);
+      // Sync rotation tracking
+      targetRotation.current.theta = newTargetSpherical.theta;
+      targetRotation.current.phi = newTargetSpherical.phi;
+      currentRotation.current.theta = newTargetSpherical.theta;
+      currentRotation.current.phi = newTargetSpherical.phi;
     }
   }, [viewpoint, camera, clampPosition]);
   
@@ -806,8 +817,11 @@ function FirstPersonController({
       const deltaX = e.clientX - previousMousePosition.current.x;
       const deltaY = e.clientY - previousMousePosition.current.y;
       
-      rotationVelocity.current.theta -= deltaX * MOUSE_SENSITIVITY;
-      rotationVelocity.current.phi += deltaY * MOUSE_SENSITIVITY;
+      // Directly update target rotation (no velocity/momentum)
+      targetRotation.current.theta -= deltaX * MOUSE_SENSITIVITY;
+      targetRotation.current.phi += deltaY * MOUSE_SENSITIVITY;
+      // Clamp vertical immediately
+      targetRotation.current.phi = Math.max(MIN_POLAR_ANGLE, Math.min(MAX_POLAR_ANGLE, targetRotation.current.phi));
       
       previousMousePosition.current = { x: e.clientX, y: e.clientY };
     };
@@ -835,8 +849,11 @@ function FirstPersonController({
       const deltaX = e.touches[0].clientX - previousMousePosition.current.x;
       const deltaY = e.touches[0].clientY - previousMousePosition.current.y;
       
-      rotationVelocity.current.theta -= deltaX * MOUSE_SENSITIVITY;
-      rotationVelocity.current.phi += deltaY * MOUSE_SENSITIVITY;
+      // Directly update target rotation (no velocity/momentum)
+      targetRotation.current.theta -= deltaX * MOUSE_SENSITIVITY;
+      targetRotation.current.phi += deltaY * MOUSE_SENSITIVITY;
+      // Clamp vertical immediately
+      targetRotation.current.phi = Math.max(MIN_POLAR_ANGLE, Math.min(MAX_POLAR_ANGLE, targetRotation.current.phi));
       
       previousMousePosition.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
     };
@@ -882,17 +899,18 @@ function FirstPersonController({
       }
     }
     
-    if (Math.abs(rotationVelocity.current.theta) > 0.00001 || 
-        Math.abs(rotationVelocity.current.phi) > 0.00001) {
-      spherical.current.theta += rotationVelocity.current.theta;
-      spherical.current.phi += rotationVelocity.current.phi;
-      spherical.current.phi = Math.max(MIN_POLAR_ANGLE, Math.min(MAX_POLAR_ANGLE, spherical.current.phi));
+    // Smooth interpolation to target rotation (no momentum - stops when mouse stops)
+    const thetaDiff = targetRotation.current.theta - currentRotation.current.theta;
+    const phiDiff = targetRotation.current.phi - currentRotation.current.phi;
+    
+    if (Math.abs(thetaDiff) > 0.0001 || Math.abs(phiDiff) > 0.0001) {
+      // Lerp current rotation towards target
+      currentRotation.current.theta += thetaDiff * ROTATION_SMOOTHING;
+      currentRotation.current.phi += phiDiff * ROTATION_SMOOTHING;
       
-      rotationVelocity.current.theta *= ROTATION_DAMPING;
-      rotationVelocity.current.phi *= ROTATION_DAMPING;
-      
-      if (Math.abs(rotationVelocity.current.theta) < 0.00001) rotationVelocity.current.theta = 0;
-      if (Math.abs(rotationVelocity.current.phi) < 0.00001) rotationVelocity.current.phi = 0;
+      // Apply to spherical
+      spherical.current.theta = currentRotation.current.theta;
+      spherical.current.phi = currentRotation.current.phi;
     }
     
     if (Math.abs(scrollVelocity.current) > 0.0001) {
