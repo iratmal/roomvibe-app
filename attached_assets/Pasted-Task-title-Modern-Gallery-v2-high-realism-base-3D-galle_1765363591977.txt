@@ -1,0 +1,164 @@
+Task title:
+Modern Gallery v2 – high-realism base 3D gallery (Artsteps-style)
+
+Context
+
+We now have a stable baseline where 360 artworks render correctly.
+
+Git tags:
+
+safe-360-stable-frontend-2025-12-10
+
+safe-360-stable-backend-2025-12-10
+
+Feature branch for future 360 work: feature-360-gallery-upgrade.
+
+Important rules
+
+Do all work in branch feature-360-gallery-upgrade, do not break main.
+
+Do not change the 360 Editor UI or the wall slots naming (North Wall – Left/Center/Right, etc.).
+
+360 artwork loading must keep working exactly as now (no black planes again).
+
+1. Goal
+
+Upgrade the existing “Modern Gallery” 360 scene so that it feels much more like a real museum space, visually similar to the Artsteps examples I provided:
+
+large, airy hall
+
+tall white walls
+
+black columns
+
+warm wooden floor
+
+skylight openings on the ceiling
+
+realistic directional lighting and soft shadows
+
+artworks appear at realistic size and height on the walls
+
+This is a visual / realism upgrade only. Navigation stays as it is (current 360 editor with fixed viewpoints). “Street View” walking, comments and music will come later in a separate task.
+
+2. Target look (based on screenshots)
+
+Please use the screenshots I uploaded (Artsteps CBYF Youth Photography Gallery) as visual reference. Translate that into our own neutral, modern RoomVibe style:
+
+Bright, daylight interior with light bouncing from skylights and side windows.
+
+Black structural columns that visually break up the space.
+
+Clean white walls for hanging art.
+
+Light, natural wood floor with subtle variation, not flat color.
+
+Subtle light patches on the floor (from skylights) to create depth.
+
+Track lights / spotlights along the walls above artworks.
+
+We don’t want to copy their gallery 1:1, but the feeling of realism should be comparable.
+
+3. Implementation details
+
+3.1. Files
+
+Find and refactor the code that defines the 3D scene for the Modern Gallery used in the 360 Editor, for example in files like:
+
+src/exhibition360.ts
+
+src/components/Gallery360Scene.tsx
+
+(Names may differ – please locate the actual scene setup used by the “Modern Gallery” preset.)
+
+3.2. Geometry / layout
+
+Keep the same wall slots (North/East/West/South wall, Upper/Lower/Center etc.), but you can slightly reposition them if needed for better composition.
+
+Create a large rectangular hall with:
+
+higher ceiling than now (double-height feel)
+
+4–8 black columns evenly spaced in the central area
+
+optional upper gallery / balcony is fine visually, but it doesn’t need to be reachable yet
+
+Add 2–4 skylight openings in the ceiling (simple rectangular cut-outs) so that we can place directional lights above them.
+
+3.3. Materials
+
+Walls: soft off-white material with very subtle roughness, no shiny plastic look.
+
+Floor: PBR-style wood (or at least a good textured material) with:
+
+slight variation in color
+
+gentle reflections (very low gloss)
+
+Columns: dark grey / black with matte finish.
+
+Frames: thin black or dark grey frames around artworks.
+
+3.4. Lighting
+
+Add a main directional light simulating daylight coming from above (skylights).
+
+Add additional soft fill lights so that no area is completely dark.
+
+Add simple wall spotlights above artworks (can be just small point lights or spotlights near the wall).
+
+Enable soft shadows where possible without killing performance.
+
+Make sure artworks are clearly lit and readable, not washed out, not completely in shadow.
+
+3.5. Artwork placement & scale
+
+Use the existing artwork planes, but:
+
+Adjust their scale so that:
+
+medium artworks feel like ~80–120 cm wide on the wall
+
+they are not tiny in a huge wall
+
+Place centers of artworks roughly at human eye level (around 1.5–1.6 m from “floor” in your coordinate system).
+
+Keep the spacing between artworks similar to a real gallery – not cramped, not too far.
+
+3.6. Camera / 360 viewpoints
+
+Keep the existing 360 navigation logic.
+
+Adjust camera height to feel like a person standing in the space (not too low, not too high).
+
+Ensure that from each default viewpoint you can see at least one nicely lit wall with artwork, similar to the Artsteps examples.
+
+4. Acceptance criteria
+
+This task is done when:
+
+In the 360 Editor, selecting “Modern Gallery” shows:
+
+a large bright hall with white walls, wooden floor, black columns, and visible skylight openings
+
+artworks on the walls at realistic size and height
+
+Lighting feels natural:
+
+no completely flat shading
+
+subtle shadows
+
+artworks are clearly visible and readable
+
+Performance is smooth on a typical laptop (no heavy lag, no WebGL errors in console).
+
+There are no regressions in:
+
+artwork loading (no black planes)
+
+wall slot assignment and naming
+
+saving and re-loading 360 scenes
+
+All changes are committed in branch feature-360-gallery-upgrade with a clear commit message, and the stable tags (safe-360-stable-*) still point to the previous known-good state.
