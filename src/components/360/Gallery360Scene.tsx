@@ -701,21 +701,19 @@ function HotspotMarker({
   );
 }
 
-// Camera movement: smooth 0.9s transitions
-const CAMERA_MOVE_DURATION = 0.9;
-const SCROLL_SPEED = 0.002;
-const SCROLL_DAMPING = 0.88;
+// Camera movement: very smooth 1.8s transitions (like walking through space)
+const CAMERA_MOVE_DURATION = 1.8;
+const SCROLL_SPEED = 0.0015;
+const SCROLL_DAMPING = 0.94;
 const MIN_WALL_DISTANCE = 1.0;
 // Vertical look limits (polar angle in radians):
-// 0 = looking straight up, π/2 ≈ 1.57 = horizontal, π = looking straight down
 // Minimal ceiling/floor visibility - almost horizontal view only
-const MIN_POLAR_ANGLE = 1.30;  // Max looking up: ~15° above horizontal (minimal ceiling)
-const MAX_POLAR_ANGLE = 1.75;  // Max looking down: ~10° below horizontal (minimal floor)
-// Mouse sensitivity: very slow rotation for precise control (like OrbitControls rotateSpeed = 0.35)
-// TODO: Fine-tune (0.0001-0.0003) based on user feedback
-const MOUSE_SENSITIVITY = 0.00015;
-// Rotation damping: high value = smoother, slower deceleration (like OrbitControls dampingFactor = 0.12)
-const ROTATION_DAMPING = 0.92;
+const MIN_POLAR_ANGLE = 1.30;
+const MAX_POLAR_ANGLE = 1.75;
+// Mouse sensitivity: very slow rotation for cinematic feel
+const MOUSE_SENSITIVITY = 0.0001;
+// Rotation damping: very high = ultra smooth, like filming with stabilizer
+const ROTATION_DAMPING = 0.96;
 
 // Smooth easing function for camera transitions (easeInOutCubic)
 function easeInOutCubic(t: number): number {
