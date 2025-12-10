@@ -143,14 +143,14 @@ export const gallery360Presets: Gallery360Preset[] = [
       { id: 'h7', position: [3.5, 0.1, 2], targetViewpoint: 'back-right', rotation: -Math.PI / 2 }
     ],
     slots: [
-      { id: 'wall-north-1', wallId: 'north', position: [-6, 1.9, -7.95], rotation: [0, 0, 0], width: 1.8, height: 1.4, label: 'North Wall - Left' },
-      { id: 'wall-north-2', wallId: 'north', position: [0, 1.9, -7.95], rotation: [0, 0, 0], width: 2.2, height: 1.8, label: 'North Wall - Center' },
-      { id: 'wall-north-3', wallId: 'north', position: [6, 1.9, -7.95], rotation: [0, 0, 0], width: 1.8, height: 1.4, label: 'North Wall - Right' },
-      { id: 'wall-east-1', wallId: 'east', position: [9.95, 1.9, -4], rotation: [0, -Math.PI / 2, 0], width: 1.8, height: 1.4, label: 'East Wall - Upper' },
-      { id: 'wall-east-2', wallId: 'east', position: [9.95, 1.9, 4], rotation: [0, -Math.PI / 2, 0], width: 1.8, height: 1.4, label: 'East Wall - Lower' },
-      { id: 'wall-west-1', wallId: 'west', position: [-9.95, 1.9, -4], rotation: [0, Math.PI / 2, 0], width: 1.8, height: 1.4, label: 'West Wall - Upper' },
-      { id: 'wall-west-2', wallId: 'west', position: [-9.95, 1.9, 4], rotation: [0, Math.PI / 2, 0], width: 1.8, height: 1.4, label: 'West Wall - Lower' },
-      { id: 'wall-south-1', wallId: 'south', position: [0, 1.9, 7.95], rotation: [0, Math.PI, 0], width: 2.5, height: 1.8, label: 'South Wall - Center' }
+      { id: 'wall-north-1', wallId: 'north', position: [-6, 2.0, -7.95], rotation: [0, 0, 0], width: 3.2, height: 2.4, label: 'North Wall - Left' },
+      { id: 'wall-north-2', wallId: 'north', position: [0, 2.0, -7.95], rotation: [0, 0, 0], width: 3.5, height: 2.6, label: 'North Wall - Center' },
+      { id: 'wall-north-3', wallId: 'north', position: [6, 2.0, -7.95], rotation: [0, 0, 0], width: 3.2, height: 2.4, label: 'North Wall - Right' },
+      { id: 'wall-east-1', wallId: 'east', position: [9.95, 2.0, -4], rotation: [0, -Math.PI / 2, 0], width: 3.2, height: 2.4, label: 'East Wall - Upper' },
+      { id: 'wall-east-2', wallId: 'east', position: [9.95, 2.0, 4], rotation: [0, -Math.PI / 2, 0], width: 3.2, height: 2.4, label: 'East Wall - Lower' },
+      { id: 'wall-west-1', wallId: 'west', position: [-9.95, 2.0, -4], rotation: [0, Math.PI / 2, 0], width: 3.2, height: 2.4, label: 'West Wall - Upper' },
+      { id: 'wall-west-2', wallId: 'west', position: [-9.95, 2.0, 4], rotation: [0, Math.PI / 2, 0], width: 3.2, height: 2.4, label: 'West Wall - Lower' },
+      { id: 'wall-south-1', wallId: 'south', position: [0, 2.0, 7.95], rotation: [0, Math.PI, 0], width: 3.5, height: 2.6, label: 'South Wall - Center' }
     ]
   }
 ];

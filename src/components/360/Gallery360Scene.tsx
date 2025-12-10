@@ -453,8 +453,8 @@ function ArtworkPlane({
 
 // Preset-specific artwork scale factors for visual realism
 const ARTWORK_SCALE_FACTORS: Record<string, number> = {
-  'white-cube-v1': 1.4,    // Classic Gallery: larger artworks to look dominant
-  'modern-gallery-v2': 1.2  // Modern Gallery: slightly smaller for bigger space
+  'white-cube-v1': 2.2,    // Classic Gallery: large artworks to look dominant on 4.5m walls
+  'modern-gallery-v2': 1.8  // Modern Gallery: substantial size for 6m walls
 };
 
 // Frame configuration
