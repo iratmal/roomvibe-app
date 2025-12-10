@@ -627,14 +627,17 @@ function HotspotMarker({
   currentViewpointId: string;
 }) {
   const [hovered, setHovered] = useState(false);
-  const pulseRef = useRef<THREE.Mesh>(null);
   
-  useFrame(({ clock }) => {
-    if (pulseRef.current) {
-      const pulse = Math.sin(clock.elapsedTime * 2) * 0.5 + 0.5;
-      pulseRef.current.scale.setScalar(1 + pulse * 0.1);
+  useEffect(() => {
+    if (hovered) {
+      document.body.style.cursor = 'pointer';
+    } else {
+      document.body.style.cursor = 'default';
     }
-  });
+    return () => {
+      document.body.style.cursor = 'default';
+    };
+  }, [hovered]);
   
   if (hotspot.targetViewpoint === currentViewpointId) return null;
 
@@ -643,41 +646,66 @@ function HotspotMarker({
       position={hotspot.position}
       rotation={[0, hotspot.rotation, 0]}
     >
+      {/* Invisible clickable area for raycasting */}
       <mesh
-        ref={pulseRef}
         onClick={(e) => {
           e.stopPropagation();
           onNavigate(hotspot.targetViewpoint);
         }}
-        onPointerOver={() => setHovered(true)}
-        onPointerOut={() => setHovered(false)}
+        onPointerOver={(e) => {
+          e.stopPropagation();
+          setHovered(true);
+        }}
+        onPointerOut={(e) => {
+          e.stopPropagation();
+          setHovered(false);
+        }}
         rotation={[-Math.PI / 2, 0, 0]}
       >
-        <circleGeometry args={[0.4, 32]} />
-        <meshBasicMaterial 
-          color={hovered ? '#C9A24A' : '#264C61'} 
-          transparent 
-          opacity={hovered ? 0.9 : 0.7} 
-        />
+        <circleGeometry args={[0.5, 32]} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
       
+      {/* Subtle hover ring - only visible on hover */}
+      {hovered && (
+        <mesh 
+          position={[0, 0.005, 0]} 
+          rotation={[-Math.PI / 2, 0, 0]}
+        >
+          <ringGeometry args={[0.35, 0.5, 32]} />
+          <meshBasicMaterial 
+            color="#5a8cb8" 
+            transparent 
+            opacity={0.4} 
+            depthWrite={false}
+          />
+        </mesh>
+      )}
+      
+      {/* Small center dot - subtle indicator */}
       <mesh 
-        position={[0, 0.01, -0.15]} 
+        position={[0, 0.003, 0]} 
         rotation={[-Math.PI / 2, 0, 0]}
       >
-        <coneGeometry args={[0.12, 0.25, 3]} />
-        <meshBasicMaterial color={hovered ? '#C9A24A' : '#ffffff'} />
+        <circleGeometry args={[0.08, 16]} />
+        <meshBasicMaterial 
+          color={hovered ? '#C9A24A' : '#888888'} 
+          transparent 
+          opacity={hovered ? 0.7 : 0.25} 
+          depthWrite={false}
+        />
       </mesh>
     </group>
   );
 }
 
-const CAMERA_MOVE_DURATION = 0.6;
-const ZOOM_SPEED = 0.003;
+const CAMERA_MOVE_DURATION = 0.85;
+const SCROLL_SPEED = 0.004;
+const SCROLL_DAMPING = 0.92;
 const MIN_WALL_DISTANCE = 1.0;
 
-function easeInOutCubic(t: number): number {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+function smoothstep(t: number): number {
+  return t * t * (3 - 2 * t);
 }
 
 function FirstPersonController({ 
@@ -691,12 +719,15 @@ function FirstPersonController({
   const isDragging = useRef(false);
   const previousMousePosition = useRef({ x: 0, y: 0 });
   const spherical = useRef(new THREE.Spherical());
-  const targetSpherical = useRef(new THREE.Spherical());
   
   const startPosition = useRef(new THREE.Vector3(...viewpoint.position));
   const targetPosition = useRef(new THREE.Vector3(...viewpoint.position));
+  const startSpherical = useRef(new THREE.Spherical());
+  const targetSpherical = useRef(new THREE.Spherical());
   const animationStartTime = useRef<number | null>(null);
   const lastViewpointId = useRef(viewpoint.id);
+  
+  const scrollVelocity = useRef(0);
   
   const bounds = useMemo(() => ({
     minX: -galleryDimensions.width / 2 + MIN_WALL_DISTANCE,
@@ -726,17 +757,21 @@ function FirstPersonController({
     clampPosition(pos);
     
     const direction = lookAt.clone().sub(pos).normalize();
-    targetSpherical.current.setFromVector3(direction);
+    const newTargetSpherical = new THREE.Spherical();
+    newTargetSpherical.setFromVector3(direction);
     
     if (lastViewpointId.current !== viewpoint.id) {
       startPosition.current.copy(camera.position);
       targetPosition.current.copy(pos);
+      startSpherical.current.copy(spherical.current);
+      targetSpherical.current.copy(newTargetSpherical);
       animationStartTime.current = performance.now();
       lastViewpointId.current = viewpoint.id;
+      scrollVelocity.current = 0;
       console.log('[CameraNav] goToView', viewpoint.id);
     } else {
       camera.position.copy(pos);
-      spherical.current.copy(targetSpherical.current);
+      spherical.current.copy(newTargetSpherical);
     }
   }, [viewpoint, camera, clampPosition]);
   
@@ -767,17 +802,8 @@ function FirstPersonController({
     
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
-      
-      const direction = new THREE.Vector3();
-      camera.getWorldDirection(direction);
-      
-      const step = -e.deltaY * ZOOM_SPEED;
-      const newPosition = camera.position.clone().add(direction.multiplyScalar(step));
-      
-      if (isWithinBounds(newPosition)) {
-        camera.position.copy(newPosition);
-        console.log('[CameraNav] wheel zoom, deltaY=', e.deltaY.toFixed(1));
-      }
+      const delta = -e.deltaY * SCROLL_SPEED;
+      scrollVelocity.current += delta;
     };
     
     const handleTouchStart = (e: TouchEvent) => {
@@ -823,25 +849,43 @@ function FirstPersonController({
       canvas.removeEventListener('touchend', handleTouchEnd);
       canvas.removeEventListener('touchmove', handleTouchMove);
     };
-  }, [gl, camera, isWithinBounds]);
+  }, [gl]);
   
   useFrame(() => {
     if (animationStartTime.current !== null) {
       const elapsed = (performance.now() - animationStartTime.current) / 1000;
-      const t = Math.min(elapsed / CAMERA_MOVE_DURATION, 1);
-      const easedT = easeInOutCubic(t);
+      const tRaw = Math.min(elapsed / CAMERA_MOVE_DURATION, 1);
+      const t = smoothstep(tRaw);
       
-      camera.position.lerpVectors(startPosition.current, targetPosition.current, easedT);
+      camera.position.lerpVectors(startPosition.current, targetPosition.current, t);
       
-      const thetaDiff = targetSpherical.current.theta - spherical.current.theta;
-      const phiDiff = targetSpherical.current.phi - spherical.current.phi;
-      spherical.current.theta += thetaDiff * easedT * 0.5;
-      spherical.current.phi += phiDiff * easedT * 0.5;
+      spherical.current.theta = startSpherical.current.theta + 
+        (targetSpherical.current.theta - startSpherical.current.theta) * t;
+      spherical.current.phi = startSpherical.current.phi + 
+        (targetSpherical.current.phi - startSpherical.current.phi) * t;
       
-      if (t >= 1) {
+      if (tRaw >= 1) {
         camera.position.copy(targetPosition.current);
         spherical.current.copy(targetSpherical.current);
         animationStartTime.current = null;
+      }
+    }
+    
+    if (Math.abs(scrollVelocity.current) > 0.0001) {
+      const direction = new THREE.Vector3();
+      camera.getWorldDirection(direction);
+      
+      const moveAmount = scrollVelocity.current;
+      const newPosition = camera.position.clone().add(direction.multiplyScalar(moveAmount));
+      
+      if (isWithinBounds(newPosition)) {
+        camera.position.copy(newPosition);
+      }
+      
+      scrollVelocity.current *= SCROLL_DAMPING;
+      
+      if (Math.abs(scrollVelocity.current) < 0.0001) {
+        scrollVelocity.current = 0;
       }
     }
     

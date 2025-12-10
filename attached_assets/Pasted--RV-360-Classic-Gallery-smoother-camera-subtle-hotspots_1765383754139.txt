@@ -1,0 +1,304 @@
+// RV – 360 Classic Gallery – smoother camera + subtle hotspots
+// Task for Replit agent
+
+/*
+Context
+- We now have a working 360 Classic Gallery with:
+  - Correct wall/enclosure
+  - Tiled floor
+  - Correct artwork scaling & frames (using stored cm dimensions)
+  - Basic navigation via floor hotspots and view buttons (Entrance / Center / Back Left / Back Right)
+- Remaining issues:
+  1) Camera movement between viewpoints feels jittery / jumpy instead of silky-smooth.
+  2) Large colored hotspot discs on the floor visually dominate and feel "gamey" – we want something closer to Google Street View:
+     - No big buttons on the floor.
+     - Subtle hover indicator and pointer cursor is OK.
+  3) Mouse wheel / trackpad zoom forward/back should feel like natural walking toward/away from artworks.
+
+Goal
+- Polish navigation feel for Classic Gallery ONLY (do not touch Modern Gallery yet).
+- Keep the current logical viewpoints (Entrance, Center, Back Left, Back Right) and hotspot positions, but:
+  - Make camera transitions genuinely smooth.
+  - Make floor hotspots visually subtle (or invisible) while still clickable.
+  - Ensure scroll wheel smoothly moves camera forward/back with sensible limits.
+
+Files involved (from previous work)
+- src/components/360/Gallery360Scene.tsx   (main scene + camera + hotspots)
+- Any helper files you may have introduced for 360 navigation previously.
+
+------------------------------------------------------------
+1. Camera movement – make it truly smooth
+------------------------------------------------------------
+
+Right now camera motion still feels like a short jump. We want a clear, eased animation from point A to B.
+
+Requirements
+- When user:
+  - clicks on a floor hotspot, OR
+  - clicks on one of the view buttons (Entrance / Center / Back Left / Back Right),
+  the camera should animate between the current position and the target viewpoint.
+- Movement should:
+  - Be time-based (not frame-count based) using delta time from useFrame.
+  - Use a smooth easing curve (e.g. smoothstep or easeInOutQuad), not linear.
+  - Update both camera.position and camera.lookAt / controls target so the user always ends up facing the artworks naturally.
+
+Suggested implementation (React Three Fiber pseudo-code)
+
+// At top of Gallery360Scene.tsx
+const CAMERA_MOVE_DURATION = 0.8; // seconds – tweakable
+
+// Add state for camera animation
+const [cameraAnim, setCameraAnim] = useState<{
+  active: boolean;
+  start: THREE.Vector3;
+  end: THREE.Vector3;
+  startTarget: THREE.Vector3;
+  endTarget: THREE.Vector3;
+  elapsed: number;
+}>({
+  active: false,
+  start: new THREE.Vector3(),
+  end: new THREE.Vector3(),
+  startTarget: new THREE.Vector3(),
+  endTarget: new THREE.Vector3(),
+  elapsed: 0,
+});
+
+// Helper easing function
+const easeInOut = (t: number) => {
+  // smoothstep-like
+  return t * t * (3 - 2 * t);
+};
+
+// Function to start a camera move to a target view
+const goToView = (view: ViewConfig) => {
+  const cam = camera; // from useThree
+
+  const currentPos = cam.position.clone();
+  const currentTarget = currentControlsTarget.clone(); // whichever variable you use
+
+  const nextPos = new THREE.Vector3(view.cameraX, view.cameraY, view.cameraZ);
+  const nextTarget = new THREE.Vector3(view.targetX, view.targetY, view.targetZ);
+
+  setCameraAnim({
+    active: true,
+    start: currentPos,
+    end: nextPos,
+    startTarget: currentTarget,
+    endTarget: nextTarget,
+    elapsed: 0,
+  });
+};
+
+// useFrame: animate camera if an animation is active
+useFrame((state, delta) => {
+  if (!cameraAnim.active) return;
+
+  const newElapsed = cameraAnim.elapsed + delta;
+  const tRaw = Math.min(newElapsed / CAMERA_MOVE_DURATION, 1);
+  const t = easeInOut(tRaw);
+
+  const newPos = new THREE.Vector3().lerpVectors(
+    cameraAnim.start,
+    cameraAnim.end,
+    t
+  );
+
+  const newTarget = new THREE.Vector3().lerpVectors(
+    cameraAnim.startTarget,
+    cameraAnim.endTarget,
+    t
+  );
+
+  camera.position.copy(newPos);
+
+  if (orbitControlsRef.current) {
+    orbitControlsRef.current.target.copy(newTarget);
+    orbitControlsRef.current.update();
+  } else {
+    camera.lookAt(newTarget);
+  }
+
+  if (tRaw >= 1) {
+    setCameraAnim((prev) => ({ ...prev, active: false }));
+  } else {
+    setCameraAnim((prev) => ({ ...prev, elapsed: newElapsed }));
+  }
+});
+
+Integration
+- Replace any current logic that immediately sets camera.position / target when a view is selected with a call to goToView(viewConfig).
+- Hotspots and buttons should both call goToView with the same underlying view configuration object.
+
+------------------------------------------------------------
+2. Hotspot visuals – make them subtle / Street View-like
+------------------------------------------------------------
+
+Currently we have large, colored round meshes on the floor. They work but visually clash with the clean gallery look.
+
+Requirements
+- Keep click areas and view logic as is – positions, number of hotspots and view mapping stay the same.
+- Change visuals so that:
+  - There are no large solid blue circles on the floor by default.
+  - On hover, a subtle outline or soft transparent circle may appear.
+  - Cursor changes to pointer when hovering over a clickable hotspot.
+
+Suggested implementation
+
+Option A – Invisible geometry + hover ring
+
+- Each hotspot remains a small plane (or circle) just above the floor for raycasting.
+- Default material: fully transparent.
+- On hover: show a slightly larger, very faint ring.
+
+Example pattern:
+
+const [hoveredHotspotId, setHoveredHotspotId] = useState<string | null>(null);
+
+// In hotspot component
+<mesh
+  position={hotspot.position}
+  onPointerOver={(e) => {
+    e.stopPropagation();
+    setHoveredHotspotId(hotspot.id);
+    document.body.style.cursor = "pointer";
+  }}
+  onPointerOut={(e) => {
+    e.stopPropagation();
+    setHoveredHotspotId((prev) => (prev === hotspot.id ? null : prev));
+    document.body.style.cursor = "default";
+  }}
+  onClick={(e) => {
+    e.stopPropagation();
+    goToView(hotspot.viewConfig);
+  }}
+>
+  {/* invisible base for raycast */}
+  <circleGeometry args={[0.4, 32]} />
+  <meshBasicMaterial transparent opacity={0} />
+
+  {/* hover ring */}
+  {hoveredHotspotId === hotspot.id && (
+    <mesh position={[0, 0.001, 0]}>
+      <ringGeometry args={[0.35, 0.45, 32]} />
+      <meshBasicMaterial
+        transparent
+        opacity={0.35}
+        color="#2c6da8" // or any subtle neutral color
+      />
+    </mesh>
+  )}
+</mesh>
+
+Notes
+- Keep ring color subtle (low opacity, soft tone).
+- If we already have a custom Hotspot component, adjust there instead of duplicating code.
+- Make sure hotspots are NOT visible through walls (use depthWrite/depthTest as appropriate).
+
+------------------------------------------------------------
+3. Scroll wheel / trackpad – forward/back movement
+------------------------------------------------------------
+
+We want the user to be able to "walk" closer to artworks using the mouse wheel, not only jump between fixed viewpoints.
+
+Requirements
+- Scroll up/down should move camera along its forward/back direction.
+- Respect boundaries:
+  - Minimum distance to gallery center or walls (so user doesn’t go through a wall or behind artworks).
+  - Maximum distance so the user doesn’t end up too far away.
+- Movement should be smooth, not instant.
+
+Suggested implementation
+
+- Attach a wheel handler at the scene wrapper (or canvas-level if we already have one).
+- Convert wheel delta to desired distance delta along camera’s forward vector.
+- Use a small lerp or damping to make it smooth.
+
+Pseudo-code:
+
+const [scrollTargetOffset, setScrollTargetOffset] = useState<number | null>(null);
+
+const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
+  event.preventDefault();
+
+  const direction = new THREE.Vector3();
+  camera.getWorldDirection(direction);
+
+  const speed = 0.004; // tune
+  const delta = -event.deltaY * speed; // deltaY > 0 when scrolling down
+
+  // Compute tentative new position
+  const tentative = camera.position.clone().add(direction.multiplyScalar(delta));
+
+  if (!isPositionWithinGalleryBounds(tentative)) return;
+
+  // Set as new target position
+  setScrollTargetOffset(delta);
+};
+
+// useFrame: apply scroll movement smoothly
+useFrame((state, delta) => {
+  if (scrollTargetOffset == null) return;
+
+  const direction = new THREE.Vector3();
+  camera.getWorldDirection(direction);
+
+  const moveStep = scrollTargetOffset * Math.min(delta * 8, 1); // smoothing factor
+  camera.position.add(direction.multiplyScalar(moveStep));
+
+  // Reduce remaining offset
+  const remaining = scrollTargetOffset - moveStep;
+  if (Math.abs(remaining) < 0.001) {
+    setScrollTargetOffset(null);
+  } else {
+    setScrollTargetOffset(remaining);
+  }
+});
+
+Bounds helper
+- Implement isPositionWithinGalleryBounds(position: THREE.Vector3): boolean that checks:
+  - X/Z are within room size (same limits we use for floor/outer box).
+  - Y stays at current camera height.
+- Reuse any existing constants for room width/length to keep it consistent.
+
+Hook-up
+- If Gallery360Scene is wrapped in a div, add onWheel={handleWheel}.
+- Ensure this doesn’t interfere with standard page scroll when mouse is outside canvas.
+
+------------------------------------------------------------
+4. Acceptance criteria
+------------------------------------------------------------
+
+The task is done when, in Classic Gallery 360 Editor:
+
+1) Camera transitions
+- Clicking on any floor hotspot or any of the view buttons (Entrance / Center / Back Left / Back Right) produces a clearly smooth camera animation (no visible jumps or stutters) that lasts about 0.7–0.9 seconds.
+- During animation the camera glides along a natural curve, then gently comes to rest.
+
+2) Hotspot appearance
+- There are no large colored discs permanently visible on the floor.
+- When hovering near a hotspot, cursor becomes a pointer and a subtle ring/halo appears.
+- When not hovering, the floor looks clean.
+
+3) Scroll / zoom
+- Using mouse wheel or trackpad two-finger scroll moves the camera forward/backward inside the room.
+- The camera cannot leave the gallery or pass through walls.
+- Moving toward an artwork feels like “walking forward”, not an instant teleport.
+
+4) No regressions
+- Artwork dimensions, frames and positioning remain exactly as before.
+- Lighting, shadows, tiles and wall colors stay unchanged.
+- Modern Gallery (if present) is untouched for now.
+
+------------------------------------------------------------
+5. What to tell Irena after deployment
+------------------------------------------------------------
+
+Once you deploy this, please tell Irena to:
+- Refresh the Classic Gallery 360 editor.
+- Test:
+  - Clicking each hotspot and view button to confirm the camera glides smoothly.
+  - Moving the mouse across the floor to see subtle hover rings and pointer cursor.
+  - Using scroll to walk closer/further from artworks while staying inside the room.
+
+If any of the above doesn’t feel smooth or looks visually off, she will send new screenshots and feedback for a tiny tuning pass (numbers only – no big refactor).
