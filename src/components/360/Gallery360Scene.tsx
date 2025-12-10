@@ -703,9 +703,14 @@ const CAMERA_MOVE_DURATION = 0.85;
 const SCROLL_SPEED = 0.003;
 const SCROLL_DAMPING = 0.92;
 const MIN_WALL_DISTANCE = 1.0;
-const MIN_POLAR_ANGLE = 1.35;
-const MAX_POLAR_ANGLE = 1.85;
-const MOUSE_SENSITIVITY = 0.002;
+// Vertical look limits: π/2 ≈ 1.57 is horizontal
+// ±0.35 rad from horizontal = comfortable gallery viewing range
+// TODO: Fine-tune these values (0.25-0.45) based on user feedback
+const MIN_POLAR_ANGLE = 1.22;  // Looking up limit (1.57 - 0.35)
+const MAX_POLAR_ANGLE = 1.92;  // Looking down limit (1.57 + 0.35)
+// Mouse sensitivity: ~10% of original for smooth, precise control
+// TODO: Fine-tune (0.0002-0.0005) based on user feedback
+const MOUSE_SENSITIVITY = 0.0003;
 const ROTATION_DAMPING = 0.85;
 
 function smoothstep(t: number): number {

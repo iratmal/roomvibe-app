@@ -1,0 +1,72 @@
+**Task: Podešavanje kontrole kamere u 360° galeriji (Classic Gallery)**
+
+Molim te da u 360° editoru (Classic Gallery) napraviš sljedeće izmjene u kontroli kamere:
+
+---
+
+### 1) Usporiti osjetljivost miša / brzinu rotacije kamere
+
+**Problem:**
+Trenutno je rotacija kamere na mišu izrazito brza i osjetljiva. Čim lagano dotaknem miš, kamera "leti" po prostoriji i teško je precizno kontrolirati pogled.
+
+**Što želimo:**
+
+* Značajno smanjiti osjetljivost miša za rotaciju kamere – otprilike na **10% trenutne vrijednosti** (dakle usporiti za oko 90%).
+* Cilj je da korisnik može mirno, precizno pomicati pogled lijevo–desno i gore–dolje, bez naglih skokova.
+
+**Tehnički smjer:**
+
+* Pronađi mjesto gdje se računa delta pokreta miša za rotaciju kamere (npr. `pointerX`, `pointerY`, `deltaX`, `deltaY`, ili slično) i gdje se primjenjuje na `camera.rotation` ili kontroler (OrbitControls / PointerLockControls / vlastiti kontroler).
+* Uvedi neku vrstu **`MOUSE_SENSITIVITY` konstante**, npr.:
+
+  * `const MOUSE_SENSITIVITY = 0.1;`  // 10% sadašnje vrijednosti
+* Delta kuta rotacije množi tom konstantom (ili ekvivalentno smanji postojeći faktor za ~90%).
+* Po potrebi dodaj TODO komentar gdje kasnije možemo podešavati vrijednost (0.05–0.15) za fino ugađanje.
+
+---
+
+### 2) Ograničiti vertikalni pogled (strop / pod)
+
+**Problem:**
+Trenutno mogu rotirati kameru toliko prema gore da praktički gledam samo u strop, i toliko prema dolje da gledam gotovo samo u pod. To ne izgleda prirodno i vizualno razbija doživljaj galerije.
+
+**Što želimo:**
+
+* Ograničiti vertikalni kut kamere (pitch) tako da:
+
+  * **Malo stropa** uvijek ostane vidljivo kad gledam prema gore (ne potpuno u strop).
+  * **Malo poda** ostane vidljivo kad gledam prema dolje (da vidim kuda se krećem, ali ne da gledam samo pločice).
+* Drugim riječima, kamera treba imati razumnu granicu gore/dolje, kao u većini 3D pregleda galerija i Street Viewu.
+
+**Tehnički smjer:**
+
+* Pronađi dio koda gdje se ažurira vertikalna rotacija kamere (`rotation.x`, `polarAngle`, `pitch`, ili slično).
+* Dodaj **clamp** logiku nad vertikalnim kutem, primjerice:
+
+  * `minPitch` ~ **-0.35 rad** (lagano prema dolje – vidim dio poda, ali ne previše)
+  * `maxPitch` ~ **+0.35 rad** (lagano prema gore – vidim dio stropa, ali ne samo strop)
+* Točne vrijednosti možeš podesiti po osjećaju, ali cilj je:
+
+  * Da kad gledam ravno, vidim zidove i dio poda.
+  * Da i pri maksimalnom pogledu gore/dolje kadar još uvijek izgleda prirodno za galerijski prostor.
+
+---
+
+### 3) Što testirati nakon izmjena
+
+Nakon što implementiraš gore navedeno, molim te:
+
+1. Otvori **Classic Gallery → 360° Editor** u pregledniku.
+2. Testiraj rotaciju miša:
+
+   * Lagani pokreti miša trebaju rezultirati sporom, kontroliranom rotacijom kamere.
+   * Više nema naglih skokova pri malom pomaku miša.
+3. Testiraj vertikalni pogled:
+
+   * Ne mogu više gledati ekstremno u strop ili ekstremno u pod.
+   * U najgornjoj poziciji još uvijek vidim malo zida/poda (ne samo strop).
+   * U najdonjoj poziciji još uvijek vidim zid/pod (ne samo pločice).
+
+Ako trebaš dodatna pojašnjenja oko željenog raspona pogleda, slobodno ulogiraj trenutačne vrijednosti kuta prije i poslije clampa i napiši mi ih u poruci, pa ćemo po potrebi dodatno prilagoditi `minPitch` i `maxPitch`.
+
+Hvala! 🙌
