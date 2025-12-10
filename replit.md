@@ -23,10 +23,15 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 - **Unified Widget System**: A single embeddable JavaScript widget adapts its functionality based on user entitlements (Artist, Designer, Gallery modes).
 - **Virtual Exhibition Editor**: MVP feature for Gallery plan users to create immersive virtual exhibitions. It includes preset selection, artwork placement via drag-and-drop, and scene persistence.
 - **360° Virtual Exhibition**: Immersive 3D gallery experience using React Three Fiber (R3F) featuring:
-  - Clean gallery aesthetics with configurable wall/floor/ceiling colors from presets
+  - Modern Gallery v2: High-realism museum space (24x6x18m) with white walls, wood floor, black columns, and skylights
+  - Classic Gallery: Original warm-toned gallery space (18x4.2x14m) preserved for compatibility
   - Artwork textures use meshBasicMaterial (lighting-independent) for reliable rendering
   - Image proxy endpoint (`/api/image-proxy`) handles CORS for external artwork URLs with SSRF protection
-  - Street-View style navigation with floor hotspots and smooth camera transitions
+  - Advanced lighting: Skylights with rect area lights, wall spotlights, hemisphere and directional lights
+  - Procedural wood floor with plank texture overlay for realism
+  - Black structural columns positioned throughout the gallery space
+  - Thin dark frames around artworks for professional presentation
+  - Street-View style navigation with pulsing floor hotspots and smooth camera transitions
   - Camera constraints with configurable polar angle limits
 - **Onboarding Flow**: A 3-screen introductory wizard for first-time users, guiding them through the application's modules and features.
 - **Artwork Management**: Includes artwork upload, editing, and automated enrichment from Shopify.

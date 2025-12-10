@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback, Suspense } from 'react';
+import React, { useRef, useState, useEffect, useCallback, Suspense, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Html, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
@@ -23,42 +23,259 @@ function getProxiedImageUrl(url: string): string {
   return `/api/image-proxy?url=${encodeURIComponent(url)}`;
 }
 
+function Column({ position, height, color }: { 
+  position: [number, number, number]; 
+  height: number;
+  color: string;
+}) {
+  return (
+    <mesh position={position} castShadow receiveShadow>
+      <boxGeometry args={[0.4, height, 0.4]} />
+      <meshStandardMaterial color={color} roughness={0.8} metalness={0.1} />
+    </mesh>
+  );
+}
+
+function Skylight({ position, width, depth }: {
+  position: [number, number, number];
+  width: number;
+  depth: number;
+}) {
+  return (
+    <group position={position}>
+      <mesh rotation={[Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[width, depth]} />
+        <meshBasicMaterial color="#e8f4ff" transparent opacity={0.9} />
+      </mesh>
+      <rectAreaLight
+        position={[0, -0.1, 0]}
+        width={width * 0.8}
+        height={depth * 0.8}
+        intensity={3}
+        color="#fff8f0"
+      />
+    </group>
+  );
+}
+
+function WallSpotlight({ position, targetY }: {
+  position: [number, number, number];
+  targetY: number;
+}) {
+  const spotlightRef = useRef<THREE.SpotLight>(null);
+  const { scene } = useThree();
+
+  useEffect(() => {
+    if (spotlightRef.current) {
+      const target = new THREE.Object3D();
+      target.position.set(position[0], targetY, position[2]);
+      scene.add(target);
+      spotlightRef.current.target = target;
+      return () => {
+        scene.remove(target);
+      };
+    }
+  }, [position, targetY, scene]);
+
+  return (
+    <group position={position}>
+      <mesh>
+        <cylinderGeometry args={[0.05, 0.08, 0.1, 8]} />
+        <meshStandardMaterial color="#2a2a2a" roughness={0.3} metalness={0.7} />
+      </mesh>
+      <spotLight
+        ref={spotlightRef}
+        position={[0, -0.05, 0]}
+        angle={0.5}
+        penumbra={0.8}
+        intensity={2}
+        distance={6}
+        color="#fff5e6"
+        castShadow
+        shadow-mapSize={[256, 256]}
+      />
+    </group>
+  );
+}
+
+function WoodFloor({ width, depth, color }: { width: number; depth: number; color: string }) {
+  const planks = useMemo(() => {
+    const plankWidth = 0.2;
+    const plankLength = 2;
+    const rows = Math.ceil(depth / plankWidth);
+    const cols = Math.ceil(width / plankLength);
+    const result: Array<{ x: number; z: number; shade: number }> = [];
+    
+    for (let row = 0; row < rows; row++) {
+      const offset = (row % 2) * (plankLength / 2);
+      for (let col = 0; col < cols + 1; col++) {
+        const x = -width / 2 + col * plankLength + offset;
+        const z = -depth / 2 + row * plankWidth;
+        if (x < width / 2 + plankLength && x > -width / 2 - plankLength) {
+          const shade = 0.85 + Math.random() * 0.3;
+          result.push({ x, z, shade });
+        }
+      }
+    }
+    return result;
+  }, [width, depth]);
+
+  const baseColor = new THREE.Color(color);
+
+  return (
+    <group position={[0, 0.001, 0]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[width, depth]} />
+        <meshStandardMaterial 
+          color={color}
+          roughness={0.7}
+          metalness={0.05}
+        />
+      </mesh>
+      {planks.slice(0, 200).map((plank, i) => {
+        const plankColor = baseColor.clone().multiplyScalar(plank.shade);
+        return (
+          <mesh
+            key={i}
+            position={[plank.x, 0.001, plank.z]}
+            rotation={[-Math.PI / 2, 0, 0]}
+          >
+            <planeGeometry args={[1.98, 0.18]} />
+            <meshStandardMaterial
+              color={plankColor}
+              roughness={0.65 + Math.random() * 0.1}
+              metalness={0.02}
+              transparent
+              opacity={0.4}
+            />
+          </mesh>
+        );
+      })}
+    </group>
+  );
+}
+
 function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
   const { width, height, depth } = preset.dimensions;
   const halfW = width / 2;
   const halfD = depth / 2;
 
+  const columnPositions = useMemo(() => {
+    if (!preset.hasColumns) return [];
+    const positions: [number, number, number][] = [];
+    const colSpacingX = width / 4;
+    const colSpacingZ = depth / 3;
+    
+    for (let x = -1; x <= 1; x += 2) {
+      for (let z = -1; z <= 1; z++) {
+        positions.push([x * colSpacingX * 0.7, height / 2, z * colSpacingZ * 0.5]);
+      }
+    }
+    return positions;
+  }, [preset.hasColumns, width, height, depth]);
+
+  const skylightPositions = useMemo(() => {
+    if (!preset.hasSkylights) return [];
+    return [
+      { position: [-4, height - 0.01, 0] as [number, number, number], width: 3, depth: 4 },
+      { position: [4, height - 0.01, 0] as [number, number, number], width: 3, depth: 4 },
+      { position: [0, height - 0.01, -3] as [number, number, number], width: 2.5, depth: 3 },
+      { position: [0, height - 0.01, 3] as [number, number, number], width: 2.5, depth: 3 },
+    ];
+  }, [preset.hasSkylights, height]);
+
+  const spotlightPositions = useMemo(() => {
+    const spots: Array<{ position: [number, number, number]; targetY: number }> = [];
+    
+    for (let x = -halfW + 3; x < halfW; x += 4) {
+      spots.push({ position: [x, height - 0.3, -halfD + 0.5], targetY: 1.6 });
+      spots.push({ position: [x, height - 0.3, halfD - 0.5], targetY: 1.6 });
+    }
+    spots.push({ position: [-halfW + 0.5, height - 0.3, -2], targetY: 1.6 });
+    spots.push({ position: [-halfW + 0.5, height - 0.3, 2], targetY: 1.6 });
+    spots.push({ position: [halfW - 0.5, height - 0.3, -2], targetY: 1.6 });
+    spots.push({ position: [halfW - 0.5, height - 0.3, 2], targetY: 1.6 });
+    
+    return spots;
+  }, [width, height, depth, halfW, halfD]);
+
   return (
     <group>
-      <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[width, depth]} />
-        <meshStandardMaterial color={preset.floorColor} />
-      </mesh>
+      {preset.floorType === 'wood' ? (
+        <WoodFloor width={width} depth={depth} color={preset.floorColor} />
+      ) : (
+        <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+          <planeGeometry args={[width, depth]} />
+          <meshStandardMaterial color={preset.floorColor} roughness={0.8} />
+        </mesh>
+      )}
 
       <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
-        <meshStandardMaterial color={preset.ceilingColor} />
+        <meshStandardMaterial color={preset.ceilingColor} roughness={0.95} />
       </mesh>
 
       <mesh position={[0, height / 2, -halfD]} receiveShadow>
         <planeGeometry args={[width, height]} />
-        <meshStandardMaterial color={preset.wallColor} side={THREE.DoubleSide} />
+        <meshStandardMaterial 
+          color={preset.wallColor} 
+          side={THREE.DoubleSide} 
+          roughness={0.9}
+        />
       </mesh>
 
       <mesh position={[0, height / 2, halfD]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[width, height]} />
-        <meshStandardMaterial color={preset.wallColor} side={THREE.DoubleSide} />
+        <meshStandardMaterial 
+          color={preset.wallColor} 
+          side={THREE.DoubleSide}
+          roughness={0.9}
+        />
       </mesh>
 
       <mesh position={[halfW, height / 2, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
-        <meshStandardMaterial color={preset.wallColor} side={THREE.DoubleSide} />
+        <meshStandardMaterial 
+          color={preset.wallColor} 
+          side={THREE.DoubleSide}
+          roughness={0.9}
+        />
       </mesh>
 
       <mesh position={[-halfW, height / 2, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
-        <meshStandardMaterial color={preset.wallColor} side={THREE.DoubleSide} />
+        <meshStandardMaterial 
+          color={preset.wallColor} 
+          side={THREE.DoubleSide}
+          roughness={0.9}
+        />
       </mesh>
+
+      {columnPositions.map((pos, i) => (
+        <Column
+          key={`col-${i}`}
+          position={pos}
+          height={height}
+          color={preset.columnColor || '#1a1a1a'}
+        />
+      ))}
+
+      {skylightPositions.map((skylight, i) => (
+        <Skylight
+          key={`sky-${i}`}
+          position={skylight.position}
+          width={skylight.width}
+          depth={skylight.depth}
+        />
+      ))}
+
+      {spotlightPositions.map((spot, i) => (
+        <WallSpotlight
+          key={`spot-${i}`}
+          position={spot.position}
+          targetY={spot.targetY}
+        />
+      ))}
     </group>
   );
 }
@@ -81,8 +298,18 @@ function ArtworkPlane({
 
   const hasArtwork = assignment?.artworkUrl;
 
+  const frameWidth = 0.02;
+  const frameDepth = 0.025;
+
   return (
     <group position={slot.position} rotation={slot.rotation}>
+      {hasArtwork && (
+        <mesh position={[0, 0, -frameDepth / 2]} castShadow>
+          <boxGeometry args={[slot.width + frameWidth * 2, slot.height + frameWidth * 2, frameDepth]} />
+          <meshStandardMaterial color="#1a1a1a" roughness={0.4} metalness={0.1} />
+        </mesh>
+      )}
+
       <mesh
         ref={meshRef}
         onClick={(e) => {
@@ -190,6 +417,14 @@ function HotspotMarker({
   currentViewpointId: string;
 }) {
   const [hovered, setHovered] = useState(false);
+  const pulseRef = useRef<THREE.Mesh>(null);
+  
+  useFrame(({ clock }) => {
+    if (pulseRef.current) {
+      const pulse = Math.sin(clock.elapsedTime * 2) * 0.5 + 0.5;
+      pulseRef.current.scale.setScalar(1 + pulse * 0.1);
+    }
+  });
   
   if (hotspot.targetViewpoint === currentViewpointId) return null;
 
@@ -199,6 +434,7 @@ function HotspotMarker({
       rotation={[0, hotspot.rotation, 0]}
     >
       <mesh
+        ref={pulseRef}
         onClick={(e) => {
           e.stopPropagation();
           onNavigate(hotspot.targetViewpoint);
@@ -219,7 +455,7 @@ function HotspotMarker({
         position={[0, 0.01, -0.15]} 
         rotation={[-Math.PI / 2, 0, 0]}
       >
-        <coneGeometry args={[0.15, 0.3, 3]} />
+        <coneGeometry args={[0.12, 0.25, 3]} />
         <meshBasicMaterial color={hovered ? '#C9A24A' : '#ffffff'} />
       </mesh>
     </group>
@@ -334,12 +570,25 @@ export function Gallery360Scene({
 }: Gallery360SceneProps) {
   return (
     <Canvas
+      shadows
       camera={{ fov: 60, near: 0.1, far: 100 }}
-      style={{ background: '#1a1a1a' }}
+      style={{ background: '#e8e8e8' }}
     >
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[5, 10, 5]} intensity={0.8} />
-      <pointLight position={[0, 3.5, 0]} intensity={0.4} />
+      <ambientLight intensity={0.4} />
+      <hemisphereLight args={['#ffffff', '#b0a090', 0.5]} />
+      <directionalLight 
+        position={[0, preset.dimensions.height + 5, 0]} 
+        intensity={0.6}
+        castShadow
+        shadow-mapSize={[1024, 1024]}
+        shadow-camera-far={50}
+        shadow-camera-left={-15}
+        shadow-camera-right={15}
+        shadow-camera-top={15}
+        shadow-camera-bottom={-15}
+      />
+      <directionalLight position={[10, 8, 5]} intensity={0.3} />
+      <directionalLight position={[-10, 8, -5]} intensity={0.2} />
 
       <GalleryRoom preset={preset} />
 

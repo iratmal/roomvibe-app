@@ -14,7 +14,7 @@ interface Viewer360Props {
 
 export function Viewer360({
   exhibitionId,
-  presetId = 'white-cube-v1',
+  presetId = 'modern-gallery-v2',
   initialAssignments = [],
   onArtworkClick,
   className = ''
