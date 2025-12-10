@@ -459,9 +459,9 @@ const ARTWORK_SCALE_FACTORS: Record<string, number> = {
 
 // Frame configuration
 const FRAME_CONFIG = {
-  thickness: 0.03,     // 3cm visible frame width
-  depth: 0.025,        // 2.5cm frame depth
-  color: '#f5f2ed',    // Warm off-white/cream
+  thickness: 0.04,     // 4cm visible frame width
+  depth: 0.03,         // 3cm frame depth
+  color: '#111111',    // Black frame for gallery look
   innerBevel: 0.003    // Slight inner edge
 };
 
@@ -506,26 +506,24 @@ function ArtworkImage({
   }, [texture]);
 
   const dimensions = useMemo(() => {
-    // Get preset-specific scale factor (defaults to 1.0)
-    const presetScale = presetId ? (ARTWORK_SCALE_FACTORS[presetId] || 1.0) : 1.0;
-    
-    // Max height constraint: artwork should not exceed 60% of wall height
-    const maxHeight = wallHeight ? wallHeight * 0.60 : slotHeight * 0.95;
-    const maxWidth = slotWidth * 0.95;
+    // Max constraints based on wall, not slot - allows artwork to render at real size
+    const maxHeight = wallHeight ? wallHeight * 0.55 : 2.5;  // 55% of wall height max
+    const maxWidth = wallHeight ? wallHeight * 0.8 : 3.5;    // Max width relative to wall
     
     let sourceWidth: number;
     let sourceHeight: number;
 
-    // Priority 1: Use stored artwork dimensions (cm -> meters)
+    // Priority 1: Use stored artwork dimensions (cm -> meters) - REAL SIZE
     if (assignmentWidth && assignmentHeight && assignmentWidth > 0 && assignmentHeight > 0) {
-      sourceWidth = (assignmentWidth / 100) * presetScale;
-      sourceHeight = (assignmentHeight / 100) * presetScale;
+      // Convert cm to meters directly - no artificial scaling
+      sourceWidth = assignmentWidth / 100;
+      sourceHeight = assignmentHeight / 100;
     } 
     // Priority 2: Derive from actual image aspect ratio
     else if (imageDimensions && imageDimensions.width > 0 && imageDimensions.height > 0) {
       const aspect = imageDimensions.width / imageDimensions.height;
-      // Base size scaled by preset factor
-      const BASE_SIZE = 0.9 * presetScale;
+      // Default to ~1.2m base size when no dimensions stored
+      const BASE_SIZE = 1.2;
       
       // Portrait: taller than wide
       if (imageDimensions.height > imageDimensions.width) {
@@ -538,12 +536,13 @@ function ArtworkImage({
         sourceHeight = BASE_SIZE / aspect;
       }
     } 
-    // Fallback: use slot dimensions
+    // Fallback: reasonable default size
     else {
-      return { width: slotWidth * 0.8, height: slotHeight * 0.8 };
+      return { width: 1.0, height: 1.0 };
     }
 
-    // Apply constraints: fit within slot and max height
+    // Only apply wall-based constraints (not slot-based)
+    // This allows artwork to render at true dimensions unless they exceed wall limits
     const widthRatio = maxWidth / sourceWidth;
     const heightRatio = maxHeight / sourceHeight;
     const constraintFactor = Math.min(widthRatio, heightRatio, 1);
@@ -552,7 +551,7 @@ function ArtworkImage({
       width: sourceWidth * constraintFactor,
       height: sourceHeight * constraintFactor
     };
-  }, [assignmentWidth, assignmentHeight, imageDimensions, slotWidth, slotHeight, presetId, wallHeight]);
+  }, [assignmentWidth, assignmentHeight, imageDimensions, wallHeight]);
 
   const frameT = FRAME_CONFIG.thickness;
   const frameD = FRAME_CONFIG.depth;
