@@ -339,6 +339,19 @@ export async function initializeDatabase() {
       END $$;
     `);
 
+    // Add description column to gallery_artworks for artwork info panel
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'gallery_artworks' AND column_name = 'description'
+        ) THEN
+          ALTER TABLE gallery_artworks ADD COLUMN description TEXT;
+        END IF;
+      END $$;
+    `);
+
     // PDF export tracking table for monthly limits
     await query(`
       CREATE TABLE IF NOT EXISTS pdf_exports (

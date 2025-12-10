@@ -1,0 +1,206 @@
+# RoomVibe – 360 Gallery Share & Embed Task (Share / Embed + Public Viewer)
+
+Ovaj task je za Replit agenta. Molim te da ga odradiš korak po korak, bez preskakanja dijelova, i da sve izmjene radiš **u postojećoj Classic Gallery 360 funkcionalnosti**, tako da kasnije možemo lako preslikati na ostale galerijske prostore.
+
+---
+
+## CILJ
+
+1. Omogućiti **share / embed** za svaku galerijsku izložbu:
+
+   * vlasnik izložbe (galerija ili umjetnik) može dobiti:
+
+     * **public link** na 360 izložbu
+     * **embed (iframe) kod** za svoj web
+2. Napraviti **public 360 viewer rutu** (za posjetitelje) i **embed viewer** (za widget na webu).
+3. Ne radimo poseban kod za svaku vrstu galerije (Classic, Modern, Loft itd.), nego sve vežemo na **exhibitionId**.
+
+---
+
+## 1. ROUTE STRUKTURA
+
+### 1.1. Public viewer ruta
+
+Dodaj novu client-side rutu, npr.:
+
+```ts
+/app/exhibitions/:exhibitionId
+```
+
+* Ova ruta prikazuje 360 izložbu u **viewer modu**, bez editorskog sidebar-a.
+* U pozadini koristi **isti 360 komponentni sustav** kao i 360 Editor, ali s uključenim:
+
+  * Street View navigacijom (hotspotovi ili diskretni koraci)
+  * klik na artwork → otvara se kartica s podacima i BUY linkom.
+
+Možeš iskoristiti postojeći editor komponentu npr. `Gallery360Scene`, ali je wrapati u poseban viewer layout bez lijevog wall-slot panela.
+
+### 1.2. Embed viewer ruta
+
+Dodaj novu rutu za embed:
+
+```ts
+/embed/exhibitions/:exhibitionId
+```
+
+* Ova ruta je gotovo ista kao public viewer, ali:
+
+  * **nema headera, footera, navigacije**, ničega što nije nužno za izložbu.
+  * cijeli viewport zauzima scena + UI za karticu slike.
+* Ova ruta se koristi unutar `<iframe>` widgeta na web stranicama korisnika.
+
+---
+
+## 2. SHARE / EMBED GUMB I MODAL
+
+Treba nam jedan **Share / Embed** gumb na dva mjesta:
+
+1. **Gallery dashboard – lista izložbi**
+2. **Unutar 360 Editora** (Classic Gallery za sada)
+
+### 2.1. Dashboard – lista izložbi
+
+Na kartici svake izložbe (gdje već prikazujemo naziv, broj radova, itd.), dodaj:
+
+* gumb **"Share / Embed"** (ikonica linka ili </> embed je dobrodošla).
+
+Klik otvara **modal** s dva taba:
+
+1. **Link**
+
+   * Prikaži read-only input sa public URL-om, npr.:
+
+   ```
+   https://app.roomvibe.app/app/exhibitions/{exhibitionId}
+   ```
+
+   * Dodaj gumb **Copy link** (kopira u clipboard).
+
+2. **Embed widget**
+
+   * Prikaži read-only `<textarea>` s iframe kodom, npr.:
+
+   ```html
+   <iframe
+     src="https://app.roomvibe.app/embed/exhibitions/{exhibitionId}"
+     width="100%"
+     height="600"
+     style="border:none; border-radius:12px; overflow:hidden;"
+     allowfullscreen
+     loading="lazy"
+   ></iframe>
+   ```
+
+   * Dodaj gumb **Copy embed code**.
+
+Modal neka koristi postojeći UI sustav (dialog / modal komponentu) koji već imamo u projektu.
+
+### 2.2. 360 Editor – Classic Gallery
+
+U 360 Editoru (Classic Gallery) dodaj isti gumb **Share / Embed**:
+
+* Gdje: npr. gore desno, u headeru gdje piše "360° Editor".
+* Klik otvara **isti modal** kao na dashboardu (možeš koristiti istu komponentu).
+
+Za exhibitionId koristi trenutno otvorenu izložbu čiji 360 Editor gledamo.
+
+---
+
+## 3. VIEWER NAČIN RADA (PUBLIC + EMBED)
+
+Za obje nove rute (`/app/exhibitions/:id` i `/embed/exhibitions/:id`) koristi **istu osnovnu 360 scenu**, ali u **viewer modu**:
+
+* **Nema wall-slot sidebar-a**.
+* Prikazani su samo:
+
+  * 360 prostor
+  * navigacija (Street View stil – hotspots / kretanje)
+  * pri kliku na artwork: kartica s podacima + BUY link.
+
+Možeš npr. `Gallery360Scene` proširiti prop-ovima:
+
+```ts
+<Gallery360Scene
+  mode="editor" | "viewer"
+  exhibitionId={...}
+/>
+```
+
+* `mode="editor"` → današnje ponašanje (sidebar, wall slot lista itd.).
+* `mode="viewer"` → bez sidebar-a, samo gledanje izložbe.
+
+---
+
+## 4. ARTWORK KARTICA – POLJE ZA BUY LINK
+
+Na artwork kartici (lijevi panel koji se otvara kad klikneš sliku u 360) treba proširiti podatke:
+
+1. Iz **Gallery dashboarda** već povlačimo:
+
+   * naslov
+   * autora
+   * dimenzije (širina x visina)
+
+2. Dodaj polja u artwork modelu (ako već ne postoje):
+
+   * `price` (broj ili string)
+   * `currency` (npr. "EUR")
+   * `buyUrl` (string – URL na njihov shop / product page)
+
+3. Na kartici prikaži:
+
+   * **Cijena** u formatu npr. `1.200 EUR` (ili samo string koji već spremamo).
+   * Gumb **"View & Buy Artwork"** / "Buy" koji:
+
+     * Otvara `buyUrl` u novom tabu (`target="_blank"`, `rel="noopener noreferrer"`).
+
+4. Bitno: svi ovi podaci moraju dolaziti iz backend API-ja (ista artworks kolekcija koju editor već koristi), da galerije i umjetnici sve unose na jednom mjestu (Gallery dashboard) i da se to automatski reflektira u 360 izložbi.
+
+---
+
+## 5. PRIPREMA ZA OSTALE GALERIJSKE PROSTORE
+
+Kod koji sada radi za **Classic Gallery** trebaš organizirati tako da:
+
+* Sve logike za **share / embed** i **viewer** budu vezane za `exhibitionId`, a ne za layout prostora.
+* Kad kasnije dodamo npr. `Loft Gallery`, `Industrial Gallery`, `Modern Gallery`, oni koriste **iste rute** (`/app/exhibitions/:id`, `/embed/exhibitions/:id`), samo s drugim 3D templateom.
+
+Drugim riječima:
+
+* **Nemoj** raditi posebnu share/embed logiku po tipu galerije.
+* Sve što gradiš sada neka bude **generičko za bilo koji exhibition layout**.
+
+---
+
+## 6. ŠTO TESTIRATI NA KRAJU
+
+Kad završiš, molim te da provjeriš i napišeš u odgovoru da si ručno testirao:
+
+1. Otvori 360 Editor za postojeću Classic Gallery izložbu.
+
+   * Klik na **Share / Embed** → modal se otvara.
+   * `Copy link` daje ispravan URL na `/app/exhibitions/:id`.
+   * `Copy embed code` daje ispravan iframe s `/embed/exhibitions/:id`.
+
+2. Otvori `/app/exhibitions/:id` direktno u browseru.
+
+   * Izložba se učita bez sidebar-a.
+   * 360 kretanje radi.
+   * Klik na artwork otvara karticu s:
+
+     * naslovom,
+     * autorom,
+     * dimenzijama,
+     * cijenom,
+     * BUY gumbom.
+
+3. Napravi jednostavnu HTML datoteku lokalno (ili u nekom test view-u) s iframe kodom:
+
+   * Provjeri da se `/embed/exhibitions/:id` lijepo prikazuje unutar iframea.
+   * Nema scrollbara izvana, scena normalno radi.
+
+4. Provjeri da ništa od ovoga **ne razbija postojeći 360 Editor**.
+
+---
+
+Ako ti je za bilo koji korak potrebna dodatna pojašnjenja ili postoje već neke pomoćne komponente koje bi bilo pametnije iskoristiti, slobodno optimiziraj implementaciju, ali uz uvjet da **finalno ponašanje** bude kako je gore opisano.

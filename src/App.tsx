@@ -104,7 +104,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-white text-rv-text">
-      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/privacy" && normalizedHash !== "#/terms" && normalizedHash !== "#/upload-consent" && normalizedHash !== "#/pricing" && normalizedHash !== "#/billing" && normalizedHash !== "#/onboarding" && !normalizedHash.startsWith("#/exhibition") && !normalizedHash.startsWith("#/gallery/exhibitions/") && !normalizedHash.startsWith("#/exhibitions/") && <TopNav />}
+      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/privacy" && normalizedHash !== "#/terms" && normalizedHash !== "#/upload-consent" && normalizedHash !== "#/pricing" && normalizedHash !== "#/billing" && normalizedHash !== "#/onboarding" && !normalizedHash.startsWith("#/exhibition") && !normalizedHash.startsWith("#/gallery/exhibitions/") && !normalizedHash.startsWith("#/exhibitions/") && !normalizedHash.startsWith("#/app/exhibitions/") && !normalizedHash.startsWith("#/embed/exhibitions/") && <TopNav />}
       {normalizedHash === "#/onboarding" ? (
         <OnboardingRouter />
       ) : normalizedHash === "#/pricing" ? (
@@ -127,6 +127,10 @@ function AppContent() {
         <PublicExhibitionPage />
       ) : normalizedHash.startsWith("#/exhibitions/") && normalizedHash.endsWith("/360") ? (
         <Exhibition360Viewer />
+      ) : normalizedHash.startsWith("#/app/exhibitions/") ? (
+        <PublicExhibition360Viewer />
+      ) : normalizedHash.startsWith("#/embed/exhibitions/") ? (
+        <EmbedExhibition360Viewer />
       ) : normalizedHash.startsWith("#/gallery/exhibitions/") && normalizedHash.endsWith("/360-editor") ? (
         <Exhibition360EditorPage />
       ) : normalizedHash.startsWith("#/gallery/exhibitions/") ? (
@@ -3629,6 +3633,174 @@ function Exhibition360Viewer() {
       >
         View Standard Mode
       </a>
+    </div>
+  );
+}
+
+/* ------------- Public 360 Exhibition Viewer (Share Link) ------------- */
+
+function PublicExhibition360Viewer() {
+  const hash = window.location.hash;
+  const match = hash.match(/^#\/app\/exhibitions\/(\d+)/);
+  const exhibitionId = match ? match[1] : null;
+  
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [exhibition, setExhibition] = useState<any>(null);
+  const [scene360Data, setScene360Data] = useState<any>(null);
+  
+  const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, []);
+
+  useEffect(() => {
+    if (!exhibitionId) return;
+    
+    const fetchData = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/gallery/exhibitions/${exhibitionId}/360-public`);
+        if (!res.ok) {
+          const errData = await res.json();
+          setError(errData.error || 'Exhibition not found');
+          setLoading(false);
+          return;
+        }
+        const data = await res.json();
+        setExhibition(data);
+        setScene360Data(data.scene360Data);
+      } catch (err) {
+        setError('Failed to load exhibition');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, [exhibitionId, API_URL]);
+
+  if (loading) {
+    return (
+      <div className="h-screen bg-[#1a1a1a] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-[#C9A24A] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-white/70">Entering virtual gallery...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-screen bg-[#1a1a1a] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-400 mb-4">{error}</p>
+          <a href="#/" className="text-[#C9A24A] hover:underline">Back to Home</a>
+        </div>
+      </div>
+    );
+  }
+
+  if (!scene360Data) {
+    return (
+      <div className="h-screen bg-[#1a1a1a] flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-white/70 mb-4">This exhibition doesn't have a 360° view configured.</p>
+          <a href="#/" className="text-[#C9A24A] hover:underline">Back to Home</a>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-screen bg-[#1a1a1a] relative">
+      <div className="absolute top-4 left-4 z-10 bg-black/60 backdrop-blur-sm rounded-lg p-4 max-w-sm">
+        <h1 className="text-white font-semibold text-lg">{exhibition?.title}</h1>
+        <p className="text-white/60 text-sm">{exhibition?.galleryName}</p>
+        {exhibition?.description && (
+          <p className="text-white/50 text-xs mt-2 line-clamp-2">{exhibition.description}</p>
+        )}
+      </div>
+
+      <Gallery360Editor
+        exhibitionId={exhibitionId || ''}
+        presetId={scene360Data.presetId}
+        availableArtworks={[]}
+        initialAssignments={scene360Data.slots || []}
+        onSave={async () => {}}
+        onBack={() => window.location.hash = '#/'}
+        viewerMode={true}
+      />
+    </div>
+  );
+}
+
+/* ------------- Embed 360 Exhibition Viewer (iframe) ------------- */
+
+function EmbedExhibition360Viewer() {
+  const hash = window.location.hash;
+  const match = hash.match(/^#\/embed\/exhibitions\/(\d+)/);
+  const exhibitionId = match ? match[1] : null;
+  
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [scene360Data, setScene360Data] = useState<any>(null);
+  
+  const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
+
+  useEffect(() => {
+    if (!exhibitionId) return;
+    
+    const fetchData = async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/gallery/exhibitions/${exhibitionId}/360-public`);
+        if (!res.ok) {
+          const errData = await res.json();
+          setError(errData.error || 'Exhibition not found');
+          setLoading(false);
+          return;
+        }
+        const data = await res.json();
+        setScene360Data(data.scene360Data);
+      } catch (err) {
+        setError('Failed to load exhibition');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, [exhibitionId, API_URL]);
+
+  if (loading) {
+    return (
+      <div className="h-screen bg-[#1a1a1a] flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-[#C9A24A] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (error || !scene360Data) {
+    return (
+      <div className="h-screen bg-[#1a1a1a] flex items-center justify-center">
+        <p className="text-white/50 text-sm">{error || 'Exhibition not available'}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-screen w-screen overflow-hidden">
+      <Gallery360Editor
+        exhibitionId={exhibitionId || ''}
+        presetId={scene360Data.presetId}
+        availableArtworks={[]}
+        initialAssignments={scene360Data.slots || []}
+        onSave={async () => {}}
+        onBack={() => {}}
+        viewerMode={true}
+        embedMode={true}
+      />
     </div>
   );
 }

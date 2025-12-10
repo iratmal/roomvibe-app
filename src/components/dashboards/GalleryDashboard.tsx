@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ImpersonationBanner } from '../ImpersonationBanner';
 import { SiteHeader } from '../SiteHeader';
+import { ShareEmbedModal } from '../360/ShareEmbedModal';
 
 const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
 
@@ -151,7 +152,7 @@ export function GalleryDashboard() {
   const [success, setSuccess] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
   const [showArtworkDeleteConfirm, setShowArtworkDeleteConfirm] = useState<number | null>(null);
-  const [copiedLink, setCopiedLink] = useState<number | null>(null);
+  const [shareModalCollection, setShareModalCollection] = useState<Collection | null>(null);
   const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
   const [editForm, setEditForm] = useState({ title: '', subtitle: '', status: 'draft' as 'draft' | 'published' });
   const [editLoading, setEditLoading] = useState(false);
@@ -328,14 +329,6 @@ export function GalleryDashboard() {
     } catch (err: any) {
       setError(err.message);
     }
-  };
-
-  const copyPublicLink = (collectionId: number) => {
-    const baseUrl = window.location.origin;
-    const publicUrl = `${baseUrl}/#/exhibitions/${collectionId}/public`;
-    navigator.clipboard.writeText(publicUrl);
-    setCopiedLink(collectionId);
-    setTimeout(() => setCopiedLink(null), 2000);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -953,10 +946,13 @@ export function GalleryDashboard() {
                           Generate PDF
                         </button>
                         <button
-                          onClick={() => copyPublicLink(collection.id)}
-                          className="flex-1 px-3 py-2 text-xs border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-all font-medium"
+                          onClick={() => setShareModalCollection(collection)}
+                          className="flex-1 px-3 py-2 text-xs border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-all font-medium flex items-center justify-center gap-1"
                         >
-                          {copiedLink === collection.id ? 'Copied!' : 'Copy Link'}
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                          </svg>
+                          Share / Embed
                         </button>
                         <button
                           onClick={() => setShowDeleteConfirm(collection.id)}
@@ -1212,6 +1208,13 @@ export function GalleryDashboard() {
           </div>
         </div>
       )}
+
+      <ShareEmbedModal
+        exhibitionId={shareModalCollection?.id || ''}
+        exhibitionTitle={shareModalCollection?.title}
+        isOpen={!!shareModalCollection}
+        onClose={() => setShareModalCollection(null)}
+      />
     </div>
   );
 }

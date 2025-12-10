@@ -136,7 +136,8 @@ router.get('/exhibitions/:id/360-public', async (req, res) => {
 
     const artworksResult = await query(
       `SELECT ga.id, ga.artwork_id, ga.title, ga.artist_name, ga.image_url, 
-              ga.width_value, ga.height_value, ga.dimension_unit
+              ga.width_value, ga.height_value, ga.dimension_unit,
+              ga.price_amount, ga.price_currency, ga.buy_url, ga.description
        FROM gallery_artworks ga
        WHERE ga.collection_id = $1`,
       [collectionId]
@@ -175,7 +176,11 @@ router.get('/exhibitions/:id/360-public', async (req, res) => {
         artistName: artwork.artist_name || slot.artistName,
         width: artwork.width_value || slot.width || 100,
         height: artwork.height_value || slot.height || 70,
-        dimensionUnit: artwork.dimension_unit || 'cm'
+        dimensionUnit: artwork.dimension_unit || 'cm',
+        priceAmount: artwork.price_amount || null,
+        priceCurrency: artwork.price_currency || 'EUR',
+        buyUrl: artwork.buy_url || null,
+        description: artwork.description || null
       };
     });
 

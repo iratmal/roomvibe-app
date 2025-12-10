@@ -1,0 +1,98 @@
+# Task: Implement "Street View" Feeling for 360° Gallery Camera
+
+## 🎯 Cilj
+
+Omogućiti da se kamera u 360° galeriji ponaša prirodno i glatko poput Google Street View-a — bez "frame-by-frame" trzanja, bez inercije nakon puštanja miša i uz maksimalno intuitivan doživljaj kretanja kroz prostor.
+
+---
+
+## 🔧 Šta točno treba implementirati
+
+### **1. Glatko rotiranje kamere (smooth rotation)**
+
+* Kada korisnik zadrži pritisnutu lijevu tipku miša i pomiče ga, kamera mora:
+
+  * rotirati *kontinuirano*, ne u skokovima
+  * reagirati odmah na pokret (bez kašnjenja)
+  * kretati se **fluidno**, bez "stepova" u prikazu
+
+Trenutno: rotacija ide u skokovima (frame jumps).
+Cilj: non-stop linearno kretanje dok se miš kreće.
+
+---
+
+### **2. Kamera se MORA zaustaviti čim korisnik prestane pomicati miš**
+
+* Bez inercije
+* Bez nastavka pomicanja nakon što korisnik stane
+
+Trenutno: kamera nastavlja micati nekoliko frameova.
+Cilj: *0 ms* daljnjeg kretanja nakon puštanja miša.
+
+---
+
+### **3. Kamera se mora pokrenuti odmah kad korisnik pokrene miš**
+
+* Bez kašnjenja
+* Bez "buffer" efekta
+
+---
+
+### **4. Ograničiti pogled prema gore i prema dolje (pitch clamping)**
+
+* Ostaviti samo malo vidljivog stropa i malo poda
+* Spriječiti da korisnik gleda potpuno u pod ili potpuno u strop
+
+Predložene granice:
+
+* **min pitch** ≈ -10° (lagani pogled prema podu)
+* **max pitch** ≈ +10° (lagani pogled prema stropu)
+
+---
+
+### **5. Osjetljivost miša dodatno smanjiti (~50% sporije)**
+
+* Miš je i dalje prebrz
+* Smanjiti sensitivity horizontalnog i vertikalnog pomaka
+
+Predlog: `rotationSpeed = 0.002` (podesiti po osjećaju).
+
+---
+
+## 🧠 Tehnički upute (visoke razine)
+
+Ovo je korisno za developera — bez točnih linija koda, ali izuzetno jasno:
+
+* Prebaciti rotaciju kamere na **requestAnimationFrame** umjesto frame-step logike
+* Implementirati:
+
+  * `isMouseDown` flag
+  * `deltaX` i `deltaY` koji se resetiraju svakoj frame iteraciji
+* U animacijskom loopu:
+
+  ```
+  if (isMouseDown) {
+      camera.rotation.y -= deltaX * rotationSpeed;
+      camera.rotation.x -= deltaY * rotationSpeed;
+  }
+  ```
+* Dodati strict pitch clamp
+
+  ```
+  camera.rotation.x = Math.max(minPitch, Math.min(maxPitch, camera.rotation.x));
+  ```
+* On mouseup → resetirati delta i zaustaviti animaciju rotacije
+
+---
+
+## ✔️ Očekivani rezultat
+
+* Kamera se kreće GLATKO kao u Street View-u
+* Nema više skakanja slike
+* Nema trzanja
+* Nema "nastavka kretanja" nakon puštanja miša
+* Korisnik se osjeća kao da fizički stoji u galeriji i okreće se oko sebe
+
+---
+
+Ako bude trebalo dodatno fino štelanje (osjetljivost, brzina, pitch), samo mi javi i optimizirat ćemo dalje.

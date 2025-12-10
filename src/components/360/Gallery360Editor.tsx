@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Gallery360Scene, ArtworkFocusTarget } from './Gallery360Scene';
 import { ArtworkInfoPanel, ArtworkPanelData } from './ArtworkInfoPanel';
+import { ShareEmbedModal } from './ShareEmbedModal';
 import { useHotspots } from './useHotspots';
 import { useArtworkSlots, SlotAssignment } from './useArtworkSlots';
 import { gallery360Presets, getPresetById, Slot } from '../../config/gallery360Presets';
@@ -28,6 +29,8 @@ interface Gallery360EditorProps {
   onSave: (presetId: string, assignments: SlotAssignment[]) => Promise<void>;
   onBack?: () => void;
   className?: string;
+  viewerMode?: boolean;
+  embedMode?: boolean;
 }
 
 export function Gallery360Editor({
@@ -37,7 +40,9 @@ export function Gallery360Editor({
   initialAssignments = [],
   onSave,
   onBack,
-  className = ''
+  className = '',
+  viewerMode = false,
+  embedMode = false
 }: Gallery360EditorProps) {
   const [selectedPresetId, setSelectedPresetId] = useState(presetId);
   const preset = getPresetById(selectedPresetId) || gallery360Presets[0];
@@ -64,6 +69,7 @@ export function Gallery360Editor({
   const [activeArtwork, setActiveArtwork] = useState<ArtworkPanelData | null>(null);
   const [infoPanelOpen, setInfoPanelOpen] = useState(false);
   const [focusTarget, setFocusTarget] = useState<ArtworkFocusTarget | null>(null);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   useEffect(() => {
     // Wait for both initialAssignments AND availableArtworks to be loaded
@@ -148,6 +154,10 @@ export function Gallery360Editor({
   };
 
   const handleArtworkClick = useCallback((slotId: string, assignment: SlotAssignment, slot: Slot) => {
+    const priceLabel = assignment.priceAmount 
+      ? `${assignment.priceAmount.toLocaleString('hr-HR')} ${assignment.priceCurrency || 'EUR'}`
+      : undefined;
+    
     const artworkData: ArtworkPanelData = {
       slotId: assignment.slotId,
       artworkId: assignment.artworkId,
@@ -155,7 +165,10 @@ export function Gallery360Editor({
       artworkTitle: assignment.artworkTitle,
       artistName: assignment.artistName,
       width: assignment.width,
-      height: assignment.height
+      height: assignment.height,
+      description: assignment.description || undefined,
+      price: priceLabel,
+      externalUrl: assignment.buyUrl || undefined
     };
     
     setActiveArtwork(artworkData);
@@ -190,6 +203,46 @@ export function Gallery360Editor({
   const selectedSlot = preset.slots.find(s => s.id === selectedSlotId);
   const selectedAssignment = slotAssignments.find(sa => sa.slotId === selectedSlotId);
 
+  if (viewerMode) {
+    return (
+      <div className={`h-full w-full relative ${className}`}>
+        <Gallery360Scene
+          preset={preset}
+          slotAssignments={slotAssignments}
+          currentViewpoint={currentViewpoint}
+          onNavigate={navigateToViewpoint}
+          isEditor={false}
+          onArtworkClick={handleArtworkClick}
+          focusTarget={focusTarget}
+        />
+        
+        <ArtworkInfoPanel
+          artwork={activeArtwork}
+          open={infoPanelOpen}
+          onClose={handleCloseInfoPanel}
+        />
+
+        {!embedMode && (
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/50 rounded-lg px-3 py-2">
+            {preset.viewpoints.map(vp => (
+              <button
+                key={vp.id}
+                onClick={() => navigateToViewpoint(vp.id)}
+                className={`px-3 py-1 rounded text-sm transition-colors ${
+                  currentViewpoint.id === vp.id
+                    ? 'bg-[#C9A24A] text-white'
+                    : 'bg-white/20 text-white hover:bg-white/30'
+                }`}
+              >
+                {vp.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className={`flex h-full ${className}`}>
       <div className={`${panelCollapsed ? 'w-12' : 'w-80'} bg-white border-r border-gray-200 flex flex-col overflow-hidden transition-all duration-300`}>
@@ -219,15 +272,26 @@ export function Gallery360Editor({
               </button>
             )}
             <h2 className="text-lg font-semibold text-[#264C61]">360° Editor</h2>
-            <button
-              onClick={() => setPanelCollapsed(true)}
-              className="p-1 hover:bg-gray-100 rounded transition-colors"
-              title="Collapse panel"
-            >
-              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setShowShareModal(true)}
+                className="p-1.5 hover:bg-gray-100 rounded transition-colors"
+                title="Share / Embed"
+              >
+                <svg className="w-5 h-5 text-[#264C61]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setPanelCollapsed(true)}
+                className="p-1 hover:bg-gray-100 rounded transition-colors"
+                title="Collapse panel"
+              >
+                <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+            </div>
           </div>
           
           <select
@@ -357,6 +421,12 @@ export function Gallery360Editor({
           ))}
         </div>
       </div>
+
+      <ShareEmbedModal
+        exhibitionId={exhibitionId}
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+      />
     </div>
   );
 }

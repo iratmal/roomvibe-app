@@ -9,6 +9,10 @@ export interface SlotAssignment {
   artistName?: string;
   width?: number;
   height?: number;
+  priceAmount?: number | null;
+  priceCurrency?: string;
+  buyUrl?: string | null;
+  description?: string | null;
 }
 
 export interface UseArtworkSlotsResult {
