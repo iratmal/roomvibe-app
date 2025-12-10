@@ -110,7 +110,9 @@ function WallSpotlight({ position, targetY }: {
 
 function TiledFloor({ width, depth, color }: { width: number; depth: number; color: string }) {
   const tiles = useMemo(() => {
-    const tileSize = 0.8;
+    const tileSize = 0.6;
+    const groutWidth = 0.015;
+    const tileActual = tileSize - groutWidth;
     const rows = Math.ceil(depth / tileSize);
     const cols = Math.ceil(width / tileSize);
     const result: Array<{ x: number; z: number; shade: number; roughnessVar: number }> = [];
@@ -120,41 +122,42 @@ function TiledFloor({ width, depth, color }: { width: number; depth: number; col
         const x = -width / 2 + col * tileSize + tileSize / 2;
         const z = -depth / 2 + row * tileSize + tileSize / 2;
         if (x < width / 2 && x > -width / 2 && z < depth / 2 && z > -depth / 2) {
-          const shade = 0.92 + Math.random() * 0.16;
-          const roughnessVar = 0.6 + Math.random() * 0.25;
+          const shade = 0.96 + Math.random() * 0.08;
+          const roughnessVar = 0.55 + Math.random() * 0.15;
           result.push({ x, z, shade, roughnessVar });
         }
       }
     }
-    return result;
+    return { tiles: result, tileActual };
   }, [width, depth]);
 
   const baseColor = new THREE.Color(color);
+  const groutColor = baseColor.clone().multiplyScalar(0.85);
 
   return (
     <group position={[0, 0.001, 0]}>
       <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[width, depth]} />
         <meshStandardMaterial 
-          color="#c5bfb5"
-          roughness={0.98}
+          color={groutColor}
+          roughness={0.95}
           metalness={0.0}
         />
       </mesh>
-      {tiles.map((tile, i) => {
+      {tiles.tiles.map((tile, i) => {
         const tileColor = baseColor.clone().multiplyScalar(tile.shade);
         return (
           <mesh
             key={i}
-            position={[tile.x, 0.003, tile.z]}
+            position={[tile.x, 0.002, tile.z]}
             rotation={[-Math.PI / 2, 0, 0]}
             receiveShadow
           >
-            <planeGeometry args={[0.76, 0.76]} />
+            <planeGeometry args={[tiles.tileActual, tiles.tileActual]} />
             <meshStandardMaterial
               color={tileColor}
               roughness={tile.roughnessVar}
-              metalness={0.01}
+              metalness={0.02}
             />
           </mesh>
         );
@@ -164,18 +167,18 @@ function TiledFloor({ width, depth, color }: { width: number; depth: number; col
 }
 
 function OuterEnclosure({ width, height, depth }: { width: number; height: number; depth: number }) {
-  const size = Math.max(width, depth) + 40;
-  const verticalSize = height + 40;
+  const size = Math.max(width, depth) + 80;
+  const verticalSize = height + 60;
   
   return (
     <group>
       <mesh>
         <boxGeometry args={[size, verticalSize, size]} />
-        <meshBasicMaterial color="#2a2a2a" side={THREE.BackSide} />
+        <meshBasicMaterial color="#1a1a1a" side={THREE.BackSide} />
       </mesh>
-      <mesh position={[0, -0.5, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[200, 200]} />
-        <meshStandardMaterial color="#3a3a3a" roughness={0.95} />
+      <mesh position={[0, -0.8, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[size, size]} />
+        <meshStandardMaterial color="#1a1a1a" roughness={0.98} />
       </mesh>
     </group>
   );
@@ -385,36 +388,8 @@ function ArtworkPlane({
 
   const hasArtwork = assignment?.artworkUrl;
 
-  const artworkDimensions = useMemo(() => {
-    if (!assignment?.width || !assignment?.height) {
-      return { width: slot.width, height: slot.height };
-    }
-    
-    const artWidthM = assignment.width / 100;
-    const artHeightM = assignment.height / 100;
-    
-    const widthRatio = slot.width / artWidthM;
-    const heightRatio = slot.height / artHeightM;
-    const scaleFactor = Math.min(widthRatio, heightRatio, 1);
-    
-    return {
-      width: artWidthM * scaleFactor,
-      height: artHeightM * scaleFactor
-    };
-  }, [assignment?.width, assignment?.height, slot.width, slot.height]);
-
-  const frameWidth = 0.025;
-  const frameDepth = 0.03;
-
   return (
     <group position={slot.position} rotation={slot.rotation}>
-      {hasArtwork && (
-        <mesh position={[0, 0, -frameDepth / 2]} castShadow>
-          <boxGeometry args={[artworkDimensions.width + frameWidth * 2, artworkDimensions.height + frameWidth * 2, frameDepth]} />
-          <meshStandardMaterial color="#1a1a1a" roughness={0.4} metalness={0.1} />
-        </mesh>
-      )}
-
       <mesh
         ref={meshRef}
         onClick={(e) => {
@@ -435,14 +410,16 @@ function ArtworkPlane({
       {hasArtwork && (
         <Suspense fallback={
           <mesh>
-            <planeGeometry args={[artworkDimensions.width, artworkDimensions.height]} />
+            <planeGeometry args={[slot.width * 0.9, slot.height * 0.9]} />
             <meshBasicMaterial color="#cccccc" />
           </mesh>
         }>
           <ArtworkImage 
             url={assignment!.artworkUrl!} 
-            width={artworkDimensions.width} 
-            height={artworkDimensions.height}
+            slotWidth={slot.width}
+            slotHeight={slot.height}
+            assignmentWidth={assignment?.width}
+            assignmentHeight={assignment?.height}
             onClick={onClick}
             hovered={hovered}
             setHovered={setHovered}
@@ -459,8 +436,8 @@ function ArtworkPlane({
       )}
 
       {(isSelected || (hovered && isEditor)) && (
-        <mesh position={[0, 0, -0.01]}>
-          <planeGeometry args={[artworkDimensions.width + 0.1, artworkDimensions.height + 0.1]} />
+        <mesh position={[0, 0, -0.02]}>
+          <planeGeometry args={[slot.width + 0.1, slot.height + 0.1]} />
           <meshBasicMaterial color="#C9A24A" transparent opacity={0.5} />
         </mesh>
       )}
@@ -470,45 +447,94 @@ function ArtworkPlane({
 
 function ArtworkImage({ 
   url, 
-  width, 
-  height,
+  slotWidth,
+  slotHeight,
+  assignmentWidth,
+  assignmentHeight,
   onClick,
   hovered,
   setHovered
 }: { 
   url: string; 
-  width: number; 
-  height: number;
+  slotWidth: number;
+  slotHeight: number;
+  assignmentWidth?: number;
+  assignmentHeight?: number;
   onClick?: () => void;
   hovered: boolean;
   setHovered: (h: boolean) => void;
 }) {
   const proxiedUrl = getProxiedImageUrl(url);
   const texture = useTexture(proxiedUrl);
+  const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null);
   
   useEffect(() => {
     if (texture) {
       texture.colorSpace = THREE.SRGBColorSpace;
+      if (texture.image) {
+        const img = texture.image as HTMLImageElement;
+        setImageDimensions({
+          width: img.width || img.naturalWidth || 100,
+          height: img.height || img.naturalHeight || 100
+        });
+      }
     }
   }, [texture]);
 
+  const dimensions = useMemo(() => {
+    let sourceWidth: number;
+    let sourceHeight: number;
+
+    if (assignmentWidth && assignmentHeight && assignmentWidth > 0 && assignmentHeight > 0) {
+      sourceWidth = assignmentWidth / 100;
+      sourceHeight = assignmentHeight / 100;
+    } else if (imageDimensions && imageDimensions.width > 0 && imageDimensions.height > 0) {
+      const aspect = imageDimensions.width / imageDimensions.height;
+      const BASE_SIZE = 0.8;
+      if (aspect >= 1) {
+        sourceWidth = BASE_SIZE * aspect;
+        sourceHeight = BASE_SIZE;
+      } else {
+        sourceWidth = BASE_SIZE;
+        sourceHeight = BASE_SIZE / aspect;
+      }
+    } else {
+      return { width: slotWidth * 0.9, height: slotHeight * 0.9 };
+    }
+
+    const widthRatio = slotWidth / sourceWidth;
+    const heightRatio = slotHeight / sourceHeight;
+    const scaleFactor = Math.min(widthRatio, heightRatio, 1);
+
+    return {
+      width: sourceWidth * scaleFactor,
+      height: sourceHeight * scaleFactor
+    };
+  }, [assignmentWidth, assignmentHeight, imageDimensions, slotWidth, slotHeight]);
+
   return (
-    <mesh 
-      position={[0, 0, 0.01]}
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick?.();
-      }}
-      onPointerOver={() => setHovered(true)}
-      onPointerOut={() => setHovered(false)}
-    >
-      <planeGeometry args={[width, height]} />
-      <meshBasicMaterial 
-        map={texture} 
-        transparent
-        toneMapped={false}
-      />
-    </mesh>
+    <group>
+      <mesh position={[0, 0, -0.015]} castShadow>
+        <boxGeometry args={[dimensions.width + 0.05, dimensions.height + 0.05, 0.03]} />
+        <meshStandardMaterial color="#1a1a1a" roughness={0.4} metalness={0.1} />
+      </mesh>
+      <mesh 
+        position={[0, 0, 0.01]}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClick?.();
+        }}
+        onPointerOver={() => setHovered(true)}
+        onPointerOut={() => setHovered(false)}
+      >
+        <planeGeometry args={[dimensions.width, dimensions.height]} />
+        <meshBasicMaterial 
+          map={texture} 
+          transparent
+          toneMapped={false}
+        />
+      </mesh>
+    </group>
   );
 }
 
@@ -569,20 +595,37 @@ function HotspotMarker({
 
 function CameraController({ 
   viewpoint,
-  isEditor
+  isEditor,
+  galleryDimensions
 }: { 
   viewpoint: Viewpoint;
   isEditor?: boolean;
+  galleryDimensions: { width: number; height: number; depth: number };
 }) {
   const { camera } = useThree();
   const controlsRef = useRef<any>(null);
   const [controlsReady, setControlsReady] = useState(false);
   
   const targetPosition = useRef(new THREE.Vector3(...viewpoint.position));
-  const targetLookAt = useRef(new THREE.Vector3(...viewpoint.lookAt));
+  const initialLookDirection = useRef(new THREE.Vector3());
   const lastViewpointId = useRef(viewpoint.id);
   const isAnimating = useRef(false);
   const needsInitialSync = useRef(true);
+  
+  const bounds = useMemo(() => ({
+    minX: -galleryDimensions.width / 2 + 1,
+    maxX: galleryDimensions.width / 2 - 1,
+    minY: 1.4,
+    maxY: galleryDimensions.height - 0.3,
+    minZ: -galleryDimensions.depth / 2 + 1,
+    maxZ: galleryDimensions.depth / 2 - 1
+  }), [galleryDimensions]);
+  
+  useEffect(() => {
+    const lookAt = new THREE.Vector3(...viewpoint.lookAt);
+    const pos = new THREE.Vector3(...viewpoint.position);
+    initialLookDirection.current.copy(lookAt).sub(pos).normalize();
+  }, [viewpoint]);
 
   const controlsCallback = useCallback((controls: any) => {
     controlsRef.current = controls;
@@ -601,7 +644,8 @@ function CameraController({
     
     if (needsInitialSync.current) {
       camera.position.copy(targetPosition.current);
-      controlsRef.current.target.copy(targetLookAt.current);
+      const targetPoint = targetPosition.current.clone().add(initialLookDirection.current);
+      controlsRef.current.target.copy(targetPoint);
       controlsRef.current.update();
       needsInitialSync.current = false;
       isAnimating.current = false;
@@ -612,7 +656,6 @@ function CameraController({
     const isNewViewpoint = lastViewpointId.current !== viewpoint.id;
     
     targetPosition.current.set(...viewpoint.position);
-    targetLookAt.current.set(...viewpoint.lookAt);
     lastViewpointId.current = viewpoint.id;
     
     if (isNewViewpoint) {
@@ -627,31 +670,49 @@ function CameraController({
   useFrame((_, delta) => {
     if (!controlsRef.current || !controlsReady) return;
     
-    if (camera.position.y < 1.4) {
-      camera.position.y = 1.4;
-    }
+    const clampPosition = () => {
+      camera.position.x = Math.max(bounds.minX, Math.min(bounds.maxX, camera.position.x));
+      camera.position.y = Math.max(bounds.minY, Math.min(bounds.maxY, camera.position.y));
+      camera.position.z = Math.max(bounds.minZ, Math.min(bounds.maxZ, camera.position.z));
+      
+      const cameraToTarget = controlsRef.current.target.clone().sub(camera.position);
+      const distance = cameraToTarget.length();
+      if (distance > 0.1) {
+        const newTarget = camera.position.clone().add(cameraToTarget.normalize());
+        controlsRef.current.target.copy(newTarget);
+      }
+    };
     
     if (needsInitialSync.current) {
       camera.position.copy(targetPosition.current);
-      controlsRef.current.target.copy(targetLookAt.current);
+      const targetPoint = targetPosition.current.clone().add(initialLookDirection.current);
+      controlsRef.current.target.copy(targetPoint);
       controlsRef.current.update();
       needsInitialSync.current = false;
       isAnimating.current = false;
       return;
     }
     
-    if (!isAnimating.current) return;
-    
-    const lerpFactor = Math.min(5 * delta, 0.2);
-    camera.position.lerp(targetPosition.current, lerpFactor);
-    controlsRef.current.target.lerp(targetLookAt.current, lerpFactor);
-    controlsRef.current.update();
-    
-    if (camera.position.distanceTo(targetPosition.current) < 0.03) {
-      camera.position.copy(targetPosition.current);
-      controlsRef.current.target.copy(targetLookAt.current);
+    if (isAnimating.current) {
+      const lerpFactor = Math.min(5 * delta, 0.2);
+      camera.position.lerp(targetPosition.current, lerpFactor);
+      
+      const newTarget = camera.position.clone().add(initialLookDirection.current);
+      controlsRef.current.target.lerp(newTarget, lerpFactor);
       controlsRef.current.update();
-      isAnimating.current = false;
+      
+      if (camera.position.distanceTo(targetPosition.current) < 0.03) {
+        camera.position.copy(targetPosition.current);
+        const finalTarget = targetPosition.current.clone().add(initialLookDirection.current);
+        controlsRef.current.target.copy(finalTarget);
+        controlsRef.current.update();
+        isAnimating.current = false;
+      }
+    }
+    
+    if (!isEditor) {
+      clampPosition();
+      controlsRef.current.update();
     }
   });
 
@@ -660,9 +721,14 @@ function CameraController({
       ref={controlsCallback}
       enableZoom={isEditor}
       enablePan={isEditor}
-      minPolarAngle={Math.PI / 4}
-      maxPolarAngle={Math.PI * 0.65}
-      rotateSpeed={0.5}
+      minDistance={0.5}
+      maxDistance={1.5}
+      minPolarAngle={Math.PI * 0.25}
+      maxPolarAngle={Math.PI * 0.75}
+      rotateSpeed={0.4}
+      zoomSpeed={0.3}
+      enableDamping={true}
+      dampingFactor={0.1}
     />
   );
 }
@@ -730,7 +796,7 @@ export function Gallery360Scene({
         />
       ))}
 
-      <CameraController viewpoint={currentViewpoint} isEditor={isEditor} />
+      <CameraController viewpoint={currentViewpoint} isEditor={isEditor} galleryDimensions={preset.dimensions} />
     </Canvas>
   );
 }

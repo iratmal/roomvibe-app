@@ -1,0 +1,185 @@
+TASK ZA REPLIT AGENTA – CLASSIC GALLERY 360 (DIMENZIJE SLIKA + BLOKADA IZLASKA + FINIJI POD)
+
+---
+
+**Kontekst**
+
+Trenutno stanje u 360° "Classic Gallery" preset-u:
+
+* Pod je sada pločice, ali i dalje izgleda pomalo "cartoony".
+* Sve slike se prikazuju kao da su istog omjera stranica (pretežno horizontalne), bez obzira na stvarne dimenzije.
+* Slika *Harmony* (plavo/crna) je uploadana kao okomita (portrait), ali se u galeriji prikazuje vodoravno (landscape).
+* Korisnik može odscrolati/odzumirati toliko da vidi crni vanjski prostor i sivu "kutiju" galerije izvana.
+* Scroll/zoom je dosta osjetljiv i teško je precizno pozicionirati pogled.
+
+Želimo sada **popraviti dimenzije i orijentaciju slika** i **ograničiti kameru da uvijek ostane unutar galerije**, te malo doraditi pod i rasvjetu.
+
+---
+
+## 1) Dimenzije i orijentacija slika (realistični omjeri)
+
+### Problem
+
+* Mordor Veil = kvadratna slika 100 × 100 cm.
+* Red City (lijevo i desno) = pravokutne slike 150 × 100 cm.
+* Harmony = vertikalna (portrait) slika.
+
+U 360 editoru sve izgledaju vrlo slično po formatu (kao da su sve približno horizontalne) i ne prenose realne omjere.
+
+### Cilj
+
+1. **Svaki artwork panel u 3D prostoru mora poštivati omjer slike** (aspect ratio) na temelju stvarnog imagea.
+2. **Portrait slike moraju biti okomite**, landscape vodoravne – bez neželjenog rotiranja.
+3. Mordor Veil treba izgledati jasno kvadratno, a Red City vidljivo šire (1.5 : 1 omjer).
+
+### Implementacija (prijedlog)
+
+Pretpostavka: imamo komponentu tipa `ArtworkPlane` ili slično, koja dobiva URL i rendera `mesh`/`plane` u Three.js.
+
+1. **Pri učitavanju slike** (unutar loader callbacka):
+
+   * Izračunaj `const aspect = image.width / image.height`.
+
+2. **Postavi dimenzije plane-a u "metarskim" jedinicama** (world units ≈ metri):
+
+   Primjer:
+
+   ```ts
+   const BASE_HEIGHT_M = 1.0; // 1 m visine za referentnu sliku
+
+   let widthMeters: number;
+   let heightMeters: number;
+
+   if (aspect >= 1) {
+     // landscape (šira nego viša)
+     heightMeters = BASE_HEIGHT_M;
+     widthMeters = BASE_HEIGHT_M * aspect;
+   } else {
+     // portrait (viša nego šira)
+     widthMeters = BASE_HEIGHT_M;
+     heightMeters = BASE_HEIGHT_M / aspect;
+   }
+
+   // primijeni na plane (npr. kroz scale ili geometriju)
+   mesh.scale.set(widthMeters, heightMeters, 1);
+   ```
+
+3. **Orientacija (portrait vs landscape)**
+
+   * Nemoj automatski rotirati teksturu za 90°. Sam image već ima ispravan orijent (širina/visina).
+   * Dovoljno je koristiti aspect ratio za dimenzije; Three.js će teksturu prikazati kako je došla.
+
+4. **Test slučajevi (vizualna provjera)**
+
+   * Mordor Veil (center): kvadratni panel.
+   * Red City (lijevo/desno): jasni pravokutnici širi od Mordor Veil-a.
+   * Harmony: viši nego širi, prikazan kao vertikalna slika.
+
+---
+
+## 2) Blokada izlaska iz galerije (kamera unutar prostora)
+
+### Problem
+
+* Kada korisnik jako odscrola/odzumira, vidi se crna pozadina i siva kutija galerije izvana.
+* Osjećaj je kao da može „izaći“ iz prostora – to ruši doživljaj galerije.
+
+### Cilj
+
+1. Kamera **mora uvijek ostati unutar galerije**.
+2. Korisnik nikad ne smije vidjeti vanjski crni prostor niti vanjske zidove kutije.
+3. Scroll/zoom treba biti manje agresivan.
+
+### Implementacija (prijedlog)
+
+Pretpostavka: koristimo `OrbitControls` ili vlastiti kontroler kamere.
+
+#### a) Limitiraj zoom / udaljenost
+
+* Uvedi max/min udaljenost kamere od središta galerije:
+
+```ts
+controls.minDistance = 3;   // ne dozvoli da kamera uđe u zidove/slike
+controls.maxDistance = 12;  // ne dozvoli da "izađe" iz prostora
+```
+
+Vrijednosti prilagodi stvarnim dimenzijama sobe (Classic Gallery: ~20m x 16m). Poanta je da maxDistance bude **manji** od udaljenosti do vanjskih zidova/omotača.
+
+#### b) Limitiraj vertikalni kut pogleda (polar angle)
+
+```ts
+controls.minPolarAngle = Math.PI * 0.25; // npr. 45°
+controls.maxPolarAngle = Math.PI * 0.75; // npr. 135°
+```
+
+* Tako korisnik ne može gledati skroz "gore" ili skroz "dolje" van prostora.
+
+#### c) Manja osjetljivost scrolla
+
+```ts
+controls.zoomSpeed = 0.5;      // sporiji zoom
+controls.enableDamping = true;
+controls.dampingFactor = 0.08; // mekše kretanje
+```
+
+#### d) Dodatna sigurnost – bounding box za kameru (opcionalno)
+
+Ako i dalje postoji način da kamera izađe:
+
+* Definiraj bounding box galerije (npr. X: [-8, 8], Z: [-6, 6], Y: [1.2, 3.0])
+* Nakon svakog update-a kontrola, clampaj poziciju kamere:
+
+```ts
+camera.position.x = clamp(camera.position.x, -8, 8);
+camera.position.y = clamp(camera.position.y,  1.2, 3.0);
+camera.position.z = clamp(camera.position.z, -6, 6);
+```
+
+---
+
+## 3) Pod i rasvjeta – mala poboljšanja
+
+Trenutno je pod dobar korak naprijed (pločice postoje), ali i dalje izgleda malo previše "flat".
+
+### Cilj
+
+* Zadržati postojeći tiled-floor layout, ali mu dati nijansu više realizma.
+
+### Prijedlozi
+
+1. **Pod**
+
+   * Dodaj lagani noise/varijaciju boje po pločici (već imaš nešto – samo provjeri da nije prejak grid efekt).
+   * Blago smanji kontrast linija fuga da ne budu previše "crtane".
+
+2. **Rasvjeta**
+
+   * Provjeri da spotlightovi iznad slika imaju dovoljno širok cone angle da fino obasjaju i kvadratne i pravokutne slike.
+   * Pojačaj intenzitet ako je potrebno da slike budu "naglašene" kao u galeriji, ali pazi da zid ne izgori.
+
+---
+
+## 4) QA checklist za ovaj task
+
+Molim te da nakon implementacije sam provjeriš:
+
+1. U Classic Gallery preset-u:
+
+   * Mordor Veil (center) izgleda kvadratno.
+   * Lijeva i desna slika (Red City / ostale 150×100) su očito šire od Mordor Veil-a.
+   * Harmony se prikazuje kao okomita (portrait) slika – viša nego šira.
+
+2. Bez obzira koliko korisnik scrolla/rotira pogled:
+
+   * Nikad ne vidi crnu pozadinu niti vanjske zidove kutije.
+   * Uvijek je unutar prostora galerije.
+
+3. Scroll/zoom:
+
+   * Osjeća se kontrolirano i glatko (nije preosjetljiv).
+
+Ako trebaš referencu, korisnica ti je poslala screenshotove iz ArtSteps galerije – cilj je da naš prostor ide u tom smjeru realizma, ali u ovoj fazi je najbitnije:
+
+* ispravan omjer stranica slika
+* blokirana kamera izvan galerije
+* pristojan tiled pod bez crtani efekta.
