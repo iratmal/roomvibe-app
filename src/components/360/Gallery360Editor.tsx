@@ -58,6 +58,7 @@ export function Gallery360Editor({
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [previousPresetId, setPreviousPresetId] = useState(selectedPresetId);
+  const [panelCollapsed, setPanelCollapsed] = useState(false);
 
   useEffect(() => {
     // Wait for both initialAssignments AND availableArtworks to be loaded
@@ -160,7 +161,19 @@ export function Gallery360Editor({
 
   return (
     <div className={`flex h-full ${className}`}>
-      <div className="w-80 bg-white border-r border-gray-200 flex flex-col overflow-hidden">
+      <div className={`${panelCollapsed ? 'w-12' : 'w-80'} bg-white border-r border-gray-200 flex flex-col overflow-hidden transition-all duration-300`}>
+        {panelCollapsed ? (
+          <button
+            onClick={() => setPanelCollapsed(false)}
+            className="w-full h-full flex items-center justify-center hover:bg-gray-100 transition-colors"
+            title="Expand panel"
+          >
+            <svg className="w-5 h-5 text-[#264C61]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        ) : (
+          <>
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
             {onBack && (
@@ -175,6 +188,15 @@ export function Gallery360Editor({
               </button>
             )}
             <h2 className="text-lg font-semibold text-[#264C61]">360° Editor</h2>
+            <button
+              onClick={() => setPanelCollapsed(true)}
+              className="p-1 hover:bg-gray-100 rounded transition-colors"
+              title="Collapse panel"
+            >
+              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
           </div>
           
           <select
@@ -265,6 +287,8 @@ export function Gallery360Editor({
             {saving ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save Scene'}
           </button>
         </div>
+          </>
+        )}
       </div>
 
       <div className="flex-1 relative">
