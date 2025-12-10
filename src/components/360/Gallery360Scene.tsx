@@ -711,8 +711,7 @@ function HotspotMarker({
 
 // Camera movement: very smooth 1.8s transitions (like walking through space)
 const CAMERA_MOVE_DURATION = 1.8;
-const SCROLL_SPEED = 0.0015;
-const SCROLL_DAMPING = 0.94;
+const SCROLL_SPEED = 0.002;
 const MIN_WALL_DISTANCE = 1.0;
 // Vertical look limits (polar angle in radians):
 // ±10° from horizontal (π/2 ≈ 1.5708 radians)
@@ -755,7 +754,6 @@ function FirstPersonController({
   const animationStartTime = useRef<number | null>(null);
   const lastViewpointId = useRef(viewpoint.id);
   
-  const scrollVelocity = useRef(0);
   const keysPressed = useRef<Set<string>>(new Set());
   
   const artworkFocusStartTime = useRef<number | null>(null);
@@ -803,7 +801,6 @@ function FirstPersonController({
       targetSpherical.current.copy(newTargetSpherical);
       animationStartTime.current = performance.now();
       lastViewpointId.current = viewpoint.id;
-      scrollVelocity.current = 0;
       console.log('[CameraNav] goToView', viewpoint.id);
     } else {
       camera.position.copy(pos);
@@ -858,7 +855,6 @@ function FirstPersonController({
     lastFocusTargetId.current = focusTarget.slotId;
     
     animationStartTime.current = null;
-    scrollVelocity.current = 0;
     
     console.log('[CameraNav] focusOnArtwork', focusTarget.slotId, { 
       artworkPos: artworkPos.toArray(), 
@@ -907,8 +903,18 @@ function FirstPersonController({
         onFocusDismiss();
         return;
       }
+      // Direct scroll movement - no velocity, no inertia, immediate stop
       const delta = -e.deltaY * SCROLL_SPEED;
-      scrollVelocity.current += delta;
+      if (Math.abs(delta) > 0.0001) {
+        const dir = new THREE.Vector3();
+        camera.getWorldDirection(dir);
+        dir.y = 0;
+        dir.normalize();
+        const newPos = camera.position.clone().add(dir.multiplyScalar(delta * 50));
+        if (isWithinBounds(newPos)) {
+          camera.position.copy(newPos);
+        }
+      }
     };
     
     const handleTouchStart = (e: TouchEvent) => {
@@ -1042,25 +1048,6 @@ function FirstPersonController({
         camera.position.copy(targetPosition.current);
         spherical.current.copy(targetSpherical.current);
         animationStartTime.current = null;
-      }
-    }
-    
-    // Scroll wheel movement with damping
-    if (Math.abs(scrollVelocity.current) > 0.0001) {
-      const direction = new THREE.Vector3();
-      camera.getWorldDirection(direction);
-      
-      const moveAmount = scrollVelocity.current;
-      const newPosition = camera.position.clone().add(direction.multiplyScalar(moveAmount));
-      
-      if (isWithinBounds(newPosition)) {
-        camera.position.copy(newPosition);
-      }
-      
-      scrollVelocity.current *= SCROLL_DAMPING;
-      
-      if (Math.abs(scrollVelocity.current) < 0.0001) {
-        scrollVelocity.current = 0;
       }
     }
     
