@@ -1,0 +1,168 @@
+# RoomVibe – 360 Classic Gallery
+
+## Task: Smooth, Precise Camera Movement (Mouse Drag)
+
+### Context
+
+Classic Gallery 360 editor je sada funkcionalan (hotspotovi, perspektive, slike u pravim dimenzijama), ali ponašanje kamere kod miša još uvijek nije dovoljno dobro:
+
+* Rotacija izgleda kao da skače "frame po frame" umjesto glatko.
+* Kada korisnik prestane pomicati miš, kamera još kratko nastavlja kliziti.
+* Korisnik želi osjećaj *kamere* koja se odmah zaustavlja kada se miš zaustavi – kao u Google Street View / modernim 3D viewerima.
+
+Ovaj task je isključivo za **poliranje ponašanja kamere kod miša**, ne diramo više scale slika, hotspotove, slotove itd.
+
+---
+
+### Ciljevi (što točno treba postići)
+
+1. **Glatko kretanje dok vučem mišem**
+
+   * Dok je lijevi klik pritisnut i korisnik vuče miša, rotacija kamere treba biti kontinuirana i glatka.
+   * Nema skakanja po frameovima ili iznenadnih skokova.
+
+2. **Trenutno zaustavljanje kad pustim miš**
+
+   * Čim korisnik prestane vući (mouse up), kamera treba *odmah* stati – bez daljnjeg "klizanja".
+   * To znači **bez inercije/dampinga** kod ručne rotacije.
+
+3. **Bez dodatnog pomicanja scene nakon što se kamera zaustavila**
+
+   * Kada korisnik stoji ispred zida i promatra slike, scena mora biti potpuno mirna.
+   * Nakon što stane, ne smije biti više nikakvog pomaka kamere (osim ako korisnik ponovo ne povuče miš ili klikne hotspot/gumb).
+
+4. **Ne dirati postojeće prijelaze između hotspotova**
+
+   * Trenutni smooth prijelaz kada kliknem na hotspot (plava točka) ili gumbe (Entrance/Center/Back Left/Back Right) može ostati kakav jest.
+   * Ovaj task se fokusira samo na *ručno* okretanje kamere mišem.
+
+---
+
+### Implementacija – što točno napraviti
+
+> Napomena: Pretpostavka je da Classic Gallery koristi **OrbitControls** (ili custom hook oko njega) u `Gallery360Scene.tsx` ili povezanoj datoteci (npr. `useGalleryOrbitControls.ts`). Ako je struktura drugačija, molim prilagodi, ali cilj ostaje isti: ručna rotacija = glatka, bez inercije nakon mouse up.
+
+#### 1. OrbitControls: zgasiti inerciju kod ručne rotacije
+
+Pronađi mjesto gdje se inicijalizira **OrbitControls** za Classic Gallery 360 kameru (u `src/components/360/Gallery360Scene.tsx` ili helper hooku).
+
+Provjeri i prilagodi ove postavke:
+
+```ts
+controls.enableDamping = false;       // nema inercije nakon puštanja miša
+controls.dampingFactor = 0.05;        // može ostati nisko, ali damping se ne koristi za ručnu rotaciju
+controls.rotateSpeed = 0.25;          // sporiji i finiji osjećaj rotacije (prilagodi po osjećaju)
+controls.enablePan = false;           // ne želimo panning u 360 galeriji
+controls.enableZoom = false;          // zoom rješavamo na neki drugi način ako bude trebao
+```
+
+Ključno: **`enableDamping` mora biti `false`** kako bi se uklonilo post-rotacijsko klizanje nakon što korisnik pusti miš.
+
+> Ako negdje u kodu ručno ažuriraš `controls.update()` s vlastitim damping logikom nakon pointer up eventa – to treba ukloniti. Nakon `mouseup` kamera se ne smije dalje micati.
+
+#### 2. Ukloniti ručno kvantiziranje/zaokruživanje kuta
+
+Ako postoji bilo kakav kod koji ručno zaokružuje ili kvantizira kutove kamere (npr. azimuth/polar), tipično nešto ovakvo:
+
+```ts
+controls.azimuthAngle = Math.round(controls.azimuthAngle / step) * step;
+// ili
+camera.rotation.y = Math.round(camera.rotation.y * 100) / 100;
+```
+
+– taj kod treba **ukloniti** ili zaobići u Classic Gallery modu.
+
+To kvantiziranje stvara subjektivni dojam "skakanja frame po frame" umjesto glatkog kretanja.
+
+#### 3. Razdvojiti logiku: ručna rotacija vs. prijelaz prema hotspotu
+
+Provjeri postojeću logiku za prijelaz kamere prema hotspotu:
+
+* Ako postoji globalni `animateCamera()` koji **uvijek** radi lerp između current pozicije i target pozicije (čak i kada korisnik ručno rotira), treba razdvojiti slučajeve:
+
+```ts
+let isCameraTransitionActive = false;
+
+function startCameraTransition(targetPos: THREE.Vector3, targetLookAt: THREE.Vector3) {
+  isCameraTransitionActive = true;
+  // spremi start i target pozicije + quaternion, kao što već radiš
+}
+
+function updateCamera(delta: number) {
+  if (isCameraTransitionActive) {
+    // radi lerp/slerp prema targetu (smooth prijelaz hotspotova)
+    // ...
+    // kada je prijelaz gotov -> isCameraTransitionActive = false;
+  } else {
+    // NEMA lerp-a za ručnu rotaciju – prepusti sve OrbitControls-u
+    controls.update();
+  }
+}
+```
+
+Bitno: **dok korisnik ručno rotira kameru**, `isCameraTransitionActive` mora biti `false` i ne smiješ dodatno lerpati kameru ručno.
+
+#### 4. Pointer events: odmah zaustavi sve prijelaze na ručnu intervenciju
+
+Ako trenutno postoji logika tipa:
+
+```ts
+window.addEventListener('pointerdown', () => { userIsDragging = true; });
+window.addEventListener('pointerup', () => { userIsDragging = false; });
+```
+
+dodaj unutar `pointerdown`:
+
+```ts
+function onPointerDown() {
+  userIsDragging = true;
+  // prekini bilo kakav aktivni autoprijelaz
+  isCameraTransitionActive = false;
+}
+
+function onPointerUp() {
+  userIsDragging = false;
+  // nakon puštanja miša ne pokreći nikakve nove lerp-ove
+}
+```
+
+Ideja: čim korisnik preuzme kontrolu mišem, **kamera odmah prestaje pratiti bilo koji automatski target** i sluša *samo* OrbitControls.
+
+---
+
+### Test scenarij (što ručno provjeriti)
+
+1. **Rotacija mišem – glatko**
+
+   * U Classic Gallery 360 editoru stisni lijevi klik i polako miči miš lijevo/desno/gore/dolje.
+   * Očekivanje: rotacija je kontinuirana i glatka, bez skokova.
+
+2. **Zaustavljanje nakon puštanja miša**
+
+   * Pomiči miš u jednu stranu, zatim pusti tipku miša.
+   * Očekivanje: kamera se zaustavlja *odmah* na tom položaju, bez dodatnog "odlaska" nekoliko stupnjeva dalje.
+
+3. **Mirna scena kod gledanja slika**
+
+   * Namjesti se ispred jedne slike, pusti miš.
+   * Očekivanje: prostor je potpuno miran, nema više pomaka kamere.
+
+4. **Hotspot prijelazi i dalje rade**
+
+   * Klikni na plavu točku na podu ili na gumb (Entrance/Center/Back Left/Back Right).
+   * Očekivanje: kamera se i dalje glatko animira do nove pozicije (smooth lerp), isto kao prije ovog taska.
+
+5. **Brzi klik + drag**
+
+   * Brzo nekoliko puta povuci lijevo-desno mišem.
+   * Očekivanje: nema nikakvog "kašnjenja" kamere – koliko pomakneš miš, toliko se pomakne i pogled.
+
+---
+
+### Sažetak za tebe (agent)
+
+* Fokus je isključivo na **user feeling-u kamere** kod kontrole mišem.
+* Ukloni post-rotacijski damping/inerciju kod ručne rotacije (`enableDamping = false`).
+* Ukloni bilo kakvo kvantiziranje/zaokruživanje kutova koje stvara dojam skakanja.
+* Osiguraj da se globalni lerp/smooth prijelazi koriste **samo** kod kretanja između hotspotova i gumba, a ne kod normalnog miša.
+* Nakon ovog taska, Irena treba imati osjećaj kao da drži stvarnu kameru: dok drži miš – kamera se kreće glatko; kad pusti – sve se trenutno smrzne na tom kadru.
