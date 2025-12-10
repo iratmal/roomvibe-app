@@ -593,144 +593,148 @@ function HotspotMarker({
   );
 }
 
-function CameraController({ 
+function FirstPersonController({ 
   viewpoint,
-  isEditor,
   galleryDimensions
 }: { 
   viewpoint: Viewpoint;
-  isEditor?: boolean;
   galleryDimensions: { width: number; height: number; depth: number };
 }) {
-  const { camera } = useThree();
-  const controlsRef = useRef<any>(null);
-  const [controlsReady, setControlsReady] = useState(false);
-  
+  const { camera, gl } = useThree();
+  const isDragging = useRef(false);
+  const previousMousePosition = useRef({ x: 0, y: 0 });
+  const spherical = useRef(new THREE.Spherical());
+  const targetSpherical = useRef(new THREE.Spherical());
   const targetPosition = useRef(new THREE.Vector3(...viewpoint.position));
-  const initialLookDirection = useRef(new THREE.Vector3());
   const lastViewpointId = useRef(viewpoint.id);
   const isAnimating = useRef(false);
-  const needsInitialSync = useRef(true);
   
   const bounds = useMemo(() => ({
-    minX: -galleryDimensions.width / 2 + 1,
-    maxX: galleryDimensions.width / 2 - 1,
-    minY: 1.4,
-    maxY: galleryDimensions.height - 0.3,
-    minZ: -galleryDimensions.depth / 2 + 1,
-    maxZ: galleryDimensions.depth / 2 - 1
+    minX: -galleryDimensions.width / 2 + 0.5,
+    maxX: galleryDimensions.width / 2 - 0.5,
+    minY: 1.3,
+    maxY: galleryDimensions.height - 0.2,
+    minZ: -galleryDimensions.depth / 2 + 0.5,
+    maxZ: galleryDimensions.depth / 2 - 0.5
   }), [galleryDimensions]);
   
+  const clampPosition = useCallback((pos: THREE.Vector3) => {
+    pos.x = Math.max(bounds.minX, Math.min(bounds.maxX, pos.x));
+    pos.y = Math.max(bounds.minY, Math.min(bounds.maxY, pos.y));
+    pos.z = Math.max(bounds.minZ, Math.min(bounds.maxZ, pos.z));
+    return pos;
+  }, [bounds]);
+  
   useEffect(() => {
-    const lookAt = new THREE.Vector3(...viewpoint.lookAt);
     const pos = new THREE.Vector3(...viewpoint.position);
-    initialLookDirection.current.copy(lookAt).sub(pos).normalize();
-  }, [viewpoint]);
-
-  const controlsCallback = useCallback((controls: any) => {
-    controlsRef.current = controls;
-    if (controls) {
-      needsInitialSync.current = true;
-      isAnimating.current = false;
-      setControlsReady(true);
+    const lookAt = new THREE.Vector3(...viewpoint.lookAt);
+    clampPosition(pos);
+    
+    const direction = lookAt.sub(pos).normalize();
+    spherical.current.setFromVector3(direction);
+    targetSpherical.current.copy(spherical.current);
+    
+    if (lastViewpointId.current !== viewpoint.id) {
+      targetPosition.current.copy(pos);
+      isAnimating.current = true;
+      lastViewpointId.current = viewpoint.id;
     } else {
-      needsInitialSync.current = true;
-      setControlsReady(false);
+      camera.position.copy(pos);
     }
-  }, []);
-
+  }, [viewpoint, camera, clampPosition]);
+  
   useEffect(() => {
-    if (!controlsReady || !controlsRef.current) return;
+    const canvas = gl.domElement;
     
-    if (needsInitialSync.current) {
-      camera.position.copy(targetPosition.current);
-      const targetPoint = targetPosition.current.clone().add(initialLookDirection.current);
-      controlsRef.current.target.copy(targetPoint);
-      controlsRef.current.update();
-      needsInitialSync.current = false;
-      isAnimating.current = false;
-    }
-  }, [controlsReady, camera]);
-
-  useEffect(() => {
-    const isNewViewpoint = lastViewpointId.current !== viewpoint.id;
+    const handleMouseDown = (e: MouseEvent) => {
+      isDragging.current = true;
+      previousMousePosition.current = { x: e.clientX, y: e.clientY };
+    };
     
-    targetPosition.current.set(...viewpoint.position);
-    lastViewpointId.current = viewpoint.id;
+    const handleMouseUp = () => {
+      isDragging.current = false;
+    };
     
-    if (isNewViewpoint) {
-      if (controlsReady && controlsRef.current && !needsInitialSync.current) {
-        isAnimating.current = true;
-      } else {
-        needsInitialSync.current = true;
-      }
-    }
-  }, [viewpoint, controlsReady]);
-
-  useFrame((_, delta) => {
-    if (!controlsRef.current || !controlsReady) return;
-    
-    const clampPosition = () => {
-      camera.position.x = Math.max(bounds.minX, Math.min(bounds.maxX, camera.position.x));
-      camera.position.y = Math.max(bounds.minY, Math.min(bounds.maxY, camera.position.y));
-      camera.position.z = Math.max(bounds.minZ, Math.min(bounds.maxZ, camera.position.z));
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging.current) return;
       
-      const cameraToTarget = controlsRef.current.target.clone().sub(camera.position);
-      const distance = cameraToTarget.length();
-      if (distance > 0.1) {
-        const newTarget = camera.position.clone().add(cameraToTarget.normalize());
-        controlsRef.current.target.copy(newTarget);
+      const deltaX = e.clientX - previousMousePosition.current.x;
+      const deltaY = e.clientY - previousMousePosition.current.y;
+      
+      spherical.current.theta -= deltaX * 0.003;
+      spherical.current.phi += deltaY * 0.003;
+      
+      spherical.current.phi = Math.max(0.2, Math.min(Math.PI - 0.2, spherical.current.phi));
+      
+      previousMousePosition.current = { x: e.clientX, y: e.clientY };
+    };
+    
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        isDragging.current = true;
+        previousMousePosition.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
       }
     };
     
-    if (needsInitialSync.current) {
-      camera.position.copy(targetPosition.current);
-      const targetPoint = targetPosition.current.clone().add(initialLookDirection.current);
-      controlsRef.current.target.copy(targetPoint);
-      controlsRef.current.update();
-      needsInitialSync.current = false;
-      isAnimating.current = false;
-      return;
-    }
+    const handleTouchEnd = () => {
+      isDragging.current = false;
+    };
     
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isDragging.current || e.touches.length !== 1) return;
+      
+      const deltaX = e.touches[0].clientX - previousMousePosition.current.x;
+      const deltaY = e.touches[0].clientY - previousMousePosition.current.y;
+      
+      spherical.current.theta -= deltaX * 0.003;
+      spherical.current.phi += deltaY * 0.003;
+      
+      spherical.current.phi = Math.max(0.2, Math.min(Math.PI - 0.2, spherical.current.phi));
+      
+      previousMousePosition.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    };
+    
+    canvas.addEventListener('mousedown', handleMouseDown);
+    canvas.addEventListener('mouseup', handleMouseUp);
+    canvas.addEventListener('mouseleave', handleMouseUp);
+    canvas.addEventListener('mousemove', handleMouseMove);
+    canvas.addEventListener('touchstart', handleTouchStart);
+    canvas.addEventListener('touchend', handleTouchEnd);
+    canvas.addEventListener('touchmove', handleTouchMove);
+    
+    return () => {
+      canvas.removeEventListener('mousedown', handleMouseDown);
+      canvas.removeEventListener('mouseup', handleMouseUp);
+      canvas.removeEventListener('mouseleave', handleMouseUp);
+      canvas.removeEventListener('mousemove', handleMouseMove);
+      canvas.removeEventListener('touchstart', handleTouchStart);
+      canvas.removeEventListener('touchend', handleTouchEnd);
+      canvas.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, [gl]);
+  
+  useFrame((_, delta) => {
     if (isAnimating.current) {
-      const lerpFactor = Math.min(5 * delta, 0.2);
+      const lerpFactor = Math.min(4 * delta, 0.15);
       camera.position.lerp(targetPosition.current, lerpFactor);
+      spherical.current.theta += (targetSpherical.current.theta - spherical.current.theta) * lerpFactor;
+      spherical.current.phi += (targetSpherical.current.phi - spherical.current.phi) * lerpFactor;
       
-      const newTarget = camera.position.clone().add(initialLookDirection.current);
-      controlsRef.current.target.lerp(newTarget, lerpFactor);
-      controlsRef.current.update();
-      
-      if (camera.position.distanceTo(targetPosition.current) < 0.03) {
+      if (camera.position.distanceTo(targetPosition.current) < 0.05) {
         camera.position.copy(targetPosition.current);
-        const finalTarget = targetPosition.current.clone().add(initialLookDirection.current);
-        controlsRef.current.target.copy(finalTarget);
-        controlsRef.current.update();
         isAnimating.current = false;
       }
     }
     
-    if (!isEditor) {
-      clampPosition();
-      controlsRef.current.update();
-    }
+    clampPosition(camera.position);
+    
+    const direction = new THREE.Vector3();
+    direction.setFromSpherical(spherical.current);
+    const lookAtPoint = camera.position.clone().add(direction);
+    camera.lookAt(lookAtPoint);
   });
-
-  return (
-    <OrbitControls 
-      ref={controlsCallback}
-      enableZoom={isEditor}
-      enablePan={isEditor}
-      minDistance={0.5}
-      maxDistance={1.5}
-      minPolarAngle={Math.PI * 0.25}
-      maxPolarAngle={Math.PI * 0.75}
-      rotateSpeed={0.4}
-      zoomSpeed={0.3}
-      enableDamping={true}
-      dampingFactor={0.1}
-    />
-  );
+  
+  return null;
 }
 
 export function Gallery360Scene({
@@ -796,7 +800,7 @@ export function Gallery360Scene({
         />
       ))}
 
-      <CameraController viewpoint={currentViewpoint} isEditor={isEditor} galleryDimensions={preset.dimensions} />
+      <FirstPersonController viewpoint={currentViewpoint} galleryDimensions={preset.dimensions} />
     </Canvas>
   );
 }
