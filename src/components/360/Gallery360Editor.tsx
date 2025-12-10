@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Gallery360Scene } from './Gallery360Scene';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Gallery360Scene, ArtworkFocusTarget } from './Gallery360Scene';
+import { ArtworkInfoPanel, ArtworkPanelData } from './ArtworkInfoPanel';
 import { useHotspots } from './useHotspots';
 import { useArtworkSlots, SlotAssignment } from './useArtworkSlots';
 import { gallery360Presets, getPresetById, Slot } from '../../config/gallery360Presets';
@@ -59,6 +60,10 @@ export function Gallery360Editor({
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [previousPresetId, setPreviousPresetId] = useState(selectedPresetId);
   const [panelCollapsed, setPanelCollapsed] = useState(false);
+  
+  const [activeArtwork, setActiveArtwork] = useState<ArtworkPanelData | null>(null);
+  const [infoPanelOpen, setInfoPanelOpen] = useState(false);
+  const [focusTarget, setFocusTarget] = useState<ArtworkFocusTarget | null>(null);
 
   useEffect(() => {
     // Wait for both initialAssignments AND availableArtworks to be loaded
@@ -141,6 +146,32 @@ export function Gallery360Editor({
       clearSlot(slotId);
     }
   };
+
+  const handleArtworkClick = useCallback((slotId: string, assignment: SlotAssignment, slot: Slot) => {
+    const artworkData: ArtworkPanelData = {
+      slotId: assignment.slotId,
+      artworkId: assignment.artworkId,
+      artworkUrl: assignment.artworkUrl,
+      artworkTitle: assignment.artworkTitle,
+      artistName: assignment.artistName,
+      width: assignment.width,
+      height: assignment.height
+    };
+    
+    setActiveArtwork(artworkData);
+    setInfoPanelOpen(true);
+    
+    setFocusTarget({
+      position: slot.position,
+      rotation: slot.rotation,
+      slotId: slot.id
+    });
+  }, []);
+  
+  const handleCloseInfoPanel = useCallback(() => {
+    setInfoPanelOpen(false);
+    setFocusTarget(null);
+  }, []);
 
   const handleSave = async () => {
     setSaving(true);
@@ -300,6 +331,14 @@ export function Gallery360Editor({
           isEditor={true}
           selectedSlotId={selectedSlotId || undefined}
           onSlotSelect={setSelectedSlotId}
+          onArtworkClick={handleArtworkClick}
+          focusTarget={focusTarget}
+        />
+        
+        <ArtworkInfoPanel
+          artwork={activeArtwork}
+          open={infoPanelOpen}
+          onClose={handleCloseInfoPanel}
         />
 
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/50 rounded-lg px-3 py-2">
