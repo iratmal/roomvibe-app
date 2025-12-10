@@ -714,6 +714,8 @@ const MAX_POLAR_ANGLE = 1.70;  // Max ~8° below horizontal (minimal floor)
 const MOUSE_SENSITIVITY = 0.002;
 // Smoothing factor: how quickly camera catches up (0.05 = very smooth, 0.3 = responsive)
 const ROTATION_SMOOTHING = 0.08;
+// Keyboard rotation speed (radians per frame when key held)
+const KEYBOARD_ROTATION_SPEED = 0.015;
 
 // Smooth easing function for camera transitions (easeInOutCubic)
 function easeInOutCubic(t: number): number {
@@ -742,6 +744,7 @@ function FirstPersonController({
   const scrollVelocity = useRef(0);
   const targetRotation = useRef({ theta: 0, phi: Math.PI / 2 });
   const currentRotation = useRef({ theta: 0, phi: Math.PI / 2 });
+  const keysPressed = useRef<Set<string>>(new Set());
   
   const bounds = useMemo(() => ({
     minX: -galleryDimensions.width / 2 + MIN_WALL_DISTANCE,
@@ -858,6 +861,17 @@ function FirstPersonController({
       previousMousePosition.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
     };
     
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'w', 'a', 's', 'd', 'W', 'A', 'S', 'D'].includes(e.key)) {
+        e.preventDefault();
+        keysPressed.current.add(e.key);
+      }
+    };
+    
+    const handleKeyUp = (e: KeyboardEvent) => {
+      keysPressed.current.delete(e.key);
+    };
+    
     canvas.addEventListener('mousedown', handleMouseDown);
     canvas.addEventListener('mouseup', handleMouseUp);
     canvas.addEventListener('mouseleave', handleMouseUp);
@@ -866,6 +880,8 @@ function FirstPersonController({
     canvas.addEventListener('touchstart', handleTouchStart);
     canvas.addEventListener('touchend', handleTouchEnd);
     canvas.addEventListener('touchmove', handleTouchMove);
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
     
     return () => {
       canvas.removeEventListener('mousedown', handleMouseDown);
@@ -876,10 +892,43 @@ function FirstPersonController({
       canvas.removeEventListener('touchstart', handleTouchStart);
       canvas.removeEventListener('touchend', handleTouchEnd);
       canvas.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
     };
   }, [gl]);
   
   useFrame(() => {
+    // Handle keyboard input for rotation
+    const keys = keysPressed.current;
+    if (keys.has('ArrowLeft') || keys.has('a') || keys.has('A')) {
+      targetRotation.current.theta += KEYBOARD_ROTATION_SPEED;
+    }
+    if (keys.has('ArrowRight') || keys.has('d') || keys.has('D')) {
+      targetRotation.current.theta -= KEYBOARD_ROTATION_SPEED;
+    }
+    if (keys.has('ArrowUp') || keys.has('w') || keys.has('W')) {
+      // Move forward
+      const direction = new THREE.Vector3();
+      camera.getWorldDirection(direction);
+      direction.y = 0;
+      direction.normalize();
+      const newPos = camera.position.clone().add(direction.multiplyScalar(0.08));
+      if (isWithinBounds(newPos)) {
+        camera.position.copy(newPos);
+      }
+    }
+    if (keys.has('ArrowDown') || keys.has('s') || keys.has('S')) {
+      // Move backward
+      const direction = new THREE.Vector3();
+      camera.getWorldDirection(direction);
+      direction.y = 0;
+      direction.normalize();
+      const newPos = camera.position.clone().sub(direction.multiplyScalar(0.08));
+      if (isWithinBounds(newPos)) {
+        camera.position.copy(newPos);
+      }
+    }
+    
     if (animationStartTime.current !== null) {
       const elapsed = (performance.now() - animationStartTime.current) / 1000;
       const tRaw = Math.min(elapsed / CAMERA_MOVE_DURATION, 1);
