@@ -714,13 +714,14 @@ const SCROLL_SPEED = 0.0015;
 const SCROLL_DAMPING = 0.94;
 const MIN_WALL_DISTANCE = 1.0;
 // Vertical look limits (polar angle in radians):
-// Almost no ceiling/floor - focused on artworks only
-const MIN_POLAR_ANGLE = 1.50;  // Max ~4° above horizontal (almost no ceiling)
-const MAX_POLAR_ANGLE = 1.70;  // Max ~8° below horizontal (minimal floor)
-// Direct rotation sensitivity (no velocity/inertia - immediate response)
-const MOUSE_SENSITIVITY = 0.004;
+// ±10° from horizontal (π/2 ≈ 1.5708 radians)
+// This allows slight ceiling/floor visibility while keeping focus on artworks
+const MIN_POLAR_ANGLE = 1.40;  // ~10° above horizontal (slight ceiling view)
+const MAX_POLAR_ANGLE = 1.74;  // ~10° below horizontal (slight floor view)
+// Direct rotation sensitivity - reduced ~50% for smoother Street View feel
+const MOUSE_SENSITIVITY = 0.002;
 // Keyboard rotation speed (radians per frame when key held)
-const KEYBOARD_ROTATION_SPEED = 0.02;
+const KEYBOARD_ROTATION_SPEED = 0.015;
 
 // Smooth easing function for camera transitions (easeInOutCubic)
 function easeInOutCubic(t: number): number {
