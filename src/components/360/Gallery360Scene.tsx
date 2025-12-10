@@ -544,9 +544,13 @@ function ArtworkImage({
     const finalWidth = scaledWidth * constraintFactor;
     const finalHeight = scaledHeight * constraintFactor;
 
+    // Check if this is a portrait orientation (height > width)
+    const isPortrait = finalHeight > finalWidth;
+    
     console.log('[DebugSize]', {
       source,
       inputCm: `${assignmentWidth}x${assignmentHeight}`,
+      orientation: isPortrait ? 'PORTRAIT (vertical)' : 'LANDSCAPE (horizontal)',
       baseMeters: `${baseWidth.toFixed(2)}x${baseHeight.toFixed(2)}`,
       scaled: `${scaledWidth.toFixed(2)}x${scaledHeight.toFixed(2)}`,
       wallHeight,

@@ -1,0 +1,170 @@
+# RoomVibe – 360 Classic Gallery
+
+## TASK: Ispravak orijentacije slika (vertikalne vs horizontalne)
+
+**Kontekst**
+U Classic Gallery 360 editoru sada:
+
+* dimenzije slika po cm uglavnom rade OK
+* okviri izgledaju dobro
+* nema više žutog debug pravokutnika
+
+Preostali bug:
+
+* slike koje su u dashboardu/artworks spremljene kao **vertikalne** (npr. *Harmony* 100×150 cm) i dalje se znaju prikazati **horizontalno** u 360 galeriji
+* to znači da se negdje u kodu zamjenjuju širina i visina ili se dimenzije normaliziraju tako da je uvijek landscape
+
+Cilj:
+
+1. Uvijek poštivati orijentaciju slike po dimenzijama iz backenda:
+
+   * ako je `height_cm > width_cm` → portret (vertikalno)
+   * ako je `width_cm >= height_cm` → landscape (horizontalno)
+2. Nikada ne forsirati da je šira strana uvijek horizontalna – samo koristiti realne vrijednosti iz baze.
+
+---
+
+## Gdje mijenjati
+
+**File:** `src/components/360/Gallery360Scene.tsx`
+
+U ovom fileu već postoji logika za računanje veličine slike i `[DebugSize]` logovi.
+Trebaš naći dio gdje se:
+
+* čitaju dimenzije iz art-worka (npr. `width_cm`, `height_cm`, `imageWidth`, `imageHeight` itd.)
+* računa `baseMeters` / `finalWidthMeters` / `finalHeightMeters`
+* kreira `<planeGeometry ... />` za prikaz slike na zidu
+
+Tu treba:
+
+1. Osigurati da se dimenzije iz cm koriste **bez sortiranaj `Math.max/Math.min`**.
+2. Osigurati da u `<planeGeometry args={[widthMeters, heightMeters]}` bude **širina kao prvi, visina kao drugi argument**, bez zamjene.
+
+---
+
+## Konkretne izmjene koje treba napraviti
+
+### 1. Korištenje stvarnih cm dimenzija bez normalizacije
+
+Nađi kod koji izgleda otprilike ovako (primjer, može biti drugačiji):
+
+```ts
+// PSEUDO – primjer što treba izbjeći
+const wMeters = (widthCm / 100) * ARTWORK_GLOBAL_SCALE;
+const hMeters = (heightCm / 100) * ARTWORK_GLOBAL_SCALE;
+
+// ❌ Nemoj raditi ovako – ovo uništi portret orijentaciju
+const maxSide = Math.max(wMeters, hMeters);
+const minSide = Math.min(wMeters, hMeters);
+
+baseMeters.widthMeters = maxSide;
+baseMeters.heightMeters = minSide;
+```
+
+Umjesto toga, treba koristiti realne dimenzije bez sortiranja:
+
+```ts
+// ✅ KORISTI STVARNI ODNOS ŠIRINA/VISINA
+const widthCm = artwork.width_cm;   // npr. 100
+const heightCm = artwork.height_cm; // npr. 150
+
+let widthMeters: number | undefined;
+let heightMeters: number | undefined;
+let sizeSource: "stored_cm" | "image_aspect" = "image_aspect";
+
+if (
+  typeof widthCm === "number" &&
+  typeof heightCm === "number" &&
+  widthCm > 0 &&
+  heightCm > 0
+) {
+  widthMeters = (widthCm / 100) * ARTWORK_GLOBAL_SCALE;
+  heightMeters = (heightCm / 100) * ARTWORK_GLOBAL_SCALE;
+  sizeSource = "stored_cm";
+} else {
+  // zadrži postojeći fallback iz image aspect-a
+  // (nemoj mijenjati postojeću logiku osim ako ne koristi Math.max/Math.min)
+}
+
+// zapis u baseMeters bez mijenjanja orijentacije
+if (widthMeters && heightMeters) {
+  baseMeters.widthMeters = widthMeters;
+  baseMeters.heightMeters = heightMeters;
+}
+```
+
+Ključna stvar: **nigdje ne koristiti `Math.max/Math.min` za zamjenu širine i visine**.
+
+Ako trenutačni kod koristi neki helper (npr. `computeArtworkBaseSize(artwork)`), ovu logiku treba staviti u taj helper.
+
+---
+
+### 2. Provjeri `<planeGeometry>` i mesh
+
+Nađi dio gdje se za artwork radi mesh, nešto u stilu:
+
+```tsx
+<mesh ...>
+  <planeGeometry args={[finalWidthMeters, finalHeightMeters]} />
+  <meshStandardMaterial map={texture} ... />
+</mesh>
+```
+
+Provjeri sljedeće:
+
+1. **Redoslijed argumenata** – prvi argument mora biti širina, drugi visina:
+   `args={[finalWidthMeters, finalHeightMeters]}`
+   (ako je trenutno obrnuto, zamijeni).
+
+2. Ne smije biti nikakvog dodatnog `rotation.z = Math.PI / 2` ili sličnog conditional-a koji okreće artworke ovisno o odnosu stranica.
+
+   * Ako postoji takav kod, ukloni ga. Orijentacija se rješava isključivo kroz odnos width/height.
+
+---
+
+### 3. Debug log za potvrdu
+
+Na postojeći `[DebugSize]` log (ili ako ne postoji, dodaj) zapiši i cm dimenzije da možemo potvrditi da se koristi `stored_cm`:
+
+```ts
+console.log("[DebugSize] artwork", {
+  id: artwork.id,
+  title: artwork.title,
+  source: sizeSource,
+  widthCm,
+  heightCm,
+  baseMeters,
+  finalMeters: {
+    width: finalWidthMeters,
+    height: finalHeightMeters,
+  },
+});
+```
+
+---
+
+## Kako testirati nakon izmjene
+
+1. **Classic Gallery** → otvori postojeću testnu izložbu (onu sa 7 mojih slika):
+
+   * umjetnine *Whisper*, *Dragon Bird*, *City*, *Red Sunset*, *Harmony* itd.
+2. Posebno testiraj artwork **"Harmony"**:
+
+   * u dashboardu/artworks je spremljena kao **vertikalna** (visina > širina)
+   * u 360 editoru mora biti **viša nego što je široka** na bilo kojem zidu
+3. U Console-u provjeri da `[DebugSize]` za *Harmony* kaže:
+
+   * `source: "stored_cm"`
+   * `widthCm` manje od `heightCm`
+   * `finalMeters.height` > `finalMeters.width`
+
+Ako sve to vrijedi i vizualno se slika prikazuje vertikalno, bug je riješen.
+
+---
+
+## Napomena
+
+* Nemoj dirati postojeći **ARTWORK_GLOBAL_SCALE** niti logiku za **frame** (okviri su sada vizualno OK).
+* Fokus ovog taska je isključivo **orijentacija slika** i konzistentno korištenje dimenzija iz backenda.
+
+Hvala! 😊

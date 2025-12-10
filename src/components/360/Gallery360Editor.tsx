@@ -59,10 +59,41 @@ export function Gallery360Editor({
   const [previousPresetId, setPreviousPresetId] = useState(selectedPresetId);
 
   useEffect(() => {
-    if (initialAssignments.length > 0 && selectedPresetId === presetId) {
-      loadAssignments(initialAssignments);
+    // Wait for both initialAssignments AND availableArtworks to be loaded
+    if (initialAssignments.length > 0 && availableArtworks.length > 0 && selectedPresetId === presetId) {
+      // Hydrate saved assignments with current artwork dimensions from database
+      const hydratedAssignments = initialAssignments.map(assignment => {
+        if (!assignment.artworkId) return assignment;
+        
+        // Find the artwork in availableArtworks to get current dimensions
+        const artwork = availableArtworks.find(a => String(a.id) === String(assignment.artworkId));
+        
+        if (artwork) {
+          const widthCm = artwork.width_cm || artwork.width_value || artwork.width || assignment.width || 100;
+          const heightCm = artwork.height_cm || artwork.height_value || artwork.height || assignment.height || 70;
+          
+          console.log('[HydrateAssignment]', artwork.title, {
+            savedDimensions: `${assignment.width}x${assignment.height}`,
+            freshDimensions: `${widthCm}x${heightCm}`,
+            orientation: heightCm > widthCm ? 'PORTRAIT' : 'LANDSCAPE'
+          });
+          
+          return {
+            ...assignment,
+            artworkUrl: artwork.image_url || assignment.artworkUrl,
+            artworkTitle: artwork.title || assignment.artworkTitle,
+            artistName: artwork.artist_name || assignment.artistName,
+            width: widthCm,
+            height: heightCm
+          };
+        }
+        
+        return assignment;
+      });
+      
+      loadAssignments(hydratedAssignments);
     }
-  }, [initialAssignments, loadAssignments, selectedPresetId, presetId]);
+  }, [initialAssignments, loadAssignments, selectedPresetId, presetId, availableArtworks]);
 
   useEffect(() => {
     if (selectedPresetId !== previousPresetId) {
