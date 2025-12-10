@@ -874,7 +874,8 @@ export function Gallery360Scene({
         );
       })}
 
-      {!isEditor && preset.hotspots.map(hotspot => (
+      {/* Floor navigation hotspots - shown in both editor and viewer modes */}
+      {preset.hotspots.map(hotspot => (
         <HotspotMarker
           key={hotspot.id}
           hotspot={hotspot}

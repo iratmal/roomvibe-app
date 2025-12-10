@@ -1,0 +1,260 @@
+# RoomVibe – 360° Classic Gallery
+
+## STEP 2 – Street View–style navigacija i fino podešavanje kamere
+
+**Cilj:**
+Sada kada su dimenzije i orijentacija slika točne, idući korak je da Classic Gallery 360 editor dobije Street View–stil navigacije:
+
+* kružne oznake (hotspotovi) na podu
+* klik na oznaku = glatki prijelaz kamere na novu poziciju (Entrance, Center, Back Left, Back Right)
+* kamera se ponaša kao da korisnik šeta po galeriji
+
+Zasad radimo samo na **Classic Gallery** preset-u.
+
+---
+
+## 1. Struktura i postojeći kod
+
+**Glavni file:**
+
+* `src/components/360/Gallery360Scene.tsx`
+
+Postojeće stvari na koje se oslanjamo:
+
+* već imamo 4 view moda u UI: `Entrance`, `Center`, `Back Left`, `Back Right`
+* već postoji kamera i `OrbitControls` (ili slično) za rotiranje scene
+* već postoji pozicioniranje zidova i slika
+
+Ovaj task NE mijenja:
+
+* način na koji se slike učitavaju
+* dimenzije slika
+* frame-ove i rasvjetu
+
+---
+
+## 2. Dodaj konfiguraciju „viewpointa“
+
+U `Gallery360Scene.tsx` dodaj pri vrhu file-a (ili blizu postojećeg koda gdje se definiraju pozicije kamere) konfiguraciju za 4 točke gledišta.
+
+```ts
+// 360 camera viewpoints (approximate values – prilagodi po potrebi)
+const VIEWPOINTS = {
+  entrance: {
+    id: "entrance",
+    label: "Entrance",
+    cameraPosition: new THREE.Vector3(0, 1.65, 10),
+    lookAt: new THREE.Vector3(0, 1.6, 0),
+    floorPosition: new THREE.Vector3(0, 0.01, 6),
+  },
+  center: {
+    id: "center",
+    label: "Center",
+    cameraPosition: new THREE.Vector3(0, 1.65, 0.01),
+    lookAt: new THREE.Vector3(0, 1.6, -4),
+    floorPosition: new THREE.Vector3(0, 0.01, 0),
+  },
+  backLeft: {
+    id: "backLeft",
+    label: "Back Left",
+    cameraPosition: new THREE.Vector3(-6, 1.65, -4),
+    lookAt: new THREE.Vector3(0, 1.6, -4),
+    floorPosition: new THREE.Vector3(-4, 0.01, -4),
+  },
+  backRight: {
+    id: "backRight",
+    label: "Back Right",
+    cameraPosition: new THREE.Vector3(6, 1.65, -4),
+    lookAt: new THREE.Vector3(0, 1.6, -4),
+    floorPosition: new THREE.Vector3(4, 0.01, -4),
+  },
+} as const;
+
+type ViewpointId = keyof typeof VIEWPOINTS;
+```
+
+> Napomena: vrijednosti `Vector3` su okvirne. Bitno je da svaka točka bude **unutar prostorije**, na razumnom razmaku od zidova. Ako već postoji slična konfiguracija, nadogradi nju umjesto da uvodiš novu duplu strukturu.
+
+---
+
+## 3. State za aktivni view i funkcija za prijelaz
+
+U React komponenti `Gallery360Scene` dodaj state i helper funkciju za prijelaz kamere.
+
+```ts
+const [activeView, setActiveView] = useState<ViewpointId>("entrance");
+
+function goToView(nextView: ViewpointId) {
+  const vp = VIEWPOINTS[nextView];
+  if (!vp || !camera) return;
+
+  const startPos = camera.position.clone();
+  const startTarget = controls?.target.clone();
+
+  const endPos = vp.cameraPosition.clone();
+  const endTarget = vp.lookAt.clone();
+
+  const durationMs = 900; // ~0.9s smooth transition
+  const start = performance.now();
+
+  function animate() {
+    const now = performance.now();
+    const tRaw = (now - start) / durationMs;
+    const t = Math.min(1, tRaw);
+
+    camera.position.lerpVectors(startPos, endPos, t);
+    if (controls && startTarget) {
+      controls.target.lerpVectors(startTarget, endTarget, t);
+      controls.update();
+    }
+
+    if (t < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      setActiveView(nextView);
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+```
+
+> Pretpostavka: `camera` i `controls` su dostupni kroz `useThree()` ili neki postojeći hook. Ako su definirani drugačije, prilagodi pristup ali zadrži istu logiku: `lerp` između postojeće i nove pozicije + target.
+
+---
+
+## 4. Floor hotspot komponenta
+
+Dodaj malu komponentu koja crta kružni hotspot na podu i hvata klikove. U istom file-u (`Gallery360Scene.tsx`):
+
+```tsx
+interface FloorHotspotProps {
+  viewpointId: ViewpointId;
+}
+
+const FloorHotspot: React.FC<FloorHotspotProps> = ({ viewpointId }) => {
+  const vp = VIEWPOINTS[viewpointId];
+  const [hovered, setHovered] = useState(false);
+
+  if (!vp) return null;
+
+  return (
+    <mesh
+      position={vp.floorPosition}
+      rotation={[-Math.PI / 2, 0, 0]}
+      onClick={(e) => {
+        e.stopPropagation();
+        goToView(viewpointId);
+      }}
+      onPointerOver={() => setHovered(true)}
+      onPointerOut={() => setHovered(false)}
+    >
+      <circleGeometry args={[0.6, 32]} />
+      <meshStandardMaterial
+        transparent
+        opacity={hovered ? 0.65 : 0.4}
+        roughness={0.4}
+        metalness={0.0}
+        color={hovered ? "#ffb347" : "#ffffff"}
+      />
+    </mesh>
+  );
+};
+```
+
+> Ako koristimo neki centralni brand color za interaktivne elemente, možeš zamijeniti `#ffb347` tom bojom. Bitno je da se hotspot **jasno vidi**, ali da ne dominira prostorom.
+
+---
+
+## 5. Umetni floor hotspotove u scenu
+
+U glavnom JSX-u scene, unutar `<Canvas>`/scene dijela gdje već renderiraš zidove i slike, dodaj:
+
+```tsx
+{/* Floor navigation hotspots */}
+<FloorHotspot viewpointId="entrance" />
+<FloorHotspot viewpointId="center" />
+<FloorHotspot viewpointId="backLeft" />
+<FloorHotspot viewpointId="backRight" />
+```
+
+Pobrini se da su **unutar** glavne scene (da ih obasjavaju ista svjetla i da kamera može vidjeti pod).
+
+---
+
+## 6. Poveži UI gumbe (Entrance / Center / Back Left / Back Right)
+
+U dijelu koda gdje se renderiraju postojeći UI gumbi na dnu (Entrance, Center, Back Left, Back Right):
+
+* umjesto direktnog setanja nekog state-a / pozicije, koristi `goToView`.
+* vizualno označi aktivni view.
+
+Primjer (pseudo-code, prilagodi postojećem UI-u):
+
+```tsx
+<button
+  className={activeView === "entrance" ? "rv-view-tab active" : "rv-view-tab"}
+  onClick={() => goToView("entrance")}
+>
+  Entrance
+</button>
+<button
+  className={activeView === "center" ? "rv-view-tab active" : "rv-view-tab"}
+  onClick={() => goToView("center")}
+>
+  Center
+</button>
+<button
+  className={activeView === "backLeft" ? "rv-view-tab active" : "rv-view-tab"}
+  onClick={() => goToView("backLeft")}
+>
+  Back Left
+</button>
+<button
+  className={activeView === "backRight" ? "rv-view-tab active" : "rv-view-tab"}
+  onClick={() => goToView("backRight")}
+>
+  Back Right
+</button>
+```
+
+> Bitno: i UI gumbi i floor hotspotovi moraju koristiti **istu** funkciju `goToView`, da se ponašaju identično.
+
+---
+
+## 7. Ograniči ponašanje kamere (pitch / zoom)
+
+Cilj je da se korisnik osjeća kao da hoda galerijom, ne da "leti" po svemiru.
+
+Ako koristimo `OrbitControls`, podesi:
+
+```ts
+controls.enablePan = false; // da ne klizi bočno
+controls.minDistance = 4;   // minimalni zoom
+controls.maxDistance = 14;  // maksimalni zoom
+controls.minPolarAngle = Math.PI * 0.28; // ~32° iznad horizonta
+controls.maxPolarAngle = Math.PI * 0.55; // ~99° (ne gledamo ravno dolje/gore)
+```
+
+Vrijednosti prilagodi tako da:
+
+* kamera ne može gledati skroz u strop ili u pod
+* korisnik i dalje ima osjećaj slobode, ali unutar granica galerije
+
+---
+
+## 8. Što testirati
+
+Molim te nakon implementacije:
+
+1. Učitaj **Classic Gallery** 360 editor.
+2. Postavi nekoliko slika na zidove (različitih dimenzija kao sada).
+3. Provjeri:
+
+   * prikazuju li se 4 kružna hotspot-a na podu
+   * klik na svaki hotspot glatko premješta kameru na novu poziciju
+   * klik na gumbe `Entrance / Center / Back Left / Back Right` radi isto kao klik na pod
+   * kamera ne može izaći iz prostorije i ne može gledati "u svemir"
+4. Ako treba, poigraj se s `VIEWPOINTS` koordinatama dok raspored ne izgleda prirodno.
+
+Kada to proradi i sve izgleda fluidno, možemo prijeći na idući korak (detaljni popup prozor za svaki artwork sa nazivom, dimenzijama, autorom, cijenom i linkom na kupnju).
