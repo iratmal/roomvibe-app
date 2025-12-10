@@ -710,10 +710,10 @@ const MIN_WALL_DISTANCE = 1.0;
 // Almost no ceiling/floor - focused on artworks only
 const MIN_POLAR_ANGLE = 1.50;  // Max ~4° above horizontal (almost no ceiling)
 const MAX_POLAR_ANGLE = 1.70;  // Max ~8° below horizontal (minimal floor)
-// Mouse sensitivity: very slow rotation for cinematic feel
-const MOUSE_SENSITIVITY = 0.0001;
-// Rotation damping: very high = ultra smooth, like filming with stabilizer
-const ROTATION_DAMPING = 0.96;
+// Mouse sensitivity: extremely slow rotation for cinematic feel
+const MOUSE_SENSITIVITY = 0.00005;
+// Rotation damping: maximum smoothness, like professional gimbal
+const ROTATION_DAMPING = 0.985;
 
 // Smooth easing function for camera transitions (easeInOutCubic)
 function easeInOutCubic(t: number): number {
