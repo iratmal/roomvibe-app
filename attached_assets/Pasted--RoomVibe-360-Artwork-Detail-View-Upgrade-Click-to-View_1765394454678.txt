@@ -1,0 +1,399 @@
+# RoomVibe – 360 Artwork Detail View Upgrade (Click‑to‑View)
+
+## Kratki sažetak zadatka
+
+Cilj: Kada korisnik klikne na sliku u 360 Classic Gallery sceni, treba dobiti doživljaj kao da stoji ispred slike u prostoru galerije, a ne kao da je samo otvorio veliku fotografiju. Istovremeno se na lijevoj strani otvara kartica s kompletnim podacima o slici (povučeno iz Gallery dashboarda), uključujući i **cijenu** i **link za kupnju**.
+
+Ovaj task ima dvije glavne cjeline:
+
+1. **UX/3D ponašanje** – kamera se glatko pomiče ispred slike i zaustavlja, bez dodatne perspektivne deformacije slike.
+2. **Artwork info panel** – proširenje postojeće kartice s podacima (lijevi panel) tako da prikazuje sve relevantne podatke iz dashboarda + gumb za kupnju.
+
+---
+
+## 1. Ponašanje kamere na klik slike (360 scena)
+
+### Željeno ponašanje
+
+Kada korisnik klikne na bilo koju sliku u 360 Classic Gallery editoru:
+
+1. Kamera treba **glatko** (easing) doći u poziciju ispred slike, na udaljenost npr. ~2–2.5 m, orijentirana točno prema centru slike.
+2. Kretanje treba biti fluidno, bez "skakanja" po frameovima – osjećaj kao u Street Viewu:
+
+   * dok korisnik drži miša i miče ga, kamera se kontinuirano rotira/pomiče;
+   * kad pusti miša, kamera se odmah zaustavi, bez nastavka pomaka.
+3. Nakon što kamera stane, otvara se info panel s lijeve strane (detalji o slici).
+4. Po izlasku iz detail viewa, kamera se vraća u prethodnu točku (ili ostaje gdje je bila, ali bez overlay moda – prema tvojoj procjeni što je kod nas jednostavnije).
+
+### Implementacija – prijedlog
+
+**Glavni file:** `src/components/360/Gallery360Scene.tsx`
+
+#### a) Tip za artwork koji se koristi u 360 sceni
+
+Dodaj / proširi tip (ovisno što već imaš):
+
+```ts
+// Gallery360Scene.tsx (ili shared tip file)
+export type GalleryArtwork = {
+  id: string;
+  title: string;
+  artistName: string;
+  width_cm: number;
+  height_cm: number;
+  imageUrl: string;
+  // NOVO – povući iz backend API-ja
+  price?: number | null;       // npr. 1200
+  currency?: string | null;    // npr. "EUR"
+  externalUrl?: string | null; // link na kupnju
+  description?: string | null; // opis djela
+};
+```
+
+#### b) Handler za klik na artwork u 360 sceni
+
+Pretpostavka: već imamo neki `onArtworkClick(artwork, wallSlot)` handler. Ako ne postoji, treba ga dodati na mesh koji predstavlja sliku.
+
+```ts
+// unutar Gallery360Scene.tsx
+
+const [focusedArtwork, setFocusedArtwork] = useState<GalleryArtwork | null>(null);
+const [previousCameraState, setPreviousCameraState] = useState<{
+  position: THREE.Vector3;
+  target: THREE.Vector3;
+} | null>(null);
+
+// helper za glatki prijelaz kamere
+function tweenCameraTo(
+  controls: any, // tip ovisno koristiš li OrbitControls ili PointerLock itd.
+  nextPosition: THREE.Vector3,
+  nextTarget: THREE.Vector3,
+  durationMs = 800
+) {
+  const startPos = controls.object.position.clone();
+  const startTarget = (controls.target || new THREE.Vector3()).clone();
+
+  let startTime: number | null = null;
+
+  function animate(now: number) {
+    if (!startTime) startTime = now;
+    const t = Math.min(1, (now - startTime) / durationMs);
+    // easeInOutQuad
+    const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+
+    controls.object.position.lerpVectors(startPos, nextPosition, ease);
+    if (controls.target) {
+      controls.target.lerpVectors(startTarget, nextTarget, ease);
+    } else {
+      controls.object.lookAt(nextTarget);
+    }
+
+    controls.update?.();
+
+    if (t < 1) {
+      requestAnimationFrame(animate);
+    }
+  }
+
+  requestAnimationFrame(animate);
+}
+
+// handler koji se poziva kad korisnik klikne na artwork u 360 sceni
+const handleArtworkClick = (
+  artwork: GalleryArtwork,
+  worldPosition: THREE.Vector3,
+  worldNormal: THREE.Vector3,
+) => {
+  if (!controlsRef.current) return;
+
+  const controls = controlsRef.current;
+
+  // spremi staru poziciju kamere i target
+  setPreviousCameraState({
+    position: controls.object.position.clone(),
+    target: (controls.target || new THREE.Vector3()).clone(),
+  });
+
+  // odredi točku ispred slike (2.2 m od zida)
+  const OFFSET_DISTANCE = 2.2;
+  const viewPosition = worldPosition
+    .clone()
+    .add(worldNormal.clone().multiplyScalar(OFFSET_DISTANCE));
+
+  const viewTarget = worldPosition.clone(); // gledaj u centar slike
+
+  tweenCameraTo(controls, viewPosition, viewTarget, 900);
+
+  setFocusedArtwork(artwork);
+};
+```
+
+> Napomena: `worldPosition` i `worldNormal` već vjerojatno koristiš za pozicioniranje slika na zid. Ako ne, možeš ih izračunati kada postavljaš mesh (npr. sa `mesh.getWorldPosition` i normalom zida).
+
+#### c) Izlazak iz "focused" moda
+
+Dodaj gumb "Close" u info panelu ili `X` u kutu i pri kliku vrati kameru na prethodno stanje:
+
+```ts
+const handleCloseFocusedArtwork = () => {
+  if (!focusedArtwork || !previousCameraState || !controlsRef.current) {
+    setFocusedArtwork(null);
+    return;
+  }
+
+  const controls = controlsRef.current;
+  tweenCameraTo(
+    controls,
+    previousCameraState.position,
+    previousCameraState.target,
+    600
+  );
+
+  setFocusedArtwork(null);
+};
+```
+
+---
+
+## 2. Artwork info panel – povlačenje svih podataka iz dashboarda
+
+### Što želimo na panelu (lijeva strana)
+
+Kada je artwork fokusiran (kliknut u 360 viewu), na lijevoj strani treba prikazati:
+
+* Thumbnail slike
+* Naslov djela
+* Ime autora
+* Dimenzije u cm (npr. `100 × 150 cm`)
+* **Cijenu** (npr. `1.200 EUR`)
+* **Gumb za kupnju** (npr. `View & Buy Artwork`) koji vodi na `externalUrl` iz dashboarda
+* Eventualno: kraći opis djela, ako postoji (description)
+
+Sve ove podatke treba povući iz **Gallery dashboarda** – znači iz istog mjesta gdje galerija upload-a slike i unosi metapodatke.
+
+### Backend: proširi Artwork model i API
+
+1. **Model / baza** – provjeri postoji li već išta od ovoga:
+
+   * `price` (number / decimal)
+   * `currency` (string, npr. `"EUR"` kao default)
+   * `externalUrl` (string, puni URL na njihovu shop/checkout stranicu)
+   * `description` (text, optional)
+
+2. **Admin / dashboard forma** za galerije:
+
+   * Polje za unos cijene (number)
+   * Dropdown ili text za valutu (za sada može biti free‑text ili ograničen na `EUR`, `USD`…)
+   * Polje "Buy link" (URL)
+   * Polje za opis (textarea)
+
+3. **API**: endpoint koji koristi 360 scena (`GET /api/gallery/collections/:id/artworks` ili ekvivalent) proširi da vraća ova polja:
+
+```json
+{
+  "id": "...",
+  "title": "Harmony",
+  "artistName": "Irena",
+  "width_cm": 100,
+  "height_cm": 150,
+  "imageUrl": "...",
+  "price": 1200,
+  "currency": "EUR",
+  "externalUrl": "https://...",
+  "description": "..."
+}
+```
+
+### Frontend: komponenta za info panel
+
+Predlažem posebnu komponentu, npr. `ArtworkInfoPanel.tsx`, ako već ne postoji.
+
+**File:** `src/components/360/ArtworkInfoPanel.tsx`
+
+```tsx
+import React from "react";
+import type { GalleryArtwork } from "./Gallery360Scene";
+
+interface ArtworkInfoPanelProps {
+  artwork: GalleryArtwork;
+  onClose: () => void;
+}
+
+export const ArtworkInfoPanel: React.FC<ArtworkInfoPanelProps> = ({
+  artwork,
+  onClose,
+}) => {
+  if (!artwork) return null;
+
+  const sizeLabel = artwork.width_cm && artwork.height_cm
+    ? `${artwork.width_cm} × ${artwork.height_cm} cm`
+    : undefined;
+
+  const priceLabel =
+    artwork.price != null && artwork.currency
+      ? `${artwork.price.toLocaleString("hr-HR")} ${artwork.currency}`
+      : null;
+
+  return (
+    <div className="rv-artwork-panel">
+      <button className="rv-artwork-panel__close" onClick={onClose}>
+        ×
+      </button>
+
+      <div className="rv-artwork-panel__thumbnail">
+        <img src={artwork.imageUrl} alt={artwork.title} />
+      </div>
+
+      <h2 className="rv-artwork-panel__title">{artwork.title}</h2>
+      {artwork.artistName && (
+        <div className="rv-artwork-panel__artist">{artwork.artistName}</div>
+      )}
+
+      {sizeLabel && (
+        <div className="rv-artwork-panel__size">Size: {sizeLabel}</div>
+      )}
+
+      {priceLabel && (
+        <div className="rv-artwork-panel__price">Price: {priceLabel}</div>
+      )}
+
+      {artwork.description && (
+        <p className="rv-artwork-panel__description">
+          {artwork.description}
+        </p>
+      )}
+
+      {artwork.externalUrl && (
+        <a
+          href={artwork.externalUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rv-artwork-panel__buy-button"
+        >
+          View &amp; Buy Artwork
+        </a>
+      )}
+    </div>
+  );
+};
+```
+
+**Minimalni styling (SCSS / CSS, gdje ti paše):**
+
+```css
+.rv-artwork-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 320px;
+  padding: 24px 20px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 4px 0 14px rgba(0, 0, 0, 0.16);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 10;
+}
+
+.rv-artwork-panel__close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  border: none;
+  background: transparent;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.rv-artwork-panel__thumbnail img {
+  width: 100%;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.rv-artwork-panel__title {
+  margin: 8px 0 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.rv-artwork-panel__artist,
+.rv-artwork-panel__size,
+.rv-artwork-panel__price {
+  font-size: 14px;
+  color: #555;
+}
+
+.rv-artwork-panel__description {
+  font-size: 14px;
+  line-height: 1.4;
+  color: #444;
+}
+
+.rv-artwork-panel__buy-button {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  background: #283593;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.rv-artwork-panel__buy-button:hover {
+  opacity: 0.9;
+}
+```
+
+### Uvezivanje u Gallery360Scene
+
+```tsx
+// Gallery360Scene.tsx
+
+return (
+  <div className="rv-gallery-360-wrapper">
+    {focusedArtwork && (
+      <ArtworkInfoPanel
+        artwork={focusedArtwork}
+        onClose={handleCloseFocusedArtwork}
+      />
+    )}
+
+    {/* ostatak 360 canvasa / scene */}
+    <Canvas>{/* ... */}</Canvas>
+  </div>
+);
+```
+
+---
+
+## 3. Sažetak za agenta
+
+1. U 360 Classic Gallery sceni implementiraj **click‑to‑view**:
+
+   * Na klik slike kamera se glatko pomiče ispred slike (kao da stojiš ispred nje) i orijentira se prema centru slike.
+   * Transformacija kamere treba biti kontinuirana, bez skakanja po frameovima.
+   * Kada korisnik pusti miš, kamera se zaustavlja.
+
+2. Dodaj / proširi tip `GalleryArtwork` da sadrži: `price`, `currency`, `externalUrl`, `description`.
+
+3. Proširi Artwork model u bazi, admin formu za galerije i API endpoint koji koristi 360 scena (`/api/gallery/collections/:id/artworks`) da vraća ta polja.
+
+4. Implementiraj `ArtworkInfoPanel` komponentu koja prikazuje sve podatke o slici (naslov, autor, dimenzije, cijena, opis – ako postoji) te gumb **View & Buy Artwork** koji otvara `externalUrl` u novom tabu.
+
+5. Poveži `handleArtworkClick` handler u `Gallery360Scene.tsx` tako da:
+
+   * radi tween kamere prema slici,
+   * postavlja `focusedArtwork`,
+   * prikazuje `ArtworkInfoPanel`.
+
+6. Dodaj mogućnost zatvaranja detail viewa, pri čemu se kamera vraća u prethodnu poziciju (ili ostaje gdje je, ali bez info panela – izaberi rješenje koje je stabilnije u praksi).
+
+Kada završiš, molim te da:
+
+* potvrdiš kako API payload izgleda za jedan artwork (uključujući nova polja),
+* napišeš kratku napomenu gdje točno u kodu mogu ručno podesiti udaljenost kamere od slike (konstanta `OFFSET_DISTANCE`).
