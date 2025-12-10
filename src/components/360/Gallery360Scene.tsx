@@ -21,6 +21,7 @@ interface Gallery360SceneProps {
   selectedSlotId?: string;
   onSlotSelect?: (slotId: string) => void;
   focusTarget?: ArtworkFocusTarget | null;
+  onFocusDismiss?: () => void;
 }
 
 function getProxiedImageUrl(url: string): string {
@@ -734,11 +735,13 @@ const ARTWORK_FOCUS_DISTANCE = 3.5;
 function FirstPersonController({ 
   viewpoint,
   galleryDimensions,
-  focusTarget
+  focusTarget,
+  onFocusDismiss
 }: { 
   viewpoint: Viewpoint;
   galleryDimensions: { width: number; height: number; depth: number };
   focusTarget?: ArtworkFocusTarget | null;
+  onFocusDismiss?: () => void;
 }) {
   const { camera, gl } = useThree();
   const isDragging = useRef(false);
@@ -869,6 +872,11 @@ function FirstPersonController({
     const canvas = gl.domElement;
     
     const handleMouseDown = (e: MouseEvent) => {
+      // If focused on artwork, dismiss focus on any mouse interaction
+      if (focusTarget && onFocusDismiss) {
+        onFocusDismiss();
+        return;
+      }
       isDragging.current = true;
       previousMousePosition.current = { x: e.clientX, y: e.clientY };
     };
@@ -894,11 +902,21 @@ function FirstPersonController({
     
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
+      // If focused on artwork, dismiss focus on scroll
+      if (focusTarget && onFocusDismiss) {
+        onFocusDismiss();
+        return;
+      }
       const delta = -e.deltaY * SCROLL_SPEED;
       scrollVelocity.current += delta;
     };
     
     const handleTouchStart = (e: TouchEvent) => {
+      // If focused on artwork, dismiss focus on touch
+      if (focusTarget && onFocusDismiss) {
+        onFocusDismiss();
+        return;
+      }
       if (e.touches.length === 1) {
         isDragging.current = true;
         previousMousePosition.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -957,7 +975,7 @@ function FirstPersonController({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [gl]);
+  }, [gl, focusTarget, onFocusDismiss]);
   
   useFrame(() => {
     // Handle keyboard input - direct rotation, no velocity
@@ -1066,7 +1084,8 @@ export function Gallery360Scene({
   isEditor = false,
   selectedSlotId,
   onSlotSelect,
-  focusTarget
+  focusTarget,
+  onFocusDismiss
 }: Gallery360SceneProps) {
   return (
     <Canvas
@@ -1129,6 +1148,7 @@ export function Gallery360Scene({
         viewpoint={currentViewpoint} 
         galleryDimensions={preset.dimensions} 
         focusTarget={focusTarget}
+        onFocusDismiss={onFocusDismiss}
       />
     </Canvas>
   );

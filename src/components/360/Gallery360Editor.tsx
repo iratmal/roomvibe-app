@@ -214,6 +214,7 @@ export function Gallery360Editor({
           isEditor={false}
           onArtworkClick={handleArtworkClick}
           focusTarget={focusTarget}
+          onFocusDismiss={handleCloseInfoPanel}
         />
         
         <ArtworkInfoPanel
@@ -397,6 +398,7 @@ export function Gallery360Editor({
           onSlotSelect={setSelectedSlotId}
           onArtworkClick={handleArtworkClick}
           focusTarget={focusTarget}
+          onFocusDismiss={handleCloseInfoPanel}
         />
         
         <ArtworkInfoPanel
