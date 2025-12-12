@@ -31,14 +31,20 @@ function getProxiedImageUrl(url: string): string {
   return `/api/image-proxy?url=${encodeURIComponent(url)}`;
 }
 
-function FootstepMarker({ position, visible }: { position: [number, number, number]; visible: boolean }) {
+function FootstepMarker({ positionRef, visibleRef }: { positionRef: React.MutableRefObject<[number, number, number]>; visibleRef: React.MutableRefObject<boolean> }) {
   const groupRef = useRef<THREE.Group>(null);
   const opacityRef = useRef(0);
   
-  useFrame((_, delta) => {
+  useFrame(() => {
     if (!groupRef.current) return;
-    const targetOpacity = visible ? 0.85 : 0;
-    opacityRef.current = THREE.MathUtils.lerp(opacityRef.current, targetOpacity, delta * 8);
+    
+    // Instant position update - no lerp for position
+    groupRef.current.position.set(positionRef.current[0], positionRef.current[1], positionRef.current[2]);
+    
+    // Fast opacity transition
+    const targetOpacity = visibleRef.current ? 0.85 : 0;
+    opacityRef.current = THREE.MathUtils.lerp(opacityRef.current, targetOpacity, 0.35);
+    
     groupRef.current.children.forEach((child) => {
       if ((child as THREE.Mesh).material) {
         const mat = (child as THREE.Mesh).material as THREE.MeshBasicMaterial;
@@ -48,7 +54,7 @@ function FootstepMarker({ position, visible }: { position: [number, number, numb
   });
 
   return (
-    <group ref={groupRef} position={position} rotation={[-Math.PI / 2, 0, 0]}>
+    <group ref={groupRef} position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
       {/* Outer ring - dark RoomVibe blue */}
       <mesh>
         <ringGeometry args={[0.28, 0.35, 32]} />
@@ -1203,9 +1209,9 @@ function FirstPersonController({
   const raycaster = useRef(new THREE.Raycaster());
   const spherical = useRef(new THREE.Spherical());
   
-  // Hover state for footstep marker
-  const [hoverPosition, setHoverPosition] = useState<[number, number, number] | null>(null);
-  const [isHoveringFloor, setIsHoveringFloor] = useState(false);
+  // Hover refs for footstep marker - using refs for instant updates without re-renders
+  const hoverPositionRef = useRef<[number, number, number]>([0, 0.02, 0]);
+  const isHoveringFloorRef = useRef(false);
   
   // SINGLE transition state - one owner principle
   const isTransitioning = useRef(false);
@@ -1430,17 +1436,17 @@ function FirstPersonController({
     };
     
     const handleMouseMove = (e: MouseEvent) => {
-      // Handle floor hover detection when not dragging
+      // Handle floor hover detection when not dragging - instant ref updates
       if (!isDragging.current && !isTransitioning.current && !focusTarget) {
         const floorHit = checkFloorClick(e.clientX, e.clientY);
         if (floorHit) {
-          setHoverPosition([floorHit.x, 0.02, floorHit.z]);
-          setIsHoveringFloor(true);
+          hoverPositionRef.current = [floorHit.x, 0.02, floorHit.z];
+          isHoveringFloorRef.current = true;
         } else {
-          setIsHoveringFloor(false);
+          isHoveringFloorRef.current = false;
         }
       } else {
-        setIsHoveringFloor(false);
+        isHoveringFloorRef.current = false;
       }
       
       // Block drag rotation during camera transition
@@ -1561,7 +1567,7 @@ function FirstPersonController({
     
     const handleMouseLeave = () => {
       isDragging.current = false;
-      setIsHoveringFloor(false);
+      isHoveringFloorRef.current = false;
     };
     
     canvas.addEventListener('mousedown', handleMouseDown);
@@ -1651,13 +1657,13 @@ function FirstPersonController({
     camera.lookAt(lookAtPoint);
   });
   
-  // Render footstep marker at hover position
-  return hoverPosition ? (
+  // Render footstep marker - always render, visibility controlled by ref
+  return (
     <FootstepMarker 
-      position={hoverPosition} 
-      visible={isHoveringFloor && !isTransitioning.current} 
+      positionRef={hoverPositionRef} 
+      visibleRef={isHoveringFloorRef} 
     />
-  ) : null;
+  );
 }
 
 export function Gallery360Scene({
