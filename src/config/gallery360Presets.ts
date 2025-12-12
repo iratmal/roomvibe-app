@@ -49,7 +49,7 @@ export const gallery360Presets: Gallery360Preset[] = [
     floorColor: '#8B7355',
     ceilingColor: '#fafafa',
     hasColumns: true,
-    columnColor: '#1a1a1a',
+    columnColor: '#383838',
     hasSkylights: true,
     floorType: 'wood',
     viewpoints: [

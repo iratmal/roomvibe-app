@@ -507,10 +507,10 @@ function GalleryBench({ position, rotation }: { position: [number, number, numbe
 
   return (
     <group position={position} rotation={rotation}>
-      {/* Minimalist black cube bench - no legs, pure block form */}
+      {/* Minimalist dark grey cube bench - no legs, pure block form */}
       <mesh position={[0, BENCH_H / 2, 0]} castShadow receiveShadow>
         <boxGeometry args={[BENCH_L, BENCH_H, BENCH_W]} />
-        <meshStandardMaterial color="#2a2a2a" roughness={0.9} metalness={0} />
+        <meshStandardMaterial color="#363636" roughness={0.9} metalness={0} />
       </mesh>
     </group>
   );
