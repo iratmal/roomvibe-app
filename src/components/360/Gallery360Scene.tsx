@@ -296,11 +296,13 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
 
   const skylightPositions = useMemo(() => {
     if (!preset.hasSkylights) return [];
+    const cofferW = width / 3 - 0.6;
+    const cofferD = depth / 3 - 0.6;
     return [
-      { position: [-width/4, height + 0.28, -depth/4] as [number, number, number], width: 5, depth: 4 },
-      { position: [width/4, height + 0.28, -depth/4] as [number, number, number], width: 5, depth: 4 },
-      { position: [-width/4, height + 0.28, depth/4] as [number, number, number], width: 5, depth: 4 },
-      { position: [width/4, height + 0.28, depth/4] as [number, number, number], width: 5, depth: 4 },
+      { position: [-width/3, height + 0.06, -depth/3] as [number, number, number], width: cofferW, depth: cofferD },
+      { position: [width/3, height + 0.06, -depth/3] as [number, number, number], width: cofferW, depth: cofferD },
+      { position: [-width/3, height + 0.06, depth/3] as [number, number, number], width: cofferW, depth: cofferD },
+      { position: [width/3, height + 0.06, depth/3] as [number, number, number], width: cofferW, depth: cofferD },
     ];
   }, [preset.hasSkylights, height, depth, width]);
 
@@ -334,45 +336,69 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         </mesh>
       )}
 
+      {/* Main ceiling plane - light premium */}
       <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
         <meshStandardMaterial 
-          color="#f5f5f5" 
-          roughness={0.95}
+          color="#f8f8f8" 
+          roughness={0.92}
           metalness={0.0}
         />
       </mesh>
       
-      {/* Recessed ceiling zones - creates illusion of depth above */}
+      {/* Cove edge - luxury gallery detail (perimeter ledge) */}
       {[
-        { x: -width/4, z: -depth/4, w: 6, d: 5 },
-        { x: width/4, z: -depth/4, w: 6, d: 5 },
-        { x: -width/4, z: depth/4, w: 6, d: 5 },
-        { x: width/4, z: depth/4, w: 6, d: 5 },
-      ].map((recess, i) => (
-        <group key={`recess-${i}`} position={[recess.x, height + 0.3, recess.z]}>
+        { pos: [0, height - 0.15, -halfD + 0.15] as [number, number, number], size: [width - 0.3, 0.3, 0.3] as [number, number, number] },
+        { pos: [0, height - 0.15, halfD - 0.15] as [number, number, number], size: [width - 0.3, 0.3, 0.3] as [number, number, number] },
+        { pos: [-halfW + 0.15, height - 0.15, 0] as [number, number, number], size: [0.3, 0.3, depth - 0.6] as [number, number, number] },
+        { pos: [halfW - 0.15, height - 0.15, 0] as [number, number, number], size: [0.3, 0.3, depth - 0.6] as [number, number, number] },
+      ].map((cove, i) => (
+        <mesh key={`cove-${i}`} position={cove.pos}>
+          <boxGeometry args={cove.size} />
+          <meshStandardMaterial color="#f0f0f0" roughness={0.88} metalness={0.0} />
+        </mesh>
+      ))}
+      
+      {/* Coffered ceiling grid - 3x3 sections */}
+      {/* Main beams (X direction) */}
+      {[-depth/3, 0, depth/3].map((zPos, i) => (
+        <mesh key={`beam-main-x-${i}`} position={[0, height - 0.12, zPos]}>
+          <boxGeometry args={[width - 0.6, 0.2, 0.15]} />
+          <meshStandardMaterial color="#e8e8e8" roughness={0.85} metalness={0.02} />
+        </mesh>
+      ))}
+      {/* Main beams (Z direction) */}
+      {[-width/3, 0, width/3].map((xPos, i) => (
+        <mesh key={`beam-main-z-${i}`} position={[xPos, height - 0.12, 0]}>
+          <boxGeometry args={[0.15, 0.2, depth - 0.6]} />
+          <meshStandardMaterial color="#e8e8e8" roughness={0.85} metalness={0.02} />
+        </mesh>
+      ))}
+      
+      {/* Recessed coffer panels - 9 sections (3x3 grid) */}
+      {[-1, 0, 1].flatMap(xi => [-1, 0, 1].map(zi => ({
+        x: xi * (width / 3),
+        z: zi * (depth / 3),
+        w: width / 3 - 0.4,
+        d: depth / 3 - 0.4
+      }))).map((panel, i) => (
+        <group key={`coffer-${i}`} position={[panel.x, height + 0.08, panel.z]}>
           <mesh rotation={[Math.PI / 2, 0, 0]}>
-            <planeGeometry args={[recess.w, recess.d]} />
-            <meshBasicMaterial color="#ffffff" />
+            <planeGeometry args={[panel.w, panel.d]} />
+            <meshStandardMaterial color="#fcfcfc" roughness={0.95} metalness={0.0} />
           </mesh>
-          <mesh position={[0, -0.15, 0]}>
-            <boxGeometry args={[recess.w + 0.1, 0.32, recess.d + 0.1]} />
-            <meshStandardMaterial color="#f0f0f0" roughness={0.9} metalness={0.0} side={THREE.BackSide} />
+          <mesh position={[0, -0.04, 0]}>
+            <boxGeometry args={[panel.w, 0.1, panel.d]} />
+            <meshStandardMaterial color="#f2f2f2" roughness={0.9} metalness={0.0} side={THREE.BackSide} />
           </mesh>
         </group>
       ))}
       
-      {/* Minimal structural beams - very subtle, high position */}
-      {[-depth/3, depth/3].map((zPos, i) => (
-        <mesh key={`beam-x-${i}`} position={[0, height - 0.04, zPos]}>
-          <boxGeometry args={[width * 0.98, 0.08, 0.06]} />
-          <meshStandardMaterial color="#ebebeb" roughness={0.85} metalness={0.02} />
-        </mesh>
-      ))}
-      {[-width/3, width/3].map((xPos, i) => (
-        <mesh key={`beam-z-${i}`} position={[xPos, height - 0.04, 0]}>
-          <boxGeometry args={[0.06, 0.08, depth * 0.98]} />
-          <meshStandardMaterial color="#ebebeb" roughness={0.85} metalness={0.02} />
+      {/* Track lines - aligned with beam grid */}
+      {[-width/3 - width/6, -width/6, width/6, width/3 + width/6].map((xPos, i) => (
+        <mesh key={`track-${i}`} position={[xPos, height - 0.02, 0]}>
+          <boxGeometry args={[0.04, 0.04, depth - 1]} />
+          <meshStandardMaterial color="#d8d8d8" roughness={0.6} metalness={0.15} />
         </mesh>
       ))}
 

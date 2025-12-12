@@ -44,7 +44,7 @@ export const gallery360Presets: Gallery360Preset[] = [
     id: 'modern-gallery-v2',
     name: 'Modern Gallery',
     description: 'High-realism museum space with skylights, columns, and wood floor',
-    dimensions: { width: 24, height: 5.2, depth: 18 },
+    dimensions: { width: 24, height: 6.5, depth: 18 },
     wallColor: '#f5f5f5',
     floorColor: '#8B7355',
     ceilingColor: '#fafafa',
