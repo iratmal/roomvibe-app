@@ -566,11 +566,11 @@ function DecorativeVase({ position }: { position: [number, number, number] }) {
 
   return (
     <group position={position}>
-      {/* Main body - stone/ceramic with subtle surface variation */}
+      {/* Main body - floor color matching */}
       <mesh position={[0, VASE_H / 2, 0]} castShadow receiveShadow>
         <cylinderGeometry args={[TOP_R, BASE_R, VASE_H, 32]} />
         <meshStandardMaterial 
-          color="#c4baa8" 
+          color="#d8d4d0" 
           roughness={0.92} 
           metalness={0}
           flatShading={false}
@@ -580,13 +580,13 @@ function DecorativeVase({ position }: { position: [number, number, number] }) {
       {/* Subtle inner shadow ring at top */}
       <mesh position={[0, VASE_H - 0.02, 0]}>
         <cylinderGeometry args={[TOP_R - 0.02, TOP_R, 0.04, 32]} />
-        <meshStandardMaterial color="#8a8272" roughness={0.95} metalness={0} />
+        <meshStandardMaterial color="#b8b4b0" roughness={0.95} metalness={0} />
       </mesh>
       
       {/* Base ring for grounding */}
       <mesh position={[0, 0.015, 0]} castShadow>
         <cylinderGeometry args={[BASE_R + 0.01, BASE_R + 0.02, 0.03, 32]} />
-        <meshStandardMaterial color="#a8a090" roughness={0.88} metalness={0} />
+        <meshStandardMaterial color="#c8c4c0" roughness={0.88} metalness={0} />
       </mesh>
       
       {/* Subtle vertical texture bands (6 bands around vase) */}
@@ -602,7 +602,7 @@ function DecorativeVase({ position }: { position: [number, number, number] }) {
         >
           <boxGeometry args={[0.008, VASE_H * 0.85, 0.06]} />
           <meshStandardMaterial 
-            color={i % 2 === 0 ? "#bfb5a3" : "#c9bfad"} 
+            color={i % 2 === 0 ? "#ccc8c4" : "#e0dcd8"} 
             roughness={0.95} 
             metalness={0}
             transparent
