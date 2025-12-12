@@ -827,17 +827,47 @@ function HotspotMarker({
   );
 }
 
-// Camera movement: smooth 0.8s transitions (responsive yet cinematic)
-const CAMERA_MOVE_DURATION = 0.8;
+// Camera movement: smooth 0.35s transitions (responsive yet cinematic)
+const CAMERA_MOVE_DURATION = 0.35;
 const SCROLL_SPEED = 0.002;
 const MIN_WALL_DISTANCE = 0.3;
 // Vertical look limits (polar angle in radians):
 const MIN_POLAR_ANGLE = 1.40;  // ~10° above horizontal (slight ceiling view)
 const MAX_POLAR_ANGLE = 1.74;  // ~10° below horizontal (slight floor view)
-// Direct rotation sensitivity
-const MOUSE_SENSITIVITY = 0.002;
+// Direct rotation sensitivity - SLOWED DOWN to prevent "runaway" mouse
+const MOUSE_SENSITIVITY = 0.0007;
 // Keyboard rotation speed (radians per frame when key held)
-const KEYBOARD_ROTATION_SPEED = 0.015;
+const KEYBOARD_ROTATION_SPEED = 0.008;
+
+// Hard-coded camera presets - DO NOT compute at runtime
+export type CamPreset = {
+  pos: [number, number, number];
+  target: [number, number, number];
+  fov: number;
+};
+
+export const CAM_PRESETS: Record<string, CamPreset> = {
+  entrance: {
+    pos: [0, 1.75, 8.5],
+    target: [0, 1.4, 0],
+    fov: 55,
+  },
+  center: {
+    pos: [0, 1.7, 4.0],
+    target: [0, 1.5, -9],
+    fov: 50,
+  },
+  'back-left': {
+    pos: [-7, 1.7, -4],
+    target: [-12, 1.5, -4],
+    fov: 50,
+  },
+  'back-right': {
+    pos: [7, 1.7, -4],
+    target: [12, 1.5, -4],
+    fov: 50,
+  },
+};
 
 // Smoothstep easing - t * t * (3 - 2 * t) - proven stable
 function smoothstep(t: number): number {
@@ -923,8 +953,16 @@ function FirstPersonController({
   const lastViewpointRef = useRef<Viewpoint | null>(null);
   
   useEffect(() => {
-    const pos = new THREE.Vector3(...viewpoint.position);
-    const lookAt = new THREE.Vector3(...viewpoint.lookAt);
+    // Use hard-coded preset if available, otherwise fall back to viewpoint data
+    const preset = CAM_PRESETS[viewpoint.id];
+    const pos = preset 
+      ? new THREE.Vector3(...preset.pos) 
+      : new THREE.Vector3(...viewpoint.position);
+    const lookAt = preset 
+      ? new THREE.Vector3(...preset.target) 
+      : new THREE.Vector3(...viewpoint.lookAt);
+    const targetFov = preset?.fov || 50;
+    
     clampPosition(pos);
     
     const direction = lookAt.clone().sub(pos).normalize();
@@ -935,19 +973,29 @@ function FirstPersonController({
     if (isFirstMount.current) {
       camera.position.copy(pos);
       spherical.current.copy(newTargetSpherical);
+      // Set FOV immediately
+      if ((camera as THREE.PerspectiveCamera).fov !== undefined) {
+        (camera as THREE.PerspectiveCamera).fov = targetFov;
+        (camera as THREE.PerspectiveCamera).updateProjectionMatrix();
+      }
       lastViewpointId.current = viewpoint.id;
       lastViewpointRef.current = viewpoint;
       isFirstMount.current = false;
-      console.log('[CameraNav] initialLoad', viewpoint.id, 'pos:', pos.toArray());
+      console.log('[CameraNav] initialLoad', viewpoint.id, 'pos:', pos.toArray(), 'fov:', targetFov);
       return;
     }
     
     // After first mount: trigger transition if viewpoint object changed (button click creates new object)
     if (lastViewpointRef.current !== viewpoint) {
+      // Set FOV for the new viewpoint
+      if ((camera as THREE.PerspectiveCamera).fov !== undefined) {
+        (camera as THREE.PerspectiveCamera).fov = targetFov;
+        (camera as THREE.PerspectiveCamera).updateProjectionMatrix();
+      }
       startTransition(pos, newTargetSpherical, CAMERA_MOVE_DURATION);
       lastViewpointId.current = viewpoint.id;
       lastViewpointRef.current = viewpoint;
-      console.log('[CameraNav] goToView', viewpoint.id);
+      console.log('[CameraNav] goToView', viewpoint.id, 'fov:', targetFov);
     }
   }, [viewpoint, camera, clampPosition, startTransition]);
   
@@ -1200,7 +1248,7 @@ export function Gallery360Scene({
   return (
     <Canvas
       shadows="soft"
-      camera={{ fov: 40, near: 0.1, far: 100 }}
+      camera={{ fov: 55, near: 0.1, far: 100 }}
       style={{ background: '#d8d4d0' }}
       gl={{ 
         antialias: true,

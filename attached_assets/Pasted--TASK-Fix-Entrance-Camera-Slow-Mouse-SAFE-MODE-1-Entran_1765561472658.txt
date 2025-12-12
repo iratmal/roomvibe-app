@@ -1,0 +1,170 @@
+# TASK: Fix Entrance Camera + Slow Mouse (SAFE MODE)
+
+## 1) Entrance preset NE radi (mora biti wide / cijela prostorija)
+
+**Cilj:** Entrance gumb *uvijek* vraća kameru na isti “wide shot” koji vidi cijelu prostoriju (kao prije), bez obzira na trenutno stanje kamere.
+
+**Pristup (robustan):**
+
+* Nemoj računati preset iz scene u runtime-u.
+* Hard-codeaj Entrance/Center/BackLeft/BackRight kao **position + target + fov**.
+* Na klik gumba: **disable user input**, odradi tween (ili instant) na preset, pa re-enable.
+
+### Kod (primjer – Three.js)
+
+> Prilagodi putanje i tip kamere (PerspectiveCamera) prema vašem projektu.
+
+```ts
+// cameraPresets.ts
+export type CamPreset = {
+  pos: [number, number, number];
+  target: [number, number, number];
+  fov?: number;
+};
+
+// NOTE: Brojevi su primjer. U praksi: jednom izmjeri/nađi idealne vrijednosti,
+// pa ih “zaključaš” ovdje.
+export const CAM_PRESETS: Record<string, CamPreset> = {
+  entrance: {
+    pos: [0, 1.75, 8.5],
+    target: [0, 1.4, 0],
+    fov: 55,
+  },
+  center: {
+    pos: [0, 1.7, 6.0],
+    target: [0, 1.35, 0],
+    fov: 55,
+  },
+  backLeft: {
+    pos: [-6.5, 1.7, 2.5],
+    target: [0, 1.35, 0],
+    fov: 55,
+  },
+  backRight: {
+    pos: [6.5, 1.7, 2.5],
+    target: [0, 1.35, 0],
+    fov: 55,
+  },
+};
+```
+
+```ts
+// applyPreset.ts
+import { Vector3 } from "three";
+import { CAM_PRESETS } from "./cameraPresets";
+
+type ControlsLike = {
+  enabled: boolean;
+  target: Vector3;
+  update: () => void;
+};
+
+export function applyPresetInstant(
+  camera: any, // PerspectiveCamera
+  controls: ControlsLike,
+  key: keyof typeof CAM_PRESETS
+) {
+  const p = CAM_PRESETS[key];
+
+  controls.enabled = false;
+
+  camera.position.set(...p.pos);
+  controls.target.set(...p.target);
+  if (p.fov) {
+    camera.fov = p.fov;
+    camera.updateProjectionMatrix?.();
+  }
+  controls.update();
+
+  // mali delay da izbjegnemo “skok” zbog eventova
+  setTimeout(() => {
+    controls.enabled = true;
+  }, 0);
+}
+```
+
+```ts
+// OPTIONAL: tween (glatko) – ako imate gsap ili vlastiti lerp
+export function applyPresetSmooth(camera: any, controls: any, key: any) {
+  const p = CAM_PRESETS[key];
+  controls.enabled = false;
+
+  const startPos = camera.position.clone();
+  const startT = controls.target.clone();
+  const endPos = new Vector3(...p.pos);
+  const endT = new Vector3(...p.target);
+
+  const durationMs = 350;
+  const t0 = performance.now();
+
+  function easeInOut(t: number) {
+    return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  }
+
+  function step(now: number) {
+    const u = Math.min(1, (now - t0) / durationMs);
+    const e = easeInOut(u);
+
+    camera.position.lerpVectors(startPos, endPos, e);
+    controls.target.lerpVectors(startT, endT, e);
+
+    if (p.fov) {
+      // linearan fov
+      const startF = camera.fov;
+      camera.fov = startF + (p.fov - startF) * e;
+      camera.updateProjectionMatrix?.();
+    }
+
+    controls.update();
+
+    if (u < 1) requestAnimationFrame(step);
+    else controls.enabled = true;
+  }
+
+  requestAnimationFrame(step);
+}
+```
+
+**Kako naći točne brojeve za Entrance:**
+
+* Privremeno dodaj debug tipku koja ispiše `camera.position` i `controls.target` u konzolu.
+* Ručno namjesti wide kadar u editoru, kopiraj vrijednosti, zalijepi u `CAM_PRESETS.entrance`.
+
+---
+
+## 2) Miš je prebrz ("bježi")
+
+**Cilj:** Usporiti osjetljivost miša i ublažiti “skokove”.
+
+Ako koristite `OrbitControls`:
+
+```ts
+controls.rotateSpeed = 0.35; // default je 1.0
+controls.zoomSpeed = 0.6;
+controls.panSpeed = 0.5;
+
+// Dodatno (za stabilnost):
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+```
+
+Ako koristite vlastiti mouse handler, uvedi `SENSITIVITY`:
+
+```ts
+const SENSITIVITY = 0.35; // smanji ovo dok ne bude ugodno
+
+onMouseMove(e) {
+  const dx = e.movementX * SENSITIVITY;
+  const dy = e.movementY * SENSITIVITY;
+  // ... dalje koristi dx/dy
+}
+```
+
+---
+
+## Acceptance criteria (da znamo da je gotovo)
+
+* Klik **Entrance** uvijek vrati wide kadar gdje se vidi cijela prostorija.
+* Klik **Center** je srednji kadar (bliže slikama), ali ne kao Entrance.
+* Miš/rotacija osjetno sporiji, nema “bježanja”.
+* Nema promjena u svjetlima, materijalima, zidovima, stropu (osim ako eksplicitno tražimo kasnije).
