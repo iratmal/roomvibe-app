@@ -1247,12 +1247,16 @@ export function Gallery360Scene({
       }}
     >
       {/* NEVER-BLACK FALLBACK - guaranteed visibility (always keep active) */}
-      <ambientLight intensity={0.30} color="#fff8f2" />
-      <hemisphereLight args={['#faf8f5', '#a09080', 0.20]} />
+      <ambientLight intensity={0.8} color="#ffffff" />
+      <hemisphereLight args={['#ffffff', '#e0e0e0', 0.6]} />
+      
+      {/* Strong fill lights from multiple angles */}
+      <pointLight position={[0, preset.dimensions.height - 1, 0]} intensity={1.5} color="#fff8f0" distance={30} />
+      <pointLight position={[0, 2, 0]} intensity={0.8} color="#fff8f0" distance={20} />
       
       <directionalLight 
         position={[0, preset.dimensions.height + 8, 0]} 
-        intensity={0.5}
+        intensity={0.8}
         color="#fffcf8"
         castShadow
         shadow-mapSize={[2048, 2048]}
@@ -1265,8 +1269,8 @@ export function Gallery360Scene({
         shadow-radius={4}
       />
       
-      <directionalLight position={[12, 6, 6]} intensity={0.2} color="#fff5e8" />
-      <directionalLight position={[-12, 6, -6]} intensity={0.15} color="#f8f5ff" />
+      <directionalLight position={[12, 6, 6]} intensity={0.4} color="#fff5e8" />
+      <directionalLight position={[-12, 6, -6]} intensity={0.3} color="#f8f5ff" />
 
       <GalleryRoom preset={preset} />
 
