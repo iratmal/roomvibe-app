@@ -19,7 +19,8 @@ export function useHotspots(
   const navigateToViewpoint = useCallback((viewpointId: string) => {
     const target = viewpoints.find(v => v.id === viewpointId);
     if (target) {
-      setCurrentViewpoint(target);
+      // Create new object reference to force re-render even if same viewpoint
+      setCurrentViewpoint({ ...target });
     }
   }, [viewpoints]);
 
