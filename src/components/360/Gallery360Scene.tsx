@@ -476,11 +476,63 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         />
       ))}
 
+      {/* Gallery Benches - only for Classic Gallery */}
+      {preset.id === 'white-cube-v1' && (
+        <>
+          <GalleryBench position={[-5.5, 0, 0]} rotation={[0, Math.PI / 2, 0]} />
+          <GalleryBench position={[5.5, 0, 0]} rotation={[0, -Math.PI / 2, 0]} />
+        </>
+      )}
+
       {/* Entrance Portal - realistic opening with depth on south wall */}
       <EntrancePortal 
         position={[0, 0, halfD - 0.01]} 
         rotation={[0, Math.PI, 0]}
       />
+    </group>
+  );
+}
+
+function GalleryBench({ position, rotation }: { position: [number, number, number]; rotation: [number, number, number] }) {
+  const BENCH_L = 1.7;   // 170cm length
+  const BENCH_W = 0.42;  // 42cm depth
+  const BENCH_H = 0.45;  // 45cm height
+  const LEG_W = 0.08;    // leg width
+  const LEG_INSET = 0.1; // leg inset from edge
+
+  return (
+    <group position={position} rotation={rotation}>
+      {/* Bench seat - warm dark wood */}
+      <mesh position={[0, BENCH_H, 0]} castShadow receiveShadow>
+        <boxGeometry args={[BENCH_L, 0.05, BENCH_W]} />
+        <meshStandardMaterial color="#4a3728" roughness={0.85} metalness={0} />
+      </mesh>
+      
+      {/* Support beam under seat */}
+      <mesh position={[0, BENCH_H - 0.07, 0]} castShadow>
+        <boxGeometry args={[BENCH_L - 0.1, 0.04, 0.12]} />
+        <meshStandardMaterial color="#3d2d1f" roughness={0.9} metalness={0} />
+      </mesh>
+
+      {/* Left legs */}
+      <mesh position={[-(BENCH_L / 2 - LEG_INSET), BENCH_H / 2, BENCH_W / 2 - LEG_INSET]} castShadow>
+        <boxGeometry args={[LEG_W, BENCH_H, LEG_W]} />
+        <meshStandardMaterial color="#3d2d1f" roughness={0.9} metalness={0} />
+      </mesh>
+      <mesh position={[-(BENCH_L / 2 - LEG_INSET), BENCH_H / 2, -(BENCH_W / 2 - LEG_INSET)]} castShadow>
+        <boxGeometry args={[LEG_W, BENCH_H, LEG_W]} />
+        <meshStandardMaterial color="#3d2d1f" roughness={0.9} metalness={0} />
+      </mesh>
+
+      {/* Right legs */}
+      <mesh position={[(BENCH_L / 2 - LEG_INSET), BENCH_H / 2, BENCH_W / 2 - LEG_INSET]} castShadow>
+        <boxGeometry args={[LEG_W, BENCH_H, LEG_W]} />
+        <meshStandardMaterial color="#3d2d1f" roughness={0.9} metalness={0} />
+      </mesh>
+      <mesh position={[(BENCH_L / 2 - LEG_INSET), BENCH_H / 2, -(BENCH_W / 2 - LEG_INSET)]} castShadow>
+        <boxGeometry args={[LEG_W, BENCH_H, LEG_W]} />
+        <meshStandardMaterial color="#3d2d1f" roughness={0.9} metalness={0} />
+      </mesh>
     </group>
   );
 }
