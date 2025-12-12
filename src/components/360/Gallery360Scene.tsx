@@ -479,8 +479,8 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       {/* Gallery Benches - only for Classic Gallery */}
       {preset.id === 'white-cube-v1' && (
         <>
-          <GalleryBench position={[-5.5, 0, 0]} rotation={[0, Math.PI / 2, 0]} />
-          <GalleryBench position={[5.5, 0, 0]} rotation={[0, -Math.PI / 2, 0]} />
+          <GalleryBench position={[-3.5, 0, 0]} rotation={[0, Math.PI / 2, 0]} />
+          <GalleryBench position={[3.5, 0, 0]} rotation={[0, -Math.PI / 2, 0]} />
         </>
       )}
 
@@ -494,11 +494,11 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
 }
 
 function GalleryBench({ position, rotation }: { position: [number, number, number]; rotation: [number, number, number] }) {
-  const BENCH_L = 1.7;   // 170cm length
-  const BENCH_W = 0.42;  // 42cm depth
-  const BENCH_H = 0.45;  // 45cm height
-  const LEG_W = 0.08;    // leg width
-  const LEG_INSET = 0.1; // leg inset from edge
+  const BENCH_L = 2.3;   // 230cm length (+35%)
+  const BENCH_W = 0.50;  // 50cm depth (+20%)
+  const BENCH_H = 0.46;  // 46cm height (realistic seating)
+  const LEG_W = 0.10;    // leg width (slightly larger)
+  const LEG_INSET = 0.12; // leg inset from edge
 
   return (
     <group position={position} rotation={rotation}>
