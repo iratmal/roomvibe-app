@@ -400,7 +400,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         <meshStandardMaterial color="#ECEBE7" roughness={0.9} metalness={0} />
       </mesh>
       
-      {/* Cove edge - light warm off-white */}
+      {/* Cove edge - lighter dark grey for contrast */}
       {[
         { pos: [0, height - 0.12, -halfD + 0.12] as [number, number, number], size: [width - 0.24, 0.24, 0.24] as [number, number, number] },
         { pos: [0, height - 0.12, halfD - 0.12] as [number, number, number], size: [width - 0.24, 0.24, 0.24] as [number, number, number] },
@@ -409,23 +409,23 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       ].map((cove, i) => (
         <mesh key={`cove-${i}`} position={cove.pos}>
           <boxGeometry args={cove.size} />
-          <meshStandardMaterial color="#ECEBE7" roughness={0.9} metalness={0} />
+          <meshStandardMaterial color="#3A3A3A" roughness={0.95} metalness={0} />
         </mesh>
       ))}
       
       {/* Coffered ceiling grid - 3x3 sections */}
-      {/* Main beams - dark black */}
+      {/* Main beams - premium dark grey */}
       {[-depth/3, 0, depth/3].map((zPos, i) => (
         <mesh key={`beam-main-x-${i}`} position={[0, height - 0.12, zPos]}>
           <boxGeometry args={[width - 0.3, 0.24, 0.20]} />
-          <meshStandardMaterial color="#1a1a1a" roughness={0.8} metalness={0} />
+          <meshStandardMaterial color="#2F2F2F" roughness={0.95} metalness={0} />
         </mesh>
       ))}
-      {/* Cross beams - dark black */}
+      {/* Cross beams - premium dark grey */}
       {[-width/3, 0, width/3].map((xPos, i) => (
         <mesh key={`beam-main-z-${i}`} position={[xPos, height - 0.12, 0]}>
           <boxGeometry args={[0.20, 0.24, depth - 0.3]} />
-          <meshStandardMaterial color="#1a1a1a" roughness={0.8} metalness={0} />
+          <meshStandardMaterial color="#2F2F2F" roughness={0.95} metalness={0} />
         </mesh>
       ))}
       
@@ -445,11 +445,11 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         </group>
       ))}
       
-      {/* Track lines - light warm off-white */}
+      {/* Track lines - lighter dark grey */}
       {[-width/3 - width/6, -width/6, width/6, width/3 + width/6].map((xPos, i) => (
         <mesh key={`track-${i}`} position={[xPos, height - 0.01, 0]}>
           <boxGeometry args={[0.03, 0.03, depth - 0.8]} />
-          <meshStandardMaterial color="#ECEBE7" roughness={0.9} metalness={0} />
+          <meshStandardMaterial color="#3A3A3A" roughness={0.95} metalness={0} />
         </mesh>
       ))}
 
@@ -550,10 +550,10 @@ function GalleryBench({ position, rotation }: { position: [number, number, numbe
 
   return (
     <group position={position} rotation={rotation}>
-      {/* Minimalist dark grey cube bench - no legs, pure block form */}
+      {/* Minimalist premium dark grey cube bench - no legs, pure block form */}
       <mesh position={[0, BENCH_H / 2, 0]} castShadow receiveShadow>
         <boxGeometry args={[BENCH_L, BENCH_H, BENCH_W]} />
-        <meshStandardMaterial color="#42413c" roughness={0.9} metalness={0} />
+        <meshStandardMaterial color="#2F2F2F" roughness={0.95} metalness={0} />
       </mesh>
     </group>
   );
