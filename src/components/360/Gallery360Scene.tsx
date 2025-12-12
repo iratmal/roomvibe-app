@@ -575,7 +575,9 @@ function EntrancePortal({ position, rotation }: { position: [number, number, num
   const PORTAL_W = 3.5;
   const PORTAL_H = 3.5;
   const FRAME_T = 0.12;
-  const DEPTH = 3.0;
+  const CORRIDOR_DEPTH = 4.0;
+  const SECONDARY_W = 8.0;
+  const SECONDARY_D = 6.0;
 
   return (
     <group position={position} rotation={rotation}>
@@ -596,45 +598,92 @@ function EntrancePortal({ position, rotation }: { position: [number, number, num
           <boxGeometry args={[PORTAL_W + FRAME_T * 2, FRAME_T, FRAME_T]} />
           <meshStandardMaterial color="#d7d4cf" roughness={0.9} metalness={0} />
         </mesh>
-        {/* No threshold - continuous floor */}
       </group>
 
-      {/* Interior Corridor - depth cue behind the opening */}
+      {/* Entrance corridor */}
       <group>
-        {/* Left wall */}
-        <mesh position={[-(PORTAL_W / 2) - (FRAME_T / 2), PORTAL_H / 2, -DEPTH / 2]}>
-          <boxGeometry args={[FRAME_T, PORTAL_H, DEPTH]} />
-          <meshStandardMaterial color="#bcb8b2" roughness={1} metalness={0} />
+        {/* Corridor left wall */}
+        <mesh position={[-(PORTAL_W / 2) - (FRAME_T / 2), PORTAL_H / 2, -CORRIDOR_DEPTH / 2]}>
+          <boxGeometry args={[FRAME_T, PORTAL_H, CORRIDOR_DEPTH]} />
+          <meshStandardMaterial color="#e8e5e0" roughness={0.95} metalness={0} />
         </mesh>
-        {/* Right wall */}
-        <mesh position={[(PORTAL_W / 2) + (FRAME_T / 2), PORTAL_H / 2, -DEPTH / 2]}>
-          <boxGeometry args={[FRAME_T, PORTAL_H, DEPTH]} />
-          <meshStandardMaterial color="#bcb8b2" roughness={1} metalness={0} />
+        {/* Corridor right wall */}
+        <mesh position={[(PORTAL_W / 2) + (FRAME_T / 2), PORTAL_H / 2, -CORRIDOR_DEPTH / 2]}>
+          <boxGeometry args={[FRAME_T, PORTAL_H, CORRIDOR_DEPTH]} />
+          <meshStandardMaterial color="#e8e5e0" roughness={0.95} metalness={0} />
         </mesh>
-        {/* Ceiling */}
-        <mesh position={[0, PORTAL_H + (FRAME_T / 2), -DEPTH / 2]}>
-          <boxGeometry args={[PORTAL_W + FRAME_T * 2, FRAME_T, DEPTH]} />
-          <meshStandardMaterial color="#bcb8b2" roughness={1} metalness={0} />
+        {/* Corridor ceiling */}
+        <mesh position={[0, PORTAL_H, -CORRIDOR_DEPTH / 2]}>
+          <boxGeometry args={[PORTAL_W + FRAME_T * 2, 0.08, CORRIDOR_DEPTH]} />
+          <meshStandardMaterial color="#ebe8e3" roughness={0.9} metalness={0} />
         </mesh>
-        {/* Floor - matching gallery tiles */}
-        <mesh position={[0, 0.01, -DEPTH / 2]}>
-          <boxGeometry args={[PORTAL_W, 0.02, DEPTH]} />
+        {/* Corridor floor - matching gallery tiles */}
+        <mesh position={[0, 0.005, -CORRIDOR_DEPTH / 2]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[PORTAL_W, CORRIDOR_DEPTH]} />
           <meshStandardMaterial color="#e8e4dc" roughness={0.8} metalness={0} />
         </mesh>
-        {/* Back wall */}
-        <mesh position={[0, PORTAL_H / 2, -DEPTH - (FRAME_T / 2)]}>
-          <boxGeometry args={[PORTAL_W + FRAME_T * 2, PORTAL_H + FRAME_T * 2, FRAME_T]} />
-          <meshStandardMaterial color="#9a9690" roughness={1} metalness={0} />
+      </group>
+
+      {/* Secondary gallery space visible through corridor */}
+      <group position={[0, 0, -CORRIDOR_DEPTH]}>
+        {/* Secondary gallery floor - same tiles, extends further */}
+        <mesh position={[0, 0.003, -SECONDARY_D / 2]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[SECONDARY_W, SECONDARY_D]} />
+          <meshStandardMaterial color="#e5e1d9" roughness={0.85} metalness={0} />
+        </mesh>
+        
+        {/* Secondary gallery back wall - slightly darker */}
+        <mesh position={[0, PORTAL_H / 2, -SECONDARY_D]}>
+          <boxGeometry args={[SECONDARY_W, PORTAL_H + 0.5, 0.15]} />
+          <meshStandardMaterial color="#d8d5d0" roughness={0.95} metalness={0} />
+        </mesh>
+        
+        {/* Secondary gallery left wall */}
+        <mesh position={[-SECONDARY_W / 2, PORTAL_H / 2, -SECONDARY_D / 2]}>
+          <boxGeometry args={[0.15, PORTAL_H + 0.5, SECONDARY_D]} />
+          <meshStandardMaterial color="#dcd9d4" roughness={0.95} metalness={0} />
+        </mesh>
+        
+        {/* Secondary gallery right wall */}
+        <mesh position={[SECONDARY_W / 2, PORTAL_H / 2, -SECONDARY_D / 2]}>
+          <boxGeometry args={[0.15, PORTAL_H + 0.5, SECONDARY_D]} />
+          <meshStandardMaterial color="#dcd9d4" roughness={0.95} metalness={0} />
+        </mesh>
+        
+        {/* Secondary gallery ceiling */}
+        <mesh position={[0, PORTAL_H + 0.2, -SECONDARY_D / 2]}>
+          <boxGeometry args={[SECONDARY_W, 0.1, SECONDARY_D]} />
+          <meshStandardMaterial color="#e0ddd8" roughness={0.9} metalness={0} />
         </mesh>
 
-        {/* Subtle interior light to avoid black hole */}
+        {/* Dimmer ambient lighting in secondary space */}
         <pointLight 
-          position={[0, PORTAL_H * 0.8, -DEPTH * 0.6]} 
-          intensity={0.4} 
+          position={[0, PORTAL_H * 0.85, -SECONDARY_D * 0.4]} 
+          intensity={0.25} 
+          distance={10} 
+          color="#f5f0e8"
+        />
+        <pointLight 
+          position={[-2, PORTAL_H * 0.7, -SECONDARY_D * 0.6]} 
+          intensity={0.15} 
           distance={6} 
-          color="#fff8f2"
+          color="#f0ebe3"
+        />
+        <pointLight 
+          position={[2, PORTAL_H * 0.7, -SECONDARY_D * 0.6]} 
+          intensity={0.15} 
+          distance={6} 
+          color="#f0ebe3"
         />
       </group>
+
+      {/* Corridor lighting - subtle */}
+      <pointLight 
+        position={[0, PORTAL_H * 0.8, -CORRIDOR_DEPTH * 0.3]} 
+        intensity={0.3} 
+        distance={5} 
+        color="#fff8f2"
+      />
     </group>
   );
 }

@@ -27,6 +27,7 @@ interface Artwork {
   price_amount?: number;
   price_currency?: string;
   buy_url?: string;
+  description?: string;
   created_at: string;
 }
 
@@ -58,7 +59,8 @@ export default function CollectionDetail() {
     dimensionUnit: 'cm' as 'cm' | 'in',
     priceAmount: '',
     priceCurrency: 'EUR',
-    buyUrl: ''
+    buyUrl: '',
+    description: ''
   });
 
   const [statusUpdate, setStatusUpdate] = useState<'draft' | 'published'>('draft');
@@ -155,7 +157,7 @@ export default function CollectionDetail() {
     }
   }, [collectionId, fetchCollection, fetchArtworks]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
@@ -204,6 +206,9 @@ export default function CollectionDetail() {
     if (formData.buyUrl) {
       uploadFormData.append('buyUrl', formData.buyUrl);
     }
+    if (formData.description) {
+      uploadFormData.append('description', formData.description);
+    }
 
     try {
       const response = await fetch(`${API_URL}/api/gallery/collections/${collectionId}/artworks`, {
@@ -233,7 +238,8 @@ export default function CollectionDetail() {
         dimensionUnit: 'cm',
         priceAmount: '',
         priceCurrency: 'EUR',
-        buyUrl: ''
+        buyUrl: '',
+        description: ''
       });
       setSelectedFile(null);
       setUploadPreview(null);
@@ -639,6 +645,18 @@ export default function CollectionDetail() {
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] bg-slate-50 hover:bg-white transition-all"
                     placeholder="https://example.com/artwork/123"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Description (optional)</label>
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    rows={3}
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] bg-slate-50 hover:bg-white transition-all resize-none"
+                    placeholder="About this artwork..."
                   />
                 </div>
 

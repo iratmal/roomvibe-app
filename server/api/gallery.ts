@@ -234,7 +234,7 @@ router.get('/collections/:id/artworks', authenticateToken, async (req: any, res)
     const result = await query(
       `SELECT id, collection_id, title, artist_name, image_url, 
               width_value, height_value, dimension_unit,
-              price_amount, price_currency, buy_url, created_at
+              price_amount, price_currency, buy_url, description, created_at
        FROM gallery_artworks
        WHERE collection_id = $1
        ORDER BY created_at DESC`,
@@ -314,7 +314,7 @@ router.post('/collections/:id/artworks', authenticateToken, checkGalleryArtworkL
       return res.status(400).json({ error: 'Artwork image is required' });
     }
 
-    const { title, artistName, widthValue, heightValue, dimensionUnit, priceAmount, priceCurrency, buyUrl } = req.body;
+    const { title, artistName, widthValue, heightValue, dimensionUnit, priceAmount, priceCurrency, buyUrl, description } = req.body;
 
     if (!title || !artistName || !widthValue || !heightValue) {
       return res.status(400).json({ error: 'Title, artist name, width, and height are required' });
@@ -331,8 +331,8 @@ router.post('/collections/:id/artworks', authenticateToken, checkGalleryArtworkL
     const result = await query(
       `INSERT INTO gallery_artworks 
        (collection_id, title, artist_name, image_url, image_data, width_value, height_value, 
-        dimension_unit, price_amount, price_currency, buy_url)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        dimension_unit, price_amount, price_currency, buy_url, description)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
       [
         collectionId,
@@ -345,7 +345,8 @@ router.post('/collections/:id/artworks', authenticateToken, checkGalleryArtworkL
         unit,
         priceAmount ? parseFloat(priceAmount) : null,
         currency,
-        buyUrl || null
+        buyUrl || null,
+        description || null
       ]
     );
 
@@ -408,9 +409,9 @@ router.put('/artworks/:id', authenticateToken, async (req: any, res) => {
     }
 
     const artworkId = req.params.id;
-    const { title, artistName, widthValue, heightValue, dimensionUnit, priceAmount, priceCurrency, buyUrl } = req.body;
+    const { title, artistName, widthValue, heightValue, dimensionUnit, priceAmount, priceCurrency, buyUrl, description } = req.body;
 
-    console.log('Updating artwork:', artworkId, 'with data:', { title, artistName, widthValue, heightValue });
+    console.log('Updating artwork:', artworkId, 'with data:', { title, artistName, widthValue, heightValue, description });
 
     const checkResult = await query(
       `SELECT a.*, c.gallery_id 
@@ -446,8 +447,9 @@ router.put('/artworks/:id', authenticateToken, async (req: any, res) => {
            dimension_unit = $5,
            price_amount = $6,
            price_currency = $7,
-           buy_url = $8
-       WHERE id = $9
+           buy_url = $8,
+           description = $9
+       WHERE id = $10
        RETURNING *`,
       [
         title,
@@ -458,6 +460,7 @@ router.put('/artworks/:id', authenticateToken, async (req: any, res) => {
         priceAmount ? parseFloat(priceAmount) : null,
         currency,
         buyUrl || null,
+        description || null,
         artworkId
       ]
     );
