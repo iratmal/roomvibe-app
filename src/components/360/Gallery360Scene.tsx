@@ -829,8 +829,11 @@ function HotspotMarker({
 
 // Camera movement: smooth 0.35s transitions (responsive yet cinematic)
 const CAMERA_MOVE_DURATION = 0.35;
-const SCROLL_SPEED = 0.002;
+const SCROLL_SPEED = 0.0004;  // Slowed down from 0.002 (5x slower)
 const MIN_WALL_DISTANCE = 0.3;
+// Wheel zoom limits (distance from center of room)
+const MIN_ZOOM_DISTANCE = 2.5;  // Don't get too close to artworks
+const MAX_ZOOM_DISTANCE = 12.0; // Don't go too far back
 // Vertical look limits (polar angle in radians):
 const MIN_POLAR_ANGLE = 1.40;  // ~10° above horizontal (slight ceiling view)
 const MAX_POLAR_ANGLE = 1.74;  // ~10° below horizontal (slight floor view)
@@ -1085,15 +1088,32 @@ function FirstPersonController({
         onFocusDismiss();
         return;
       }
-      // Direct scroll movement - no velocity, no inertia
-      const delta = -e.deltaY * SCROLL_SPEED;
-      if (Math.abs(delta) > 0.0001) {
+      
+      // Slow, symmetrical zoom with clamping
+      // Normalize deltaY to prevent huge jumps on some mice/trackpads
+      const normalizedDelta = Math.sign(e.deltaY) * Math.min(Math.abs(e.deltaY), 100);
+      const delta = -normalizedDelta * SCROLL_SPEED;
+      
+      if (Math.abs(delta) > 0.00005) {
         const dir = new THREE.Vector3();
         camera.getWorldDirection(dir);
         dir.y = 0;
         dir.normalize();
-        const newPos = camera.position.clone().add(dir.multiplyScalar(delta * 50));
-        if (isWithinBounds(newPos)) {
+        
+        // Calculate step size (smaller = slower zoom)
+        const stepSize = delta * 25;
+        const newPos = camera.position.clone().add(dir.multiplyScalar(stepSize));
+        
+        // Check distance from room center for zoom limits
+        const distFromCenter = Math.sqrt(newPos.x * newPos.x + newPos.z * newPos.z);
+        const currentDist = Math.sqrt(camera.position.x * camera.position.x + camera.position.z * camera.position.z);
+        
+        // Apply zoom limits: prevent getting too close or too far
+        const isZoomingIn = stepSize > 0;
+        const canZoomIn = distFromCenter >= MIN_ZOOM_DISTANCE || !isZoomingIn;
+        const canZoomOut = distFromCenter <= MAX_ZOOM_DISTANCE || isZoomingIn;
+        
+        if (isWithinBounds(newPos) && canZoomIn && canZoomOut) {
           camera.position.copy(newPos);
         }
       }

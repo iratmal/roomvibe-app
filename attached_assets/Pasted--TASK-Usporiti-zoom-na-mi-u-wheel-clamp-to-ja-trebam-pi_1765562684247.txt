@@ -1,0 +1,96 @@
+# TASK: Usporiti zoom na mišu (wheel) + clamp
+
+## Što ja trebam pitati agenta (1 rečenica)
+
+**"Koji camera controls koristimo u 360 editoru/vieweru — OrbitControls/MapControls (Three.js) ili custom controls?"**
+
+Zašto to pitamo?
+
+* Ako je **OrbitControls/MapControls**, postoji gotov parametar `zoomSpeed` + `minDistance/maxDistance`.
+* Ako je **custom**, onda moramo usporiti wheel u našem handleru (multiplikator deltaY / dolly faktor).
+
+---
+
+## Opcija A (najčešća): Three.js OrbitControls / MapControls
+
+**Cilj:** wheel zoom sporije + ne smije se “zabiti” u sliku u 2-3 koraka.
+
+### Promjene (minimalno)
+
+1. Usporiti zoom:
+2. Postaviti granice približavanja:
+3. Dodati damping (glatkoća)
+
+### Kod
+
+```ts
+// nakon što kreiraš controls
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+
+// ključ: uspori zoom na wheel
+controls.zoomSpeed = 0.18; // probaj 0.12–0.25
+
+// granice (prilagoditi veličini sobe)
+controls.minDistance = 2.5; // da ne uleti preblizu u umjetninu
+controls.maxDistance = 30;  // da ne ode predaleko
+```
+
+> Ako je i dalje “prebrz prema unutra” (asimetrično), treba dodatno overridati wheel.
+
+### (Opcionalno) Override wheel da zoom in/out bude simetričan i spor
+
+```ts
+const ZOOM_IN = 1.03;   // manji = sporije prema slici (1.02–1.06)
+const ZOOM_OUT = 1.03;  // isti = simetrično
+
+controls.domElement.addEventListener(
+  "wheel",
+  (e) => {
+    e.preventDefault();
+    const zoomFactor = e.deltaY < 0 ? ZOOM_IN : ZOOM_OUT;
+
+    if (e.deltaY < 0) controls.dollyIn(zoomFactor);
+    else controls.dollyOut(zoomFactor);
+
+    controls.update();
+  },
+  { passive: false }
+);
+```
+
+---
+
+## Opcija B: Custom controls (nije Orbit/Map)
+
+**Cilj:** na mjestu gdje hvatamo `wheel` event smanjiti step.
+
+### Smjernice za implementaciju
+
+* Ako imate nešto tipa `zoom += deltaY * factor`, smanjiti `factor` (npr. 3–10x).
+* Ako imate `camera.fov` zoom, promjene po tick-u smanjiti i clampati.
+* Uvesti clamp, npr. `minZoom`, `maxZoom` ili `minDistance/maxDistance`.
+
+### Pseudo-kod (primjer)
+
+```ts
+const WHEEL_FACTOR = 0.0006; // probaj 0.0003–0.001
+
+function onWheel(e: WheelEvent) {
+  e.preventDefault();
+
+  const dir = Math.sign(e.deltaY); // +1 out, -1 in
+  zoomTarget += dir * Math.abs(e.deltaY) * WHEEL_FACTOR;
+
+  zoomTarget = clamp(zoomTarget, MIN_ZOOM, MAX_ZOOM);
+}
+```
+
+---
+
+## Acceptance criteria (da znamo da je riješeno)
+
+* Zoom se približava slici **kontrolirano**, ne uleti u 2-3 wheel koraka.
+* Zoom in/out je **slične brzine** (nema “brže prema slikama”).
+* Postoje granice: ne može se probiti kroz zid/sliku (`minDistance`) i ne ode u beskonačno (`maxDistance`).
+* Kretanje je uglađeno (`enableDamping`).
