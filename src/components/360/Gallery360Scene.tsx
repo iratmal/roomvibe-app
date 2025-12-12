@@ -67,6 +67,82 @@ function Skylight({ position, width, depth }: {
   );
 }
 
+function ArtworkSpotlight({ 
+  artworkPosition, 
+  artworkRotation,
+  ceilingHeight
+}: {
+  artworkPosition: [number, number, number];
+  artworkRotation: [number, number, number];
+  ceilingHeight: number;
+}) {
+  const spotlightRef = useRef<THREE.SpotLight>(null);
+  const targetRef = useRef<THREE.Object3D>(null);
+  const { scene } = useThree();
+  
+  const yRot = artworkRotation[1];
+  const normalX = Math.sin(yRot);
+  const normalZ = Math.cos(yRot);
+  
+  const lightPosition: [number, number, number] = useMemo(() => [
+    artworkPosition[0] + normalX * 0.4,
+    ceilingHeight - 0.25,
+    artworkPosition[2] + normalZ * 0.4
+  ], [artworkPosition, normalX, normalZ, ceilingHeight]);
+
+  const targetPosition: [number, number, number] = useMemo(() => [
+    artworkPosition[0],
+    artworkPosition[1],
+    artworkPosition[2]
+  ], [artworkPosition]);
+
+  useEffect(() => {
+    if (spotlightRef.current && targetRef.current) {
+      scene.add(targetRef.current);
+      spotlightRef.current.target = targetRef.current;
+      return () => {
+        if (targetRef.current) {
+          scene.remove(targetRef.current);
+        }
+      };
+    }
+  }, [scene]);
+
+  useFrame(() => {
+    if (targetRef.current && spotlightRef.current) {
+      targetRef.current.updateMatrixWorld();
+    }
+  });
+
+  return (
+    <>
+      <object3D ref={targetRef} position={targetPosition} />
+      <group position={lightPosition}>
+        <mesh>
+          <cylinderGeometry args={[0.04, 0.07, 0.08, 12]} />
+          <meshStandardMaterial color="#2a2a2a" roughness={0.4} metalness={0.5} />
+        </mesh>
+        <mesh position={[0, -0.03, 0]}>
+          <cylinderGeometry args={[0.025, 0.025, 0.012, 12]} />
+          <meshBasicMaterial color="#fff8e0" />
+        </mesh>
+        <spotLight
+          ref={spotlightRef}
+          position={[0, -0.04, 0]}
+          angle={Math.PI / 9}
+          penumbra={0.72}
+          intensity={1.25}
+          distance={16}
+          color="#fffaf0"
+          castShadow
+          shadow-mapSize={[1024, 1024]}
+          shadow-bias={-0.0002}
+          shadow-radius={2}
+        />
+      </group>
+    </>
+  );
+}
 
 function TiledFloor({ width, depth, color }: { width: number; depth: number; color: string }) {
   const tiles = useMemo(() => {
@@ -1117,24 +1193,33 @@ export function Gallery360Scene({
 
       {preset.slots.map(slot => {
         const assignment = slotAssignments.find(sa => sa.slotId === slot.id);
+        const hasArtwork = !!assignment?.artworkUrl;
         return (
-          <ArtworkPlane
-            key={slot.id}
-            slot={slot}
-            assignment={assignment}
-            isSelected={selectedSlotId === slot.id}
-            isEditor={isEditor}
-            presetId={preset.id}
-            wallHeight={preset.dimensions.height}
-            onClick={() => {
-              if (isEditor && onSlotSelect) {
-                onSlotSelect(slot.id);
-              }
-              if (assignment?.artworkId && onArtworkClick) {
-                onArtworkClick(slot.id, assignment, slot);
-              }
-            }}
-          />
+          <React.Fragment key={slot.id}>
+            <ArtworkPlane
+              slot={slot}
+              assignment={assignment}
+              isSelected={selectedSlotId === slot.id}
+              isEditor={isEditor}
+              presetId={preset.id}
+              wallHeight={preset.dimensions.height}
+              onClick={() => {
+                if (isEditor && onSlotSelect) {
+                  onSlotSelect(slot.id);
+                }
+                if (assignment?.artworkId && onArtworkClick) {
+                  onArtworkClick(slot.id, assignment, slot);
+                }
+              }}
+            />
+            {hasArtwork && (
+              <ArtworkSpotlight
+                artworkPosition={slot.position}
+                artworkRotation={slot.rotation}
+                ceilingHeight={preset.dimensions.height}
+              />
+            )}
+          </React.Fragment>
         );
       })}
 
