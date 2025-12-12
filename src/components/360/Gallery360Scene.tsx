@@ -356,17 +356,17 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       ))}
       
       {/* Coffered ceiling grid - 3x3 sections */}
-      {/* Main beams - concrete color */}
+      {/* Main beams - dark wood finish */}
       {[-depth/3, 0, depth/3].map((zPos, i) => (
         <mesh key={`beam-main-x-${i}`} position={[0, height - 0.08, zPos]}>
           <boxGeometry args={[width - 0.5, 0.14, 0.10]} />
-          <meshBasicMaterial color={preset.ceilingColor} />
+          <meshBasicMaterial color="#4A3F36" />
         </mesh>
       ))}
       {[-width/3, 0, width/3].map((xPos, i) => (
         <mesh key={`beam-main-z-${i}`} position={[xPos, height - 0.08, 0]}>
           <boxGeometry args={[0.10, 0.14, depth - 0.5]} />
-          <meshBasicMaterial color={preset.ceilingColor} />
+          <meshBasicMaterial color="#4A3F36" />
         </mesh>
       ))}
       
