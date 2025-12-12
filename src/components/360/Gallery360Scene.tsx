@@ -575,6 +575,7 @@ function ArtworkImage({
   presetId?: string;
   wallHeight?: number;
 }) {
+  const { gl } = useThree();
   const proxiedUrl = getProxiedImageUrl(url);
   const texture = useTexture(proxiedUrl);
   const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null);
@@ -582,6 +583,12 @@ function ArtworkImage({
   useEffect(() => {
     if (texture) {
       texture.colorSpace = THREE.SRGBColorSpace;
+      texture.anisotropy = gl.capabilities.getMaxAnisotropy();
+      texture.minFilter = THREE.LinearMipmapLinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.generateMipmaps = true;
+      texture.needsUpdate = true;
+      
       if (texture.image) {
         const img = texture.image as HTMLImageElement;
         setImageDimensions({
@@ -590,7 +597,7 @@ function ArtworkImage({
         });
       }
     }
-  }, [texture]);
+  }, [texture, gl]);
 
   const dimensions = useMemo(() => {
     // Max constraints based on wall height

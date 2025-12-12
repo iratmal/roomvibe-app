@@ -1,0 +1,103 @@
+# TASK: Fix artwork stretching (preserve aspect ratio)
+
+## Problem (what user sees)
+
+When the camera moves left/right, some artworks look **stretched/squashed** (their aspect ratio changes). This must **never** happen—artwork should keep the same proportions from every angle.
+
+## Most likely cause
+
+Artworks are being rendered in a way that is **baked into / projected onto** a pano/equirectangular surface (or via a 2D canvas “projection”), or their plane scale is being recalculated from screen space, causing **non‑uniform scaling**.
+
+In correct 3D, a rectangular plane does **not** change aspect ratio when viewed from an angle.
+
+## Target behavior (acceptance criteria)
+
+* Artwork **aspect ratio is constant** from all camera positions.
+* Moving camera left/right only changes perspective (foreshortening), **not image proportions**.
+* Works for all wall slots and all artwork sizes.
+
+## Implementation approach (SAFE)
+
+### A) Best fix (recommended)
+
+Render each artwork as a **separate THREE.Mesh (PlaneGeometry)** in the 3D scene (WebGL), not baked into the panorama texture.
+
+* Each slot = fixed world position + fixed plane size.
+* Plane uses a texture map (meshBasicMaterial is OK).
+
+### B) If already using planes
+
+Stop any logic that recalculates plane scale using camera/FOV/screen size each frame.
+
+* Plane `scale.x` and `scale.y` must be set **once** based on artwork aspect ratio + slot constraints.
+
+## Concrete code pattern (copy/paste)
+
+Use this helper to create/update an artwork plane while preserving aspect ratio.
+
+```ts
+import * as THREE from "three";
+
+type SlotSize = { maxW: number; maxH: number }; // in world units
+
+export async function setArtworkOnSlot(
+  slotMesh: THREE.Mesh,              // plane mesh already positioned on wall
+  imageUrl: string,
+  slot: SlotSize,
+  renderer: THREE.WebGLRenderer
+) {
+  const loader = new THREE.TextureLoader();
+  const tex = await new Promise<THREE.Texture>((resolve, reject) => {
+    loader.load(imageUrl, resolve, undefined, reject);
+  });
+
+  // Sharper textures at angles
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  tex.needsUpdate = true;
+
+  const imgW = tex.image?.width ?? 1;
+  const imgH = tex.image?.height ?? 1;
+  const aspect = imgW / imgH;
+
+  // Fit within slot while preserving ratio
+  let w = slot.maxW;
+  let h = w / aspect;
+  if (h > slot.maxH) {
+    h = slot.maxH;
+    w = h * aspect;
+  }
+
+  // IMPORTANT: never non-uniformly scale from camera logic
+  slotMesh.geometry = new THREE.PlaneGeometry(w, h);
+
+  const mat = new THREE.MeshBasicMaterial({
+    map: tex,
+    transparent: true,
+    toneMapped: false,
+  });
+
+  slotMesh.material = mat;
+}
+```
+
+### Notes
+
+* Do **NOT** apply `scale.set(x,y,1)` from any “camera update” loop.
+* If you must keep a fixed geometry and only scale it, do:
+
+  * `slotMesh.scale.set(w, h, 1)` but only from **world units** computed above.
+  * Never set `scale.x` and `scale.y` from different “screen” calculations.
+
+## Quick diagnostic (to confirm root cause)
+
+1. Temporarily render 1 artwork as a separate PlaneGeometry mesh.
+2. Move camera left/right.
+3. If stretching disappears → current method is projection/bake or screen-space scaling.
+
+## Deliverable
+
+* PR/commit that changes artwork rendering so aspect ratio is preserved.
+* Screenshot/video from 2–3 camera positions proving no stretch.
