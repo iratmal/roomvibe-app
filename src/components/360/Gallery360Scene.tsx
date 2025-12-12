@@ -340,7 +340,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
         <meshStandardMaterial 
-          color="#ECEBE7" 
+          color="#FF0000" 
           roughness={0.95}
           metalness={0.0}
         />
@@ -384,11 +384,11 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         <group key={`coffer-${i}`} position={[panel.x, height + 0.06, panel.z]}>
           <mesh rotation={[Math.PI / 2, 0, 0]}>
             <planeGeometry args={[panel.w, panel.d]} />
-            <meshStandardMaterial color="#ECEBE7" roughness={0.96} metalness={0.0} />
+            <meshStandardMaterial color="#FF0000" roughness={0.96} metalness={0.0} />
           </mesh>
           <mesh position={[0, -0.03, 0]}>
             <boxGeometry args={[panel.w, 0.08, panel.d]} />
-            <meshStandardMaterial color="#E5E4E0" roughness={0.92} metalness={0.0} side={THREE.BackSide} />
+            <meshStandardMaterial color="#FF0000" roughness={0.92} metalness={0.0} side={THREE.BackSide} />
           </mesh>
         </group>
       ))}
