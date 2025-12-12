@@ -336,10 +336,10 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         </mesh>
       )}
 
-      {/* Main ceiling plane - meshBasicMaterial to ignore warm lighting */}
+      {/* Main ceiling plane - warm gallery white */}
       <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
-        <meshBasicMaterial color={preset.ceilingColor} />
+        <meshStandardMaterial color="#F2F2EF" roughness={0.9} metalness={0} />
       </mesh>
       
       {/* Cove edge - subtle perimeter ledge */}
@@ -351,23 +351,23 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       ].map((cove, i) => (
         <mesh key={`cove-${i}`} position={cove.pos}>
           <boxGeometry args={cove.size} />
-          <meshBasicMaterial color={preset.ceilingColor} />
+          <meshStandardMaterial color="#F2F2EF" roughness={0.9} metalness={0} />
         </mesh>
       ))}
       
       {/* Coffered ceiling grid - 3x3 sections */}
-      {/* Main beams - concrete finish */}
+      {/* Main beams - warm gallery white */}
       {[-depth/3, 0, depth/3].map((zPos, i) => (
         <mesh key={`beam-main-x-${i}`} position={[0, height - 0.12, zPos]}>
           <boxGeometry args={[width - 0.3, 0.24, 0.20]} />
-          <meshBasicMaterial color="#9A9A9A" />
+          <meshStandardMaterial color="#F2F2EF" roughness={0.9} metalness={0} />
         </mesh>
       ))}
       {/* Cross beams - same color */}
       {[-width/3, 0, width/3].map((xPos, i) => (
         <mesh key={`beam-main-z-${i}`} position={[xPos, height - 0.12, 0]}>
           <boxGeometry args={[0.20, 0.24, depth - 0.3]} />
-          <meshBasicMaterial color="#9A9A9A" />
+          <meshStandardMaterial color="#F2F2EF" roughness={0.9} metalness={0} />
         </mesh>
       ))}
       
@@ -379,10 +379,10 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         d: depth / 3 - 0.25
       }))).map((panel, i) => (
         <group key={`coffer-${i}`} position={[panel.x, height, panel.z]}>
-          {/* Recessed ceiling panel - slightly darker */}
+          {/* Recessed ceiling panel */}
           <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
             <planeGeometry args={[panel.w, panel.d]} />
-            <meshBasicMaterial color="#A5A5A5" />
+            <meshStandardMaterial color="#F2F2EF" roughness={0.9} metalness={0} />
           </mesh>
         </group>
       ))}
