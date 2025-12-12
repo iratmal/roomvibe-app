@@ -394,13 +394,13 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         <meshBasicMaterial transparent opacity={0} />
       </mesh>
 
-      {/* Main ceiling plane - warm gallery white */}
+      {/* Main ceiling plane - light warm off-white */}
       <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
-        <meshStandardMaterial color="#F2F2EF" roughness={0.9} metalness={0} />
+        <meshStandardMaterial color="#ECEBE7" roughness={0.9} metalness={0} />
       </mesh>
       
-      {/* Cove edge - black perimeter ledge (matching beams) */}
+      {/* Cove edge - light warm off-white */}
       {[
         { pos: [0, height - 0.12, -halfD + 0.12] as [number, number, number], size: [width - 0.24, 0.24, 0.24] as [number, number, number] },
         { pos: [0, height - 0.12, halfD - 0.12] as [number, number, number], size: [width - 0.24, 0.24, 0.24] as [number, number, number] },
@@ -409,27 +409,27 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       ].map((cove, i) => (
         <mesh key={`cove-${i}`} position={cove.pos}>
           <boxGeometry args={cove.size} />
-          <meshStandardMaterial color="#1a1a1a" roughness={0.8} metalness={0} />
+          <meshStandardMaterial color="#ECEBE7" roughness={0.9} metalness={0} />
         </mesh>
       ))}
       
       {/* Coffered ceiling grid - 3x3 sections */}
-      {/* Main beams - gold (matching vases) */}
+      {/* Main beams - dark black */}
       {[-depth/3, 0, depth/3].map((zPos, i) => (
         <mesh key={`beam-main-x-${i}`} position={[0, height - 0.12, zPos]}>
           <boxGeometry args={[width - 0.3, 0.24, 0.20]} />
-          <meshStandardMaterial color="#D4AF37" roughness={0.4} metalness={0.6} />
+          <meshStandardMaterial color="#1a1a1a" roughness={0.8} metalness={0} />
         </mesh>
       ))}
-      {/* Cross beams - gold (matching vases) */}
+      {/* Cross beams - dark black */}
       {[-width/3, 0, width/3].map((xPos, i) => (
         <mesh key={`beam-main-z-${i}`} position={[xPos, height - 0.12, 0]}>
           <boxGeometry args={[0.20, 0.24, depth - 0.3]} />
-          <meshStandardMaterial color="#D4AF37" roughness={0.4} metalness={0.6} />
+          <meshStandardMaterial color="#1a1a1a" roughness={0.8} metalness={0} />
         </mesh>
       ))}
       
-      {/* Recessed coffer panels - 9 sections */}
+      {/* Recessed coffer panels - 9 sections - light warm off-white */}
       {[-1, 0, 1].flatMap(xi => [-1, 0, 1].map(zi => ({
         x: xi * (width / 3),
         z: zi * (depth / 3),
@@ -440,16 +440,16 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
           {/* Recessed ceiling panel */}
           <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
             <planeGeometry args={[panel.w, panel.d]} />
-            <meshStandardMaterial color="#F2F2EF" roughness={0.9} metalness={0} />
+            <meshStandardMaterial color="#ECEBE7" roughness={0.9} metalness={0} />
           </mesh>
         </group>
       ))}
       
-      {/* Track lines - brown rail for spotlights */}
+      {/* Track lines - light warm off-white */}
       {[-width/3 - width/6, -width/6, width/6, width/3 + width/6].map((xPos, i) => (
         <mesh key={`track-${i}`} position={[xPos, height - 0.01, 0]}>
           <boxGeometry args={[0.03, 0.03, depth - 0.8]} />
-          <meshStandardMaterial color="#5c4033" roughness={0.7} metalness={0.1} />
+          <meshStandardMaterial color="#ECEBE7" roughness={0.9} metalness={0} />
         </mesh>
       ))}
 
