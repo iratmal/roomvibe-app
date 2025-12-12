@@ -56,24 +56,12 @@ function Skylight({ position, width, depth }: {
 }) {
   return (
     <group position={position}>
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[width, depth]} />
-        <meshBasicMaterial color="#e8f0ff" transparent opacity={0.9} />
-      </mesh>
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, -0.015, 0]}>
-        <planeGeometry args={[width * 0.92, depth * 0.92]} />
-        <meshBasicMaterial color="#ffffff" transparent opacity={0.5} />
-      </mesh>
-      <mesh position={[0, -0.03, 0]}>
-        <boxGeometry args={[width + 0.08, 0.06, depth + 0.08]} />
-        <meshStandardMaterial color="#d8d8d8" roughness={0.6} metalness={0.1} />
-      </mesh>
       <rectAreaLight
-        position={[0, -0.15, 0]}
-        width={width * 0.88}
-        height={depth * 0.88}
-        intensity={3}
-        color="#fffef8"
+        position={[0, -0.1, 0]}
+        width={width * 0.9}
+        height={depth * 0.9}
+        intensity={2.5}
+        color="#fffef5"
       />
     </group>
   );
@@ -309,12 +297,12 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
   const skylightPositions = useMemo(() => {
     if (!preset.hasSkylights) return [];
     return [
-      { position: [-5, height - 0.01, -depth/6] as [number, number, number], width: 4, depth: 5 },
-      { position: [5, height - 0.01, -depth/6] as [number, number, number], width: 4, depth: 5 },
-      { position: [-5, height - 0.01, depth/6] as [number, number, number], width: 4, depth: 5 },
-      { position: [5, height - 0.01, depth/6] as [number, number, number], width: 4, depth: 5 },
+      { position: [-width/4, height + 0.28, -depth/4] as [number, number, number], width: 5, depth: 4 },
+      { position: [width/4, height + 0.28, -depth/4] as [number, number, number], width: 5, depth: 4 },
+      { position: [-width/4, height + 0.28, depth/4] as [number, number, number], width: 5, depth: 4 },
+      { position: [width/4, height + 0.28, depth/4] as [number, number, number], width: 5, depth: 4 },
     ];
-  }, [preset.hasSkylights, height, depth]);
+  }, [preset.hasSkylights, height, depth, width]);
 
   const spotlightPositions = useMemo(() => {
     const spots: Array<{ position: [number, number, number]; targetY: number }> = [];
@@ -349,23 +337,42 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
         <meshStandardMaterial 
-          color="#fafafa" 
+          color="#f5f5f5" 
           roughness={0.95}
           metalness={0.0}
         />
       </mesh>
       
-      {/* Structural beams - emphasize height and volume */}
-      {[-depth/3, 0, depth/3].map((zPos, i) => (
-        <mesh key={`beam-x-${i}`} position={[0, height - 0.15, zPos]}>
-          <boxGeometry args={[width * 0.95, 0.25, 0.12]} />
-          <meshStandardMaterial color="#e8e8e8" roughness={0.75} metalness={0.05} />
+      {/* Recessed ceiling zones - creates illusion of depth above */}
+      {[
+        { x: -width/4, z: -depth/4, w: 6, d: 5 },
+        { x: width/4, z: -depth/4, w: 6, d: 5 },
+        { x: -width/4, z: depth/4, w: 6, d: 5 },
+        { x: width/4, z: depth/4, w: 6, d: 5 },
+      ].map((recess, i) => (
+        <group key={`recess-${i}`} position={[recess.x, height + 0.3, recess.z]}>
+          <mesh rotation={[Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[recess.w, recess.d]} />
+            <meshBasicMaterial color="#ffffff" />
+          </mesh>
+          <mesh position={[0, -0.15, 0]}>
+            <boxGeometry args={[recess.w + 0.1, 0.32, recess.d + 0.1]} />
+            <meshStandardMaterial color="#f0f0f0" roughness={0.9} metalness={0.0} side={THREE.BackSide} />
+          </mesh>
+        </group>
+      ))}
+      
+      {/* Minimal structural beams - very subtle, high position */}
+      {[-depth/3, depth/3].map((zPos, i) => (
+        <mesh key={`beam-x-${i}`} position={[0, height - 0.04, zPos]}>
+          <boxGeometry args={[width * 0.98, 0.08, 0.06]} />
+          <meshStandardMaterial color="#ebebeb" roughness={0.85} metalness={0.02} />
         </mesh>
       ))}
-      {[-width/4, width/4].map((xPos, i) => (
-        <mesh key={`beam-z-${i}`} position={[xPos, height - 0.15, 0]}>
-          <boxGeometry args={[0.12, 0.25, depth * 0.95]} />
-          <meshStandardMaterial color="#e8e8e8" roughness={0.75} metalness={0.05} />
+      {[-width/3, width/3].map((xPos, i) => (
+        <mesh key={`beam-z-${i}`} position={[xPos, height - 0.04, 0]}>
+          <boxGeometry args={[0.06, 0.08, depth * 0.98]} />
+          <meshStandardMaterial color="#ebebeb" roughness={0.85} metalness={0.02} />
         </mesh>
       ))}
 
