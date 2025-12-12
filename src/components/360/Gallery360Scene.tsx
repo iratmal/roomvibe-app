@@ -522,7 +522,21 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       {/* Gallery Benches & Decorative Vases - only for Classic Gallery */}
       {preset.id === 'white-cube-v1' && (
         <>
-          {/* Designer benches with emerald velvet + brass frame */}
+          {/* Ceiling ambient light - illuminates ceiling beams and panels */}
+          <hemisphereLight 
+            args={['#ffffff', '#e8e8e8', 0.6]} 
+            position={[0, height + 2, 0]}
+          />
+          <rectAreaLight
+            position={[0, height - 0.5, 0]}
+            rotation={[Math.PI / 2, 0, 0]}
+            width={width * 0.8}
+            height={depth * 0.8}
+            intensity={0.4}
+            color="#f5f5f5"
+          />
+          
+          {/* Designer benches with premium dark grey */}
           <GalleryBench position={[-3.0, 0, 0]} rotation={[0, Math.PI / 2, 0]} />
           <GalleryBench position={[3.0, 0, 0]} rotation={[0, -Math.PI / 2, 0]} />
           
