@@ -919,6 +919,8 @@ function FirstPersonController({
   
   // Track if this is the first mount (initial load)
   const isFirstMount = useRef(true);
+  // Track viewpoint object reference to detect button clicks (even same viewpoint)
+  const lastViewpointRef = useRef<Viewpoint | null>(null);
   
   useEffect(() => {
     const pos = new THREE.Vector3(...viewpoint.position);
@@ -934,15 +936,17 @@ function FirstPersonController({
       camera.position.copy(pos);
       spherical.current.copy(newTargetSpherical);
       lastViewpointId.current = viewpoint.id;
+      lastViewpointRef.current = viewpoint;
       isFirstMount.current = false;
       console.log('[CameraNav] initialLoad', viewpoint.id, 'pos:', pos.toArray());
       return;
     }
     
-    // After first mount: always use transition for button clicks
-    if (lastViewpointId.current !== viewpoint.id) {
+    // After first mount: trigger transition if viewpoint object changed (button click creates new object)
+    if (lastViewpointRef.current !== viewpoint) {
       startTransition(pos, newTargetSpherical, CAMERA_MOVE_DURATION);
       lastViewpointId.current = viewpoint.id;
+      lastViewpointRef.current = viewpoint;
       console.log('[CameraNav] goToView', viewpoint.id);
     }
   }, [viewpoint, camera, clampPosition, startTransition]);

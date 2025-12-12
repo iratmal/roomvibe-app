@@ -55,13 +55,13 @@ export const gallery360Presets: Gallery360Preset[] = [
     viewpoints: [
       {
         id: 'entrance',
-        position: [0, 1.65, 8.5],
-        lookAt: [0, 1.65, 0],
+        position: [0, 1.65, 8.8],
+        lookAt: [0, 2.5, -9],
         label: 'Entrance'
       },
       {
         id: 'center',
-        position: [0, 1.65, 0],
+        position: [0, 1.65, 3],
         lookAt: [0, 1.65, -9],
         label: 'Center'
       },
