@@ -336,11 +336,11 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         </mesh>
       )}
 
-      {/* Main ceiling plane - DEBUG BLUE */}
+      {/* Main ceiling plane */}
       <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
         <meshStandardMaterial 
-          color="#0000FF" 
+          color="#CFCFCA" 
           roughness={1.0}
           metalness={0.0}
         />
@@ -355,7 +355,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       ].map((cove, i) => (
         <mesh key={`cove-${i}`} position={cove.pos}>
           <boxGeometry args={cove.size} />
-          <meshStandardMaterial color="#0000FF" roughness={1.0} metalness={0.0} />
+          <meshStandardMaterial color="#CFCFCA" roughness={1.0} metalness={0.0} />
         </mesh>
       ))}
       
@@ -364,13 +364,13 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       {[-depth/3, 0, depth/3].map((zPos, i) => (
         <mesh key={`beam-main-x-${i}`} position={[0, height - 0.08, zPos]}>
           <boxGeometry args={[width - 0.5, 0.14, 0.10]} />
-          <meshStandardMaterial color="#0000FF" roughness={1.0} metalness={0.0} />
+          <meshStandardMaterial color="#CFCFCA" roughness={1.0} metalness={0.0} />
         </mesh>
       ))}
       {[-width/3, 0, width/3].map((xPos, i) => (
         <mesh key={`beam-main-z-${i}`} position={[xPos, height - 0.08, 0]}>
           <boxGeometry args={[0.10, 0.14, depth - 0.5]} />
-          <meshStandardMaterial color="#0000FF" roughness={1.0} metalness={0.0} />
+          <meshStandardMaterial color="#CFCFCA" roughness={1.0} metalness={0.0} />
         </mesh>
       ))}
       
@@ -384,11 +384,11 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         <group key={`coffer-${i}`} position={[panel.x, height + 0.06, panel.z]}>
           <mesh rotation={[Math.PI / 2, 0, 0]}>
             <planeGeometry args={[panel.w, panel.d]} />
-            <meshStandardMaterial color="#0000FF" roughness={1.0} metalness={0.0} />
+            <meshStandardMaterial color="#CFCFCA" roughness={1.0} metalness={0.0} />
           </mesh>
           <mesh position={[0, -0.03, 0]}>
             <boxGeometry args={[panel.w, 0.08, panel.d]} />
-            <meshStandardMaterial color="#0000FF" roughness={1.0} metalness={0.0} side={THREE.BackSide} />
+            <meshStandardMaterial color="#CFCFCA" roughness={1.0} metalness={0.0} side={THREE.BackSide} />
           </mesh>
         </group>
       ))}
