@@ -79,70 +79,62 @@ function ArtworkSpotlight({
   hasArtwork: boolean;
 }) {
   const spotlightRef = useRef<THREE.SpotLight>(null);
-  const targetObj = useMemo(() => new THREE.Object3D(), []);
+  const targetObj = useRef<THREE.Object3D>(new THREE.Object3D());
   const { scene } = useThree();
   
-  // Wall normal points INTO the room (direction artwork faces)
-  const yRot = artworkRotation[1];
-  const normalX = Math.sin(yRot);
-  const normalZ = Math.cos(yRot);
-  
-  // Light position: 40cm offset from wall into room, 20cm below ceiling
-  const lightPos: [number, number, number] = [
-    artworkPosition[0] + normalX * 0.4,
-    ceilingHeight - 0.2,
-    artworkPosition[2] + normalZ * 0.4
-  ];
+  const lightPos = useMemo(() => {
+    // Wall normal points INTO the room (direction artwork faces)
+    const yRot = artworkRotation[1];
+    const normalX = Math.sin(yRot);
+    const normalZ = Math.cos(yRot);
+    
+    // Position light 1.2m in front of artwork (into room), near ceiling
+    return new THREE.Vector3(
+      artworkPosition[0] + normalX * 1.2,
+      ceilingHeight - 0.3,
+      artworkPosition[2] + normalZ * 1.2
+    );
+  }, [artworkPosition, artworkRotation, ceilingHeight]);
 
   useEffect(() => {
-    if (!hasArtwork) return;
-    
-    // Add target to scene graph (required for spotlight targeting)
-    targetObj.position.set(artworkPosition[0], artworkPosition[1], artworkPosition[2]);
-    scene.add(targetObj);
-    
     if (spotlightRef.current) {
-      spotlightRef.current.target = targetObj;
+      // Add target to scene and link to spotlight
+      targetObj.current.position.set(artworkPosition[0], artworkPosition[1], artworkPosition[2]);
+      scene.add(targetObj.current);
+      spotlightRef.current.target = targetObj.current;
+      targetObj.current.updateMatrixWorld();
+      
+      return () => {
+        scene.remove(targetObj.current);
+      };
     }
-    
-    return () => {
-      scene.remove(targetObj);
-    };
-  }, [scene, artworkPosition, hasArtwork, targetObj]);
-
-  // Keep target matrix updated every frame
-  useFrame(() => {
-    if (hasArtwork && targetObj) {
-      targetObj.updateMatrixWorld();
-    }
-  });
+  }, [scene, artworkPosition]);
 
   if (!hasArtwork) return null;
 
   return (
-    <group position={lightPos}>
-      {/* Track light housing - subtle cylinder */}
+    <group position={lightPos.toArray()}>
+      {/* Track light housing */}
       <mesh>
-        <cylinderGeometry args={[0.04, 0.06, 0.08, 12]} />
-        <meshStandardMaterial color="#2a2a2a" roughness={0.5} metalness={0.4} />
+        <cylinderGeometry args={[0.05, 0.08, 0.10, 12]} />
+        <meshStandardMaterial color="#2a2a2a" roughness={0.4} metalness={0.5} />
       </mesh>
-      <mesh position={[0, -0.03, 0]}>
-        <cylinderGeometry args={[0.025, 0.025, 0.012, 12]} />
+      <mesh position={[0, -0.04, 0]}>
+        <cylinderGeometry args={[0.03, 0.03, 0.015, 12]} />
         <meshBasicMaterial color="#fff8e0" />
       </mesh>
-      {/* Strict spotlight: narrow angle, targets artwork center */}
       <spotLight
         ref={spotlightRef}
-        position={[0, -0.04, 0]}
-        angle={Math.PI / 9}
+        position={[0, -0.05, 0]}
+        angle={Math.PI / 6}
         penumbra={0.7}
-        intensity={1.8}
-        distance={16}
+        intensity={4.5}
+        distance={15}
         color="#fffaf0"
         castShadow
         shadow-mapSize={[1024, 1024]}
         shadow-bias={-0.0002}
-        shadow-radius={2}
+        shadow-radius={3}
       />
     </group>
   );
@@ -1171,9 +1163,8 @@ export function Gallery360Scene({
         toneMappingExposure: 1.15
       }}
     >
-      {/* Never-black guarantee: ambient + hemisphere = ~0.58 total fill */}
-      <ambientLight intensity={0.28} color="#fff8f2" />
-      <hemisphereLight args={['#faf8f5', '#a09080', 0.3]} />
+      <ambientLight intensity={0.35} color="#fff8f2" />
+      <hemisphereLight args={['#faf8f5', '#a09080', 0.5]} />
       
       <directionalLight 
         position={[0, preset.dimensions.height + 8, 0]} 
