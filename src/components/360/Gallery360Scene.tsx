@@ -31,6 +31,48 @@ function getProxiedImageUrl(url: string): string {
   return `/api/image-proxy?url=${encodeURIComponent(url)}`;
 }
 
+function FootstepMarker({ position, visible }: { position: [number, number, number]; visible: boolean }) {
+  const groupRef = useRef<THREE.Group>(null);
+  const opacityRef = useRef(0);
+  
+  useFrame((_, delta) => {
+    if (!groupRef.current) return;
+    const targetOpacity = visible ? 0.85 : 0;
+    opacityRef.current = THREE.MathUtils.lerp(opacityRef.current, targetOpacity, delta * 8);
+    groupRef.current.children.forEach((child) => {
+      if ((child as THREE.Mesh).material) {
+        const mat = (child as THREE.Mesh).material as THREE.MeshBasicMaterial;
+        mat.opacity = opacityRef.current;
+      }
+    });
+  });
+
+  return (
+    <group ref={groupRef} position={position} rotation={[-Math.PI / 2, 0, 0]}>
+      {/* Outer ring - dark RoomVibe blue */}
+      <mesh>
+        <ringGeometry args={[0.28, 0.35, 32]} />
+        <meshBasicMaterial color="#264C61" transparent opacity={0} side={THREE.DoubleSide} />
+      </mesh>
+      {/* Inner circle - subtle fill */}
+      <mesh position={[0, 0, 0.001]}>
+        <circleGeometry args={[0.28, 32]} />
+        <meshBasicMaterial color="#1a3040" transparent opacity={0} side={THREE.DoubleSide} />
+      </mesh>
+      {/* Left footstep - gold */}
+      <mesh position={[-0.06, 0.02, 0.002]}>
+        <capsuleGeometry args={[0.035, 0.08, 4, 8]} />
+        <meshBasicMaterial color="#D4AF37" transparent opacity={0} />
+      </mesh>
+      {/* Right footstep - gold */}
+      <mesh position={[0.06, -0.02, 0.002]}>
+        <capsuleGeometry args={[0.035, 0.08, 4, 8]} />
+        <meshBasicMaterial color="#D4AF37" transparent opacity={0} />
+      </mesh>
+    </group>
+  );
+}
+
 function Column({ position, height, color }: { 
   position: [number, number, number]; 
   height: number;
@@ -1161,6 +1203,10 @@ function FirstPersonController({
   const raycaster = useRef(new THREE.Raycaster());
   const spherical = useRef(new THREE.Spherical());
   
+  // Hover state for footstep marker
+  const [hoverPosition, setHoverPosition] = useState<[number, number, number] | null>(null);
+  const [isHoveringFloor, setIsHoveringFloor] = useState(false);
+  
   // SINGLE transition state - one owner principle
   const isTransitioning = useRef(false);
   const transitionStartTime = useRef<number | null>(null);
@@ -1384,7 +1430,20 @@ function FirstPersonController({
     };
     
     const handleMouseMove = (e: MouseEvent) => {
-      // Block input during camera transition
+      // Handle floor hover detection when not dragging
+      if (!isDragging.current && !isTransitioning.current && !focusTarget) {
+        const floorHit = checkFloorClick(e.clientX, e.clientY);
+        if (floorHit) {
+          setHoverPosition([floorHit.x, 0.02, floorHit.z]);
+          setIsHoveringFloor(true);
+        } else {
+          setIsHoveringFloor(false);
+        }
+      } else {
+        setIsHoveringFloor(false);
+      }
+      
+      // Block drag rotation during camera transition
       if (isTransitioning.current || !isDragging.current) return;
       
       const deltaX = e.clientX - previousMousePosition.current.x;
@@ -1500,9 +1559,14 @@ function FirstPersonController({
       keysPressed.current.delete(e.key);
     };
     
+    const handleMouseLeave = () => {
+      isDragging.current = false;
+      setIsHoveringFloor(false);
+    };
+    
     canvas.addEventListener('mousedown', handleMouseDown);
     canvas.addEventListener('mouseup', handleMouseUp);
-    canvas.addEventListener('mouseleave', handleMouseUp);
+    canvas.addEventListener('mouseleave', handleMouseLeave);
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('wheel', handleWheel, { passive: false });
     canvas.addEventListener('touchstart', handleTouchStart);
@@ -1514,7 +1578,7 @@ function FirstPersonController({
     return () => {
       canvas.removeEventListener('mousedown', handleMouseDown);
       canvas.removeEventListener('mouseup', handleMouseUp);
-      canvas.removeEventListener('mouseleave', handleMouseUp);
+      canvas.removeEventListener('mouseleave', handleMouseLeave);
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('wheel', handleWheel);
       canvas.removeEventListener('touchstart', handleTouchStart);
@@ -1587,7 +1651,13 @@ function FirstPersonController({
     camera.lookAt(lookAtPoint);
   });
   
-  return null;
+  // Render footstep marker at hover position
+  return hoverPosition ? (
+    <FootstepMarker 
+      position={hoverPosition} 
+      visible={isHoveringFloor && !isTransitioning.current} 
+    />
+  ) : null;
 }
 
 export function Gallery360Scene({
