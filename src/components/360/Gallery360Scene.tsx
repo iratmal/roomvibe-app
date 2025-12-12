@@ -113,15 +113,16 @@ function WallSpotlight({ position, targetY }: {
       <spotLight
         ref={spotlightRef}
         position={[0, -0.06, 0]}
-        angle={0.4}
-        penumbra={0.85}
-        intensity={4}
+        angle={0.45}
+        penumbra={0.8}
+        intensity={5}
         distance={12}
         color="#fffaf5"
         castShadow
         shadow-mapSize={[1024, 1024]}
-        shadow-bias={-0.0001}
-        shadow-radius={3}
+        shadow-bias={-0.0003}
+        shadow-radius={2}
+        shadow-normalBias={0.02}
       />
     </group>
   );
@@ -204,32 +205,39 @@ function OuterEnclosure({ width, height, depth }: { width: number; height: numbe
 }
 
 function WoodFloor({ width, depth, color }: { width: number; depth: number; color: string }) {
-  const planks = useMemo(() => {
-    const plankWidth = 0.18;
-    const plankLength = 1.8;
-    const gapSize = 0.008;
-    const rows = Math.ceil(depth / (plankWidth + gapSize));
-    const cols = Math.ceil(width / plankLength) + 2;
-    const result: Array<{ x: number; z: number; shade: number; roughVar: number }> = [];
+  const floorData = useMemo(() => {
+    const plankWidth = 0.15;
+    const plankLength = 1.2;
+    const gapSize = 0.004;
+    const rows = Math.ceil(depth / (plankWidth + gapSize)) + 1;
+    const cols = Math.ceil(width / plankLength) + 3;
+    const planks: Array<{ x: number; z: number; shade: number; roughVar: number; grainAngle: number }> = [];
+    
+    const seededRandom = (seed: number) => {
+      const x = Math.sin(seed * 12.9898 + seed * 78.233) * 43758.5453;
+      return x - Math.floor(x);
+    };
     
     for (let row = 0; row < rows; row++) {
-      const offset = (row % 3) * (plankLength / 3);
+      const offset = (row % 4) * (plankLength / 4);
       for (let col = 0; col < cols; col++) {
+        const seed = row * 1000 + col;
         const x = -width / 2 + col * plankLength + offset - plankLength / 2;
         const z = -depth / 2 + row * (plankWidth + gapSize) + plankWidth / 2;
         if (x < width / 2 + plankLength && x > -width / 2 - plankLength && 
             z < depth / 2 && z > -depth / 2) {
-          const shade = 0.82 + Math.random() * 0.36;
-          const roughVar = 0.55 + Math.random() * 0.2;
-          result.push({ x, z, shade, roughVar });
+          const shade = 0.88 + seededRandom(seed) * 0.24;
+          const roughVar = 0.45 + seededRandom(seed + 100) * 0.2;
+          const grainAngle = (seededRandom(seed + 200) - 0.5) * 0.02;
+          planks.push({ x, z, shade, roughVar, grainAngle });
         }
       }
     }
-    return { planks: result, plankWidth, plankLength };
+    return { planks, plankWidth, plankLength, gapSize };
   }, [width, depth]);
 
-  const baseColor = new THREE.Color(color);
-  const gapColor = baseColor.clone().multiplyScalar(0.4);
+  const baseColor = useMemo(() => new THREE.Color('#c4a882'), []);
+  const gapColor = useMemo(() => new THREE.Color('#3a3530'), []);
 
   return (
     <group position={[0, 0.001, 0]}>
@@ -241,24 +249,36 @@ function WoodFloor({ width, depth, color }: { width: number; depth: number; colo
           metalness={0.0}
         />
       </mesh>
-      {planks.planks.slice(0, 400).map((plank, i) => {
+      
+      {floorData.planks.slice(0, 600).map((plank, i) => {
         const plankColor = baseColor.clone().multiplyScalar(plank.shade);
         return (
           <mesh
             key={i}
-            position={[plank.x, 0.003, plank.z]}
-            rotation={[-Math.PI / 2, 0, 0]}
+            position={[plank.x, 0.002, plank.z]}
+            rotation={[-Math.PI / 2, plank.grainAngle, 0]}
             receiveShadow
           >
-            <planeGeometry args={[planks.plankLength - 0.01, planks.plankWidth - 0.006]} />
+            <planeGeometry args={[floorData.plankLength - 0.006, floorData.plankWidth - 0.003]} />
             <meshStandardMaterial
               color={plankColor}
               roughness={plank.roughVar}
-              metalness={0.03}
+              metalness={0.02}
             />
           </mesh>
         );
       })}
+      
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.0025, 0]} receiveShadow>
+        <planeGeometry args={[width, depth]} />
+        <meshStandardMaterial 
+          color="#d4c4a8"
+          roughness={0.6}
+          metalness={0.0}
+          transparent
+          opacity={0.15}
+        />
+      </mesh>
     </group>
   );
 }
@@ -493,11 +513,11 @@ const ARTWORK_GLOBAL_SCALE = 1.6;
 // Frame and canvas configuration for realistic gallery look
 const FRAME_CONFIG = {
   thickness: 0.035,      // 3.5cm frame border width
-  depth: 0.045,          // 4.5cm total depth (frame + canvas)
+  depth: 0.05,           // 5cm total depth (frame + canvas) - increased for better shadow
   canvasDepth: 0.025,    // 2.5cm canvas body depth
   color: '#1a1a1a',      // Dark charcoal/black frame
   canvasEdge: '#f0ede6', // Off-white canvas edge visible between frame and image
-  wallOffset: 0.02       // 2cm offset from wall
+  wallOffset: 0.035      // 3.5cm offset from wall - increased for better shadow visibility
 };
 
 function ArtworkImage({ 
@@ -615,6 +635,15 @@ function ArtworkImage({
 
   return (
     <group position={[0, 0, wallOffset]}>
+      {/* Shadow caster - invisible plane behind frame for stronger shadow */}
+      <mesh position={[0, 0, -0.005]} castShadow>
+        <planeGeometry args={[
+          dimensions.width + frameT * 2.5, 
+          dimensions.height + frameT * 2.5
+        ]} />
+        <meshBasicMaterial transparent opacity={0} />
+      </mesh>
+      
       {/* Frame - solid box behind canvas, slightly larger */}
       <mesh position={[0, 0, 0]} castShadow receiveShadow>
         <boxGeometry args={[
@@ -624,8 +653,8 @@ function ArtworkImage({
         ]} />
         <meshStandardMaterial 
           color={FRAME_CONFIG.color} 
-          roughness={0.35} 
-          metalness={0.1} 
+          roughness={0.3} 
+          metalness={0.15} 
         />
       </mesh>
 

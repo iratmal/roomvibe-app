@@ -1,0 +1,131 @@
+# 🎯 RoomVibe – Visual Polish Tasks (Bundle)
+
+Ovaj dokument sadrži **dva jasno razdvojena, ali kompatibilna taska** koja agent treba odraditi **u jednom prolazu**, bez diranja kamere, navigacije ili UI-ja.
+
+Cilj: dovesti vizual 3D galerije na **Artsteps-level realizma** kroz mikro‑tweak sjena i zamjenu poda.
+
+---
+
+## ✅ TASK 2.1 — Shadow Refinement (Mini tweak)
+
+### Goal
+
+Poboljšati postojeće sjene iza umjetnina kako bi slike bile **vizualno bolje “usidrene” na zid**, ali bez dramatičnih ili teških sjena.
+
+### Context
+
+Okviri i razmak od zida su implementirani. Sjene postoje, ali su trenutno **previše slabe i difuzne**.
+
+### Scope — napravi SAMO ovo:
+
+1. **Lagano pojačati intenzitet sjene iza slika**
+
+   * sjena treba biti:
+
+     * mrvicu tamnija nego sada
+     * i dalje mekana (soft shadow)
+   * bez oštrih rubova
+
+2. **Podesiti shadow bias / radius ako treba**
+
+   * cilj je jasan, ali suptilan halo oko okvira
+
+3. **Primijeniti jednako na sve artworke**
+
+   * bez individualnih postavki po slici
+
+### Ne raditi:
+
+* Ne dirati svjetla u prostoru
+* Ne mijenjati okvire
+* Ne dirati kameru, mouse ili movement
+* Ne dirati pod (to je Task 3)
+
+### Stop conditions:
+
+* [ ] Sjena iza slike je jasnije vidljiva nego prije
+* [ ] Sjena je i dalje mekana i premium
+* [ ] Slika djeluje stabilno i fizički “pričvršćeno” na zid
+
+---
+
+## ✅ TASK 3 — Floor Realism Upgrade
+
+### Goal
+
+Zamijeniti postojeći **flat/grid pod** realističnim podom kako bi prostor izgubio “game engine” osjećaj i dobio **fotografski realizam**.
+
+### Context
+
+Pod je trenutno najveći vizualni element koji narušava realizam galerije.
+
+### Scope — napravi SAMO ovo:
+
+1. **Zamijeniti postojeći pod** s jednim od sljedećeg:
+
+   * light wood floor (gallery / museum style)
+   * ili neutral concrete floor
+
+2. **Koristiti PBR materijal**
+
+   * baseColor + roughness (+ normal ako je lagan)
+   * bez jakih refleksija
+   * bez sjaja
+
+3. **Blaga teksturna varijacija**
+
+   * da pod ne izgleda uniformno
+   * ali da ne odvlači pažnju od umjetnina
+
+4. **Očuvati svjetlinu prostora**
+
+   * pod ne smije potamniti cijelu scenu
+
+### Ne raditi:
+
+* Ne dodavati refleksije visokog sjaja
+* Ne dirati zidove, strop ili svjetla
+* Ne dirati kameru i movement
+* Ne uvoditi nove modele ili dekor
+
+### Stop conditions:
+
+* [ ] Pod više ne izgleda “grid / digitalno”
+* [ ] Prostor djeluje mirnije i realnije
+* [ ] Umjetnine ostaju glavni fokus
+
+---
+
+## 🔒 Globalna ograničenja (OBAVEZNO)
+
+* Ne dirati:
+
+  * kameru
+  * mouse / navigation
+  * UI
+  * editor flow
+* Ne refaktorirati strukturu projekta
+* Ne dodavati nove featuree
+
+---
+
+## ⚡ Priority & Mode
+
+* FAST MODE ON
+* Ako zapne nakon 2 pokušaja → stati i objasniti gdje
+
+---
+
+## ✔️ Finalna napomena
+
+Ova dva taska se rade **zajedno**, ali su **logički odvojeni**.
+
+Nakon završetka, obavezno:
+
+* poslati screenshot iz:
+
+  * Center view
+  * Side / angle view (kao ranije)
+
+Tek nakon ovog paketa prelazimo na:
+👉 **Camera + Street View feeling**
