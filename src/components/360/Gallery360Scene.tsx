@@ -477,67 +477,82 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         />
       ))}
 
-      {/* Entrance Door - orientation landmark on south wall */}
-      <EntranceDoor 
-        position={[3.5, 0, halfD - 0.02]} 
+      {/* Entrance Portal - realistic opening with depth on south wall */}
+      <EntrancePortal 
+        position={[0, 0, halfD - 0.01]} 
         rotation={[0, Math.PI, 0]}
       />
     </group>
   );
 }
 
-function EntranceDoor({ position, rotation }: { position: [number, number, number]; rotation: [number, number, number] }) {
-  const doorW = 1.25;
-  const doorH = 2.35;
-  const frameW = 0.08;
-  const frameDepth = 0.06;
-  const doorY = doorH / 2;
+function EntrancePortal({ position, rotation }: { position: [number, number, number]; rotation: [number, number, number] }) {
+  const PORTAL_W = 2.5;
+  const PORTAL_H = 2.5;
+  const FRAME_T = 0.12;
+  const DEPTH = 3.0;
 
   return (
     <group position={position} rotation={rotation}>
-      <group position={[0, doorY, 0]}>
-        {/* Door panel - dark charcoal */}
-        <mesh castShadow receiveShadow>
-          <boxGeometry args={[doorW, doorH, 0.04]} />
-          <meshStandardMaterial color="#2a2a2a" roughness={0.75} metalness={0.1} />
+      {/* Portal Frame - warm light concrete/paint */}
+      <group>
+        {/* Left post */}
+        <mesh position={[-(PORTAL_W / 2) - (FRAME_T / 2), PORTAL_H / 2, 0]} castShadow>
+          <boxGeometry args={[FRAME_T, PORTAL_H, FRAME_T]} />
+          <meshStandardMaterial color="#d7d4cf" roughness={0.9} metalness={0} />
+        </mesh>
+        {/* Right post */}
+        <mesh position={[(PORTAL_W / 2) + (FRAME_T / 2), PORTAL_H / 2, 0]} castShadow>
+          <boxGeometry args={[FRAME_T, PORTAL_H, FRAME_T]} />
+          <meshStandardMaterial color="#d7d4cf" roughness={0.9} metalness={0} />
+        </mesh>
+        {/* Top lintel */}
+        <mesh position={[0, PORTAL_H + (FRAME_T / 2), 0]} castShadow>
+          <boxGeometry args={[PORTAL_W + FRAME_T * 2, FRAME_T, FRAME_T]} />
+          <meshStandardMaterial color="#d7d4cf" roughness={0.9} metalness={0} />
+        </mesh>
+        {/* Threshold */}
+        <mesh position={[0, FRAME_T / 2, 0]} castShadow>
+          <boxGeometry args={[PORTAL_W + FRAME_T * 2, FRAME_T, FRAME_T]} />
+          <meshStandardMaterial color="#d7d4cf" roughness={0.9} metalness={0} />
+        </mesh>
+      </group>
+
+      {/* Interior Corridor - depth cue behind the opening */}
+      <group>
+        {/* Left wall */}
+        <mesh position={[-(PORTAL_W / 2) - (FRAME_T / 2), PORTAL_H / 2, -DEPTH / 2]}>
+          <boxGeometry args={[FRAME_T, PORTAL_H, DEPTH]} />
+          <meshStandardMaterial color="#bcb8b2" roughness={1} metalness={0} />
+        </mesh>
+        {/* Right wall */}
+        <mesh position={[(PORTAL_W / 2) + (FRAME_T / 2), PORTAL_H / 2, -DEPTH / 2]}>
+          <boxGeometry args={[FRAME_T, PORTAL_H, DEPTH]} />
+          <meshStandardMaterial color="#bcb8b2" roughness={1} metalness={0} />
+        </mesh>
+        {/* Ceiling */}
+        <mesh position={[0, PORTAL_H + (FRAME_T / 2), -DEPTH / 2]}>
+          <boxGeometry args={[PORTAL_W + FRAME_T * 2, FRAME_T, DEPTH]} />
+          <meshStandardMaterial color="#bcb8b2" roughness={1} metalness={0} />
+        </mesh>
+        {/* Floor */}
+        <mesh position={[0, FRAME_T / 2, -DEPTH / 2]}>
+          <boxGeometry args={[PORTAL_W + FRAME_T * 2, FRAME_T, DEPTH]} />
+          <meshStandardMaterial color="#a9a59f" roughness={1} metalness={0} />
+        </mesh>
+        {/* Back wall */}
+        <mesh position={[0, PORTAL_H / 2, -DEPTH - (FRAME_T / 2)]}>
+          <boxGeometry args={[PORTAL_W + FRAME_T * 2, PORTAL_H + FRAME_T * 2, FRAME_T]} />
+          <meshStandardMaterial color="#9a9690" roughness={1} metalness={0} />
         </mesh>
 
-        {/* Door handle */}
-        <mesh position={[doorW / 2 - 0.15, 0, 0.04]} castShadow>
-          <boxGeometry args={[0.03, 0.15, 0.04]} />
-          <meshStandardMaterial color="#8B7355" roughness={0.4} metalness={0.6} />
-        </mesh>
-
-        {/* Frame - top */}
-        <mesh position={[0, doorH / 2 + frameW / 2, 0]}>
-          <boxGeometry args={[doorW + frameW * 2, frameW, frameDepth]} />
-          <meshStandardMaterial color="#111111" roughness={0.85} metalness={0.05} />
-        </mesh>
-        {/* Frame - bottom */}
-        <mesh position={[0, -doorH / 2 - frameW / 2, 0]}>
-          <boxGeometry args={[doorW + frameW * 2, frameW, frameDepth]} />
-          <meshStandardMaterial color="#111111" roughness={0.85} metalness={0.05} />
-        </mesh>
-        {/* Frame - left */}
-        <mesh position={[-doorW / 2 - frameW / 2, 0, 0]}>
-          <boxGeometry args={[frameW, doorH + frameW * 2, frameDepth]} />
-          <meshStandardMaterial color="#111111" roughness={0.85} metalness={0.05} />
-        </mesh>
-        {/* Frame - right */}
-        <mesh position={[doorW / 2 + frameW / 2, 0, 0]}>
-          <boxGeometry args={[frameW, doorH + frameW * 2, frameDepth]} />
-          <meshStandardMaterial color="#111111" roughness={0.85} metalness={0.05} />
-        </mesh>
-
-        {/* ENTRANCE sign above door */}
-        <mesh position={[0, doorH / 2 + 0.35, 0.02]}>
-          <planeGeometry args={[0.8, 0.2]} />
-          <meshBasicMaterial color="#111111" />
-        </mesh>
-        <mesh position={[0, doorH / 2 + 0.35, 0.025]}>
-          <planeGeometry args={[0.75, 0.15]} />
-          <meshBasicMaterial color="#1a1a1a" />
-        </mesh>
+        {/* Subtle interior light to avoid black hole */}
+        <pointLight 
+          position={[0, PORTAL_H * 0.8, -DEPTH * 0.6]} 
+          intensity={0.4} 
+          distance={6} 
+          color="#fff8f2"
+        />
       </group>
     </group>
   );

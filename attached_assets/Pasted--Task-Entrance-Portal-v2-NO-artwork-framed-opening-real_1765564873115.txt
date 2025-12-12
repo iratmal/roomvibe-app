@@ -1,0 +1,179 @@
+# Task: Entrance Portal v2 (NO artwork + framed opening + realism)
+
+## Problem
+
+Current “door” is a **black slab** and it sits **behind an artwork**, which is wrong. We want a believable **opening/portal** (štok + prolaz) and a subtle hint of a **next space** behind it.
+
+## Requirements (must)
+
+1. **No artwork at the entrance wall slot**
+
+* The wall segment where the entrance portal is placed must have **NO painting**.
+* If the system uses wall slots: **disable/hide** that slot OR automatically **skip placing** artwork there.
+
+2. Replace black door with **framed opening (portal)**
+
+* Create a rectangular opening that reads like a **passage**.
+* Target dimensions:
+
+  * **Width:** 2.5m
+  * **Height:** 2.5m
+  * **Frame/štok thickness:** 0.10–0.15m
+
+3. “Glimpse” of another space behind the opening (simple + realistic)
+
+* Behind the portal, show a subtle **depth cue**:
+
+  * Option A (simplest): a slightly darker **inner corridor box** (walls/ceiling/floor) 2–4m deep.
+  * Option B: a plane with a subtle **gradient** (not pure black) + faint light.
+* It must not look like a flat black rectangle.
+
+4. SAFE MODE
+
+* Do **not** touch camera/controls/lights/material system except what’s needed for the portal objects.
+
+## Acceptance checklist
+
+* From Center/Entrance views, entrance area is obvious.
+* No painting overlaps or sits on the entrance portal wall area.
+* Opening looks like a passage (frame + depth), not a black board.
+
+---
+
+# Code (example implementation)
+
+> Notes:
+>
+> * This is a generic Three.js snippet. Agent should adapt selectors/scene hooks to RoomVibe’s codebase.
+> * Replace `scene.add(...)` location with wherever you build the gallery room.
+
+```ts
+// --- Entrance Portal v2 ---
+// Dimensions (meters)
+const PORTAL_W = 2.5;
+const PORTAL_H = 2.5;
+const FRAME_T = 0.12;
+const DEPTH = 3.0;
+
+// Materials (keep simple; can be MeshStandardMaterial if you want lighting)
+const frameMat = new THREE.MeshStandardMaterial({
+  color: 0xd7d4cf, // warm light concrete/paint
+  roughness: 0.9,
+  metalness: 0.0,
+});
+
+const innerWallMat = new THREE.MeshStandardMaterial({
+  color: 0xbcb8b2, // slightly darker interior
+  roughness: 1.0,
+  metalness: 0.0,
+});
+
+const innerFloorMat = new THREE.MeshStandardMaterial({
+  color: 0xa9a59f,
+  roughness: 1.0,
+  metalness: 0.0,
+});
+
+// Helper: build frame as 4 boxes around an opening
+function buildPortalFrame(): THREE.Group {
+  const g = new THREE.Group();
+
+  // Left + Right posts
+  const postGeo = new THREE.BoxGeometry(FRAME_T, PORTAL_H, FRAME_T);
+  const leftPost = new THREE.Mesh(postGeo, frameMat);
+  const rightPost = new THREE.Mesh(postGeo, frameMat);
+  leftPost.position.set(-(PORTAL_W / 2) - (FRAME_T / 2), PORTAL_H / 2, 0);
+  rightPost.position.set((PORTAL_W / 2) + (FRAME_T / 2), PORTAL_H / 2, 0);
+
+  // Top lintel
+  const topGeo = new THREE.BoxGeometry(PORTAL_W + FRAME_T * 2, FRAME_T, FRAME_T);
+  const top = new THREE.Mesh(topGeo, frameMat);
+  top.position.set(0, PORTAL_H + (FRAME_T / 2), 0);
+
+  // Threshold (optional)
+  const threshGeo = new THREE.BoxGeometry(PORTAL_W + FRAME_T * 2, FRAME_T, FRAME_T);
+  const bottom = new THREE.Mesh(threshGeo, frameMat);
+  bottom.position.set(0, (FRAME_T / 2), 0);
+
+  g.add(leftPost, rightPost, top, bottom);
+  return g;
+}
+
+// Helper: interior corridor box behind the portal for depth cue
+function buildInteriorCorridor(): THREE.Group {
+  const g = new THREE.Group();
+
+  // Corridor dimensions
+  const cw = PORTAL_W;      // match opening
+  const ch = PORTAL_H;      // match opening
+  const cd = DEPTH;
+
+  // Side walls
+  const sideGeo = new THREE.BoxGeometry(FRAME_T, ch, cd);
+  const left = new THREE.Mesh(sideGeo, innerWallMat);
+  const right = new THREE.Mesh(sideGeo, innerWallMat);
+  left.position.set(-(cw / 2) - (FRAME_T / 2), ch / 2, -cd / 2);
+  right.position.set((cw / 2) + (FRAME_T / 2), ch / 2, -cd / 2);
+
+  // Ceiling
+  const ceilGeo = new THREE.BoxGeometry(cw + FRAME_T * 2, FRAME_T, cd);
+  const ceil = new THREE.Mesh(ceilGeo, innerWallMat);
+  ceil.position.set(0, ch + (FRAME_T / 2), -cd / 2);
+
+  // Floor
+  const floorGeo = new THREE.BoxGeometry(cw + FRAME_T * 2, FRAME_T, cd);
+  const floor = new THREE.Mesh(floorGeo, innerFloorMat);
+  floor.position.set(0, (FRAME_T / 2), -cd / 2);
+
+  // Back wall (very subtle)
+  const backGeo = new THREE.BoxGeometry(cw + FRAME_T * 2, ch + FRAME_T * 2, FRAME_T);
+  const back = new THREE.Mesh(backGeo, innerWallMat);
+  back.position.set(0, (ch / 2), -cd - (FRAME_T / 2));
+
+  g.add(left, right, ceil, floor, back);
+
+  // Optional small light inside corridor to avoid “black hole”
+  const innerLight = new THREE.PointLight(0xffffff, 0.6, 6);
+  innerLight.position.set(0, ch * 0.8, -cd * 0.6);
+  g.add(innerLight);
+
+  return g;
+}
+
+/**
+ * Place portal on the “Entrance wall”.
+ * You MUST set correct wall position & rotation from your room layout.
+ * Example assumes the wall plane is at Z = -ROOM_DEPTH/2 facing inward.
+ */
+export function addEntrancePortal(scene: THREE.Scene, opts: {
+  x: number; y: number; z: number; // base position at floor center of opening
+  rotationY: number;              // so it faces into room
+}) {
+  const portal = new THREE.Group();
+
+  const frame = buildPortalFrame();
+  const interior = buildInteriorCorridor();
+
+  portal.add(frame);
+  portal.add(interior);
+
+  portal.position.set(opts.x, opts.y, opts.z);
+  portal.rotation.y = opts.rotationY;
+
+  scene.add(portal);
+}
+
+// --- Artwork exclusion (important) ---
+// Wherever you assign artworks to wall slots, add a rule like:
+// - if slotId === 'ENTRANCE_WALL_SLOT' => skip
+// - or if slot bounding box intersects portal bounding box => skip
+
+// Example pseudocode:
+// if (slot.id === 'entrance') return; // do not place artwork here
+```
+
+## Implementation notes for the agent
+
+* Place portal on the wall that is visible when pressing **Entrance**.
+* Add a hard rule to **prevent artwork placement** on that same wall segment.
+* If you can’t identify slot IDs reliably, compute portal bounding box and skip any artwork plane that intersects it.

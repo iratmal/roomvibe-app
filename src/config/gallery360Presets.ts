@@ -94,8 +94,7 @@ export const gallery360Presets: Gallery360Preset[] = [
       { id: 'wall-east-1', wallId: 'east', position: [11.95, 1.6, -4], rotation: [0, -Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'East Wall - Upper' },
       { id: 'wall-east-2', wallId: 'east', position: [11.95, 1.6, 4], rotation: [0, -Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'East Wall - Lower' },
       { id: 'wall-west-1', wallId: 'west', position: [-11.95, 1.6, -4], rotation: [0, Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'West Wall - Upper' },
-      { id: 'wall-west-2', wallId: 'west', position: [-11.95, 1.6, 4], rotation: [0, Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'West Wall - Lower' },
-      { id: 'wall-south-1', wallId: 'south', position: [0, 1.6, 8.95], rotation: [0, Math.PI, 0], width: 1.5, height: 1.1, label: 'South Wall - Center' }
+      { id: 'wall-west-2', wallId: 'west', position: [-11.95, 1.6, 4], rotation: [0, Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'West Wall - Lower' }
     ]
   },
   {
