@@ -1,0 +1,194 @@
+# TASK: Add Entrance Door + Orientation Cue (behind “Entrance” view)
+
+## Cilj
+
+U 360 galeriji mora postojati **vizualni “ulaz”** (vrata) kako bi korisnik uvijek znao gdje je ulaz/izlaz. Vrata trebaju biti **na zidu koji je iza kamere kad je aktivan gumb “Entrance”**.
+
+## Pravilo (SAFE MODE)
+
+* Ne dirati: svjetla, postojeće wall-slotove, scaling slika, kontrole (osim ako treba za pozicioniranje vrata).
+* Samo dodati: **door mesh + okvir + opcionalno mali “EXIT/ENTRANCE” znak**.
+
+## Acceptance kriteriji
+
+1. Kad kliknem **Entrance**, kamera gleda prema zidu na kojem su **vrata vidljiva u kadru**.
+2. Kad rotiram oko sobe, vrata se uvijek mogu pronaći (jasan landmark).
+3. Vrata ne smiju „pojesti“ zidne slike niti se preklapati s frameovima.
+
+---
+
+## Implementacija (Three.js – primjer koda)
+
+> Napomena: prilagodi nazive varijabli ovisno o vašoj strukturi (sceneRef, roomGroup, itd.).
+
+### 1) Door group (door + frame)
+
+```ts
+import * as THREE from "three";
+
+export function addEntranceDoor(opts: {
+  scene: THREE.Scene;
+  roomGroup?: THREE.Object3D; // ako imate group za sobu
+  entranceYawRad: number;     // yaw/orijentacija “Entrance” pogleda
+  roomWidth: number;
+  wallHeight: number;
+  wallThickness?: number;
+}) {
+  const {
+    scene,
+    roomGroup,
+    entranceYawRad,
+    roomWidth,
+    wallHeight,
+    wallThickness = 0.15,
+  } = opts;
+
+  // Door dimenzije (u metrima, prilagodi)
+  const doorW = 1.25;
+  const doorH = 2.35;
+  const frameW = 0.08;
+  const frameDepth = 0.06;
+
+  const group = new THREE.Group();
+  group.name = "EntranceDoor";
+
+  // Materijali
+  const doorMat = new THREE.MeshStandardMaterial({
+    color: "#2a2a2a",
+    roughness: 0.75,
+    metalness: 0.1,
+  });
+
+  const frameMat = new THREE.MeshStandardMaterial({
+    color: "#111111",
+    roughness: 0.85,
+    metalness: 0.05,
+  });
+
+  // Door panel
+  const doorGeo = new THREE.BoxGeometry(doorW, doorH, 0.04);
+  const door = new THREE.Mesh(doorGeo, doorMat);
+  door.castShadow = true;
+  door.receiveShadow = true;
+  door.name = "DoorPanel";
+
+  // Frame (4 letvice)
+  const topGeo = new THREE.BoxGeometry(doorW + frameW * 2, frameW, frameDepth);
+  const sideGeo = new THREE.BoxGeometry(frameW, doorH + frameW * 2, frameDepth);
+
+  const top = new THREE.Mesh(topGeo, frameMat);
+  const bottom = new THREE.Mesh(topGeo, frameMat);
+  const left = new THREE.Mesh(sideGeo, frameMat);
+  const right = new THREE.Mesh(sideGeo, frameMat);
+
+  top.position.set(0, doorH / 2 + frameW / 2, 0);
+  bottom.position.set(0, -doorH / 2 - frameW / 2, 0);
+  left.position.set(-doorW / 2 - frameW / 2, 0, 0);
+  right.position.set(doorW / 2 + frameW / 2, 0, 0);
+
+  // Složimo grupu
+  group.add(door, top, bottom, left, right);
+
+  // Opcionalno: mali znak iznad (ENTRANCE)
+  const signText = makeSimpleSignMesh("ENTRANCE", 0.7, 0.18);
+  signText.position.set(0, doorH / 2 + 0.22, 0.03);
+  group.add(signText);
+
+  // Pozicija na zidu: centar zida + malo u stranu (da ne smeta umjetninama)
+  // Pretpostavka: soba je centrirana oko (0,0,0), zid je na Z = -roomWidth/2 ili +roomWidth/2.
+  // Vrata stavljamo na "Entrance" zid: računamo normalu zida iz entranceYaw.
+
+  // Normal vektora kamo gleda kamera na Entrance
+  const dir = new THREE.Vector3(Math.sin(entranceYawRad), 0, Math.cos(entranceYawRad));
+
+  // Želimo da vrata budu NA ZIDU ISPRED kamere u tom smjeru, tj. na zidu u smjeru dir.
+  // Aproksimacija: projiciramo na najbliži axis-aligned zid (North/South/East/West)
+  const ax = Math.abs(dir.x) > Math.abs(dir.z) ? "x" : "z";
+
+  const doorY = doorH / 2; // donji rub na podu (y=0)
+
+  if (ax === "z") {
+    const signZ = dir.z >= 0 ? 1 : -1;
+    group.position.set(0, doorY, signZ * (roomWidth / 2 - wallThickness / 2));
+    group.rotation.y = signZ > 0 ? Math.PI : 0;
+  } else {
+    const signX = dir.x >= 0 ? 1 : -1;
+    group.position.set(signX * (roomWidth / 2 - wallThickness / 2), doorY, 0);
+    group.rotation.y = signX > 0 ? -Math.PI / 2 : Math.PI / 2;
+  }
+
+  // Malo pomaknemo vrata u stranu da ne budu točno u sredini (manje "sterilno")
+  group.position.x += 1.6 * (ax === "z" ? 1 : 0);
+  group.position.z += 1.6 * (ax === "x" ? 1 : 0);
+
+  (roomGroup ?? scene).add(group);
+
+  return group;
+}
+
+// Minimalni “sign” (bez font loadera) – canvas texture
+function makeSimpleSignMesh(text: string, w: number, h: number) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 128;
+  const ctx = canvas.getContext("2d")!;
+
+  ctx.fillStyle = "#111";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "#f2f2f2";
+  ctx.font = "bold 58px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.anisotropy = 8;
+
+  const mat = new THREE.MeshBasicMaterial({ map: tex });
+  const geo = new THREE.PlaneGeometry(w, h);
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.name = "EntranceSign";
+  return mesh;
+}
+```
+
+### 2) Poveži s “Entrance” gumbom (orijentacija)
+
+* Kad setate kameru na **Entrance**, taj pogled mora biti **prema vratima**.
+* Ako imate `PRESET_VIEWS.entrance`, postavi mu `yaw` (ili `target`) tako da gleda točno u `EntranceDoor.position`.
+
+Primjer:
+
+```ts
+const door = scene.getObjectByName("EntranceDoor");
+if (door) {
+  const pos = new THREE.Vector3();
+  door.getWorldPosition(pos);
+  controls.target.copy(pos);
+  // ili: postavi camera.lookAt(pos)
+}
+```
+
+### 3) (Opcionalno) Ako imate collision clamp
+
+Ako koristite raycast/collision za zoom i rotaciju:
+
+* **Ne računati** `DoorPanel` i `EntranceSign` kao prepreku (ili postavi `door.layers` na layer koji raycast ignorira).
+
+Primjer:
+
+```ts
+// door.traverse(o => o.layers.set(2));
+// raycaster.layers.set(0); // ignora layer 2
+```
+
+---
+
+## Mikro-iteracija (kako ti voliš – korak po korak)
+
+1. Samo dodaj door mesh (bez znaka) i deploy → provjeri da se vidi s Entrance.
+2. Dodaj frame i znak → deploy → provjeri.
+3. Fino podešavanje pozicije (offset 1.0–2.0m) da ne smeta umjetninama.
+
+Ako želiš, nakon vrata idemo na “museum vibe” detalje: sokl (baseboard), kutne sjene, lagani beton/grain texture (ali tek kad vrata sjednu).
