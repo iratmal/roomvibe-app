@@ -476,11 +476,18 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         />
       ))}
 
-      {/* Gallery Benches - only for Classic Gallery */}
+      {/* Gallery Benches & Decorative Vases - only for Classic Gallery */}
       {preset.id === 'white-cube-v1' && (
         <>
-          <GalleryBench position={[-3.5, 0, 0]} rotation={[0, Math.PI / 2, 0]} />
-          <GalleryBench position={[3.5, 0, 0]} rotation={[0, -Math.PI / 2, 0]} />
+          {/* Designer benches with emerald velvet + brass frame */}
+          <GalleryBench position={[-3.0, 0, 0]} rotation={[0, Math.PI / 2, 0]} />
+          <GalleryBench position={[3.0, 0, 0]} rotation={[0, -Math.PI / 2, 0]} />
+          
+          {/* Decorative vases in all 4 corners */}
+          <DecorativeVase position={[-(halfW - 0.8), 0, -(halfD - 0.8)]} />
+          <DecorativeVase position={[(halfW - 0.8), 0, -(halfD - 0.8)]} />
+          <DecorativeVase position={[-(halfW - 0.8), 0, (halfD - 0.8)]} />
+          <DecorativeVase position={[(halfW - 0.8), 0, (halfD - 0.8)]} />
         </>
       )}
 
@@ -494,44 +501,104 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
 }
 
 function GalleryBench({ position, rotation }: { position: [number, number, number]; rotation: [number, number, number] }) {
-  const BENCH_L = 2.3;   // 230cm length (+35%)
-  const BENCH_W = 0.50;  // 50cm depth (+20%)
-  const BENCH_H = 0.46;  // 46cm height (realistic seating)
-  const LEG_W = 0.10;    // leg width (slightly larger)
-  const LEG_INSET = 0.12; // leg inset from edge
+  const BENCH_L = 2.0;   // 200cm length
+  const BENCH_W = 0.55;  // 55cm depth
+  const BENCH_H = 0.45;  // 45cm seat height
+  const CUSHION_H = 0.12; // cushion thickness
+  const FRAME_R = 0.02;  // metal frame tube radius
 
   return (
     <group position={position} rotation={rotation}>
-      {/* Bench seat - warm dark wood */}
+      {/* Velvet cushion seat - emerald green with tufted look */}
       <mesh position={[0, BENCH_H, 0]} castShadow receiveShadow>
-        <boxGeometry args={[BENCH_L, 0.05, BENCH_W]} />
-        <meshStandardMaterial color="#4a3728" roughness={0.85} metalness={0} />
+        <boxGeometry args={[BENCH_L, CUSHION_H, BENCH_W]} />
+        <meshStandardMaterial color="#1a5f4a" roughness={0.92} metalness={0} />
       </mesh>
       
-      {/* Support beam under seat */}
-      <mesh position={[0, BENCH_H - 0.07, 0]} castShadow>
-        <boxGeometry args={[BENCH_L - 0.1, 0.04, 0.12]} />
-        <meshStandardMaterial color="#3d2d1f" roughness={0.9} metalness={0} />
+      {/* Cushion top detail - slightly lighter for depth */}
+      <mesh position={[0, BENCH_H + CUSHION_H / 2 + 0.001, 0]} castShadow>
+        <boxGeometry args={[BENCH_L - 0.04, 0.01, BENCH_W - 0.04]} />
+        <meshStandardMaterial color="#1f6b54" roughness={0.95} metalness={0} />
       </mesh>
 
-      {/* Left legs */}
-      <mesh position={[-(BENCH_L / 2 - LEG_INSET), BENCH_H / 2, BENCH_W / 2 - LEG_INSET]} castShadow>
-        <boxGeometry args={[LEG_W, BENCH_H, LEG_W]} />
-        <meshStandardMaterial color="#3d2d1f" roughness={0.9} metalness={0} />
+      {/* Gold/brass X-frame base */}
+      {/* Front X */}
+      <mesh position={[0, (BENCH_H - CUSHION_H) / 2, BENCH_W / 2 - 0.08]} rotation={[0, 0, Math.PI / 4]} castShadow>
+        <boxGeometry args={[FRAME_R * 2, (BENCH_H - CUSHION_H) * 1.5, FRAME_R * 2]} />
+        <meshStandardMaterial color="#c9a050" roughness={0.35} metalness={0.7} />
       </mesh>
-      <mesh position={[-(BENCH_L / 2 - LEG_INSET), BENCH_H / 2, -(BENCH_W / 2 - LEG_INSET)]} castShadow>
-        <boxGeometry args={[LEG_W, BENCH_H, LEG_W]} />
-        <meshStandardMaterial color="#3d2d1f" roughness={0.9} metalness={0} />
+      <mesh position={[0, (BENCH_H - CUSHION_H) / 2, BENCH_W / 2 - 0.08]} rotation={[0, 0, -Math.PI / 4]} castShadow>
+        <boxGeometry args={[FRAME_R * 2, (BENCH_H - CUSHION_H) * 1.5, FRAME_R * 2]} />
+        <meshStandardMaterial color="#c9a050" roughness={0.35} metalness={0.7} />
       </mesh>
 
-      {/* Right legs */}
-      <mesh position={[(BENCH_L / 2 - LEG_INSET), BENCH_H / 2, BENCH_W / 2 - LEG_INSET]} castShadow>
-        <boxGeometry args={[LEG_W, BENCH_H, LEG_W]} />
-        <meshStandardMaterial color="#3d2d1f" roughness={0.9} metalness={0} />
+      {/* Back X */}
+      <mesh position={[0, (BENCH_H - CUSHION_H) / 2, -(BENCH_W / 2 - 0.08)]} rotation={[0, 0, Math.PI / 4]} castShadow>
+        <boxGeometry args={[FRAME_R * 2, (BENCH_H - CUSHION_H) * 1.5, FRAME_R * 2]} />
+        <meshStandardMaterial color="#c9a050" roughness={0.35} metalness={0.7} />
       </mesh>
-      <mesh position={[(BENCH_L / 2 - LEG_INSET), BENCH_H / 2, -(BENCH_W / 2 - LEG_INSET)]} castShadow>
-        <boxGeometry args={[LEG_W, BENCH_H, LEG_W]} />
-        <meshStandardMaterial color="#3d2d1f" roughness={0.9} metalness={0} />
+      <mesh position={[0, (BENCH_H - CUSHION_H) / 2, -(BENCH_W / 2 - 0.08)]} rotation={[0, 0, -Math.PI / 4]} castShadow>
+        <boxGeometry args={[FRAME_R * 2, (BENCH_H - CUSHION_H) * 1.5, FRAME_R * 2]} />
+        <meshStandardMaterial color="#c9a050" roughness={0.35} metalness={0.7} />
+      </mesh>
+
+      {/* Side rails connecting X frames */}
+      <mesh position={[BENCH_L / 2 - 0.15, BENCH_H - CUSHION_H - 0.02, 0]} castShadow>
+        <boxGeometry args={[FRAME_R * 2, FRAME_R * 2, BENCH_W - 0.1]} />
+        <meshStandardMaterial color="#c9a050" roughness={0.35} metalness={0.7} />
+      </mesh>
+      <mesh position={[-(BENCH_L / 2 - 0.15), BENCH_H - CUSHION_H - 0.02, 0]} castShadow>
+        <boxGeometry args={[FRAME_R * 2, FRAME_R * 2, BENCH_W - 0.1]} />
+        <meshStandardMaterial color="#c9a050" roughness={0.35} metalness={0.7} />
+      </mesh>
+
+      {/* Top frame under cushion */}
+      <mesh position={[0, BENCH_H - CUSHION_H / 2, 0]} castShadow>
+        <boxGeometry args={[BENCH_L, 0.02, BENCH_W]} />
+        <meshStandardMaterial color="#b8944a" roughness={0.4} metalness={0.6} />
+      </mesh>
+
+      {/* Corner feet */}
+      {[[-1, -1], [-1, 1], [1, -1], [1, 1]].map(([xDir, zDir], i) => (
+        <mesh key={i} position={[xDir * (BENCH_L / 2 - 0.08), 0.015, zDir * (BENCH_W / 2 - 0.08)]} castShadow>
+          <cylinderGeometry args={[0.025, 0.03, 0.03, 8]} />
+          <meshStandardMaterial color="#c9a050" roughness={0.35} metalness={0.7} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function DecorativeVase({ position }: { position: [number, number, number] }) {
+  const VASE_H = 1.5;     // 150cm height
+  const BASE_R = 0.18;    // base radius
+  const TOP_R = 0.12;     // top opening radius
+  const MID_R = 0.22;     // widest point radius
+
+  return (
+    <group position={position}>
+      {/* Main vase body - tapered cylinder with warm champagne/beige color */}
+      <mesh position={[0, VASE_H / 2, 0]} castShadow receiveShadow>
+        <cylinderGeometry args={[TOP_R, BASE_R, VASE_H, 16]} />
+        <meshStandardMaterial color="#d4c8a8" roughness={0.75} metalness={0.05} />
+      </mesh>
+      
+      {/* Wider middle section for sculptural look */}
+      <mesh position={[0, VASE_H * 0.4, 0]} castShadow>
+        <cylinderGeometry args={[MID_R, BASE_R, VASE_H * 0.5, 16]} />
+        <meshStandardMaterial color="#cfc2a0" roughness={0.8} metalness={0.03} />
+      </mesh>
+
+      {/* Top rim - slightly darker interior hint */}
+      <mesh position={[0, VASE_H - 0.02, 0]}>
+        <cylinderGeometry args={[TOP_R - 0.01, TOP_R, 0.04, 16]} />
+        <meshStandardMaterial color="#8a7d5a" roughness={0.6} metalness={0.1} />
+      </mesh>
+
+      {/* Base */}
+      <mesh position={[0, 0.02, 0]} castShadow>
+        <cylinderGeometry args={[BASE_R, BASE_R + 0.02, 0.04, 16]} />
+        <meshStandardMaterial color="#c4b898" roughness={0.7} metalness={0.05} />
       </mesh>
     </group>
   );
