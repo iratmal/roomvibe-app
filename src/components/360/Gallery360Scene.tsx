@@ -408,18 +408,18 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       ))}
       
       {/* Coffered ceiling grid - 3x3 sections */}
-      {/* Main beams - warm gallery white (matching ceiling) */}
+      {/* Main beams - black */}
       {[-depth/3, 0, depth/3].map((zPos, i) => (
         <mesh key={`beam-main-x-${i}`} position={[0, height - 0.12, zPos]}>
           <boxGeometry args={[width - 0.3, 0.24, 0.20]} />
-          <meshStandardMaterial color="#E8E6E2" roughness={0.9} metalness={0} />
+          <meshStandardMaterial color="#1a1a1a" roughness={0.8} metalness={0} />
         </mesh>
       ))}
-      {/* Cross beams - warm gallery white (matching ceiling) */}
+      {/* Cross beams - black */}
       {[-width/3, 0, width/3].map((xPos, i) => (
         <mesh key={`beam-main-z-${i}`} position={[xPos, height - 0.12, 0]}>
           <boxGeometry args={[0.20, 0.24, depth - 0.3]} />
-          <meshStandardMaterial color="#E8E6E2" roughness={0.9} metalness={0} />
+          <meshStandardMaterial color="#1a1a1a" roughness={0.8} metalness={0} />
         </mesh>
       ))}
       
@@ -439,11 +439,11 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         </group>
       ))}
       
-      {/* Track lines - elegant black rail for spotlights */}
+      {/* Track lines - brown rail for spotlights */}
       {[-width/3 - width/6, -width/6, width/6, width/3 + width/6].map((xPos, i) => (
         <mesh key={`track-${i}`} position={[xPos, height - 0.01, 0]}>
           <boxGeometry args={[0.03, 0.03, depth - 0.8]} />
-          <meshStandardMaterial color="#000000" roughness={0.7} metalness={0.1} />
+          <meshStandardMaterial color="#5c4033" roughness={0.7} metalness={0.1} />
         </mesh>
       ))}
 
