@@ -1,0 +1,657 @@
+Skip to content
+
+Files
+Commands
+.config
+.git
+api
+attached_assets
+dist
+public
+art
+gallery-presets
+rooms
+uploads
+artworks.json
+desktop_optimized.webp
+hero_clean.png
+hero-room-mordor-clean.png
+hero.png
+roomvibe-hero-desktop-optimized.webp
+roomvibe-hero-desktop.jpg
+roomvibe-logo-transparent.png
+roomvibe-logo.png
+roomvibe-widget.js
+serenity-hero-extended.png
+serenity-hero-light.png
+serenity-hero.png
+widget-simple-test.html
+widget-test.html
+widget.js
+scripts
+server
+api
+config
+db
+middleware
+services
+stripe
+objectStorage.ts
+server.ts
+src
+components
+config
+context
+data
+lib
+pages
+types
+utils
+App.tsx
+App.tsx.backup
+App.tsx.old
+index.css
+main.tsx
+shopify.ts
+vite-env.d.ts
+.env.example
+.gitignore
+index.html
+postcss.config.js
+README.md
+replit.md
+server.js
+tailwind.config.js
+tsconfig.json
+tsconfig.node.json
+tsconfig.tsbuildinfo
+vite.config.ts
+Packager files
+.pythonlibs
+.upm
+node_modules
+package-lock.json
+package.json
+Config files
+.replit
+RoomVibe Studio - Full Application
+Overview
+
+RoomVibe Studio is a comprehensive React/TypeScript web application for visualizing artwork within diverse room environments. It features a Canvy-style three-panel editor with true-to-scale sizing, wall recoloring, and e-commerce integration capabilities. The application includes full-stack authentication with role-based access control and robust security, catering to artists, designers, and galleries. The project aims to become a leading tool in art visualization, offering a modern and user-friendly experience.
+User Preferences
+
+I prefer simple language in explanations. I like functional programming paradigms where applicable. I want iterative development, with small, testable changes. Ask before making major architectural changes or introducing new dependencies. I prefer detailed explanations for complex logic. Do not make changes to files in the public/presets folder. Do not make changes to the server.js file.
+System Architecture
+
+The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
+
+UI/UX Decisions:
+
+    Consistent Branding: Global brand palette, Inter font family, and a global CSS system using variables ensure a cohesive look across all pages (Studio, dashboards, marketing).
+    Responsive Layouts: Premium 5-section homepage, a responsive three-panel Studio editor with dynamic canvas height and hidden navigation, and mobile-first design principles.
+    Interactive Elements: Drag-to-move and resize artwork, gold-accented iconography, and a polished UI with accessible touch targets.
+
+Technical Implementations & Feature Specifications:
+
+    Authentication & Authorization: Express.js backend with JWT, HttpOnly cookies, bcrypt, CORS, and PostgreSQL manages user authentication, role-based access control (user, artist, designer, gallery, admin), and entitlements.
+    Studio Editor: Features a left panel for scene browsing, a central canvas for artwork visualization, and a right panel for controls (artwork, size, frame selection). Includes AI-suggested rooms, premium room libraries, and tiered access based on subscription plans. Supports image (1200px, 3000px) and PDF exports with plan-based restrictions and watermarking.
+    Role-Based Dashboards: Dedicated dashboards for users, artists, designers, and galleries, providing CRUD operations for artworks, project management, and widget embedding. Paid users access a unified dashboard with modular content.
+    Subscription Management: Full Stripe integration for five plans (Free, Artist, Designer, Gallery, All-Access) handling checkout, customer portal, and webhook events to manage user roles and entitlements.
+    Multi-Entitlement System: Users can accumulate and retain access to multiple modules (Artist, Designer, Gallery) via additive subscriptions.
+    Unified Widget System: A single embeddable JavaScript widget adapts its functionality based on user entitlements (Artist, Designer, Gallery modes).
+    Virtual Exhibition Editor: MVP feature for Gallery plan users to create immersive virtual exhibitions. It includes preset selection, artwork placement via drag-and-drop, and scene persistence.
+    360° Virtual Exhibition: Immersive 3D gallery experience using React Three Fiber (R3F) featuring:
+        Modern Gallery v2: High-realism museum space (24x6x18m) with white walls, wood floor, black columns, and skylights
+        Classic Gallery: Original warm-toned gallery space (18x4.2x14m) preserved for compatibility
+        Artwork textures use meshBasicMaterial (lighting-independent) for reliable rendering
+        Image proxy endpoint (/api/image-proxy) handles CORS for external artwork URLs with SSRF protection
+        Advanced lighting: Skylights with rect area lights, wall spotlights, hemisphere and directional lights
+        Procedural wood floor with plank texture overlay for realism
+        Black structural columns positioned throughout the gallery space
+        Thin dark frames around artworks for professional presentation
+        Street-View style navigation with pulsing floor hotspots and smooth camera transitions
+        Camera constraints with configurable polar angle limits
+    Onboarding Flow: A 3-screen introductory wizard for first-time users, guiding them through the application's modules and features.
+    Artwork Management: Includes artwork upload, editing, and automated enrichment from Shopify.
+    Real-Scale Rendering: Achieves accurate artwork sizing using physical dimensions and standardized room wall heights.
+    Feature Locking: Comprehensive access control enforced on both frontend and backend based on subscription plans and defined limits.
+    Hybrid Upgrade Flow: Linear upgrade recommendations with the flexibility to select any plan from the pricing page.
+    Deployment: Configured for Autoscale with npm run build and npm start using an Express server.
+
+External Dependencies
+
+    React: UI library.
+    TypeScript: Type safety.
+    Vite: Build tool and development server.
+    Tailwind CSS: Utility-first CSS framework.
+    Shopify Storefront API: Artwork data enrichment.
+    Node.js: Runtime environment.
+    Express: Web framework.
+    PostgreSQL: Database.
+    bcryptjs: Password hashing.
+    jsonwebtoken: JWT.
+    cookie-parser: HTTP cookie parsing.
+    cors: Cross-origin resource sharing.
+    dotenv: Environment variable management.
+    Multer: File uploads.
+    @google-cloud/storage: Persistent file storage (Replit Object Storage).
+    Google Analytics 4 (GA4): Website analytics.
+    Hotjar: User behavior analytics.
+    Stripe: Subscription billing and payments.
+    jsPDF: PDF export generation.
+    React Three Fiber (@react-three/fiber): React renderer for Three.js, used for 360° Virtual Exhibition.
+    @react-three/drei: Useful helpers and abstractions for React Three Fiber.
+    Three.js: 3D graphics library for WebGL rendering.
+
+No Git provider configured. To push your changes, connect to a provider.
+Commit
+There are no changes to commit.
+secrets
+1 results in 1 file
+Pasted-Goal-Refaktorizirati-postoje-i-AI-auto-tagging-artworka_1765197877176.txtattached_assets
+1 match
+55
+
+nema potrebe da korisnik išta ručno postavlja u Secrets zbog tagiranja.
+
+No file found at "src/backup_old_ui/data/App.tsx", it may have been deleted
+npm run server
+140m • 2 hours ago
+npm run dev
+8m • 8 minutes ago
+Replit Key-Value Store
+Free, easy-to-use key-value store suitable for unstructured data, caching, session management, fast lookups, and flexible data models
+Storage capacity
+How to use the database
+Learn more in the docs
+App Storage is Replit's built-in object storage that lets your app easily host and save uploads like images, videos, and documents.
+An image and a file going into a bucket
+Keep your app's uploads safe and organized. Store photos, videos, and documents in easy-to-use storage 'buckets'.
+Images being uploaded to a cloud
+Perfect for apps where people upload files — like photo galleries, portfolios, or forms with attachments.
+Development icon and deployment icon sharing a bucket
+Your files work in both development and production automatically, so what you test is what your users see.
+Enable "Accessible Terminal" in Workspace Settings to use a screen reader with the shell.
+Docs
+SESSION_SECRET
+••••••••
+VITE_SHOPIFY_DOMAIN
+••••••••
+VITE_SHOPIFY_STOREFRONT_TOKEN
+••••••••
+VITE_ROOMVIBE_COLLECTION_HANDLE
+••••••••
+DATABASE_URL
+••••••••
+PGDATABASE
+••••••••
+PGHOST
+••••••••
+PGPORT
+••••••••
+PGUSER
+••••••••
+PGPASSWORD
+••••••••
+STRIPE_PUBLISHABLE_KEY
+••••••••
+STRIPE_SECRET_KEY
+••••••••
+STRIPE_WEBHOOK_SECRET
+••••••••
+Enable "Accessible Terminal" in Workspace Settings to use a screen reader with the shell.
+Enable "Accessible Terminal" in Workspace Settings to use a screen reader with the shell.
+Production
+Status
+Irena published 2 minutes ago
+Visibility
+Public
+Domain
+https://roomvibe.replit.app
+https://app.roomvibe.app
+Type
+Autoscale(4 vCPU / 8 GiB RAM / 3 Max)
+See all usage
+723a84de
+IR
+iratmal
+Irena published 10 minutes ago
+f15a0a97
+IR
+iratmal
+Irena published 17 minutes ago
+a98e3629
+IR
+iratmal
+Irena published 25 minutes ago
+b1fbb4e8
+IR
+iratmal
+Irena published 31 minutes ago
+de7cc097
+IR
+iratmal
+Irena published 44 minutes ago
+1f424504
+IR
+iratmal
+Irena published about 1 hour ago
+2c07cbdb
+IR
+iratmal
+Irena published about 1 hour ago
+2aa51d1b
+IR
+iratmal
+Irena published about 1 hour ago
+ed8dec6e
+IR
+iratmal
+Irena published about 1 hour ago
+87d3d805
+IR
+iratmal
+Irena published about 1 hour ago
+f6cb6a05
+IR
+iratmal
+Irena published about 2 hours ago
+7b47e71a
+IR
+iratmal
+Irena published about 2 hours ago
+68b0974f
+IR
+iratmal
+Irena published about 2 hours ago
+6e761f37
+IR
+iratmal
+Irena published about 2 hours ago
+ad80e864
+IR
+iratmal
+Irena published about 2 hours ago
+cf98d71f
+IR
+iratmal
+Irena rolled back about 3 hours ago
+9cae3118
+9298fe78
+IR
+iratmal
+Irena rolled back about 3 hours ago
+dc6de9e5
+cab3a9c6
+IR
+iratmal
+Irena published about 3 hours ago
+dc6de9e5
+IR
+iratmal
+Irena published about 3 hours ago
+8ad2ddb3
+IR
+iratmal
+Irena published about 3 hours ago
+9cae3118
+IR
+iratmal
+Irena published about 3 hours ago
+25b6cdfb
+IR
+iratmal
+Irena rolled back about 4 hours ago
+92b5a452
+e1acc11c
+IR
+iratmal
+Irena published about 4 hours ago
+63b57fad
+IR
+iratmal
+Irena published about 4 hours ago
+c0002ce0
+IR
+iratmal
+Irena published about 4 hours ago
+92b5a452
+IR
+iratmal
+Irena published about 5 hours ago
+cc7640ce
+IR
+iratmal
+Irena published about 5 hours ago
+204233e6
+IR
+iratmal
+Irena published about 5 hours ago
+3e610470
+IR
+iratmal
+Irena published about 5 hours ago
+f0dcfb1b
+IR
+iratmal
+Irena failed to publish about 6 hours ago
+e1eccd34
+IR
+iratmal
+Irena published 2 days ago
+653ce23e
+IR
+iratmal
+Irena published 2 days ago
+45590b2e
+IR
+iratmal
+Irena published 2 days ago
+0d6f306f
+IR
+iratmal
+Irena published 2 days ago
+9af928fd
+IR
+iratmal
+Irena published 2 days ago
+6af7745e
+IR
+iratmal
+Irena published 2 days ago
+b0ece869
+IR
+iratmal
+Irena published 2 days ago
+e2f585e9
+IR
+iratmal
+Irena published 2 days ago
+aee71466
+IR
+iratmal
+Irena published 2 days ago
+160ffe07
+IR
+iratmal
+Irena published 2 days ago
+b328cbcf
+IR
+iratmal
+Irena published 2 days ago
+6af6f82a
+IR
+iratmal
+Irena published 2 days ago
+08105cf1
+IR
+iratmal
+Irena published 2 days ago
+bafff3a1
+IR
+iratmal
+Irena published 2 days ago
+2c05e301
+IR
+iratmal
+Irena published 2 days ago
+057341b2
+IR
+iratmal
+Irena published 2 days ago
+ba23177b
+IR
+iratmal
+Irena published 2 days ago
+417a39b5
+IR
+iratmal
+Irena published 2 days ago
+3496530d
+IR
+iratmal
+Irena published 2 days ago
+6258e4c9
+IR
+iratmal
+Irena published 2 days ago
+a59c3d83
+IR
+iratmal
+Irena published 2 days ago
+e8710646
+IR
+iratmal
+Irena published 2 days ago
+1c11e69e
+IR
+iratmal
+Irena published 2 days ago
+557ca335
+IR
+iratmal
+Irena published 2 days ago
+ef758910
+IR
+iratmal
+Irena published 2 days ago
+8151ba4c
+IR
+iratmal
+Irena published 2 days ago
+421e36b6
+IR
+iratmal
+Irena published 2 days ago
+926f7788
+IR
+iratmal
+Irena published 2 days ago
+11f22cc5
+IR
+iratmal
+Irena published 2 days ago
+4b7cc8fb
+IR
+iratmal
+Irena published 2 days ago
+Update ceiling color to compensate for warm lighting
+
+Gotovo!
+
+Promjena:
+
+    Strop: #fbfbfb → #fffef9 (+8-10% svjetliji, toplija nijansa)
+
+Ništa drugo nije dirano - ni svjetla, ni kamera, ni grede, ni zidovi.
+
+Možeš testirati u 360° editoru - strop bi sada trebao izgledati lakše i toplije.
+Checkpoint made1 hour ago
+Make the ceiling slightly lighter and warmer
+Worked for 41 seconds
+Checkpoint made1 hour ago
+•Free•
+Publish
+Published your App
+
+ASK — Ceiling Color (SINGLE CHANGE / SAFE MODE)
+
+Molim te promijeni ISKLJUČIVO boju stropa na sljedeću vrijednost:
+
+HEX: #ECEBE7
+(naziv: Museum Soft White)
+
+Pravila (VAŽNO):
+
+❌ Ne dirati svjetla
+
+❌ Ne dirati zidove
+
+❌ Ne dirati grede
+
+❌ Ne dirati kameru
+
+❌ Ne dirati navigaciju
+
+➡️ Samo boja stropa. Ništa drugo.
+1 hour ago
+Checkpoint made1 hour ago
+Update ceiling color to a softer white shade
+Worked for 20 seconds
+Checkpoint made1 hour ago
+•Free•
+Publish
+Published your App
+
+strop nije promijenio boju u #ECEBE7, popravi
+1 hour ago
+Checkpoint made1 hour ago
+Update ceiling colors to match requested shade
+Worked for 1 minute
+Checkpoint made58 minutes ago
+•Free•
+Publish
+Published your App
+
+VISUAL TEST — Ceiling Debug Color
+
+Molim te napravi SAMO privremeni test, bez publisha za produkciju.
+
+Strop postavi na:
+
+#FF0000
+
+(crvena — debug test)
+
+Pravila:
+
+❌ Ne dirati ništa drugo
+
+❌ Ne publish za produkciju
+
+✅ Samo da vizualno potvrđujemo da se strop stvarno mijenja
+
+Cilj:
+👉 potvrditi da strop uopće reagira na boju
+55 minutes ago
+Checkpoint made54 minutes ago
+Update ceiling color to red for visual debugging purposes
+Worked for 28 seconds
+Checkpoint made52 minutes ago
+•Free•
+Publish
+Published your App
+
+TASK — Ceiling Color Final (Step 1 / SAFE MODE)
+
+Molim te napravi samo jednu promjenu:
+
+Strop postavi na boju:
+#ECEBE7
+
+Pravila:
+
+❌ ne dirati grede
+
+❌ ne dirati zidove
+
+❌ ne dirati svjetla
+
+❌ ne dirati kameru
+
+❌ ne dirati ekspoziciju
+50 minutes ago
+Checkpoint made49 minutes ago
+Update ceiling color to Museum Soft White
+Worked for 39 seconds
+Checkpoint made46 minutes ago
+•Free•
+Publish
+Published your App
+
+“Molim radi SAFE MODE: napravi samo KORAK 1, deploy, ja testiram; tek onda KORAK 2, deploy, test… (bez spajanja više koraka odjednom).”
+38 minutes ago
+Checkpoint made36 minutes ago
+Apply flat colors to walls, ceiling, and beams for a realistic look
+Worked for 1 minute
+Checkpoint made34 minutes ago
+•Free•
+Publish
+Published your App
+
+TASK — Ceiling Concrete Color Correction (Step 2)
+
+Beton je tehnički OK, ali boja je pretopla / smeđa.
+
+Molim te samo korigiraj baseColor albedo stropa i greda:
+
+NEW baseColor:
+
+#CFCFCA
+
+Smjernice:
+
+hladniji, neutralni beton
+
+bez smeđih / žutih tonova
+
+zadržati istu teksturu, roughness i normal map
+
+❌ Ne dirati zidove
+❌ Ne dirati svjetla
+❌ Ne dirati kameru
+
+Samo promjena boje betona → deploy → screenshot (Center view)
+32 minutes ago
+Checkpoint made31 minutes ago
+Adjust concrete color for a cooler, neutral tone
+Worked for 39 seconds
+Checkpoint made28 minutes ago
+•Free•
+Publish
+Published your App
+
+opet se ništa nije promijenilo
+25 minutes ago
+Checkpoint made25 minutes ago
+Update colors for ceiling and beam elements in the gallery
+Worked for 40 seconds
+
+uvijek napravim publish, prije nego gledm promjene, ne razumijem
+24 minutes ago
+Checkpoint made22 minutes ago
+Update ceiling color to a cooler, more neutral tone
+Worked for 1 minute
+Checkpoint made20 minutes ago
+•Free•
+Publish
+Published your App
+
+opet nije promjenjeno
+19 minutes ago
+Checkpoint made15 minutes ago
+Make all ceiling elements bright blue for debugging purposes
+Worked for 3 minutes
+Checkpoint made13 minutes ago
+•Free•
+Publish
+Published your App
+9 minutes ago
+Checkpoint made8 minutes ago
+Update ceiling and beam colors to a neutral tone
+Worked for 1 minute
+Checkpoint made5 minutes ago
+•Free•
+Publish
+Published your App
+
+opet se vratilo na staro
+3 minutes ago
+
+Shvaćam problem! Tople boje svjetala (#fffaf5) čine da se #CFCFCA prikazuje kao toplija nijansa nego što jest.
+
+Ali u SAFE MODE ne smijem dirati svjetla. Imam dva rješenja:
+
+Opcija A: Koristiti hladniju/svjetliju boju koja će kompenzirati topla svjetla (npr. #E0E0E0)
+
+Opcija B: Dopustiti promjenu boje svjetala na neutralno bijelu (#ffffff)
