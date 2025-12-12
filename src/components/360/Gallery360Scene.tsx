@@ -397,11 +397,11 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         </group>
       ))}
       
-      {/* Track lines - symmetrical, subtle (A2) */}
+      {/* Track lines - elegant black rail for spotlights */}
       {[-width/3 - width/6, -width/6, width/6, width/3 + width/6].map((xPos, i) => (
         <mesh key={`track-${i}`} position={[xPos, height - 0.01, 0]}>
           <boxGeometry args={[0.03, 0.03, depth - 0.8]} />
-          <meshStandardMaterial color="#e0e0e0" roughness={0.7} metalness={0.1} />
+          <meshStandardMaterial color="#000000" roughness={0.7} metalness={0.1} />
         </mesh>
       ))}
 
