@@ -356,20 +356,35 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       ))}
       
       {/* Coffered ceiling grid - 3x3 sections */}
-      {/* Main beams - warm gallery white */}
-      {[-depth/3, 0, depth/3].map((zPos, i) => (
-        <mesh key={`beam-main-x-${i}`} position={[0, height - 0.12, zPos]}>
-          <boxGeometry args={[width - 0.3, 0.24, 0.20]} />
-          <meshStandardMaterial color="#F2F2EF" roughness={0.9} metalness={0} />
-        </mesh>
-      ))}
-      {/* Cross beams - same color */}
-      {[-width/3, 0, width/3].map((xPos, i) => (
-        <mesh key={`beam-main-z-${i}`} position={[xPos, height - 0.12, 0]}>
-          <boxGeometry args={[0.20, 0.24, depth - 0.3]} />
-          <meshStandardMaterial color="#F2F2EF" roughness={0.9} metalness={0} />
-        </mesh>
-      ))}
+      {/* Main beams - dark wood with color variation */}
+      {[-depth/3, 0, depth/3].map((zPos, i) => {
+        // Base color #3B2A1E with ±5% variation
+        const variation = 1 + (i - 1) * 0.05;
+        const r = Math.round(0x3B * variation);
+        const g = Math.round(0x2A * variation);
+        const b = Math.round(0x1E * variation);
+        const beamColor = `rgb(${r}, ${g}, ${b})`;
+        return (
+          <mesh key={`beam-main-x-${i}`} position={[0, height - 0.12, zPos]}>
+            <boxGeometry args={[width - 0.3, 0.24, 0.20]} />
+            <meshStandardMaterial color={beamColor} roughness={0.8} metalness={0} />
+          </mesh>
+        );
+      })}
+      {/* Cross beams - dark wood with color variation */}
+      {[-width/3, 0, width/3].map((xPos, i) => {
+        const variation = 1 + (i - 1) * 0.05;
+        const r = Math.round(0x3B * variation);
+        const g = Math.round(0x2A * variation);
+        const b = Math.round(0x1E * variation);
+        const beamColor = `rgb(${r}, ${g}, ${b})`;
+        return (
+          <mesh key={`beam-main-z-${i}`} position={[xPos, height - 0.12, 0]}>
+            <boxGeometry args={[0.20, 0.24, depth - 0.3]} />
+            <meshStandardMaterial color={beamColor} roughness={0.8} metalness={0} />
+          </mesh>
+        );
+      })}
       
       {/* Recessed coffer panels - 9 sections */}
       {[-1, 0, 1].flatMap(xi => [-1, 0, 1].map(zi => ({
