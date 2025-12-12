@@ -1,0 +1,106 @@
+# TASK: Fix zoom stopping ~2m before artwork (allow full zoom-in)
+
+**Problem**
+From Center view, zoom-in stops too early (≈2m from the wall/art). User must be able to zoom in/out as far as the room allows (until near the artwork / wall), not be artificially blocked.
+
+## Goal (acceptance)
+
+* From **Center** position: user can zoom close enough to inspect an artwork (e.g., ~10–30cm from the artwork plane), without the camera clipping or breaking.
+* Still prevent going *through* walls/ceiling/floor.
+* Works for mouse wheel + trackpad pinch (if supported).
+
+---
+
+## Step 1 — Identify what is limiting zoom
+
+Search the 360 viewer code for one of these:
+
+* `OrbitControls`, `MapControls`, `TrackballControls`
+* `minDistance`, `maxDistance`, `minZoom`, `maxZoom`
+* custom “collision / clamp” logic (often `raycaster`, `intersectObjects`, `clampDistance`, `preventCameraInsideWalls`)
+
+If we are using **OrbitControls** (most common), the issue is usually:
+
+* `controls.minDistance` is too large, **or**
+* a collision clamp is using the **wall** hit distance with too big a safety margin.
+
+---
+
+## Step 2 — Fix for OrbitControls (recommended)
+
+### A) Allow closer dolly
+
+Set a smaller `minDistance` (and ensure camera clipping planes are compatible):
+
+```ts
+// After controls are created
+controls.enableZoom = true;
+
+// Allow camera to get closer to target
+controls.minDistance = 0.25;   // 25cm (tune: 0.15–0.50)
+controls.maxDistance = 60;     // keep as needed
+
+// Prevent clipping when close
+camera.near = 0.01;
+camera.far = 500;
+camera.updateProjectionMatrix();
+```
+
+### B) If we use `minZoom/maxZoom` (Orthographic)
+
+Only if camera is Orthographic:
+
+```ts
+controls.minZoom = 0.2;
+controls.maxZoom = 6;
+controls.update();
+```
+
+---
+
+## Step 3 — If there is collision / wall clamp (common cause of “stops at ~2m”)
+
+If you see code like `if (hit.distance < X) stop` or `desiredDistance = Math.max(desiredDistance, ...)`:
+
+### A) Reduce stop margin
+
+```ts
+const WALL_MARGIN = 0.25; // was likely 2.0 or 1.0
+
+// Example:
+const allowed = Math.max(camera.near + 0.02, hit.distance - WALL_MARGIN);
+controls.minDistance = Math.min(controls.minDistance, allowed);
+```
+
+### B) Make sure the raycast hits the *wall*, not the artwork plane
+
+If the raycaster includes artwork meshes/planes, it may clamp early.
+Exclude artworks from collision objects:
+
+```ts
+const collisionMeshes = sceneMeshes.filter(m => !m.userData?.isArtwork);
+const hits = raycaster.intersectObjects(collisionMeshes, true);
+```
+
+Or tag artworks:
+
+```ts
+artworkMesh.userData.isArtwork = true;
+```
+
+---
+
+## Step 4 — Verification checklist
+
+* Open 360 viewer → go to **Center**.
+* Scroll/zoom towards a painting: confirm you can get close enough to see brush texture.
+* Confirm you cannot go through the wall (collision still works).
+* Confirm no “camera clipping” (if clipping appears, increase `camera.near` slightly, e.g. 0.02–0.05).
+
+---
+
+## Notes (don’t break other stuff)
+
+* Do **not** change Entrance/Center camera presets in this task.
+* Do **not** touch lighting.
+* Only zoom bounds + collision margin/exclusions.

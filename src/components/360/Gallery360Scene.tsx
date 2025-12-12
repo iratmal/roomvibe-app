@@ -830,10 +830,10 @@ function HotspotMarker({
 // Camera movement: smooth 0.35s transitions (responsive yet cinematic)
 const CAMERA_MOVE_DURATION = 0.35;
 const SCROLL_SPEED = 0.0004;  // Slowed down from 0.002 (5x slower)
-const MIN_WALL_DISTANCE = 0.3;
+const MIN_WALL_DISTANCE = 0.25;  // Allow getting close to walls (25cm)
 // Wheel zoom limits (distance from center of room)
-const MIN_ZOOM_DISTANCE = 2.5;  // Don't get too close to artworks
-const MAX_ZOOM_DISTANCE = 12.0; // Don't go too far back
+const MIN_ZOOM_DISTANCE = 0.3;   // Allow zoom close to artworks (30cm from center)
+const MAX_ZOOM_DISTANCE = 12.0;  // Don't go too far back
 // Vertical look limits (polar angle in radians):
 const MIN_POLAR_ANGLE = 1.40;  // ~10° above horizontal (slight ceiling view)
 const MAX_POLAR_ANGLE = 1.74;  // ~10° below horizontal (slight floor view)
