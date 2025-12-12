@@ -830,7 +830,7 @@ function HotspotMarker({
 // Camera movement: smooth 0.8s transitions (responsive yet cinematic)
 const CAMERA_MOVE_DURATION = 0.8;
 const SCROLL_SPEED = 0.002;
-const MIN_WALL_DISTANCE = 1.0;
+const MIN_WALL_DISTANCE = 0.3;
 // Vertical look limits (polar angle in radians):
 const MIN_POLAR_ANGLE = 1.40;  // ~10° above horizontal (slight ceiling view)
 const MAX_POLAR_ANGLE = 1.74;  // ~10° below horizontal (slight floor view)
