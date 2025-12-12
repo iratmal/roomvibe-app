@@ -157,13 +157,8 @@ export const gallery360Presets: Gallery360Preset[] = [
       { id: 'wall-west-1', wallId: 'west', position: [-9.95, 2.0, -4.5], rotation: [0, Math.PI / 2, 0], width: 1.0, height: 0.75, label: 'West Wall - 1' },
       { id: 'wall-west-2', wallId: 'west', position: [-9.95, 2.0, -1.5], rotation: [0, Math.PI / 2, 0], width: 1.0, height: 0.75, label: 'West Wall - 2' },
       { id: 'wall-west-3', wallId: 'west', position: [-9.95, 2.0, 1.5], rotation: [0, Math.PI / 2, 0], width: 1.0, height: 0.75, label: 'West Wall - 3' },
-      { id: 'wall-west-4', wallId: 'west', position: [-9.95, 2.0, 4.5], rotation: [0, Math.PI / 2, 0], width: 1.0, height: 0.75, label: 'West Wall - 4' },
-      // South Wall - 5 artworks (1.0m wide + 0.5m gap = 1.5m center-to-center)
-      { id: 'wall-south-1', wallId: 'south', position: [-6, 2.0, 7.95], rotation: [0, Math.PI, 0], width: 1.0, height: 0.75, label: 'South Wall - 1' },
-      { id: 'wall-south-2', wallId: 'south', position: [-3, 2.0, 7.95], rotation: [0, Math.PI, 0], width: 1.0, height: 0.75, label: 'South Wall - 2' },
-      { id: 'wall-south-3', wallId: 'south', position: [0, 2.0, 7.95], rotation: [0, Math.PI, 0], width: 1.2, height: 0.9, label: 'South Wall - 3' },
-      { id: 'wall-south-4', wallId: 'south', position: [3, 2.0, 7.95], rotation: [0, Math.PI, 0], width: 1.0, height: 0.75, label: 'South Wall - 4' },
-      { id: 'wall-south-5', wallId: 'south', position: [6, 2.0, 7.95], rotation: [0, Math.PI, 0], width: 1.0, height: 0.75, label: 'South Wall - 5' }
+      { id: 'wall-west-4', wallId: 'west', position: [-9.95, 2.0, 4.5], rotation: [0, Math.PI / 2, 0], width: 1.0, height: 0.75, label: 'West Wall - 4' }
+      // South Wall - NO ARTWORK (entrance portal location)
     ]
   }
 ];
