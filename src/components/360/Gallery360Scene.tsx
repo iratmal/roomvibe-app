@@ -388,7 +388,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
           </mesh>
           <mesh position={[0, -0.03, 0]}>
             <boxGeometry args={[panel.w, 0.08, panel.d]} />
-            <meshStandardMaterial color="#D7D4CE" roughness={1.0} metalness={0.0} side={THREE.BackSide} />
+            <meshStandardMaterial color="#CFCFCA" roughness={1.0} metalness={0.0} side={THREE.BackSide} />
           </mesh>
         </group>
       ))}
