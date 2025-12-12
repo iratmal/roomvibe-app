@@ -400,7 +400,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         <meshStandardMaterial color="#F2F2EF" roughness={0.9} metalness={0} />
       </mesh>
       
-      {/* Cove edge - subtle perimeter ledge */}
+      {/* Cove edge - black perimeter ledge */}
       {[
         { pos: [0, height - 0.12, -halfD + 0.12] as [number, number, number], size: [width - 0.24, 0.24, 0.24] as [number, number, number] },
         { pos: [0, height - 0.12, halfD - 0.12] as [number, number, number], size: [width - 0.24, 0.24, 0.24] as [number, number, number] },
@@ -409,7 +409,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       ].map((cove, i) => (
         <mesh key={`cove-${i}`} position={cove.pos}>
           <boxGeometry args={cove.size} />
-          <meshStandardMaterial color="#F2F2EF" roughness={0.9} metalness={0} />
+          <meshStandardMaterial color="#1a1a1a" roughness={0.8} metalness={0} />
         </mesh>
       ))}
       
