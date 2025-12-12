@@ -502,103 +502,31 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
 
 function GalleryBench({ position, rotation }: { position: [number, number, number]; rotation: [number, number, number] }) {
   const BENCH_L = 2.0;   // 200cm length
-  const BENCH_W = 0.55;  // 55cm depth
+  const BENCH_W = 0.50;  // 50cm depth
   const BENCH_H = 0.45;  // 45cm seat height
-  const CUSHION_H = 0.12; // cushion thickness
-  const FRAME_R = 0.02;  // metal frame tube radius
 
   return (
     <group position={position} rotation={rotation}>
-      {/* Velvet cushion seat - emerald green with tufted look */}
-      <mesh position={[0, BENCH_H, 0]} castShadow receiveShadow>
-        <boxGeometry args={[BENCH_L, CUSHION_H, BENCH_W]} />
-        <meshStandardMaterial color="#1a5f4a" roughness={0.92} metalness={0} />
+      {/* Minimalist black cube bench - no legs, pure block form */}
+      <mesh position={[0, BENCH_H / 2, 0]} castShadow receiveShadow>
+        <boxGeometry args={[BENCH_L, BENCH_H, BENCH_W]} />
+        <meshStandardMaterial color="#2a2a2a" roughness={0.9} metalness={0} />
       </mesh>
-      
-      {/* Cushion top detail - slightly lighter for depth */}
-      <mesh position={[0, BENCH_H + CUSHION_H / 2 + 0.001, 0]} castShadow>
-        <boxGeometry args={[BENCH_L - 0.04, 0.01, BENCH_W - 0.04]} />
-        <meshStandardMaterial color="#1f6b54" roughness={0.95} metalness={0} />
-      </mesh>
-
-      {/* Gold/brass X-frame base */}
-      {/* Front X */}
-      <mesh position={[0, (BENCH_H - CUSHION_H) / 2, BENCH_W / 2 - 0.08]} rotation={[0, 0, Math.PI / 4]} castShadow>
-        <boxGeometry args={[FRAME_R * 2, (BENCH_H - CUSHION_H) * 1.5, FRAME_R * 2]} />
-        <meshStandardMaterial color="#c9a050" roughness={0.35} metalness={0.7} />
-      </mesh>
-      <mesh position={[0, (BENCH_H - CUSHION_H) / 2, BENCH_W / 2 - 0.08]} rotation={[0, 0, -Math.PI / 4]} castShadow>
-        <boxGeometry args={[FRAME_R * 2, (BENCH_H - CUSHION_H) * 1.5, FRAME_R * 2]} />
-        <meshStandardMaterial color="#c9a050" roughness={0.35} metalness={0.7} />
-      </mesh>
-
-      {/* Back X */}
-      <mesh position={[0, (BENCH_H - CUSHION_H) / 2, -(BENCH_W / 2 - 0.08)]} rotation={[0, 0, Math.PI / 4]} castShadow>
-        <boxGeometry args={[FRAME_R * 2, (BENCH_H - CUSHION_H) * 1.5, FRAME_R * 2]} />
-        <meshStandardMaterial color="#c9a050" roughness={0.35} metalness={0.7} />
-      </mesh>
-      <mesh position={[0, (BENCH_H - CUSHION_H) / 2, -(BENCH_W / 2 - 0.08)]} rotation={[0, 0, -Math.PI / 4]} castShadow>
-        <boxGeometry args={[FRAME_R * 2, (BENCH_H - CUSHION_H) * 1.5, FRAME_R * 2]} />
-        <meshStandardMaterial color="#c9a050" roughness={0.35} metalness={0.7} />
-      </mesh>
-
-      {/* Side rails connecting X frames */}
-      <mesh position={[BENCH_L / 2 - 0.15, BENCH_H - CUSHION_H - 0.02, 0]} castShadow>
-        <boxGeometry args={[FRAME_R * 2, FRAME_R * 2, BENCH_W - 0.1]} />
-        <meshStandardMaterial color="#c9a050" roughness={0.35} metalness={0.7} />
-      </mesh>
-      <mesh position={[-(BENCH_L / 2 - 0.15), BENCH_H - CUSHION_H - 0.02, 0]} castShadow>
-        <boxGeometry args={[FRAME_R * 2, FRAME_R * 2, BENCH_W - 0.1]} />
-        <meshStandardMaterial color="#c9a050" roughness={0.35} metalness={0.7} />
-      </mesh>
-
-      {/* Top frame under cushion */}
-      <mesh position={[0, BENCH_H - CUSHION_H / 2, 0]} castShadow>
-        <boxGeometry args={[BENCH_L, 0.02, BENCH_W]} />
-        <meshStandardMaterial color="#b8944a" roughness={0.4} metalness={0.6} />
-      </mesh>
-
-      {/* Corner feet */}
-      {[[-1, -1], [-1, 1], [1, -1], [1, 1]].map(([xDir, zDir], i) => (
-        <mesh key={i} position={[xDir * (BENCH_L / 2 - 0.08), 0.015, zDir * (BENCH_W / 2 - 0.08)]} castShadow>
-          <cylinderGeometry args={[0.025, 0.03, 0.03, 8]} />
-          <meshStandardMaterial color="#c9a050" roughness={0.35} metalness={0.7} />
-        </mesh>
-      ))}
     </group>
   );
 }
 
 function DecorativeVase({ position }: { position: [number, number, number] }) {
-  const VASE_H = 1.5;     // 150cm height
-  const BASE_R = 0.18;    // base radius
-  const TOP_R = 0.12;     // top opening radius
-  const MID_R = 0.22;     // widest point radius
+  const VASE_H = 2.0;     // 200cm height
+  const BASE_R = 0.20;    // base radius
+  const TOP_R = 0.15;     // top radius (slightly tapered)
 
   return (
     <group position={position}>
-      {/* Main vase body - tapered cylinder with warm champagne/beige color */}
+      {/* Simple tapered cylinder - stone/concrete look */}
       <mesh position={[0, VASE_H / 2, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[TOP_R, BASE_R, VASE_H, 16]} />
-        <meshStandardMaterial color="#d4c8a8" roughness={0.75} metalness={0.05} />
-      </mesh>
-      
-      {/* Wider middle section for sculptural look */}
-      <mesh position={[0, VASE_H * 0.4, 0]} castShadow>
-        <cylinderGeometry args={[MID_R, BASE_R, VASE_H * 0.5, 16]} />
-        <meshStandardMaterial color="#cfc2a0" roughness={0.8} metalness={0.03} />
-      </mesh>
-
-      {/* Top rim - slightly darker interior hint */}
-      <mesh position={[0, VASE_H - 0.02, 0]}>
-        <cylinderGeometry args={[TOP_R - 0.01, TOP_R, 0.04, 16]} />
-        <meshStandardMaterial color="#8a7d5a" roughness={0.6} metalness={0.1} />
-      </mesh>
-
-      {/* Base */}
-      <mesh position={[0, 0.02, 0]} castShadow>
-        <cylinderGeometry args={[BASE_R, BASE_R + 0.02, 0.04, 16]} />
-        <meshStandardMaterial color="#c4b898" roughness={0.7} metalness={0.05} />
+        <cylinderGeometry args={[TOP_R, BASE_R, VASE_H, 24]} />
+        <meshStandardMaterial color="#b8b0a0" roughness={0.85} metalness={0} />
       </mesh>
     </group>
   );
@@ -629,11 +557,7 @@ function EntrancePortal({ position, rotation }: { position: [number, number, num
           <boxGeometry args={[PORTAL_W + FRAME_T * 2, FRAME_T, FRAME_T]} />
           <meshStandardMaterial color="#d7d4cf" roughness={0.9} metalness={0} />
         </mesh>
-        {/* Threshold */}
-        <mesh position={[0, FRAME_T / 2, 0]} castShadow>
-          <boxGeometry args={[PORTAL_W + FRAME_T * 2, FRAME_T, FRAME_T]} />
-          <meshStandardMaterial color="#d7d4cf" roughness={0.9} metalness={0} />
-        </mesh>
+        {/* No threshold - continuous floor */}
       </group>
 
       {/* Interior Corridor - depth cue behind the opening */}
@@ -653,10 +577,10 @@ function EntrancePortal({ position, rotation }: { position: [number, number, num
           <boxGeometry args={[PORTAL_W + FRAME_T * 2, FRAME_T, DEPTH]} />
           <meshStandardMaterial color="#bcb8b2" roughness={1} metalness={0} />
         </mesh>
-        {/* Floor */}
-        <mesh position={[0, FRAME_T / 2, -DEPTH / 2]}>
-          <boxGeometry args={[PORTAL_W + FRAME_T * 2, FRAME_T, DEPTH]} />
-          <meshStandardMaterial color="#a9a59f" roughness={1} metalness={0} />
+        {/* Floor - matching gallery tiles */}
+        <mesh position={[0, 0.01, -DEPTH / 2]}>
+          <boxGeometry args={[PORTAL_W, 0.02, DEPTH]} />
+          <meshStandardMaterial color="#e8e4dc" roughness={0.8} metalness={0} />
         </mesh>
         {/* Back wall */}
         <mesh position={[0, PORTAL_H / 2, -DEPTH - (FRAME_T / 2)]}>
