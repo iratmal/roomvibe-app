@@ -1071,9 +1071,9 @@ function FirstPersonController({
       const deltaX = e.clientX - previousMousePosition.current.x;
       const deltaY = e.clientY - previousMousePosition.current.y;
       
-      // Direct rotation - no velocity, no inertia
-      spherical.current.theta -= deltaX * MOUSE_SENSITIVITY;
-      spherical.current.phi += deltaY * MOUSE_SENSITIVITY;
+      // Direct rotation - grab-to-pan behavior (camera follows drag direction)
+      spherical.current.theta += deltaX * MOUSE_SENSITIVITY;
+      spherical.current.phi -= deltaY * MOUSE_SENSITIVITY;
       spherical.current.phi = Math.max(MIN_POLAR_ANGLE, Math.min(MAX_POLAR_ANGLE, spherical.current.phi));
       
       previousMousePosition.current = { x: e.clientX, y: e.clientY };
@@ -1144,9 +1144,9 @@ function FirstPersonController({
       const deltaX = e.touches[0].clientX - previousMousePosition.current.x;
       const deltaY = e.touches[0].clientY - previousMousePosition.current.y;
       
-      // Direct rotation - no velocity, no inertia
-      spherical.current.theta -= deltaX * MOUSE_SENSITIVITY;
-      spherical.current.phi += deltaY * MOUSE_SENSITIVITY;
+      // Direct rotation - grab-to-pan behavior (camera follows drag direction)
+      spherical.current.theta += deltaX * MOUSE_SENSITIVITY;
+      spherical.current.phi -= deltaY * MOUSE_SENSITIVITY;
       spherical.current.phi = Math.max(MIN_POLAR_ANGLE, Math.min(MAX_POLAR_ANGLE, spherical.current.phi));
       
       previousMousePosition.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
