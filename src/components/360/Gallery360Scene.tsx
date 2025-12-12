@@ -346,7 +346,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         />
       </mesh>
       
-      {/* Cove edge - subtle perimeter ledge (A2 symmetry) */}
+      {/* Cove edge - subtle perimeter ledge */}
       {[
         { pos: [0, height - 0.12, -halfD + 0.12] as [number, number, number], size: [width - 0.24, 0.24, 0.24] as [number, number, number] },
         { pos: [0, height - 0.12, halfD - 0.12] as [number, number, number], size: [width - 0.24, 0.24, 0.24] as [number, number, number] },
@@ -355,7 +355,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       ].map((cove, i) => (
         <mesh key={`cove-${i}`} position={cove.pos}>
           <boxGeometry args={cove.size} />
-          <meshStandardMaterial color="#f5f5f5" roughness={0.9} metalness={0.0} />
+          <meshStandardMaterial color="#E5E4E0" roughness={0.9} metalness={0.0} />
         </mesh>
       ))}
       
@@ -374,7 +374,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         </mesh>
       ))}
       
-      {/* Recessed coffer panels - 9 sections (A3 depth) */}
+      {/* Recessed coffer panels - 9 sections */}
       {[-1, 0, 1].flatMap(xi => [-1, 0, 1].map(zi => ({
         x: xi * (width / 3),
         z: zi * (depth / 3),
@@ -384,11 +384,11 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         <group key={`coffer-${i}`} position={[panel.x, height + 0.06, panel.z]}>
           <mesh rotation={[Math.PI / 2, 0, 0]}>
             <planeGeometry args={[panel.w, panel.d]} />
-            <meshStandardMaterial color="#fefefe" roughness={0.96} metalness={0.0} />
+            <meshStandardMaterial color="#ECEBE7" roughness={0.96} metalness={0.0} />
           </mesh>
           <mesh position={[0, -0.03, 0]}>
             <boxGeometry args={[panel.w, 0.08, panel.d]} />
-            <meshStandardMaterial color="#f8f8f8" roughness={0.92} metalness={0.0} side={THREE.BackSide} />
+            <meshStandardMaterial color="#E5E4E0" roughness={0.92} metalness={0.0} side={THREE.BackSide} />
           </mesh>
         </group>
       ))}
