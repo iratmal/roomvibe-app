@@ -50,7 +50,7 @@ export function Gallery360Editor({
   const { 
     currentViewpoint, 
     navigateToViewpoint 
-  } = useHotspots(preset.viewpoints, preset.hotspots, 'center');
+  } = useHotspots(preset.viewpoints, preset.hotspots, 'entrance');
   
   const { 
     slotAssignments, 
