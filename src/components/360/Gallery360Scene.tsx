@@ -426,8 +426,8 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         width={width} 
         height={height} 
         halfD={halfD}
-        portalW={2.5}
-        portalH={2.5}
+        portalW={3.5}
+        portalH={3.5}
       />
 
       <mesh position={[halfW, height / 2, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
@@ -538,8 +538,8 @@ function GalleryBench({ position, rotation }: { position: [number, number, numbe
 }
 
 function EntrancePortal({ position, rotation }: { position: [number, number, number]; rotation: [number, number, number] }) {
-  const PORTAL_W = 2.5;
-  const PORTAL_H = 2.5;
+  const PORTAL_W = 3.5;
+  const PORTAL_H = 3.5;
   const FRAME_T = 0.12;
   const DEPTH = 3.0;
 
