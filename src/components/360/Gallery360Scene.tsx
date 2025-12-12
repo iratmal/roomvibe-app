@@ -815,23 +815,21 @@ function HotspotMarker({
   );
 }
 
-// Camera movement: very smooth 1.8s transitions (like walking through space)
-const CAMERA_MOVE_DURATION = 1.8;
+// Camera movement: smooth 0.8s transitions (responsive yet cinematic)
+const CAMERA_MOVE_DURATION = 0.8;
 const SCROLL_SPEED = 0.002;
 const MIN_WALL_DISTANCE = 1.0;
 // Vertical look limits (polar angle in radians):
-// ±10° from horizontal (π/2 ≈ 1.5708 radians)
-// This allows slight ceiling/floor visibility while keeping focus on artworks
 const MIN_POLAR_ANGLE = 1.40;  // ~10° above horizontal (slight ceiling view)
 const MAX_POLAR_ANGLE = 1.74;  // ~10° below horizontal (slight floor view)
-// Direct rotation sensitivity - reduced ~50% for smoother Street View feel
+// Direct rotation sensitivity
 const MOUSE_SENSITIVITY = 0.002;
 // Keyboard rotation speed (radians per frame when key held)
 const KEYBOARD_ROTATION_SPEED = 0.015;
 
-// Smooth easing function for camera transitions (easeInOutCubic)
-function easeInOutCubic(t: number): number {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+// Smoothstep easing - t * t * (3 - 2 * t) - proven stable
+function smoothstep(t: number): number {
+  return t * t * (3 - 2 * t);
 }
 
 const ARTWORK_FOCUS_DURATION = 0.7;
@@ -853,20 +851,17 @@ function FirstPersonController({
   const previousMousePosition = useRef({ x: 0, y: 0 });
   const spherical = useRef(new THREE.Spherical());
   
-  const startPosition = useRef(new THREE.Vector3(...viewpoint.position));
-  const targetPosition = useRef(new THREE.Vector3(...viewpoint.position));
-  const startSpherical = useRef(new THREE.Spherical());
-  const targetSpherical = useRef(new THREE.Spherical());
-  const animationStartTime = useRef<number | null>(null);
+  // SINGLE transition state - one owner principle
+  const isTransitioning = useRef(false);
+  const transitionStartTime = useRef<number | null>(null);
+  const transitionDuration = useRef(CAMERA_MOVE_DURATION);
+  const transitionFromPos = useRef(new THREE.Vector3());
+  const transitionToPos = useRef(new THREE.Vector3());
+  const transitionFromSpherical = useRef(new THREE.Spherical());
+  const transitionToSpherical = useRef(new THREE.Spherical());
+  
   const lastViewpointId = useRef(viewpoint.id);
-  
   const keysPressed = useRef<Set<string>>(new Set());
-  
-  const artworkFocusStartTime = useRef<number | null>(null);
-  const artworkFocusStartPos = useRef(new THREE.Vector3());
-  const artworkFocusTargetPos = useRef(new THREE.Vector3());
-  const artworkFocusStartSpherical = useRef(new THREE.Spherical());
-  const artworkFocusTargetSpherical = useRef(new THREE.Spherical());
   const lastFocusTargetId = useRef<string | null>(null);
   
   const bounds = useMemo(() => ({
@@ -891,6 +886,22 @@ function FirstPersonController({
            pos.z >= bounds.minZ && pos.z <= bounds.maxZ;
   }, [bounds]);
   
+  // Start camera transition - unified handler for viewpoint navigation
+  const startTransition = useCallback((
+    toPos: THREE.Vector3,
+    toSpherical: THREE.Spherical,
+    duration: number = CAMERA_MOVE_DURATION
+  ) => {
+    // Cancel any existing transition and start new one immediately
+    isTransitioning.current = true;
+    transitionStartTime.current = performance.now();
+    transitionDuration.current = duration;
+    transitionFromPos.current.copy(camera.position);
+    transitionToPos.current.copy(toPos);
+    transitionFromSpherical.current.copy(spherical.current);
+    transitionToSpherical.current.copy(toSpherical);
+  }, [camera]);
+
   useEffect(() => {
     const pos = new THREE.Vector3(...viewpoint.position);
     const lookAt = new THREE.Vector3(...viewpoint.lookAt);
@@ -901,18 +912,16 @@ function FirstPersonController({
     newTargetSpherical.setFromVector3(direction);
     
     if (lastViewpointId.current !== viewpoint.id) {
-      startPosition.current.copy(camera.position);
-      targetPosition.current.copy(pos);
-      startSpherical.current.copy(spherical.current);
-      targetSpherical.current.copy(newTargetSpherical);
-      animationStartTime.current = performance.now();
+      // Start transition immediately - one click = one action
+      startTransition(pos, newTargetSpherical, CAMERA_MOVE_DURATION);
       lastViewpointId.current = viewpoint.id;
       console.log('[CameraNav] goToView', viewpoint.id);
     } else {
+      // Initial setup only
       camera.position.copy(pos);
       spherical.current.copy(newTargetSpherical);
     }
-  }, [viewpoint, camera, clampPosition]);
+  }, [viewpoint, camera, clampPosition, startTransition]);
   
   useEffect(() => {
     if (!focusTarget) {
@@ -935,10 +944,9 @@ function FirstPersonController({
     );
     
     // Camera position: 3.5m in front of artwork, at SAME HEIGHT as artwork center
-    // This ensures we look straight at the artwork, not up or down
     const cameraTargetPos = new THREE.Vector3(
       artworkPos.x + facingDirection.x * ARTWORK_FOCUS_DISTANCE,
-      artworkPos.y, // Same height as artwork center - looking straight at it
+      artworkPos.y,
       artworkPos.z + facingDirection.z * ARTWORK_FOCUS_DISTANCE
     );
     clampPosition(cameraTargetPos);
@@ -947,33 +955,23 @@ function FirstPersonController({
     const dx = artworkPos.x - cameraTargetPos.x;
     const dz = artworkPos.z - cameraTargetPos.z;
     const theta = Math.atan2(dx, dz);
-    
-    // Phi = π/2 (exactly horizontal) - looking straight ahead, no tilt
-    const phi = Math.PI / 2;
+    const phi = Math.PI / 2; // Exactly horizontal
     
     const newTargetSpherical = new THREE.Spherical(1, phi, theta);
     
-    artworkFocusStartPos.current.copy(camera.position);
-    artworkFocusTargetPos.current.copy(cameraTargetPos);
-    artworkFocusStartSpherical.current.copy(spherical.current);
-    artworkFocusTargetSpherical.current.copy(newTargetSpherical);
-    artworkFocusStartTime.current = performance.now();
+    // Use unified transition system
+    startTransition(cameraTargetPos, newTargetSpherical, ARTWORK_FOCUS_DURATION);
     lastFocusTargetId.current = focusTarget.slotId;
     
-    animationStartTime.current = null;
-    
-    console.log('[CameraNav] focusOnArtwork', focusTarget.slotId, { 
-      artworkPos: artworkPos.toArray(), 
-      cameraPos: cameraTargetPos.toArray(),
-      theta: theta * 180 / Math.PI,
-      phi: phi * 180 / Math.PI
-    });
-  }, [focusTarget, camera, clampPosition]);
+    console.log('[CameraNav] focusOnArtwork', focusTarget.slotId);
+  }, [focusTarget, clampPosition, startTransition]);
   
   useEffect(() => {
     const canvas = gl.domElement;
     
     const handleMouseDown = (e: MouseEvent) => {
+      // Block input during camera transition
+      if (isTransitioning.current) return;
       // If focused on artwork, dismiss focus on any mouse interaction
       if (focusTarget && onFocusDismiss) {
         onFocusDismiss();
@@ -988,13 +986,13 @@ function FirstPersonController({
     };
     
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging.current) return;
+      // Block input during camera transition
+      if (isTransitioning.current || !isDragging.current) return;
       
       const deltaX = e.clientX - previousMousePosition.current.x;
       const deltaY = e.clientY - previousMousePosition.current.y;
       
       // Direct rotation - no velocity, no inertia
-      // Camera moves exactly with mouse, stops immediately when mouse stops
       spherical.current.theta -= deltaX * MOUSE_SENSITIVITY;
       spherical.current.phi += deltaY * MOUSE_SENSITIVITY;
       spherical.current.phi = Math.max(MIN_POLAR_ANGLE, Math.min(MAX_POLAR_ANGLE, spherical.current.phi));
@@ -1004,12 +1002,14 @@ function FirstPersonController({
     
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
+      // Block input during camera transition
+      if (isTransitioning.current) return;
       // If focused on artwork, dismiss focus on scroll
       if (focusTarget && onFocusDismiss) {
         onFocusDismiss();
         return;
       }
-      // Direct scroll movement - no velocity, no inertia, immediate stop
+      // Direct scroll movement - no velocity, no inertia
       const delta = -e.deltaY * SCROLL_SPEED;
       if (Math.abs(delta) > 0.0001) {
         const dir = new THREE.Vector3();
@@ -1024,6 +1024,8 @@ function FirstPersonController({
     };
     
     const handleTouchStart = (e: TouchEvent) => {
+      // Block input during camera transition
+      if (isTransitioning.current) return;
       // If focused on artwork, dismiss focus on touch
       if (focusTarget && onFocusDismiss) {
         onFocusDismiss();
@@ -1040,7 +1042,8 @@ function FirstPersonController({
     };
     
     const handleTouchMove = (e: TouchEvent) => {
-      if (!isDragging.current || e.touches.length !== 1) return;
+      // Block input during camera transition
+      if (isTransitioning.current || !isDragging.current || e.touches.length !== 1) return;
       
       const deltaX = e.touches[0].clientX - previousMousePosition.current.x;
       const deltaY = e.touches[0].clientY - previousMousePosition.current.y;
@@ -1090,70 +1093,56 @@ function FirstPersonController({
   }, [gl, focusTarget, onFocusDismiss]);
   
   useFrame(() => {
-    // Handle keyboard input - direct rotation, no velocity
-    const keys = keysPressed.current;
-    if (keys.has('ArrowLeft') || keys.has('a') || keys.has('A')) {
-      spherical.current.theta += KEYBOARD_ROTATION_SPEED;
-    }
-    if (keys.has('ArrowRight') || keys.has('d') || keys.has('D')) {
-      spherical.current.theta -= KEYBOARD_ROTATION_SPEED;
-    }
-    if (keys.has('ArrowUp') || keys.has('w') || keys.has('W')) {
-      // Move forward
-      const direction = new THREE.Vector3();
-      camera.getWorldDirection(direction);
-      direction.y = 0;
-      direction.normalize();
-      const newPos = camera.position.clone().add(direction.multiplyScalar(0.08));
-      if (isWithinBounds(newPos)) {
-        camera.position.copy(newPos);
-      }
-    }
-    if (keys.has('ArrowDown') || keys.has('s') || keys.has('S')) {
-      // Move backward
-      const direction = new THREE.Vector3();
-      camera.getWorldDirection(direction);
-      direction.y = 0;
-      direction.normalize();
-      const newPos = camera.position.clone().sub(direction.multiplyScalar(0.08));
-      if (isWithinBounds(newPos)) {
-        camera.position.copy(newPos);
-      }
-    }
-    
-    if (artworkFocusStartTime.current !== null) {
-      const elapsed = (performance.now() - artworkFocusStartTime.current) / 1000;
-      const tRaw = Math.min(elapsed / ARTWORK_FOCUS_DURATION, 1);
-      const t = easeInOutCubic(tRaw);
+    // UNIFIED TRANSITION - single source of truth for camera animation
+    if (isTransitioning.current && transitionStartTime.current !== null) {
+      const elapsed = (performance.now() - transitionStartTime.current) / 1000;
+      const tRaw = Math.min(elapsed / transitionDuration.current, 1);
+      const t = smoothstep(tRaw);
       
-      camera.position.lerpVectors(artworkFocusStartPos.current, artworkFocusTargetPos.current, t);
+      // Lerp position
+      camera.position.lerpVectors(transitionFromPos.current, transitionToPos.current, t);
       
-      spherical.current.theta = artworkFocusStartSpherical.current.theta + 
-        (artworkFocusTargetSpherical.current.theta - artworkFocusStartSpherical.current.theta) * t;
-      spherical.current.phi = artworkFocusStartSpherical.current.phi + 
-        (artworkFocusTargetSpherical.current.phi - artworkFocusStartSpherical.current.phi) * t;
+      // Lerp spherical angles
+      spherical.current.theta = transitionFromSpherical.current.theta + 
+        (transitionToSpherical.current.theta - transitionFromSpherical.current.theta) * t;
+      spherical.current.phi = transitionFromSpherical.current.phi + 
+        (transitionToSpherical.current.phi - transitionFromSpherical.current.phi) * t;
       
+      // End transition
       if (tRaw >= 1) {
-        camera.position.copy(artworkFocusTargetPos.current);
-        spherical.current.copy(artworkFocusTargetSpherical.current);
-        artworkFocusStartTime.current = null;
+        camera.position.copy(transitionToPos.current);
+        spherical.current.copy(transitionToSpherical.current);
+        isTransitioning.current = false;
+        transitionStartTime.current = null;
       }
-    } else if (animationStartTime.current !== null) {
-      const elapsed = (performance.now() - animationStartTime.current) / 1000;
-      const tRaw = Math.min(elapsed / CAMERA_MOVE_DURATION, 1);
-      const t = easeInOutCubic(tRaw);
-      
-      camera.position.lerpVectors(startPosition.current, targetPosition.current, t);
-      
-      spherical.current.theta = startSpherical.current.theta + 
-        (targetSpherical.current.theta - startSpherical.current.theta) * t;
-      spherical.current.phi = startSpherical.current.phi + 
-        (targetSpherical.current.phi - startSpherical.current.phi) * t;
-      
-      if (tRaw >= 1) {
-        camera.position.copy(targetPosition.current);
-        spherical.current.copy(targetSpherical.current);
-        animationStartTime.current = null;
+    } else {
+      // Only handle keyboard input when NOT transitioning
+      const keys = keysPressed.current;
+      if (keys.has('ArrowLeft') || keys.has('a') || keys.has('A')) {
+        spherical.current.theta += KEYBOARD_ROTATION_SPEED;
+      }
+      if (keys.has('ArrowRight') || keys.has('d') || keys.has('D')) {
+        spherical.current.theta -= KEYBOARD_ROTATION_SPEED;
+      }
+      if (keys.has('ArrowUp') || keys.has('w') || keys.has('W')) {
+        const direction = new THREE.Vector3();
+        camera.getWorldDirection(direction);
+        direction.y = 0;
+        direction.normalize();
+        const newPos = camera.position.clone().add(direction.multiplyScalar(0.08));
+        if (isWithinBounds(newPos)) {
+          camera.position.copy(newPos);
+        }
+      }
+      if (keys.has('ArrowDown') || keys.has('s') || keys.has('S')) {
+        const direction = new THREE.Vector3();
+        camera.getWorldDirection(direction);
+        direction.y = 0;
+        direction.normalize();
+        const newPos = camera.position.clone().sub(direction.multiplyScalar(0.08));
+        if (isWithinBounds(newPos)) {
+          camera.position.copy(newPos);
+        }
       }
     }
     

@@ -1,0 +1,221 @@
+# 🎥 TASK — Camera & Navigation Stabilization (Entrance / Center / Back Left / Back Right)
+
+## Problem (current)
+
+* Gumbi **Entrance / Center / Back Left / Back Right** ne reagiraju odmah
+* Potrebno je više klikova
+* Kamera „skače“, ima međufrejmove i trzaje
+* Vizualno je neugodno (motion jitter, eye strain)
+
+Ovo **nije dizajnerski problem**, nego **camera control + state race condition**.
+
+---
+
+## 🎯 Goal
+
+* Jedan klik = jedna akcija
+* Kamera ide **odmah** na cilj **ILI** ide **glatko (cinematic)** bez trzanja
+* Bez međustanja, bez "skakanja"
+
+---
+
+## ROOT CAUSE (najčešći uzroci)
+
+Agent, obrati pažnju — ovo se gotovo sigurno događa:
+
+1. **Više camera controllera aktivno u isto vrijeme**
+
+   * npr. `OrbitControls` + custom camera logic
+
+2. **State update + animation se sudaraju**
+
+   * klik postavi novu poziciju
+   * ali `useFrame()` ili `useEffect()` je odmah pregazi
+
+3. **Camera position se setta frame-by-frame**
+
+   * nema zaključavanja dok traje prijelaz
+
+4. **Button click ne cancelira prethodni transition**
+
+---
+
+## ✅ SOLUTION STRATEGY (SAFE & PROVEN)
+
+### Pravilo 1 — Kamera ima JEDNOG vlasnika
+
+* Ili `OrbitControls`
+* Ili **programmatic camera movement**
+* **Ne oba istovremeno tijekom transitiona**
+
+---
+
+### Pravilo 2 — Jedan klik = jedan transition
+
+* On click:
+
+  * zaustavi sve postojeće animacije
+  * pokreni **jedan** controlled move
+
+---
+
+## OPTION A — INSTANT SNAP (0 animation, maksimalna stabilnost)
+
+Ako želiš da klik **odmah prebaci kameru** (bez animacije):
+
+```ts
+function moveCameraInstant(camera, target) {
+  camera.position.set(target.x, target.y, target.z);
+  camera.lookAt(target.lookAt);
+  camera.updateProjectionMatrix();
+}
+```
+
+✔ 100% stabilno
+✖ nema cinematic feel
+
+---
+
+## OPTION B — SMOOTH CAMERA MOVE (PREPORUKA)
+
+Glatko kao prava kamera, bez trzaja.
+
+### Core ideja
+
+* Kamera se animira **lerp-om**
+* Tijekom animacije:
+
+  * disable user input
+  * ignore new clicks
+
+---
+
+### Camera Transition State
+
+```ts
+const cameraTransition = {
+  active: false,
+  startTime: 0,
+  duration: 800, // ms
+  fromPos: new THREE.Vector3(),
+  toPos: new THREE.Vector3(),
+  fromLook: new THREE.Vector3(),
+  toLook: new THREE.Vector3(),
+};
+```
+
+---
+
+### Start transition (on button click)
+
+```ts
+function startCameraTransition(camera, controls, target) {
+  if (cameraTransition.active) return; // ignore spam clicks
+
+  cameraTransition.active = true;
+  cameraTransition.startTime = performance.now();
+
+  cameraTransition.fromPos.copy(camera.position);
+  cameraTransition.toPos.copy(target.position);
+
+  cameraTransition.fromLook.copy(controls.target);
+  cameraTransition.toLook.copy(target.lookAt);
+
+  controls.enabled = false;
+}
+```
+
+---
+
+### Animate inside useFrame()
+
+```ts
+useFrame(() => {
+  if (!cameraTransition.active) return;
+
+  const elapsed = performance.now() - cameraTransition.startTime;
+  const t = Math.min(elapsed / cameraTransition.duration, 1);
+
+  const ease = t * t * (3 - 2 * t); // smoothstep
+
+  camera.position.lerpVectors(
+    cameraTransition.fromPos,
+    cameraTransition.toPos,
+    ease
+  );
+
+  controls.target.lerpVectors(
+    cameraTransition.fromLook,
+    cameraTransition.toLook,
+    ease
+  );
+
+  controls.update();
+
+  if (t >= 1) {
+    cameraTransition.active = false;
+    controls.enabled = true;
+  }
+});
+```
+
+---
+
+## BUTTON HANDLING (OBAVEZNO)
+
+```ts
+<button onClick={() => startCameraTransition(camera, controls, CAMERA_PRESETS.ENTRANCE)}>
+  Entrance
+</button>
+```
+
+* **Bez setState spam-a**
+* Bez `setTimeout`
+* Sve ide kroz **jedan transition handler**
+
+---
+
+## CAMERA PRESETS (PRIMJER)
+
+```ts
+const CAMERA_PRESETS = {
+  ENTRANCE: {
+    position: new THREE.Vector3(0, 1.6, 8),
+    lookAt: new THREE.Vector3(0, 1.5, 0),
+  },
+  CENTER: {
+    position: new THREE.Vector3(0, 1.6, 4),
+    lookAt: new THREE.Vector3(0, 1.5, 0),
+  },
+  BACK_LEFT: {
+    position: new THREE.Vector3(-5, 1.6, -2),
+    lookAt: new THREE.Vector3(0, 1.5, 0),
+  },
+  BACK_RIGHT: {
+    position: new THREE.Vector3(5, 1.6, -2),
+    lookAt: new THREE.Vector3(0, 1.5, 0),
+  },
+};
+```
+
+---
+
+## 🚨 IMPORTANT (za agenta)
+
+* Ne koristiti `camera.position.set` unutar `useFrame` osim za transition
+* Ne updateati kameru iz više mjesta
+* Jedan source of truth
+
+---
+
+## ✅ Acceptance Criteria
+
+* [ ] Jedan klik → odmah reakcija
+* [ ] Nema skakanja kamere
+* [ ] Nema potrebe za višestrukim klikom
+* [ ] Prijelaz gladak kao kamera (ili instant, ali stabilan)
+* [ ] Testirano: 10 brzih klikova — kamera ostaje stabilna
+
+---
+
+Ako ovo agent ispravno implementira, **problem s mišem i gumbima je trajno riješen**.
