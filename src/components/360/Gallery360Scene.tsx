@@ -67,6 +67,62 @@ function Skylight({ position, width, depth }: {
   );
 }
 
+function WallSpotlight({ position, targetY }: {
+  position: [number, number, number];
+  targetY: number;
+}) {
+  const spotlightRef = useRef<THREE.SpotLight>(null);
+  const { scene } = useThree();
+
+  useEffect(() => {
+    if (spotlightRef.current) {
+      const target = new THREE.Object3D();
+      target.position.set(position[0], targetY, position[2]);
+      scene.add(target);
+      spotlightRef.current.target = target;
+      return () => {
+        scene.remove(target);
+      };
+    }
+  }, [position, targetY, scene]);
+
+  return (
+    <group position={position}>
+      {/* Lamp fixture housing - visible track light */}
+      <mesh>
+        <cylinderGeometry args={[0.06, 0.10, 0.12, 16]} />
+        <meshStandardMaterial color="#2a2a2a" roughness={0.3} metalness={0.6} />
+      </mesh>
+      {/* Lamp bulb glow */}
+      <mesh position={[0, -0.05, 0]}>
+        <cylinderGeometry args={[0.04, 0.04, 0.02, 16]} />
+        <meshBasicMaterial color="#fff8e0" />
+      </mesh>
+      {/* Small point light for fixture glow */}
+      <pointLight
+        position={[0, -0.06, 0]}
+        intensity={0.15}
+        distance={0.4}
+        color="#fff5e0"
+      />
+      {/* Main spotlight */}
+      <spotLight
+        ref={spotlightRef}
+        position={[0, -0.06, 0]}
+        angle={0.4}
+        penumbra={0.85}
+        intensity={4}
+        distance={12}
+        color="#fffaf5"
+        castShadow
+        shadow-mapSize={[1024, 1024]}
+        shadow-bias={-0.0001}
+        shadow-radius={3}
+      />
+    </group>
+  );
+}
+
 function ArtworkSpotlight({ 
   artworkPosition, 
   artworkRotation,
@@ -328,6 +384,20 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
     ];
   }, [preset.hasSkylights, height, depth, width]);
 
+  const spotlightPositions = useMemo(() => {
+    const spots: Array<{ position: [number, number, number]; targetY: number }> = [];
+    
+    for (let x = -halfW + 3; x < halfW; x += 4) {
+      spots.push({ position: [x, height - 0.3, -halfD + 0.5], targetY: 1.6 });
+      spots.push({ position: [x, height - 0.3, halfD - 0.5], targetY: 1.6 });
+    }
+    spots.push({ position: [-halfW + 0.5, height - 0.3, -2], targetY: 1.6 });
+    spots.push({ position: [-halfW + 0.5, height - 0.3, 2], targetY: 1.6 });
+    spots.push({ position: [halfW - 0.5, height - 0.3, -2], targetY: 1.6 });
+    spots.push({ position: [halfW - 0.5, height - 0.3, 2], targetY: 1.6 });
+    
+    return spots;
+  }, [width, height, depth, halfW, halfD]);
 
   return (
     <group>
@@ -445,6 +515,15 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
           position={skylight.position}
           width={skylight.width}
           depth={skylight.depth}
+        />
+      ))}
+
+      {/* Visible track light fixtures with spotlights */}
+      {spotlightPositions.map((spot, i) => (
+        <WallSpotlight
+          key={`spot-${i}`}
+          position={spot.position}
+          targetY={spot.targetY}
         />
       ))}
     </group>
@@ -1167,9 +1246,9 @@ export function Gallery360Scene({
         toneMappingExposure: 1.15
       }}
     >
-      {/* NEVER-BLACK FALLBACK - guaranteed visibility */}
-      <ambientLight intensity={0.35} color="#fff8f2" />
-      <hemisphereLight args={['#faf8f5', '#a09080', 0.25]} />
+      {/* NEVER-BLACK FALLBACK - guaranteed visibility (always keep active) */}
+      <ambientLight intensity={0.30} color="#fff8f2" />
+      <hemisphereLight args={['#faf8f5', '#a09080', 0.20]} />
       
       <directionalLight 
         position={[0, preset.dimensions.height + 8, 0]} 
