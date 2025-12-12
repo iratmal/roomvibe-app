@@ -917,6 +917,9 @@ function FirstPersonController({
   // Track viewpoint change count to trigger navigation even for same viewpoint
   const viewpointTrigger = useRef(0);
   
+  // Track if this is the first mount (initial load)
+  const isFirstMount = useRef(true);
+  
   useEffect(() => {
     const pos = new THREE.Vector3(...viewpoint.position);
     const lookAt = new THREE.Vector3(...viewpoint.lookAt);
@@ -926,19 +929,21 @@ function FirstPersonController({
     const newTargetSpherical = new THREE.Spherical();
     newTargetSpherical.setFromVector3(direction);
     
-    // Check if camera is far from target position (user moved manually)
-    const distanceFromTarget = camera.position.distanceTo(pos);
-    const isAtDifferentPosition = distanceFromTarget > 0.5;
-    
-    if (lastViewpointId.current !== viewpoint.id || isAtDifferentPosition) {
-      // Start transition - either different viewpoint or user moved away
-      startTransition(pos, newTargetSpherical, CAMERA_MOVE_DURATION);
-      lastViewpointId.current = viewpoint.id;
-      console.log('[CameraNav] goToView', viewpoint.id, 'distance:', distanceFromTarget.toFixed(2));
-    } else {
-      // Initial setup only
+    // On first mount: instant positioning, no transition
+    if (isFirstMount.current) {
       camera.position.copy(pos);
       spherical.current.copy(newTargetSpherical);
+      lastViewpointId.current = viewpoint.id;
+      isFirstMount.current = false;
+      console.log('[CameraNav] initialLoad', viewpoint.id, 'pos:', pos.toArray());
+      return;
+    }
+    
+    // After first mount: always use transition for button clicks
+    if (lastViewpointId.current !== viewpoint.id) {
+      startTransition(pos, newTargetSpherical, CAMERA_MOVE_DURATION);
+      lastViewpointId.current = viewpoint.id;
+      console.log('[CameraNav] goToView', viewpoint.id);
     }
   }, [viewpoint, camera, clampPosition, startTransition]);
   
