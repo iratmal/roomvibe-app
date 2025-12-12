@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Gallery360Scene } from './Gallery360Scene';
 import { useHotspots } from './useHotspots';
 import { useArtworkSlots, SlotAssignment } from './useArtworkSlots';
+import { useGalleryScrollLock } from './useGalleryScrollLock';
 import { gallery360Presets, getPresetById } from '../../config/gallery360Presets';
 
 interface Viewer360Props {
@@ -19,6 +20,7 @@ export function Viewer360({
   onArtworkClick,
   className = ''
 }: Viewer360Props) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const preset = getPresetById(presetId) || gallery360Presets[0];
   
   const { 
@@ -31,6 +33,8 @@ export function Viewer360({
     loadAssignments 
   } = useArtworkSlots(preset.slots);
 
+  useGalleryScrollLock(containerRef);
+
   useEffect(() => {
     if (initialAssignments.length > 0) {
       loadAssignments(initialAssignments);
@@ -38,7 +42,7 @@ export function Viewer360({
   }, [initialAssignments, loadAssignments]);
 
   return (
-    <div className={`relative w-full h-full ${className}`}>
+    <div ref={containerRef} className={`relative w-full h-full ${className}`}>
       <Gallery360Scene
         preset={preset}
         slotAssignments={slotAssignments}

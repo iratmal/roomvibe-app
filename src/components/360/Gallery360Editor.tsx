@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Gallery360Scene, ArtworkFocusTarget } from './Gallery360Scene';
 import { ArtworkInfoPanel, ArtworkPanelData } from './ArtworkInfoPanel';
 import { ShareEmbedModal } from './ShareEmbedModal';
 import { useHotspots } from './useHotspots';
 import { useArtworkSlots, SlotAssignment } from './useArtworkSlots';
+import { useGalleryScrollLock } from './useGalleryScrollLock';
 import { gallery360Presets, getPresetById, Slot } from '../../config/gallery360Presets';
 
 interface Artwork {
@@ -44,6 +45,7 @@ export function Gallery360Editor({
   viewerMode = false,
   embedMode = false
 }: Gallery360EditorProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [selectedPresetId, setSelectedPresetId] = useState(presetId);
   const preset = getPresetById(selectedPresetId) || gallery360Presets[0];
   
@@ -59,6 +61,8 @@ export function Gallery360Editor({
     clearSlot,
     resetToSlots
   } = useArtworkSlots(preset.slots);
+
+  useGalleryScrollLock(containerRef);
 
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -205,7 +209,7 @@ export function Gallery360Editor({
 
   if (viewerMode) {
     return (
-      <div className={`h-full w-full relative ${className}`}>
+      <div ref={containerRef} className={`h-full w-full relative ${className}`}>
         <Gallery360Scene
           preset={preset}
           slotAssignments={slotAssignments}
@@ -245,7 +249,7 @@ export function Gallery360Editor({
   }
 
   return (
-    <div className={`flex h-full ${className}`}>
+    <div ref={containerRef} className={`flex h-full ${className}`}>
       <div className={`${panelCollapsed ? 'w-12' : 'w-80'} bg-white border-r border-gray-200 flex flex-col overflow-hidden transition-all duration-300`}>
         {panelCollapsed ? (
           <button

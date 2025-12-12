@@ -1,0 +1,172 @@
+# Task: Prevent “escape to footer” while using the 360° gallery
+
+## Problem
+
+While user is inside the 360° gallery (mouse drag / wheel zoom / trackpad), the page scrolls and user can accidentally end up on the footer. This must **not** happen.
+
+Desired behavior (ArtSteps-style):
+
+* Page (header/footer) can exist normally.
+* BUT while the cursor is over the gallery (or user is actively interacting with it), **page scroll must be locked**, so the wheel/trackpad is used only for gallery zoom/pan.
+* User should only reach footer by intentional page scroll using the browser scrollbar / normal scrolling **after leaving the gallery interaction**.
+
+---
+
+## Acceptance criteria
+
+1. When mouse is over gallery canvas/container:
+
+   * Wheel / trackpad does **not** scroll the page.
+   * Wheel controls gallery zoom (or is ignored), but **never moves page**.
+2. Dragging inside gallery never scrolls page.
+3. Keyboard scroll keys (Space, ArrowUp/Down, PageUp/Down, Home/End) do not scroll the page while interacting with gallery.
+4. When mouse leaves gallery (or user stops interacting), normal page scrolling returns.
+5. Works on:
+
+   * Mac trackpad (smooth scrolling)
+   * Mouse wheel
+   * Touch devices (touchmove)
+
+---
+
+## Implementation approach (recommended)
+
+Implement **scroll lock** while gallery is “active”.
+
+### Define “gallery active”
+
+* `active = true` when:
+
+  * pointer enters gallery container, OR
+  * pointer down inside gallery, OR
+  * user is dragging/zooming in gallery
+* `active = false` when:
+
+  * pointer leaves container AND not dragging
+
+---
+
+## Code snippet (drop-in)
+
+> Put this in the 360 gallery page/component. Replace `#gallery-root` with your real container id/class.
+
+```ts
+// scrollLock.ts
+
+type Cleanup = () => void;
+
+export function mountGalleryScrollLock(galleryEl: HTMLElement): Cleanup {
+  let active = false;
+  let dragging = false;
+
+  // IMPORTANT: must be non-passive to call preventDefault()
+  const wheelHandler = (e: WheelEvent) => {
+    if (!active) return;
+
+    // If your gallery uses wheel for zoom, keep that logic in gallery;
+    // here we only prevent page scroll.
+    e.preventDefault();
+  };
+
+  const touchMoveHandler = (e: TouchEvent) => {
+    if (!active) return;
+    e.preventDefault();
+  };
+
+  const keyHandler = (e: KeyboardEvent) => {
+    if (!active) return;
+
+    // Block page scroll keys while in gallery
+    const keys = [
+      'ArrowUp', 'ArrowDown', 'PageUp', 'PageDown',
+      'Home', 'End', ' ', 'Spacebar'
+    ];
+    if (keys.includes(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const onEnter = () => { active = true; };
+  const onLeave = () => {
+    // don’t disable while dragging (pointer can leave during drag)
+    if (!dragging) active = false;
+  };
+
+  const onPointerDown = () => {
+    active = true;
+    dragging = true;
+
+    // Optional: capture pointer so drag continues safely
+    try {
+      galleryEl.setPointerCapture?.((event as any)?.pointerId);
+    } catch {}
+  };
+
+  const onPointerUp = () => {
+    dragging = false;
+    // if pointer is outside when releasing, allow scroll again
+    // (we’ll be conservative: keep active until leave)
+  };
+
+  galleryEl.addEventListener('mouseenter', onEnter);
+  galleryEl.addEventListener('mouseleave', onLeave);
+  galleryEl.addEventListener('pointerdown', onPointerDown);
+  window.addEventListener('pointerup', onPointerUp);
+
+  // lock scroll sources
+  window.addEventListener('wheel', wheelHandler, { passive: false });
+  window.addEventListener('touchmove', touchMoveHandler, { passive: false });
+  window.addEventListener('keydown', keyHandler, { passive: false });
+
+  return () => {
+    galleryEl.removeEventListener('mouseenter', onEnter);
+    galleryEl.removeEventListener('mouseleave', onLeave);
+    galleryEl.removeEventListener('pointerdown', onPointerDown);
+    window.removeEventListener('pointerup', onPointerUp);
+
+    window.removeEventListener('wheel', wheelHandler as any);
+    window.removeEventListener('touchmove', touchMoveHandler as any);
+    window.removeEventListener('keydown', keyHandler as any);
+  };
+}
+```
+
+### Usage
+
+```ts
+// In your 360 gallery page/component
+import { useEffect, useRef } from 'react';
+import { mountGalleryScrollLock } from './scrollLock';
+
+export function Gallery360Page() {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!ref.current) return;
+    return mountGalleryScrollLock(ref.current);
+  }, []);
+
+  return (
+    <div id="gallery-root" ref={ref}>
+      {/* canvas / three.js renderer here */}
+    </div>
+  );
+}
+```
+
+---
+
+## Notes / edge cases
+
+* If the gallery currently listens to `wheel` on the canvas only, page may still scroll via trackpad. The global `window` wheel listener above prevents that **only while active**.
+* If you prefer not to block keyboard keys globally, bind `keydown` only when active (add/remove listener on enter/leave).
+* Do NOT remove footer. Keep normal page scroll; just block it during gallery interaction.
+
+---
+
+## Quick test checklist
+
+* Hover over gallery → two-finger scroll on Mac should zoom (or do nothing) but **page stays fixed**.
+* Drag around gallery → page does not move.
+* Move mouse outside gallery → page scroll works again.
+* Try Space / PageDown while hovered → page does not jump.
