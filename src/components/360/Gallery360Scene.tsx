@@ -358,49 +358,31 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       {/* Coffered ceiling grid - 3x3 sections */}
       {/* Main beams - concrete finish */}
       {[-depth/3, 0, depth/3].map((zPos, i) => (
-        <mesh key={`beam-main-x-${i}`} position={[0, height - 0.15, zPos]}>
-          <boxGeometry args={[width - 0.4, 0.30, 0.25]} />
-          <meshBasicMaterial color="#B0B0B0" />
+        <mesh key={`beam-main-x-${i}`} position={[0, height - 0.12, zPos]}>
+          <boxGeometry args={[width - 0.3, 0.24, 0.20]} />
+          <meshBasicMaterial color="#9A9A9A" />
         </mesh>
       ))}
-      {/* Cross beams - slightly darker for depth */}
+      {/* Cross beams - same color */}
       {[-width/3, 0, width/3].map((xPos, i) => (
-        <mesh key={`beam-main-z-${i}`} position={[xPos, height - 0.15, 0]}>
-          <boxGeometry args={[0.25, 0.30, depth - 0.4]} />
-          <meshBasicMaterial color="#A8A8A8" />
+        <mesh key={`beam-main-z-${i}`} position={[xPos, height - 0.12, 0]}>
+          <boxGeometry args={[0.20, 0.24, depth - 0.3]} />
+          <meshBasicMaterial color="#9A9A9A" />
         </mesh>
       ))}
       
-      {/* Recessed coffer panels - 9 sections with angled sides */}
+      {/* Recessed coffer panels - 9 sections */}
       {[-1, 0, 1].flatMap(xi => [-1, 0, 1].map(zi => ({
         x: xi * (width / 3),
         z: zi * (depth / 3),
-        w: width / 3 - 0.35,
-        d: depth / 3 - 0.35
+        w: width / 3 - 0.25,
+        d: depth / 3 - 0.25
       }))).map((panel, i) => (
-        <group key={`coffer-${i}`} position={[panel.x, height - 0.30, panel.z]}>
-          {/* Deep recessed ceiling panel */}
-          <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0.30, 0]}>
-            <planeGeometry args={[panel.w - 0.3, panel.d - 0.3]} />
-            <meshBasicMaterial color="#C8C8C8" />
-          </mesh>
-          {/* Angled sides - front/back */}
-          <mesh position={[0, 0.15, -panel.d/2 + 0.075]} rotation={[-0.3, 0, 0]}>
-            <planeGeometry args={[panel.w - 0.3, 0.35]} />
-            <meshBasicMaterial color="#BEBEBE" side={THREE.DoubleSide} />
-          </mesh>
-          <mesh position={[0, 0.15, panel.d/2 - 0.075]} rotation={[0.3, 0, 0]}>
-            <planeGeometry args={[panel.w - 0.3, 0.35]} />
-            <meshBasicMaterial color="#BEBEBE" side={THREE.DoubleSide} />
-          </mesh>
-          {/* Angled sides - left/right */}
-          <mesh position={[-panel.w/2 + 0.075, 0.15, 0]} rotation={[0, 0, 0.3]}>
-            <planeGeometry args={[0.35, panel.d - 0.3]} />
-            <meshBasicMaterial color="#B5B5B5" side={THREE.DoubleSide} />
-          </mesh>
-          <mesh position={[panel.w/2 - 0.075, 0.15, 0]} rotation={[0, 0, -0.3]}>
-            <planeGeometry args={[0.35, panel.d - 0.3]} />
-            <meshBasicMaterial color="#B5B5B5" side={THREE.DoubleSide} />
+        <group key={`coffer-${i}`} position={[panel.x, height, panel.z]}>
+          {/* Recessed ceiling panel - slightly darker */}
+          <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
+            <planeGeometry args={[panel.w, panel.d]} />
+            <meshBasicMaterial color="#A5A5A5" />
           </mesh>
         </group>
       ))}
