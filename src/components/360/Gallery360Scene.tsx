@@ -88,115 +88,35 @@ function WallSpotlight({ position, targetY }: {
 
   return (
     <group position={position}>
-      {/* Lamp fixture housing - visible track light */}
       <mesh>
         <cylinderGeometry args={[0.06, 0.10, 0.12, 16]} />
         <meshStandardMaterial color="#2a2a2a" roughness={0.3} metalness={0.6} />
       </mesh>
-      {/* Lamp bulb glow */}
       <mesh position={[0, -0.05, 0]}>
         <cylinderGeometry args={[0.04, 0.04, 0.02, 16]} />
         <meshBasicMaterial color="#fff8e0" />
       </mesh>
-      {/* Small point light for fixture glow */}
       <pointLight
         position={[0, -0.06, 0]}
         intensity={0.15}
         distance={0.4}
         color="#fff5e0"
       />
-      {/* Main spotlight */}
       <spotLight
         ref={spotlightRef}
         position={[0, -0.06, 0]}
-        angle={0.4}
-        penumbra={0.85}
-        intensity={4}
+        angle={0.45}
+        penumbra={0.8}
+        intensity={5}
         distance={12}
         color="#fffaf5"
         castShadow
         shadow-mapSize={[1024, 1024]}
-        shadow-bias={-0.0001}
-        shadow-radius={3}
+        shadow-bias={-0.0003}
+        shadow-radius={2}
+        shadow-normalBias={0.02}
       />
     </group>
-  );
-}
-
-function ArtworkSpotlight({ 
-  artworkPosition, 
-  artworkRotation,
-  ceilingHeight
-}: {
-  artworkPosition: [number, number, number];
-  artworkRotation: [number, number, number];
-  ceilingHeight: number;
-}) {
-  const spotlightRef = useRef<THREE.SpotLight>(null);
-  const targetRef = useRef<THREE.Object3D>(null);
-  const { scene } = useThree();
-  
-  const yRot = artworkRotation[1];
-  const normalX = Math.sin(yRot);
-  const normalZ = Math.cos(yRot);
-  
-  const lightPosition: [number, number, number] = useMemo(() => [
-    artworkPosition[0] + normalX * 0.4,
-    ceilingHeight - 0.25,
-    artworkPosition[2] + normalZ * 0.4
-  ], [artworkPosition, normalX, normalZ, ceilingHeight]);
-
-  const targetPosition: [number, number, number] = useMemo(() => [
-    artworkPosition[0],
-    artworkPosition[1],
-    artworkPosition[2]
-  ], [artworkPosition]);
-
-  useEffect(() => {
-    if (spotlightRef.current && targetRef.current) {
-      scene.add(targetRef.current);
-      spotlightRef.current.target = targetRef.current;
-      return () => {
-        if (targetRef.current) {
-          scene.remove(targetRef.current);
-        }
-      };
-    }
-  }, [scene]);
-
-  useFrame(() => {
-    if (targetRef.current && spotlightRef.current) {
-      targetRef.current.updateMatrixWorld();
-    }
-  });
-
-  return (
-    <>
-      <object3D ref={targetRef} position={targetPosition} />
-      <group position={lightPosition}>
-        <mesh>
-          <cylinderGeometry args={[0.04, 0.07, 0.08, 12]} />
-          <meshStandardMaterial color="#2a2a2a" roughness={0.4} metalness={0.5} />
-        </mesh>
-        <mesh position={[0, -0.03, 0]}>
-          <cylinderGeometry args={[0.025, 0.025, 0.012, 12]} />
-          <meshBasicMaterial color="#fff8e0" />
-        </mesh>
-        <spotLight
-          ref={spotlightRef}
-          position={[0, -0.04, 0]}
-          angle={Math.PI / 9}
-          penumbra={0.72}
-          intensity={1.25}
-          distance={16}
-          color="#fffaf0"
-          castShadow
-          shadow-mapSize={[1024, 1024]}
-          shadow-bias={-0.0002}
-          shadow-radius={2}
-        />
-      </group>
-    </>
   );
 }
 
@@ -518,7 +438,6 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         />
       ))}
 
-      {/* Visible track light fixtures with spotlights */}
       {spotlightPositions.map((spot, i) => (
         <WallSpotlight
           key={`spot-${i}`}
@@ -1246,17 +1165,12 @@ export function Gallery360Scene({
         toneMappingExposure: 1.15
       }}
     >
-      {/* NEVER-BLACK FALLBACK - guaranteed visibility (always keep active) */}
-      <ambientLight intensity={0.8} color="#ffffff" />
-      <hemisphereLight args={['#ffffff', '#e0e0e0', 0.6]} />
-      
-      {/* Strong fill lights from multiple angles */}
-      <pointLight position={[0, preset.dimensions.height - 1, 0]} intensity={1.5} color="#fff8f0" distance={30} />
-      <pointLight position={[0, 2, 0]} intensity={0.8} color="#fff8f0" distance={20} />
+      <ambientLight intensity={0.25} color="#fff8f2" />
+      <hemisphereLight args={['#faf8f5', '#a09080', 0.4]} />
       
       <directionalLight 
         position={[0, preset.dimensions.height + 8, 0]} 
-        intensity={0.8}
+        intensity={0.5}
         color="#fffcf8"
         castShadow
         shadow-mapSize={[2048, 2048]}
@@ -1269,40 +1183,31 @@ export function Gallery360Scene({
         shadow-radius={4}
       />
       
-      <directionalLight position={[12, 6, 6]} intensity={0.4} color="#fff5e8" />
-      <directionalLight position={[-12, 6, -6]} intensity={0.3} color="#f8f5ff" />
+      <directionalLight position={[12, 6, 6]} intensity={0.2} color="#fff5e8" />
+      <directionalLight position={[-12, 6, -6]} intensity={0.15} color="#f8f5ff" />
 
       <GalleryRoom preset={preset} />
 
       {preset.slots.map(slot => {
         const assignment = slotAssignments.find(sa => sa.slotId === slot.id);
-        const hasArtwork = !!assignment?.artworkUrl;
         return (
-          <React.Fragment key={slot.id}>
-            <ArtworkPlane
-              slot={slot}
-              assignment={assignment}
-              isSelected={selectedSlotId === slot.id}
-              isEditor={isEditor}
-              presetId={preset.id}
-              wallHeight={preset.dimensions.height}
-              onClick={() => {
-                if (isEditor && onSlotSelect) {
-                  onSlotSelect(slot.id);
-                }
-                if (assignment?.artworkId && onArtworkClick) {
-                  onArtworkClick(slot.id, assignment, slot);
-                }
-              }}
-            />
-            {hasArtwork && (
-              <ArtworkSpotlight
-                artworkPosition={slot.position}
-                artworkRotation={slot.rotation}
-                ceilingHeight={preset.dimensions.height}
-              />
-            )}
-          </React.Fragment>
+          <ArtworkPlane
+            key={slot.id}
+            slot={slot}
+            assignment={assignment}
+            isSelected={selectedSlotId === slot.id}
+            isEditor={isEditor}
+            presetId={preset.id}
+            wallHeight={preset.dimensions.height}
+            onClick={() => {
+              if (isEditor && onSlotSelect) {
+                onSlotSelect(slot.id);
+              }
+              if (assignment?.artworkId && onArtworkClick) {
+                onArtworkClick(slot.id, assignment, slot);
+              }
+            }}
+          />
         );
       })}
 
