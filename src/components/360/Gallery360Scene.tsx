@@ -335,6 +335,16 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
           <meshStandardMaterial color={preset.floorColor} roughness={0.8} />
         </mesh>
       )}
+      
+      {/* Invisible clickable floor for walk-to navigation */}
+      <mesh 
+        name="floorClickArea"
+        position={[0, 0.01, 0]} 
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <planeGeometry args={[width - 1, depth - 1]} />
+        <meshBasicMaterial transparent opacity={0} />
+      </mesh>
 
       {/* Main ceiling plane - warm gallery white */}
       <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
@@ -1128,6 +1138,11 @@ function smoothstep(t: number): number {
 const ARTWORK_FOCUS_DURATION = 0.7;
 const ARTWORK_FOCUS_DISTANCE = 3.5;
 
+// Click-to-walk configuration
+const CLICK_THRESHOLD = 5; // pixels - distinguishes click from drag
+const WALK_TO_DURATION = 0.6; // seconds for walk animation
+const EYE_HEIGHT = 1.7; // camera height when walking
+
 function FirstPersonController({ 
   viewpoint,
   galleryDimensions,
@@ -1139,9 +1154,11 @@ function FirstPersonController({
   focusTarget?: ArtworkFocusTarget | null;
   onFocusDismiss?: () => void;
 }) {
-  const { camera, gl } = useThree();
+  const { camera, gl, scene } = useThree();
   const isDragging = useRef(false);
   const previousMousePosition = useRef({ x: 0, y: 0 });
+  const mouseDownPosition = useRef({ x: 0, y: 0 });
+  const raycaster = useRef(new THREE.Raycaster());
   const spherical = useRef(new THREE.Spherical());
   
   // SINGLE transition state - one owner principle
@@ -1194,6 +1211,43 @@ function FirstPersonController({
     transitionFromSpherical.current.copy(spherical.current);
     transitionToSpherical.current.copy(toSpherical);
   }, [camera]);
+
+  // Walk to a floor position - maintains current view direction
+  const walkToPosition = useCallback((targetX: number, targetZ: number) => {
+    const targetPos = new THREE.Vector3(targetX, EYE_HEIGHT, targetZ);
+    clampPosition(targetPos);
+    
+    // Calculate distance for variable duration
+    const distance = camera.position.distanceTo(targetPos);
+    const duration = Math.min(Math.max(distance * 0.15, 0.3), WALK_TO_DURATION);
+    
+    // Keep current view direction
+    const currentSpherical = spherical.current.clone();
+    
+    startTransition(targetPos, currentSpherical, duration);
+    console.log('[WalkTo] Moving to:', targetPos.x.toFixed(2), targetPos.z.toFixed(2));
+  }, [camera, clampPosition, startTransition]);
+
+  // Raycast to check if click hit the floor
+  const checkFloorClick = useCallback((clientX: number, clientY: number): THREE.Vector3 | null => {
+    const rect = gl.domElement.getBoundingClientRect();
+    const mouse = new THREE.Vector2(
+      ((clientX - rect.left) / rect.width) * 2 - 1,
+      -((clientY - rect.top) / rect.height) * 2 + 1
+    );
+    
+    raycaster.current.setFromCamera(mouse, camera);
+    
+    // Find floor mesh by name
+    const floorMesh = scene.getObjectByName('floorClickArea');
+    if (!floorMesh) return null;
+    
+    const intersects = raycaster.current.intersectObject(floorMesh, false);
+    if (intersects.length > 0) {
+      return intersects[0].point;
+    }
+    return null;
+  }, [gl, camera, scene]);
 
   // Track viewpoint change count to trigger navigation even for same viewpoint
   const viewpointTrigger = useRef(0);
@@ -1306,10 +1360,27 @@ function FirstPersonController({
       }
       isDragging.current = true;
       previousMousePosition.current = { x: e.clientX, y: e.clientY };
+      mouseDownPosition.current = { x: e.clientX, y: e.clientY };
     };
     
-    const handleMouseUp = () => {
+    const handleMouseUp = (e: MouseEvent) => {
+      const wasDragging = isDragging.current;
       isDragging.current = false;
+      
+      // Check if this was a click (not a drag)
+      if (wasDragging && !isTransitioning.current) {
+        const dx = e.clientX - mouseDownPosition.current.x;
+        const dy = e.clientY - mouseDownPosition.current.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        // If mouse moved less than threshold, treat as click
+        if (distance < CLICK_THRESHOLD) {
+          const floorHit = checkFloorClick(e.clientX, e.clientY);
+          if (floorHit) {
+            walkToPosition(floorHit.x, floorHit.z);
+          }
+        }
+      }
     };
     
     const handleMouseMove = (e: MouseEvent) => {
@@ -1378,11 +1449,29 @@ function FirstPersonController({
       if (e.touches.length === 1) {
         isDragging.current = true;
         previousMousePosition.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        mouseDownPosition.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
       }
     };
     
-    const handleTouchEnd = () => {
+    const handleTouchEnd = (e: TouchEvent) => {
+      const wasDragging = isDragging.current;
       isDragging.current = false;
+      
+      // Check if this was a tap (not a drag)
+      if (wasDragging && !isTransitioning.current && e.changedTouches.length === 1) {
+        const touch = e.changedTouches[0];
+        const dx = touch.clientX - mouseDownPosition.current.x;
+        const dy = touch.clientY - mouseDownPosition.current.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        // If touch moved less than threshold, treat as tap
+        if (distance < CLICK_THRESHOLD) {
+          const floorHit = checkFloorClick(touch.clientX, touch.clientY);
+          if (floorHit) {
+            walkToPosition(floorHit.x, floorHit.z);
+          }
+        }
+      }
     };
     
     const handleTouchMove = (e: TouchEvent) => {
@@ -1434,7 +1523,7 @@ function FirstPersonController({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [gl, focusTarget, onFocusDismiss]);
+  }, [gl, focusTarget, onFocusDismiss, checkFloorClick, walkToPosition]);
   
   useFrame(() => {
     // UNIFIED TRANSITION - single source of truth for camera animation

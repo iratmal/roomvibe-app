@@ -1,0 +1,52 @@
+# Task za agenta (OBAVEZNO: raditi u **Classic Gallery**)
+
+## Cilj
+
+Kad korisnik **klikne na pod**, kamera/pozicija se treba **pomaknuti na to mjesto** (kao “walk-to / click-to-move”).
+
+## Kako treba raditi (UX)
+
+* Klik na **pod** = pomakni se na kliknutu poziciju.
+* Klik na **sliku / zid / strop / klupu / vazu / UI** = **ne pomiče** (ili samo rotira kao do sada).
+* Kretanje treba biti **glatko** (ease in/out), bez teleportiranja.
+* Zadrži postojeće granice sobe (ne prolaziti kroz zidove) i postojeći zoom/rotaciju.
+
+## Implementacija (Three.js / R3F – princip)
+
+1. **Raycast** iz miša u scenu na klik (pointerdown/click):
+
+   * Raycastati samo na `floorMesh` (ili floor layer / tag) da se izbjegne hvatanje zidova i objekata.
+   * Ignorirati klik ako je event došao s UI-a (npr. klik na gumb / sidebar).
+
+2. Kad se dobije `hitPoint` na podu:
+
+   * Izračunaj **target position** = `hitPoint` + mali offset od poda (npr. `y = currentCameraY` ili `y = eyeHeight`).
+   * Ograniči target unutar granica sobe (`minX/maxX/minZ/maxZ`) s marginom 0.5–1m.
+
+3. **Animiraj** kretanje:
+
+   * Interpolacija (lerp) kroz 300–900ms (ovisno o udaljenosti) uz easing.
+   * Ne mijenjati FOV; samo translacija (i po potrebi target za OrbitControls).
+   * Ako koristimo OrbitControls: pomaknuti i `controls.target` za isti delta kao kameru (da se “pogled” ne raspadne).
+
+4. **Collision / walls** (minimalno):
+
+   * Clamp unutar boxa sobe (najbrže rješenje).
+   * Bonus: ako imamo colliders, spriječiti prolaz kroz klupe/vaze (nije must za ovaj korak).
+
+5. **Mobile**:
+
+   * Tap na pod = isto ponašanje.
+
+## Acceptance criteria
+
+* Kliknem na pod (bilo gdje u sobi) i kamera se **glatko premjesti** do te pozicije.
+* Ne mogu klikom završiti izvan sobe ili u zidu.
+* Klik na UI, sliku, zid, strop, klupu ili vazu **ne pokreće walk-to**.
+* Radi u **Classic Gallery** i u editoru i u public view-u.
+
+## Napomena
+
+Ako trenutno imamo “drag to rotate” i to je na istom eventu:
+
+* razlikuj **click** vs **drag** (npr. prag pomaka miša 3–5px). Samo “pravi click” aktivira walk-to.
