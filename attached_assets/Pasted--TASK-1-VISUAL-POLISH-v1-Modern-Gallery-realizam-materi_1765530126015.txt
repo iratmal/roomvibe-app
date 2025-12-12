@@ -1,0 +1,90 @@
+✅ TASK 1 (VISUAL POLISH v1): “Modern Gallery” realizam – materijali, svjetlo, sjene
+
+Goal
+Podići realizam postojeće 3D galerije (Modern Gallery / loft feeling) tako da prostor izgleda “realno” (fotka prostora), uz bolji pod/zid/strop, svjetlo i mekane sjene. Ne dirati kontrole kamere ni navigation u ovom tasku.
+
+Context
+RoomVibe 360 Virtual Exhibition (React + R3F/Three). Trenutno prostor izgleda flat i “gamey”. Želimo Artsteps-like feel: materijali + rasvjeta + sjene + tonemapping. 
+
+Scope – napravi SAMO ovo:
+
+PBR materijali (realizam bez previše asseta)
+
+Pod: dodaj realističan wood ili concrete PBR (baseColor + normal + roughness + ao ako ima).
+
+Zidovi: blago topla svijetlo-siva (ne čista bijela), vrlo suptilna tekstura/roughness (da ne bude “karton”).
+
+Strop: neutralan, s minimalnim detaljem (npr. light tracks ili beams, ali vrlo clean).
+
+Svjetlo (da slike “iskoče”)
+
+Postavi 3-slojno svjetlo:
+
+vrlo blagi ambient,
+
+1 glavni directional ili hemisphere za opći osjećaj prostora,
+
+4–8 spotlights (ili nekoliko) usmjerenih prema zidovima gdje su slotovi/artworks.
+
+Cilj: zidovi mekano osvijetljeni, a radovi jasni i svijetli.
+
+Sjene (meke, premium)
+
+Uključi shadows u rendereru i na relevantnim svjetlima.
+
+Podesi shadow map kvalitetu (razumno) i omekšaj sjene (soft shadows).
+
+Nemoj da sjene budu “nazubljene”.
+
+Tonemapping + exposure (fotografski look)
+
+Uključi Three.js tone mapping (npr. ACESFilmic) i podesi exposure tako da:
+
+radovi nisu tamni
+
+prostor nije “spran”
+
+Ako već imate postprocessing, može vrlo suptilan SSAO / vignette (minimalno), ali samo ako je brzo i stabilno.
+
+Micro-detail (minimalno, ne zatrpavati)
+
+Dodaj 1–2 vrlo diskretna elementa koji pomažu realizmu (npr. stupovi/grede ako već postoje, ili jedan jednostavan “plant” model), ali ne raditi dekoriranje prostora sada. (Ako nema brzog asseta, preskoči.)
+
+Ne raditi:
+
+Ne mijenjati kontrole kamere / mouse look / movement.
+
+Ne dodavati nove sobe.
+
+Ne refaktorirati strukturu projekta.
+
+Ne dirati editor UI osim ako treba sitno da se nešto upali (npr. shadows).
+
+Tech notes (ako treba agentu)
+
+Units: 1 = 1m, eye height ostaje kako je (ne dirati).
+
+Materijale i teksture optimizirati (ne ogromne fajlove).
+
+Sve promjene neka budu lokalizirane na “Modern Gallery” environment.
+
+Stop conditions (mora potvrditi sve):
+
+Pod više nije “flat” nego ima realan materijal (wood/concrete) i ne treperi.
+
+Zidovi imaju realniji ton (ne čista bijela) i nisu kartonski.
+
+Sjene su uključene i mekane (bez grubih rubova).
+
+Radovi su svijetli i čitljivi, prostor izgleda “premium” (manje gamey).
+
+Navesti sve izmijenjene fileove i kratko koje postavke je dirao.
+
+Priority / Cost
+
+FAST MODE ON (fokusirani task, minimalne iteracije).
+
+Ako zapne: max 2 pokušaja, onda stati i objasniti gdje. 
+
+Brand note
+Vizual treba ostati clean/premium (minimalizam), bez kiča; držati se RoomVibe premium tech minimalism smjera. 

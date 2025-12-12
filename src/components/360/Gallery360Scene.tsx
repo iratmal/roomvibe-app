@@ -38,8 +38,13 @@ function Column({ position, height, color }: {
 }) {
   return (
     <mesh position={position} castShadow receiveShadow>
-      <boxGeometry args={[0.4, height, 0.4]} />
-      <meshStandardMaterial color={color} roughness={0.8} metalness={0.1} />
+      <boxGeometry args={[0.35, height, 0.35]} />
+      <meshStandardMaterial 
+        color={color} 
+        roughness={0.25} 
+        metalness={0.15}
+        envMapIntensity={0.4}
+      />
     </mesh>
   );
 }
@@ -53,14 +58,18 @@ function Skylight({ position, width, depth }: {
     <group position={position}>
       <mesh rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
-        <meshBasicMaterial color="#e8f4ff" transparent opacity={0.9} />
+        <meshBasicMaterial color="#f0f5ff" transparent opacity={0.85} />
+      </mesh>
+      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, -0.02, 0]}>
+        <planeGeometry args={[width * 0.95, depth * 0.95]} />
+        <meshBasicMaterial color="#ffffff" transparent opacity={0.4} />
       </mesh>
       <rectAreaLight
         position={[0, -0.1, 0]}
-        width={width * 0.8}
-        height={depth * 0.8}
-        intensity={3}
-        color="#fff8f0"
+        width={width * 0.85}
+        height={depth * 0.85}
+        intensity={2.5}
+        color="#fffcf5"
       />
     </group>
   );
@@ -88,29 +97,31 @@ function WallSpotlight({ position, targetY }: {
   return (
     <group position={position}>
       <mesh>
-        <cylinderGeometry args={[0.08, 0.12, 0.15, 16]} />
-        <meshStandardMaterial color="#505050" roughness={0.5} metalness={0.4} />
+        <cylinderGeometry args={[0.06, 0.10, 0.12, 16]} />
+        <meshStandardMaterial color="#2a2a2a" roughness={0.3} metalness={0.6} />
       </mesh>
-      <mesh position={[0, -0.06, 0]}>
-        <cylinderGeometry args={[0.05, 0.05, 0.03, 16]} />
-        <meshBasicMaterial color="#fffbe6" />
+      <mesh position={[0, -0.05, 0]}>
+        <cylinderGeometry args={[0.04, 0.04, 0.02, 16]} />
+        <meshBasicMaterial color="#fff8e0" />
       </mesh>
       <pointLight
-        position={[0, -0.08, 0]}
-        intensity={0.3}
-        distance={0.5}
-        color="#fff8e0"
+        position={[0, -0.06, 0]}
+        intensity={0.15}
+        distance={0.4}
+        color="#fff5e0"
       />
       <spotLight
         ref={spotlightRef}
-        position={[0, -0.08, 0]}
-        angle={0.35}
-        penumbra={0.97}
-        intensity={5}
-        distance={10}
-        color="#fffaf0"
+        position={[0, -0.06, 0]}
+        angle={0.4}
+        penumbra={0.85}
+        intensity={4}
+        distance={12}
+        color="#fffaf5"
         castShadow
-        shadow-mapSize={[512, 512]}
+        shadow-mapSize={[1024, 1024]}
+        shadow-bias={-0.0001}
+        shadow-radius={3}
       />
     </group>
   );
@@ -194,53 +205,56 @@ function OuterEnclosure({ width, height, depth }: { width: number; height: numbe
 
 function WoodFloor({ width, depth, color }: { width: number; depth: number; color: string }) {
   const planks = useMemo(() => {
-    const plankWidth = 0.2;
-    const plankLength = 2;
-    const rows = Math.ceil(depth / plankWidth);
-    const cols = Math.ceil(width / plankLength);
-    const result: Array<{ x: number; z: number; shade: number }> = [];
+    const plankWidth = 0.18;
+    const plankLength = 1.8;
+    const gapSize = 0.008;
+    const rows = Math.ceil(depth / (plankWidth + gapSize));
+    const cols = Math.ceil(width / plankLength) + 2;
+    const result: Array<{ x: number; z: number; shade: number; roughVar: number }> = [];
     
     for (let row = 0; row < rows; row++) {
-      const offset = (row % 2) * (plankLength / 2);
-      for (let col = 0; col < cols + 1; col++) {
-        const x = -width / 2 + col * plankLength + offset;
-        const z = -depth / 2 + row * plankWidth;
-        if (x < width / 2 + plankLength && x > -width / 2 - plankLength) {
-          const shade = 0.85 + Math.random() * 0.3;
-          result.push({ x, z, shade });
+      const offset = (row % 3) * (plankLength / 3);
+      for (let col = 0; col < cols; col++) {
+        const x = -width / 2 + col * plankLength + offset - plankLength / 2;
+        const z = -depth / 2 + row * (plankWidth + gapSize) + plankWidth / 2;
+        if (x < width / 2 + plankLength && x > -width / 2 - plankLength && 
+            z < depth / 2 && z > -depth / 2) {
+          const shade = 0.82 + Math.random() * 0.36;
+          const roughVar = 0.55 + Math.random() * 0.2;
+          result.push({ x, z, shade, roughVar });
         }
       }
     }
-    return result;
+    return { planks: result, plankWidth, plankLength };
   }, [width, depth]);
 
   const baseColor = new THREE.Color(color);
+  const gapColor = baseColor.clone().multiplyScalar(0.4);
 
   return (
     <group position={[0, 0.001, 0]}>
       <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[width, depth]} />
         <meshStandardMaterial 
-          color={color}
-          roughness={0.7}
-          metalness={0.05}
+          color={gapColor}
+          roughness={0.95}
+          metalness={0.0}
         />
       </mesh>
-      {planks.slice(0, 200).map((plank, i) => {
+      {planks.planks.slice(0, 400).map((plank, i) => {
         const plankColor = baseColor.clone().multiplyScalar(plank.shade);
         return (
           <mesh
             key={i}
-            position={[plank.x, 0.001, plank.z]}
+            position={[plank.x, 0.003, plank.z]}
             rotation={[-Math.PI / 2, 0, 0]}
+            receiveShadow
           >
-            <planeGeometry args={[1.98, 0.18]} />
+            <planeGeometry args={[planks.plankLength - 0.01, planks.plankWidth - 0.006]} />
             <meshStandardMaterial
               color={plankColor}
-              roughness={0.65 + Math.random() * 0.1}
-              metalness={0.02}
-              transparent
-              opacity={0.4}
+              roughness={plank.roughVar}
+              metalness={0.03}
             />
           </mesh>
         );
@@ -310,42 +324,63 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
 
       <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
-        <meshStandardMaterial color={preset.ceilingColor} roughness={0.95} />
+        <meshStandardMaterial 
+          color="#f8f7f5" 
+          roughness={0.92}
+          metalness={0.0}
+        />
+      </mesh>
+      
+      <mesh position={[0, height - 0.005, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[width * 0.03, depth * 0.9]} />
+        <meshStandardMaterial color="#e8e6e3" roughness={0.8} metalness={0.1} />
+      </mesh>
+      <mesh position={[0, height - 0.005, 0]} rotation={[Math.PI / 2, 0, Math.PI / 2]}>
+        <planeGeometry args={[depth * 0.03, width * 0.9]} />
+        <meshStandardMaterial color="#e8e6e3" roughness={0.8} metalness={0.1} />
       </mesh>
 
       <mesh position={[0, height / 2, -halfD]} receiveShadow>
         <planeGeometry args={[width, height]} />
         <meshStandardMaterial 
-          color={preset.wallColor} 
+          color="#f0ebe5"
           side={THREE.DoubleSide} 
-          roughness={0.9}
+          roughness={0.85}
+          metalness={0.02}
+          envMapIntensity={0.3}
         />
       </mesh>
 
       <mesh position={[0, height / 2, halfD]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[width, height]} />
         <meshStandardMaterial 
-          color={preset.wallColor} 
+          color="#f0ebe5"
           side={THREE.DoubleSide}
-          roughness={0.9}
+          roughness={0.85}
+          metalness={0.02}
+          envMapIntensity={0.3}
         />
       </mesh>
 
       <mesh position={[halfW, height / 2, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
         <meshStandardMaterial 
-          color={preset.wallColor} 
+          color="#f0ebe5"
           side={THREE.DoubleSide}
-          roughness={0.9}
+          roughness={0.85}
+          metalness={0.02}
+          envMapIntensity={0.3}
         />
       </mesh>
 
       <mesh position={[-halfW, height / 2, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
         <meshStandardMaterial 
-          color={preset.wallColor} 
+          color="#f0ebe5"
           side={THREE.DoubleSide}
-          roughness={0.9}
+          roughness={0.85}
+          metalness={0.02}
+          envMapIntensity={0.3}
         />
       </mesh>
 
@@ -1076,25 +1111,35 @@ export function Gallery360Scene({
 }: Gallery360SceneProps) {
   return (
     <Canvas
-      shadows
+      shadows="soft"
       camera={{ fov: 60, near: 0.1, far: 100 }}
-      style={{ background: '#e8e8e8' }}
+      style={{ background: '#d8d4d0' }}
+      gl={{ 
+        antialias: true,
+        toneMapping: THREE.ACESFilmicToneMapping,
+        toneMappingExposure: 1.15
+      }}
     >
-      <ambientLight intensity={0.4} />
-      <hemisphereLight args={['#ffffff', '#b0a090', 0.5]} />
+      <ambientLight intensity={0.25} color="#fff8f2" />
+      <hemisphereLight args={['#faf8f5', '#a09080', 0.4]} />
+      
       <directionalLight 
-        position={[0, preset.dimensions.height + 5, 0]} 
-        intensity={0.6}
+        position={[0, preset.dimensions.height + 8, 0]} 
+        intensity={0.5}
+        color="#fffcf8"
         castShadow
-        shadow-mapSize={[1024, 1024]}
-        shadow-camera-far={50}
-        shadow-camera-left={-15}
-        shadow-camera-right={15}
-        shadow-camera-top={15}
-        shadow-camera-bottom={-15}
+        shadow-mapSize={[2048, 2048]}
+        shadow-camera-far={60}
+        shadow-camera-left={-16}
+        shadow-camera-right={16}
+        shadow-camera-top={16}
+        shadow-camera-bottom={-16}
+        shadow-bias={-0.0002}
+        shadow-radius={4}
       />
-      <directionalLight position={[10, 8, 5]} intensity={0.3} />
-      <directionalLight position={[-10, 8, -5]} intensity={0.2} />
+      
+      <directionalLight position={[12, 6, 6]} intensity={0.2} color="#fff5e8" />
+      <directionalLight position={[-12, 6, -6]} intensity={0.15} color="#f8f5ff" />
 
       <GalleryRoom preset={preset} />
 
@@ -1121,7 +1166,6 @@ export function Gallery360Scene({
         );
       })}
 
-      {/* Floor navigation hotspots - shown in both editor and viewer modes */}
       {preset.hotspots.map(hotspot => (
         <HotspotMarker
           key={hotspot.id}
