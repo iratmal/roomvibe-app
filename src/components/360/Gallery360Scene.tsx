@@ -414,18 +414,18 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       ))}
       
       {/* Coffered ceiling grid - 3x3 sections */}
-      {/* Main beams - black */}
+      {/* Main beams - gold (matching vases) */}
       {[-depth/3, 0, depth/3].map((zPos, i) => (
         <mesh key={`beam-main-x-${i}`} position={[0, height - 0.12, zPos]}>
           <boxGeometry args={[width - 0.3, 0.24, 0.20]} />
-          <meshStandardMaterial color="#1a1a1a" roughness={0.8} metalness={0} />
+          <meshStandardMaterial color="#D4AF37" roughness={0.4} metalness={0.6} />
         </mesh>
       ))}
-      {/* Cross beams - black */}
+      {/* Cross beams - gold (matching vases) */}
       {[-width/3, 0, width/3].map((xPos, i) => (
         <mesh key={`beam-main-z-${i}`} position={[xPos, height - 0.12, 0]}>
           <boxGeometry args={[0.20, 0.24, depth - 0.3]} />
-          <meshStandardMaterial color="#1a1a1a" roughness={0.8} metalness={0} />
+          <meshStandardMaterial color="#D4AF37" roughness={0.4} metalness={0.6} />
         </mesh>
       ))}
       
