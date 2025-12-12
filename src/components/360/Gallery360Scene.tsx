@@ -336,113 +336,113 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         </mesh>
       )}
 
-      {/* Main ceiling plane - light premium */}
+      {/* Main ceiling plane - lighter for open feel (A1) */}
       <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
         <meshStandardMaterial 
-          color="#f8f8f8" 
-          roughness={0.92}
+          color="#fbfbfb" 
+          roughness={0.95}
           metalness={0.0}
         />
       </mesh>
       
-      {/* Cove edge - luxury gallery detail (perimeter ledge) */}
+      {/* Cove edge - subtle perimeter ledge (A2 symmetry) */}
       {[
-        { pos: [0, height - 0.15, -halfD + 0.15] as [number, number, number], size: [width - 0.3, 0.3, 0.3] as [number, number, number] },
-        { pos: [0, height - 0.15, halfD - 0.15] as [number, number, number], size: [width - 0.3, 0.3, 0.3] as [number, number, number] },
-        { pos: [-halfW + 0.15, height - 0.15, 0] as [number, number, number], size: [0.3, 0.3, depth - 0.6] as [number, number, number] },
-        { pos: [halfW - 0.15, height - 0.15, 0] as [number, number, number], size: [0.3, 0.3, depth - 0.6] as [number, number, number] },
+        { pos: [0, height - 0.12, -halfD + 0.12] as [number, number, number], size: [width - 0.24, 0.24, 0.24] as [number, number, number] },
+        { pos: [0, height - 0.12, halfD - 0.12] as [number, number, number], size: [width - 0.24, 0.24, 0.24] as [number, number, number] },
+        { pos: [-halfW + 0.12, height - 0.12, 0] as [number, number, number], size: [0.24, 0.24, depth - 0.48] as [number, number, number] },
+        { pos: [halfW - 0.12, height - 0.12, 0] as [number, number, number], size: [0.24, 0.24, depth - 0.48] as [number, number, number] },
       ].map((cove, i) => (
         <mesh key={`cove-${i}`} position={cove.pos}>
           <boxGeometry args={cove.size} />
+          <meshStandardMaterial color="#f5f5f5" roughness={0.9} metalness={0.0} />
+        </mesh>
+      ))}
+      
+      {/* Coffered ceiling grid - 3x3 sections (A2 symmetry) */}
+      {/* Main beams - thinner, lighter contrast (A1) */}
+      {[-depth/3, 0, depth/3].map((zPos, i) => (
+        <mesh key={`beam-main-x-${i}`} position={[0, height - 0.08, zPos]}>
+          <boxGeometry args={[width - 0.5, 0.14, 0.10]} />
+          <meshStandardMaterial color="#f0f0f0" roughness={0.88} metalness={0.0} />
+        </mesh>
+      ))}
+      {[-width/3, 0, width/3].map((xPos, i) => (
+        <mesh key={`beam-main-z-${i}`} position={[xPos, height - 0.08, 0]}>
+          <boxGeometry args={[0.10, 0.14, depth - 0.5]} />
           <meshStandardMaterial color="#f0f0f0" roughness={0.88} metalness={0.0} />
         </mesh>
       ))}
       
-      {/* Coffered ceiling grid - 3x3 sections */}
-      {/* Main beams (X direction) */}
-      {[-depth/3, 0, depth/3].map((zPos, i) => (
-        <mesh key={`beam-main-x-${i}`} position={[0, height - 0.12, zPos]}>
-          <boxGeometry args={[width - 0.6, 0.2, 0.15]} />
-          <meshStandardMaterial color="#e8e8e8" roughness={0.85} metalness={0.02} />
-        </mesh>
-      ))}
-      {/* Main beams (Z direction) */}
-      {[-width/3, 0, width/3].map((xPos, i) => (
-        <mesh key={`beam-main-z-${i}`} position={[xPos, height - 0.12, 0]}>
-          <boxGeometry args={[0.15, 0.2, depth - 0.6]} />
-          <meshStandardMaterial color="#e8e8e8" roughness={0.85} metalness={0.02} />
-        </mesh>
-      ))}
-      
-      {/* Recessed coffer panels - 9 sections (3x3 grid) */}
+      {/* Recessed coffer panels - 9 sections (A3 depth) */}
       {[-1, 0, 1].flatMap(xi => [-1, 0, 1].map(zi => ({
         x: xi * (width / 3),
         z: zi * (depth / 3),
-        w: width / 3 - 0.4,
-        d: depth / 3 - 0.4
+        w: width / 3 - 0.3,
+        d: depth / 3 - 0.3
       }))).map((panel, i) => (
-        <group key={`coffer-${i}`} position={[panel.x, height + 0.08, panel.z]}>
+        <group key={`coffer-${i}`} position={[panel.x, height + 0.06, panel.z]}>
           <mesh rotation={[Math.PI / 2, 0, 0]}>
             <planeGeometry args={[panel.w, panel.d]} />
-            <meshStandardMaterial color="#fcfcfc" roughness={0.95} metalness={0.0} />
+            <meshStandardMaterial color="#fefefe" roughness={0.96} metalness={0.0} />
           </mesh>
-          <mesh position={[0, -0.04, 0]}>
-            <boxGeometry args={[panel.w, 0.1, panel.d]} />
-            <meshStandardMaterial color="#f2f2f2" roughness={0.9} metalness={0.0} side={THREE.BackSide} />
+          <mesh position={[0, -0.03, 0]}>
+            <boxGeometry args={[panel.w, 0.08, panel.d]} />
+            <meshStandardMaterial color="#f8f8f8" roughness={0.92} metalness={0.0} side={THREE.BackSide} />
           </mesh>
         </group>
       ))}
       
-      {/* Track lines - aligned with beam grid */}
+      {/* Track lines - symmetrical, subtle (A2) */}
       {[-width/3 - width/6, -width/6, width/6, width/3 + width/6].map((xPos, i) => (
-        <mesh key={`track-${i}`} position={[xPos, height - 0.02, 0]}>
-          <boxGeometry args={[0.04, 0.04, depth - 1]} />
-          <meshStandardMaterial color="#d8d8d8" roughness={0.6} metalness={0.15} />
+        <mesh key={`track-${i}`} position={[xPos, height - 0.01, 0]}>
+          <boxGeometry args={[0.03, 0.03, depth - 0.8]} />
+          <meshStandardMaterial color="#e0e0e0" roughness={0.7} metalness={0.1} />
         </mesh>
       ))}
 
+      {/* Premium gallery walls (B1 matte, B2 subtle finish) */}
       <mesh position={[0, height / 2, -halfD]} receiveShadow>
         <planeGeometry args={[width, height]} />
         <meshStandardMaterial 
-          color="#f0ebe5"
+          color="#f2ede7"
           side={THREE.DoubleSide} 
-          roughness={0.85}
-          metalness={0.02}
-          envMapIntensity={0.3}
+          roughness={0.92}
+          metalness={0.0}
+          envMapIntensity={0.15}
         />
       </mesh>
 
       <mesh position={[0, height / 2, halfD]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[width, height]} />
         <meshStandardMaterial 
-          color="#f0ebe5"
+          color="#f2ede7"
           side={THREE.DoubleSide}
-          roughness={0.85}
-          metalness={0.02}
-          envMapIntensity={0.3}
+          roughness={0.92}
+          metalness={0.0}
+          envMapIntensity={0.15}
         />
       </mesh>
 
       <mesh position={[halfW, height / 2, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
         <meshStandardMaterial 
-          color="#f0ebe5"
+          color="#f2ede7"
           side={THREE.DoubleSide}
-          roughness={0.85}
-          metalness={0.02}
-          envMapIntensity={0.3}
+          roughness={0.92}
+          metalness={0.0}
+          envMapIntensity={0.15}
         />
       </mesh>
 
       <mesh position={[-halfW, height / 2, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
         <meshStandardMaterial 
-          color="#f0ebe5"
+          color="#f2ede7"
           side={THREE.DoubleSide}
-          roughness={0.85}
-          metalness={0.02}
-          envMapIntensity={0.3}
+          roughness={0.92}
+          metalness={0.0}
+          envMapIntensity={0.15}
         />
       </mesh>
 

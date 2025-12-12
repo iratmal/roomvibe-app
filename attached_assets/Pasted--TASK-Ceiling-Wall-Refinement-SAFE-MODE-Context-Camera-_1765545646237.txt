@@ -1,0 +1,143 @@
+# 🏛️ TASK — Ceiling + Wall Refinement (SAFE MODE)
+
+## Context
+
+* Camera buttons now work (Entrance/Center/Back Left/Back Right)
+* We **do NOT touch** camera logic, lighting logic, renderer settings, or shadows in this task.
+* Goal is purely **visual architecture**: ceiling + walls should feel more like a real gallery space.
+
+---
+
+## ✅ SAFE MODE RULES (non-negotiable)
+
+1. ❌ Do NOT change any light logic (no spotlight generation, no renderer exposure, no toneMapping changes)
+2. ❌ Do NOT change camera controls / transitions
+3. ✅ Only edit: **ceiling geometry**, **ceiling materials**, **wall materials**, and (optional) **very subtle wall finish**
+
+If anything breaks → revert only the last small change.
+
+---
+
+## 🎯 Goals
+
+* **More "gallery height" feeling** (3–5m vibe) without risking system instability
+* Ceiling details look intentional (coffer/beam logic, symmetrical)
+* Walls look premium (soft matte, subtle realism) so artworks pop
+
+---
+
+# PART A — Ceiling (priority)
+
+## A1) Increase perceived height (SAFE)
+
+Choose ONE approach (prefer A):
+
+### Option A (recommended): visual lightening
+
+* Make ceiling **5–10% lighter** than current
+* Reduce the visual “weight” of beams:
+
+  * slightly thinner beams OR
+  * slightly lower contrast between beams and ceiling panels
+
+### Option B: raise ceiling height (only if very easy)
+
+* Increase ceiling Y height by **+10% to +20%**
+* Do NOT move lights/camera
+* If raising causes artifacts, revert and stick to Option A.
+
+✅ Acceptance: in Center view ceiling should not feel “low and heavy”.
+
+---
+
+## A2) Make ceiling pattern intentional (symmetry)
+
+Current ceiling has tracks/lines + beams.
+
+* Align beams/lines so they are **perfectly symmetrical** to the room
+* Ensure spacing is consistent (no random offsets)
+* Keep it clean and premium (museum style)
+
+✅ Acceptance: when looking at ceiling, it feels designed, not accidental.
+
+---
+
+## A3) Add subtle depth (coffer feel) — OPTIONAL if easy
+
+* Add simple recessed panels between beams OR bevel edges
+* Low poly is fine; we need light-catching edges
+
+✅ Acceptance: ceiling gets depth even without changing lights.
+
+---
+
+# PART B — Walls (second priority)
+
+## B1) Premium matte wall material
+
+* Keep current wall color family (warm neutral)
+* Add subtle material properties:
+
+  * low metalness (0)
+  * high roughness (0.85–0.95)
+
+If using StandardMaterial:
+
+* ensure color stays consistent
+
+---
+
+## B2) Subtle wall texture / finish (very subtle)
+
+Add a very light texture or procedural noise so walls are not flat.
+Rules:
+
+* Must be almost invisible
+* No visible repeating pattern
+* Should only be noticeable when close to the wall
+
+Options:
+
+* light plaster texture
+* micro noise bump (very low)
+
+✅ Acceptance: wall looks more real, but still clean gallery.
+
+---
+
+## B3) Optional micro-gradient (only if easy)
+
+If you have a clean way:
+
+* top part of wall: ~2–3% lighter
+* bottom part: ~2–3% darker
+
+This increases realism without changing lights.
+
+---
+
+# PART C — Quick visual checks (must do)
+
+Take screenshots:
+
+1. Center (full wall with artworks)
+2. Back Left
+3. One close-up of a wall corner (to see material realism)
+
+---
+
+## ✅ Done / Acceptance criteria
+
+* [ ] No changes to camera logic
+* [ ] No changes to lighting logic
+* [ ] Ceiling looks lighter and more premium
+* [ ] Ceiling pattern is symmetrical / intentional
+* [ ] Walls look matte and slightly realistic (subtle texture)
+* [ ] Scene never goes black
+
+---
+
+## Implementation notes (for agent)
+
+* Keep changes incremental: commit after A1, then A2, then B1, etc.
+* If any regression: revert only the last step and continue.
