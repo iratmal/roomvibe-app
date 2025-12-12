@@ -336,11 +336,11 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         </mesh>
       )}
 
-      {/* Main ceiling plane - lighter for open feel (A1) */}
+      {/* Main ceiling plane */}
       <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
         <meshStandardMaterial 
-          color="#fbfbfb" 
+          color="#fffef9" 
           roughness={0.95}
           metalness={0.0}
         />
