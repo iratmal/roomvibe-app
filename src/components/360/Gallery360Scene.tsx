@@ -356,18 +356,18 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       ))}
       
       {/* Coffered ceiling grid - 3x3 sections */}
-      {/* Main beams - elegant gold */}
+      {/* Main beams - elegant dark grey */}
       {[-depth/3, 0, depth/3].map((zPos, i) => (
         <mesh key={`beam-main-x-${i}`} position={[0, height - 0.12, zPos]}>
           <boxGeometry args={[width - 0.3, 0.24, 0.20]} />
-          <meshStandardMaterial color="#D4AF37" roughness={0.8} metalness={0} />
+          <meshStandardMaterial color="#42413c" roughness={0.8} metalness={0} />
         </mesh>
       ))}
-      {/* Cross beams - elegant gold */}
+      {/* Cross beams - elegant dark grey */}
       {[-width/3, 0, width/3].map((xPos, i) => (
         <mesh key={`beam-main-z-${i}`} position={[xPos, height - 0.12, 0]}>
           <boxGeometry args={[0.20, 0.24, depth - 0.3]} />
-          <meshStandardMaterial color="#D4AF37" roughness={0.8} metalness={0} />
+          <meshStandardMaterial color="#42413c" roughness={0.8} metalness={0} />
         </mesh>
       ))}
       
@@ -492,10 +492,10 @@ function GalleryBench({ position, rotation }: { position: [number, number, numbe
 
   return (
     <group position={position} rotation={rotation}>
-      {/* Minimalist gold cube bench - no legs, pure block form */}
+      {/* Minimalist dark grey cube bench - no legs, pure block form */}
       <mesh position={[0, BENCH_H / 2, 0]} castShadow receiveShadow>
         <boxGeometry args={[BENCH_L, BENCH_H, BENCH_W]} />
-        <meshStandardMaterial color="#D4AF37" roughness={0.9} metalness={0} />
+        <meshStandardMaterial color="#42413c" roughness={0.9} metalness={0} />
       </mesh>
     </group>
   );
