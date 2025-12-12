@@ -1169,7 +1169,7 @@ export function Gallery360Scene({
   return (
     <Canvas
       shadows="soft"
-      camera={{ fov: 60, near: 0.1, far: 100 }}
+      camera={{ fov: 50, near: 0.1, far: 100 }}
       style={{ background: '#d8d4d0' }}
       gl={{ 
         antialias: true,
