@@ -899,6 +899,9 @@ function FirstPersonController({
     transitionToSpherical.current.copy(toSpherical);
   }, [camera]);
 
+  // Track viewpoint change count to trigger navigation even for same viewpoint
+  const viewpointTrigger = useRef(0);
+  
   useEffect(() => {
     const pos = new THREE.Vector3(...viewpoint.position);
     const lookAt = new THREE.Vector3(...viewpoint.lookAt);
@@ -908,11 +911,15 @@ function FirstPersonController({
     const newTargetSpherical = new THREE.Spherical();
     newTargetSpherical.setFromVector3(direction);
     
-    if (lastViewpointId.current !== viewpoint.id) {
-      // Start transition immediately - one click = one action
+    // Check if camera is far from target position (user moved manually)
+    const distanceFromTarget = camera.position.distanceTo(pos);
+    const isAtDifferentPosition = distanceFromTarget > 0.5;
+    
+    if (lastViewpointId.current !== viewpoint.id || isAtDifferentPosition) {
+      // Start transition - either different viewpoint or user moved away
       startTransition(pos, newTargetSpherical, CAMERA_MOVE_DURATION);
       lastViewpointId.current = viewpoint.id;
-      console.log('[CameraNav] goToView', viewpoint.id);
+      console.log('[CameraNav] goToView', viewpoint.id, 'distance:', distanceFromTarget.toFixed(2));
     } else {
       // Initial setup only
       camera.position.copy(pos);
