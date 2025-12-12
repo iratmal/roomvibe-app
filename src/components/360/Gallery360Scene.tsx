@@ -340,8 +340,8 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
         <meshStandardMaterial 
-          color="#ECEBE7" 
-          roughness={0.95}
+          color="#D7D4CE" 
+          roughness={1.0}
           metalness={0.0}
         />
       </mesh>
@@ -355,22 +355,22 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       ].map((cove, i) => (
         <mesh key={`cove-${i}`} position={cove.pos}>
           <boxGeometry args={cove.size} />
-          <meshStandardMaterial color="#ECEBE7" roughness={0.9} metalness={0.0} />
+          <meshStandardMaterial color="#D7D4CE" roughness={1.0} metalness={0.0} />
         </mesh>
       ))}
       
-      {/* Coffered ceiling grid - 3x3 sections (A2 symmetry) */}
-      {/* Main beams - thinner, lighter contrast (A1) */}
+      {/* Coffered ceiling grid - 3x3 sections */}
+      {/* Main beams - concrete color */}
       {[-depth/3, 0, depth/3].map((zPos, i) => (
         <mesh key={`beam-main-x-${i}`} position={[0, height - 0.08, zPos]}>
           <boxGeometry args={[width - 0.5, 0.14, 0.10]} />
-          <meshStandardMaterial color="#f0f0f0" roughness={0.88} metalness={0.0} />
+          <meshStandardMaterial color="#BEBAB2" roughness={1.0} metalness={0.0} />
         </mesh>
       ))}
       {[-width/3, 0, width/3].map((xPos, i) => (
         <mesh key={`beam-main-z-${i}`} position={[xPos, height - 0.08, 0]}>
           <boxGeometry args={[0.10, 0.14, depth - 0.5]} />
-          <meshStandardMaterial color="#f0f0f0" roughness={0.88} metalness={0.0} />
+          <meshStandardMaterial color="#BEBAB2" roughness={1.0} metalness={0.0} />
         </mesh>
       ))}
       
@@ -384,11 +384,11 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         <group key={`coffer-${i}`} position={[panel.x, height + 0.06, panel.z]}>
           <mesh rotation={[Math.PI / 2, 0, 0]}>
             <planeGeometry args={[panel.w, panel.d]} />
-            <meshStandardMaterial color="#ECEBE7" roughness={0.96} metalness={0.0} />
+            <meshStandardMaterial color="#D7D4CE" roughness={1.0} metalness={0.0} />
           </mesh>
           <mesh position={[0, -0.03, 0]}>
             <boxGeometry args={[panel.w, 0.08, panel.d]} />
-            <meshStandardMaterial color="#ECEBE7" roughness={0.92} metalness={0.0} side={THREE.BackSide} />
+            <meshStandardMaterial color="#D7D4CE" roughness={1.0} metalness={0.0} side={THREE.BackSide} />
           </mesh>
         </group>
       ))}
@@ -401,48 +401,44 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         </mesh>
       ))}
 
-      {/* Premium gallery walls (B1 matte, B2 subtle finish) */}
+      {/* Gallery walls - clean gallery white */}
       <mesh position={[0, height / 2, -halfD]} receiveShadow>
         <planeGeometry args={[width, height]} />
         <meshStandardMaterial 
-          color="#f2ede7"
+          color="#F4F3EF"
           side={THREE.DoubleSide} 
-          roughness={0.92}
+          roughness={0.95}
           metalness={0.0}
-          envMapIntensity={0.15}
         />
       </mesh>
 
       <mesh position={[0, height / 2, halfD]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[width, height]} />
         <meshStandardMaterial 
-          color="#f2ede7"
+          color="#F4F3EF"
           side={THREE.DoubleSide}
-          roughness={0.92}
+          roughness={0.95}
           metalness={0.0}
-          envMapIntensity={0.15}
         />
       </mesh>
 
       <mesh position={[halfW, height / 2, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
         <meshStandardMaterial 
-          color="#f2ede7"
+          color="#F4F3EF"
           side={THREE.DoubleSide}
-          roughness={0.92}
+          roughness={0.95}
           metalness={0.0}
-          envMapIntensity={0.15}
         />
       </mesh>
 
       <mesh position={[-halfW, height / 2, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
         <meshStandardMaterial 
-          color="#f2ede7"
+          color="#F4F3EF"
           side={THREE.DoubleSide}
-          roughness={0.92}
+          roughness={0.95}
           metalness={0.0}
-          envMapIntensity={0.15}
         />
       </mesh>
 

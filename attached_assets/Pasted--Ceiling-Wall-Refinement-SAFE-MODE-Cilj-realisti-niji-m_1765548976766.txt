@@ -1,0 +1,225 @@
+# Ceiling + Wall Refinement (SAFE MODE)
+
+Cilj: **realističniji “museum / industrial loft” feel** bez diranja svjetala i bez rizika “crne sobe”. Radimo **1 promjenu po deployu**.
+
+---
+
+## 0) Kako pričamo o “kamenoj / betonskoj” strukturi (da agent kuži)
+
+To se u 3D/web dev svijetu zove:
+
+* **Concrete / Cement PBR texture** (ili “stone/concrete texture”)
+* PBR map set: **baseColor/albedo + normal + roughness (+ AO)**
+
+Ako nema PBR mapa, samo HEX boja će uvijek izgledati “flat / cartoon”.
+
+---
+
+## 1) Trenutna odluka (vizual)
+
+Želimo kao na Artsteps referenci:
+
+* **Zidovi**: svijetli, skoro bijeli (čisti gallery look)
+* **Plafon + grede**: **beton** (realistična tekstura), ali **svjetliji beton** nego zidni beton (ako ga uopće koristimo)
+
+### Predloženi start (SAFE)
+
+1. **Walls (near‑white)**: `#F4F3EF` (toplo bijelo, ne “bolnički”)
+2. **Ceiling concrete (light)**: `#D7D4CE`
+3. **Beams concrete (slightly darker)**: `#BEBAB2`
+
+> Napomena: HEX je samo “fallback”. Glavni efekt dolazi od PBR tekstura.
+
+---
+
+## 2) SAFE MODE pravila (da prestanu rollback drame)
+
+1. **Nema promjena svjetla / kamere / controls** u ovom tasku.
+2. Nema promjena geometrije (nema resize stropa, nema novih greda) — samo materijali.
+3. Svaka promjena mora imati:
+
+   * `console.log("[GalleryMaterials] using concrete v1")`
+   * jednu “debug toggle” varijablu (dolje) da možemo brzo vratiti na flat boje.
+
+---
+
+## 3) Implementacija (React Three Fiber + Three.js)
+
+### 3.1 Gdje dirati
+
+U projektu već imamo 360 modul i GLB galeriju. Najčešće će biti nešto tipa:
+
+* `src/components/360/Gallery360Scene.tsx`
+* ili mjesto gdje se mapiraju mesh-evi iz GLB-a (nodes/materials)
+
+Agent: **pronađi mesh-eve za**:
+
+* `Walls` (ili `Wall_*`)
+* `Ceiling` / `CeilingPanels`
+* `Beams` / `CeilingBeams`
+
+Ako su imena u GLB-u drugačija: ispiši `Object.keys(nodes)` u konzolu i mapiraj točno.
+
+---
+
+## 4) KÔD (kopiraj u projekt) — PBR concrete + fallback
+
+> OVO JE “skeleton” — agent treba spojiti na stvarne node/mesh nazive iz GLB-a.
+
+```ts
+// src/components/360/materials/galleryMaterials.ts
+import * as THREE from "three";
+import { useMemo } from "react";
+import { useTexture } from "@react-three/drei";
+
+/** SAFE MODE toggle: ako ikad opet dobijemo crnu sobu, samo prebaci na false */
+export const USE_PBR_CONCRETE = true;
+
+type PbrSet = {
+  map?: THREE.Texture;
+  normalMap?: THREE.Texture;
+  roughnessMap?: THREE.Texture;
+  aoMap?: THREE.Texture;
+};
+
+function prepTex(t?: THREE.Texture, repeat = 2) {
+  if (!t) return;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(repeat, repeat);
+  t.anisotropy = 8;
+  // drei/useTexture u novijim verzijama često već radi colorSpace,
+  // ali ovo ne škodi ako je postavljeno:
+  // @ts-expect-error - kompatibilnost
+  t.colorSpace = THREE.SRGBColorSpace;
+}
+
+export function useGalleryMaterials() {
+  // 1) Dodaj ove texture fileove u: src/assets/360/textures/
+  // - concrete_light_basecolor.jpg
+  // - concrete_light_normal.jpg
+  // - concrete_light_roughness.jpg
+  // - concrete_light_ao.jpg (optional)
+  // - concrete_mid_basecolor.jpg
+  // - concrete_mid_normal.jpg
+  // - concrete_mid_roughness.jpg
+
+  const concreteLight = useTexture({
+    map: "/assets/360/textures/concrete_light_basecolor.jpg",
+    normalMap: "/assets/360/textures/concrete_light_normal.jpg",
+    roughnessMap: "/assets/360/textures/concrete_light_roughness.jpg",
+    aoMap: "/assets/360/textures/concrete_light_ao.jpg",
+  }) as PbrSet;
+
+  const concreteMid = useTexture({
+    map: "/assets/360/textures/concrete_mid_basecolor.jpg",
+    normalMap: "/assets/360/textures/concrete_mid_normal.jpg",
+    roughnessMap: "/assets/360/textures/concrete_mid_roughness.jpg",
+    aoMap: "/assets/360/textures/concrete_mid_ao.jpg",
+  }) as PbrSet;
+
+  return useMemo(() => {
+    if (USE_PBR_CONCRETE) {
+      // priprema
+      prepTex(concreteLight.map, 2);
+      prepTex(concreteLight.normalMap, 2);
+      prepTex(concreteLight.roughnessMap, 2);
+      prepTex(concreteLight.aoMap, 2);
+
+      prepTex(concreteMid.map, 2);
+      prepTex(concreteMid.normalMap, 2);
+      prepTex(concreteMid.roughnessMap, 2);
+      prepTex(concreteMid.aoMap, 2);
+
+      const ceilingMat = new THREE.MeshStandardMaterial({
+        color: new THREE.Color("#D7D4CE"),
+        map: concreteLight.map,
+        normalMap: concreteLight.normalMap,
+        roughnessMap: concreteLight.roughnessMap,
+        aoMap: concreteLight.aoMap,
+        roughness: 1.0,
+        metalness: 0.0,
+      });
+      ceilingMat.normalScale = new THREE.Vector2(0.6, 0.6);
+
+      const beamMat = new THREE.MeshStandardMaterial({
+        color: new THREE.Color("#BEBAB2"),
+        map: concreteMid.map,
+        normalMap: concreteMid.normalMap,
+        roughnessMap: concreteMid.roughnessMap,
+        aoMap: concreteMid.aoMap,
+        roughness: 1.0,
+        metalness: 0.0,
+      });
+      beamMat.normalScale = new THREE.Vector2(0.7, 0.7);
+
+      // zidovi ipak ostaju skoro bijeli (bez prejakog šuma)
+      // može i wall texture set kasnije, ali za sad clean.
+      const wallMat = new THREE.MeshStandardMaterial({
+        color: new THREE.Color("#F4F3EF"),
+        roughness: 0.95,
+        metalness: 0.0,
+      });
+
+      console.log("[GalleryMaterials] using concrete v1 (PBR)");
+      return { wallMat, ceilingMat, beamMat };
+    }
+
+    // Fallback (100% sigurno): flat boje
+    console.log("[GalleryMaterials] using FLAT fallback (SAFE)");
+    return {
+      wallMat: new THREE.MeshStandardMaterial({ color: "#F4F3EF", roughness: 0.95, metalness: 0 }),
+      ceilingMat: new THREE.MeshStandardMaterial({ color: "#D7D4CE", roughness: 1.0, metalness: 0 }),
+      beamMat: new THREE.MeshStandardMaterial({ color: "#BEBAB2", roughness: 1.0, metalness: 0 }),
+    };
+  }, [concreteLight, concreteMid]);
+}
+```
+
+### 4.1 Primjena materijala na mesh-eve (primjer)
+
+```tsx
+// u Gallery360Scene.tsx (primjer)
+import { useGalleryMaterials } from "./materials/galleryMaterials";
+
+export function Gallery360Scene() {
+  const { wallMat, ceilingMat, beamMat } = useGalleryMaterials();
+
+  // ... load GLB, dobij nodes
+
+  return (
+    <group>
+      {/* Zamijeni imena prema stvarnim node imenima iz GLB-a */}
+      <mesh geometry={nodes.Walls.geometry} material={wallMat} />
+      <mesh geometry={nodes.Ceiling.geometry} material={ceilingMat} />
+      <mesh geometry={nodes.Beams.geometry} material={beamMat} />
+    </group>
+  );
+}
+```
+
+---
+
+## 5) Acceptance (što Irena mora vidjeti odmah)
+
+1. **Zidovi** su vizualno “clean gallery white”, bez žutila.
+2. **Plafon + grede** imaju **vidljivu betonsku teksturu** (suptilno, ne “granit”).
+3. Nema crne sobe / nema nestalih lampi / nema promjena kamere.
+4. Ako ne učita teksture (404), automatski fallback radi i ništa ne puca.
+
+---
+
+## 6) Mini‑taskovi (radimo 1 po 1)
+
+**Task 1 (sada):** Ubaci PBR concrete teksture + primijeni na ceiling + beams + wall flat.
+
+**Task 2 (nakon toga):** Fino namjesti repeat/normalScale (2–3 iteracije) da bude kao Artsteps screenshot.
+
+**Task 3 (tek onda):** Ako želimo “subtle wall texture”, dodati lagani plaster PBR (vrlo suptilno).
+
+---
+
+## 7) Napomena za assete (teksture)
+
+Najbrže: uzeti **seamless PBR concrete** set (baseColor/normal/roughness/AO) i spremiti u `src/assets/360/textures/`.
+
+Ako agent nema texture set: neka napravi privremeni “procedural noise” (nije idealno) ili neka ostavi fallback dok ne ubacimo texture fileove.
