@@ -523,11 +523,50 @@ function DecorativeVase({ position }: { position: [number, number, number] }) {
 
   return (
     <group position={position}>
-      {/* Simple tapered cylinder - stone/concrete look */}
+      {/* Main body - stone/ceramic with subtle surface variation */}
       <mesh position={[0, VASE_H / 2, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[TOP_R, BASE_R, VASE_H, 24]} />
-        <meshStandardMaterial color="#b8b0a0" roughness={0.85} metalness={0} />
+        <cylinderGeometry args={[TOP_R, BASE_R, VASE_H, 32]} />
+        <meshStandardMaterial 
+          color="#c4baa8" 
+          roughness={0.92} 
+          metalness={0}
+          flatShading={false}
+        />
       </mesh>
+      
+      {/* Subtle inner shadow ring at top */}
+      <mesh position={[0, VASE_H - 0.02, 0]}>
+        <cylinderGeometry args={[TOP_R - 0.02, TOP_R, 0.04, 32]} />
+        <meshStandardMaterial color="#8a8272" roughness={0.95} metalness={0} />
+      </mesh>
+      
+      {/* Base ring for grounding */}
+      <mesh position={[0, 0.015, 0]} castShadow>
+        <cylinderGeometry args={[BASE_R + 0.01, BASE_R + 0.02, 0.03, 32]} />
+        <meshStandardMaterial color="#a8a090" roughness={0.88} metalness={0} />
+      </mesh>
+      
+      {/* Subtle vertical texture bands (6 bands around vase) */}
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <mesh 
+          key={i} 
+          position={[
+            Math.cos((i / 6) * Math.PI * 2) * (BASE_R * 0.85 + TOP_R * 0.15) / 2,
+            VASE_H / 2,
+            Math.sin((i / 6) * Math.PI * 2) * (BASE_R * 0.85 + TOP_R * 0.15) / 2
+          ]}
+          rotation={[0, -(i / 6) * Math.PI * 2, 0]}
+        >
+          <boxGeometry args={[0.008, VASE_H * 0.85, 0.06]} />
+          <meshStandardMaterial 
+            color={i % 2 === 0 ? "#bfb5a3" : "#c9bfad"} 
+            roughness={0.95} 
+            metalness={0}
+            transparent
+            opacity={0.6}
+          />
+        </mesh>
+      ))}
     </group>
   );
 }
