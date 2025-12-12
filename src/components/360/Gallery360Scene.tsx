@@ -67,55 +67,80 @@ function Skylight({ position, width, depth }: {
   );
 }
 
-function WallSpotlight({ position, targetY }: {
-  position: [number, number, number];
-  targetY: number;
+function ArtworkSpotlight({ 
+  artworkPosition, 
+  artworkRotation,
+  ceilingHeight,
+  hasArtwork
+}: {
+  artworkPosition: [number, number, number];
+  artworkRotation: [number, number, number];
+  ceilingHeight: number;
+  hasArtwork: boolean;
 }) {
   const spotlightRef = useRef<THREE.SpotLight>(null);
+  const targetRef = useRef<THREE.Object3D>(null);
   const { scene } = useThree();
+  
+  const targetPos = useMemo(() => new THREE.Vector3(...artworkPosition), [artworkPosition]);
+  const lightPos = useMemo(() => {
+    const wallNormal = new THREE.Vector3(
+      Math.sin(artworkRotation[1]),
+      0,
+      Math.cos(artworkRotation[1])
+    );
+    return new THREE.Vector3(
+      artworkPosition[0] + wallNormal.x * 0.6,
+      ceilingHeight - 0.25,
+      artworkPosition[2] + wallNormal.z * 0.6
+    );
+  }, [artworkPosition, artworkRotation, ceilingHeight]);
 
   useEffect(() => {
-    if (spotlightRef.current) {
-      const target = new THREE.Object3D();
-      target.position.set(position[0], targetY, position[2]);
-      scene.add(target);
-      spotlightRef.current.target = target;
+    if (spotlightRef.current && targetRef.current) {
+      scene.add(targetRef.current);
+      spotlightRef.current.target = targetRef.current;
       return () => {
-        scene.remove(target);
+        if (targetRef.current) scene.remove(targetRef.current);
       };
     }
-  }, [position, targetY, scene]);
+  }, [scene]);
+
+  useFrame(() => {
+    if (targetRef.current) {
+      targetRef.current.position.copy(targetPos);
+      targetRef.current.updateMatrixWorld();
+    }
+  });
+
+  if (!hasArtwork) return null;
 
   return (
-    <group position={position}>
-      <mesh>
-        <cylinderGeometry args={[0.06, 0.10, 0.12, 16]} />
-        <meshStandardMaterial color="#2a2a2a" roughness={0.3} metalness={0.6} />
-      </mesh>
-      <mesh position={[0, -0.05, 0]}>
-        <cylinderGeometry args={[0.04, 0.04, 0.02, 16]} />
-        <meshBasicMaterial color="#fff8e0" />
-      </mesh>
-      <pointLight
-        position={[0, -0.06, 0]}
-        intensity={0.15}
-        distance={0.4}
-        color="#fff5e0"
-      />
-      <spotLight
-        ref={spotlightRef}
-        position={[0, -0.06, 0]}
-        angle={0.45}
-        penumbra={0.8}
-        intensity={5}
-        distance={12}
-        color="#fffaf5"
-        castShadow
-        shadow-mapSize={[1024, 1024]}
-        shadow-bias={-0.0003}
-        shadow-radius={2}
-        shadow-normalBias={0.02}
-      />
+    <group>
+      <object3D ref={targetRef} position={artworkPosition} />
+      <group position={lightPos.toArray()}>
+        <mesh>
+          <cylinderGeometry args={[0.05, 0.08, 0.10, 12]} />
+          <meshStandardMaterial color="#2a2a2a" roughness={0.4} metalness={0.5} />
+        </mesh>
+        <mesh position={[0, -0.04, 0]}>
+          <cylinderGeometry args={[0.03, 0.03, 0.015, 12]} />
+          <meshBasicMaterial color="#fff8e0" />
+        </mesh>
+        <spotLight
+          ref={spotlightRef}
+          position={[0, -0.05, 0]}
+          angle={Math.PI / 7}
+          penumbra={0.65}
+          intensity={3.5}
+          distance={10}
+          color="#fffaf0"
+          castShadow
+          shadow-mapSize={[1024, 1024]}
+          shadow-bias={-0.0002}
+          shadow-radius={3}
+        />
+      </group>
     </group>
   );
 }
@@ -304,20 +329,6 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
     ];
   }, [preset.hasSkylights, height, depth, width]);
 
-  const spotlightPositions = useMemo(() => {
-    const spots: Array<{ position: [number, number, number]; targetY: number }> = [];
-    
-    for (let x = -halfW + 3; x < halfW; x += 4) {
-      spots.push({ position: [x, height - 0.3, -halfD + 0.5], targetY: 1.6 });
-      spots.push({ position: [x, height - 0.3, halfD - 0.5], targetY: 1.6 });
-    }
-    spots.push({ position: [-halfW + 0.5, height - 0.3, -2], targetY: 1.6 });
-    spots.push({ position: [-halfW + 0.5, height - 0.3, 2], targetY: 1.6 });
-    spots.push({ position: [halfW - 0.5, height - 0.3, -2], targetY: 1.6 });
-    spots.push({ position: [halfW - 0.5, height - 0.3, 2], targetY: 1.6 });
-    
-    return spots;
-  }, [width, height, depth, halfW, halfD]);
 
   return (
     <group>
@@ -435,14 +446,6 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
           position={skylight.position}
           width={skylight.width}
           depth={skylight.depth}
-        />
-      ))}
-
-      {spotlightPositions.map((spot, i) => (
-        <WallSpotlight
-          key={`spot-${i}`}
-          position={spot.position}
-          targetY={spot.targetY}
         />
       ))}
     </group>
@@ -1191,23 +1194,30 @@ export function Gallery360Scene({
       {preset.slots.map(slot => {
         const assignment = slotAssignments.find(sa => sa.slotId === slot.id);
         return (
-          <ArtworkPlane
-            key={slot.id}
-            slot={slot}
-            assignment={assignment}
-            isSelected={selectedSlotId === slot.id}
-            isEditor={isEditor}
-            presetId={preset.id}
-            wallHeight={preset.dimensions.height}
-            onClick={() => {
-              if (isEditor && onSlotSelect) {
-                onSlotSelect(slot.id);
-              }
-              if (assignment?.artworkId && onArtworkClick) {
-                onArtworkClick(slot.id, assignment, slot);
-              }
-            }}
-          />
+          <React.Fragment key={slot.id}>
+            <ArtworkPlane
+              slot={slot}
+              assignment={assignment}
+              isSelected={selectedSlotId === slot.id}
+              isEditor={isEditor}
+              presetId={preset.id}
+              wallHeight={preset.dimensions.height}
+              onClick={() => {
+                if (isEditor && onSlotSelect) {
+                  onSlotSelect(slot.id);
+                }
+                if (assignment?.artworkId && onArtworkClick) {
+                  onArtworkClick(slot.id, assignment, slot);
+                }
+              }}
+            />
+            <ArtworkSpotlight
+              artworkPosition={slot.position}
+              artworkRotation={slot.rotation}
+              ceilingHeight={preset.dimensions.height}
+              hasArtwork={!!assignment?.artworkUrl}
+            />
+          </React.Fragment>
         );
       })}
 

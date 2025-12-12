@@ -1,0 +1,253 @@
+# ✅ RoomVibe — TASK 5: Gallery Lighting (Auto‑Target Spotlights)
+
+Ovaj Canvas je **poseban** i sadrži **task + kodne smjernice/snippete** za rasvjetu.
+
+Cilj: ukloniti “random cone” svjetlosne mrlje i dobiti **realan galerijski track‑light feel** gdje svjetla automatski ciljaju umjetnine (slotove) i ponašaju se stabilno.
+
+---
+
+## 🎯 Goal
+
+* Svaka umjetnina dobiva **svoj spotlight** (ili set) koji je **usmjeren u centar slike**.
+* Svjetla se generiraju **dinamički** na temelju slotova/artworkova u sceni.
+* Bez „nasumičnih“ snopova po praznom zidu.
+* Sve promjene su **samo rasvjeta** (ne dirati kameru, UI, pod, zidne materijale, okvire).
+
+---
+
+## ✅ Scope (MVP)
+
+### 1) Identificirati sve aktivne artwork slotove u sceni
+
+* Slot = objekt koji ima poziciju, rotaciju (ili normalu zida) i dimenzije.
+* Uzimamo samo slotove koji trenutno imaju dodijeljeni artwork.
+
+### 2) Za svaki slot kreirati spotlight koji targetira centar artworka
+
+* Pozicija svjetla: blizu stropa, malo ispred zida (da izgleda kao track/spot).
+* Target: centar slike.
+
+### 3) Stabilnost (bez trzanja)
+
+* Koristiti damping/lerp pri updateu targeta (ako se slike mijenjaju) da se svjetlo ne „teleportira“.
+
+### 4) Kvalitetne, mekane sjene
+
+* Shadows ON.
+* Soft shadows (po mogućnosti), bez nazubljenih rubova.
+* Shadow map rezolucija umjerena (balans performansi).
+
+### 5) Ambient/Fill sloj (minimalno)
+
+* Blagi ambient ili hemisphere da prostor nije "crn" između radova.
+* Spotlightovi su glavni akcent.
+
+---
+
+## ❌ Ne raditi
+
+* Ne dirati kameru / movement / mouse.
+* Ne dirati okvire slika.
+* Ne dirati pod i zidne materijale.
+* Ne dodavati dekor.
+* Ne raditi postprocessing u ovom tasku.
+
+---
+
+## 🧪 Acceptance / Stop Conditions
+
+* [ ] Svaka slika ima jasno, smisleno osvjetljenje (ne nasumične mrlje)
+* [ ] Nema prejakih "cone" hotspota po praznom zidu
+* [ ] Svjetla ne trzaju (stabilno ponašanje)
+* [ ] Sjene su mekane i premium
+* [ ] Agent navede koje je fileove mijenjao
+
+---
+
+# 👩‍💻 Code guidelines / snippets (R3F + Three)
+
+> Napomena: Snippeti su primjer. Agent ih treba prilagoditi vašoj trenutnoj arhitekturi scene.
+
+## 1) Helper: izračun centra artworka u world koordinatama
+
+```ts
+import * as THREE from "three";
+
+export function getWorldCenter(obj: THREE.Object3D) {
+  const box = new THREE.Box3().setFromObject(obj);
+  const center = new THREE.Vector3();
+  box.getCenter(center);
+  return center;
+}
+```
+
+Ako slot već ima dimenzije i poziciju, još bolje:
+
+* center = slot.position (plus mali offset na visinu okvira ako treba)
+
+---
+
+## 2) Auto‑target spotlight komponenta (primjer)
+
+```tsx
+import { useEffect, useMemo, useRef } from "react";
+import { useFrame } from "@react-three/fiber";
+import * as THREE from "three";
+
+type AutoSpotProps = {
+  targetWorld: THREE.Vector3;       // centar slike u world coords
+  lightWorld: THREE.Vector3;        // pozicija lampe u world coords
+  intensity?: number;
+  angle?: number;
+  penumbra?: number;
+  distance?: number;
+  castShadow?: boolean;
+};
+
+export function AutoSpotlight({
+  targetWorld,
+  lightWorld,
+  intensity = 1.25,
+  angle = Math.PI / 7,
+  penumbra = 0.6,
+  distance = 12,
+  castShadow = true,
+}: AutoSpotProps) {
+  const lightRef = useRef<THREE.SpotLight>(null!);
+  const targetRef = useRef<THREE.Object3D>(null!);
+
+  // internal vectors for smoothing
+  const targetSmoothed = useMemo(() => targetWorld.clone(), []);
+  const lightSmoothed = useMemo(() => lightWorld.clone(), []);
+
+  useEffect(() => {
+    // init positions once
+    if (lightRef.current) lightRef.current.position.copy(lightWorld);
+    if (targetRef.current) targetRef.current.position.copy(targetWorld);
+  }, []);
+
+  useFrame((_, dt) => {
+    // Smooth movement to avoid jitter (lerp)
+    const a = 1 - Math.pow(0.001, dt); // frame-rate independent smoothing
+
+    targetSmoothed.lerp(targetWorld, a);
+    lightSmoothed.lerp(lightWorld, a);
+
+    if (lightRef.current) {
+      lightRef.current.position.copy(lightSmoothed);
+      lightRef.current.target.position.copy(targetSmoothed);
+      // Ensure target matrix updates
+      lightRef.current.target.updateMatrixWorld();
+    }
+
+    if (targetRef.current) {
+      targetRef.current.position.copy(targetSmoothed);
+      targetRef.current.updateMatrixWorld();
+    }
+  });
+
+  return (
+    <>
+      {/* target object must be in the scene graph */}
+      <object3D ref={targetRef} />
+      <spotLight
+        ref={lightRef}
+        intensity={intensity}
+        angle={angle}
+        penumbra={penumbra}
+        distance={distance}
+        castShadow={castShadow}
+      />
+    </>
+  );
+}
+```
+
+---
+
+## 3) Generiranje spotlightova po artwork slotovima (pseudo)
+
+```tsx
+// Pretpostavka: `artworkSlots` je lista slotova koji imaju dodijeljenu sliku
+// i svaki slot ima: object3D ref (ili position/rotation), wallNormal, wallPoint, itd.
+
+{artworkSlots.map((slot) => {
+  const targetWorld = getWorldCenter(slot.artworkObject3D);
+
+  // Postavi lampu iznad (blizu stropa) i malo ispred zida
+  const ceilingY = GALLERY_CEILING_Y; // npr. 4.8
+  const offsetFromWall = 0.35;        // 35 cm od zida
+
+  // Ako imate normalu zida:
+  const n = slot.wallNormal.clone().normalize();
+  const lightWorld = targetWorld
+    .clone()
+    .add(n.clone().multiplyScalar(offsetFromWall))
+    .setY(ceilingY - 0.2);
+
+  return (
+    <AutoSpotlight
+      key={slot.id}
+      targetWorld={targetWorld}
+      lightWorld={lightWorld}
+      intensity={1.35}
+      angle={Math.PI / 8}
+      penumbra={0.65}
+      distance={14}
+      castShadow
+    />
+  );
+})}
+```
+
+---
+
+## 4) Shadow settings (preporuka)
+
+* Na rendereru:
+
+  * `shadows: true`
+* Na zidovima: `receiveShadow = true`
+* Na okvirima/slikama (ako treba): `castShadow = true`
+* Na spotlightovima:
+
+  * `shadow-mapSize` umjereno (npr. 1024/2048 ovisno o performansama)
+  * bias fino podesiti ako se pojave artefakti
+
+Primjer:
+
+```tsx
+<spotLight
+  castShadow
+  shadow-mapSize-width={1024}
+  shadow-mapSize-height={1024}
+  shadow-bias={-0.0002}
+/>
+```
+
+---
+
+## 5) Minimalni ambient/fill sloj (da galerija ne bude mračna)
+
+```tsx
+<ambientLight intensity={0.25} />
+{/* ili */}
+<hemisphereLight intensity={0.25} />
+```
+
+---
+
+## 📸 Output zahtjev
+
+Nakon implementacije:
+
+* screenshot: Entrance + Center
+* kratki video/gif (10–15s) okretanja po zidu (ako je jednostavno)
+
+---
+
+## 🔥 Prioritet / Mode
+
+* FAST MODE ON
+* Fokus na „feeling“ rasvjete
+* Bez širenja scope‑a
