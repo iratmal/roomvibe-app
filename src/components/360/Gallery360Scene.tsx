@@ -268,14 +268,9 @@ function Column({ position, height, color }: {
   color: string;
 }) {
   return (
-    <mesh position={position} castShadow receiveShadow>
+    <mesh position={position}>
       <boxGeometry args={[0.35, height, 0.35]} />
-      <meshStandardMaterial 
-        color={color} 
-        roughness={0.25} 
-        metalness={0.15}
-        envMapIntensity={0.4}
-      />
+      <meshBasicMaterial color={color} />
     </mesh>
   );
 }
@@ -321,32 +316,12 @@ function WallSpotlight({ position, targetY }: {
     <group position={position}>
       <mesh>
         <cylinderGeometry args={[0.06, 0.10, 0.12, 16]} />
-        <meshStandardMaterial color="#2a2a2a" roughness={0.3} metalness={0.6} />
+        <meshBasicMaterial color="#2a2a2a" />
       </mesh>
       <mesh position={[0, -0.05, 0]}>
         <cylinderGeometry args={[0.04, 0.04, 0.02, 16]} />
         <meshBasicMaterial color="#fff8e0" />
       </mesh>
-      <pointLight
-        position={[0, -0.06, 0]}
-        intensity={0.15}
-        distance={0.4}
-        color="#fff5e0"
-      />
-      <spotLight
-        ref={spotlightRef}
-        position={[0, -0.06, 0]}
-        angle={0.45}
-        penumbra={0.8}
-        intensity={5}
-        distance={12}
-        color="#fffaf5"
-        castShadow
-        shadow-mapSize={[1024, 1024]}
-        shadow-bias={-0.0003}
-        shadow-radius={2}
-        shadow-normalBias={0.02}
-      />
     </group>
   );
 }
@@ -485,13 +460,9 @@ function WoodFloorOriginal({ width, depth, color }: { width: number; depth: numb
 
   return (
     <group position={[0, 0.001, 0]}>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+      <mesh rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
-        <meshStandardMaterial 
-          color={gapColor}
-          roughness={0.95}
-          metalness={0.0}
-        />
+        <meshBasicMaterial color={gapColor} />
       </mesh>
       
       {floorData.planks.slice(0, 600).map((plank, i) => {
@@ -501,27 +472,16 @@ function WoodFloorOriginal({ width, depth, color }: { width: number; depth: numb
             key={i}
             position={[plank.x, 0.002, plank.z]}
             rotation={[-Math.PI / 2, plank.grainAngle, 0]}
-            receiveShadow
           >
             <planeGeometry args={[floorData.plankLength - 0.006, floorData.plankWidth - 0.003]} />
-            <meshStandardMaterial
-              color={plankColor}
-              roughness={plank.roughVar}
-              metalness={0.02}
-            />
+            <meshBasicMaterial color={plankColor} />
           </mesh>
         );
       })}
       
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.0025, 0]} receiveShadow>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.0025, 0]}>
         <planeGeometry args={[width, depth]} />
-        <meshStandardMaterial 
-          color="#d4c4a8"
-          roughness={0.6}
-          metalness={0.0}
-          transparent
-          opacity={0.15}
-        />
+        <meshBasicMaterial color="#d4c4a8" transparent opacity={0.15} />
       </mesh>
     </group>
   );
@@ -613,7 +573,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       ].map((cove, i) => (
         <mesh key={`cove-${i}`} position={cove.pos}>
           <boxGeometry args={cove.size} />
-          <meshStandardMaterial color="#3A3A3A" roughness={0.95} metalness={0} />
+          <meshBasicMaterial color="#3A3A3A" />
         </mesh>
       ))}
       
@@ -622,14 +582,14 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       {[-depth/3, 0, depth/3].map((zPos, i) => (
         <mesh key={`beam-main-x-${i}`} position={[0, height - 0.12, zPos]}>
           <boxGeometry args={[width - 0.3, 0.24, 0.20]} />
-          <meshStandardMaterial color="#2F2F2F" roughness={0.95} metalness={0} />
+          <meshBasicMaterial color="#2F2F2F" />
         </mesh>
       ))}
       {/* Cross beams - premium dark grey */}
       {[-width/3, 0, width/3].map((xPos, i) => (
         <mesh key={`beam-main-z-${i}`} position={[xPos, height - 0.12, 0]}>
           <boxGeometry args={[0.20, 0.24, depth - 0.3]} />
-          <meshStandardMaterial color="#2F2F2F" roughness={0.95} metalness={0} />
+          <meshBasicMaterial color="#2F2F2F" />
         </mesh>
       ))}
       
@@ -653,7 +613,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       {[-width/3 - width/6, -width/6, width/6, width/3 + width/6].map((xPos, i) => (
         <mesh key={`track-${i}`} position={[xPos, height - 0.01, 0]}>
           <boxGeometry args={[0.03, 0.03, depth - 0.8]} />
-          <meshStandardMaterial color="#3A3A3A" roughness={0.95} metalness={0} />
+          <meshBasicMaterial color="#3A3A3A" />
         </mesh>
       ))}
 
@@ -756,7 +716,7 @@ function GalleryBench({ position, rotation }: { position: [number, number, numbe
       {/* Minimalist premium dark grey cube bench - no legs, pure block form */}
       <mesh position={[0, BENCH_H / 2, 0]} castShadow receiveShadow>
         <boxGeometry args={[BENCH_L, BENCH_H, BENCH_W]} />
-        <meshStandardMaterial color="#2F2F2F" roughness={0.95} metalness={0} />
+        <meshBasicMaterial color="#2F2F2F" />
       </mesh>
     </group>
   );
@@ -770,26 +730,21 @@ function DecorativeVase({ position }: { position: [number, number, number] }) {
   return (
     <group position={position}>
       {/* Main body - RoomVibe gold */}
-      <mesh position={[0, VASE_H / 2, 0]} castShadow receiveShadow>
+      <mesh position={[0, VASE_H / 2, 0]}>
         <cylinderGeometry args={[TOP_R, BASE_R, VASE_H, 32]} />
-        <meshStandardMaterial 
-          color="#D4AF37" 
-          roughness={0.4} 
-          metalness={0.6}
-          flatShading={false}
-        />
+        <meshBasicMaterial color="#D4AF37" />
       </mesh>
       
       {/* Subtle inner shadow ring at top */}
       <mesh position={[0, VASE_H - 0.02, 0]}>
         <cylinderGeometry args={[TOP_R - 0.02, TOP_R, 0.04, 32]} />
-        <meshStandardMaterial color="#b8962e" roughness={0.5} metalness={0.5} />
+        <meshBasicMaterial color="#b8962e" />
       </mesh>
       
       {/* Base ring for grounding */}
-      <mesh position={[0, 0.015, 0]} castShadow>
+      <mesh position={[0, 0.015, 0]}>
         <cylinderGeometry args={[BASE_R + 0.01, BASE_R + 0.02, 0.03, 32]} />
-        <meshStandardMaterial color="#c4a030" roughness={0.45} metalness={0.55} />
+        <meshBasicMaterial color="#c4a030" />
       </mesh>
     </group>
   );
@@ -810,17 +765,17 @@ function EntrancePortal({ position, rotation }: { position: [number, number, num
         {/* Left post */}
         <mesh position={[-(PORTAL_W / 2) - (FRAME_T / 2), PORTAL_H / 2, 0]} castShadow>
           <boxGeometry args={[FRAME_T, PORTAL_H, FRAME_T]} />
-          <meshStandardMaterial color="#d7d4cf" roughness={0.9} metalness={0} />
+          <meshBasicMaterial color="#d7d4cf" />
         </mesh>
         {/* Right post */}
         <mesh position={[(PORTAL_W / 2) + (FRAME_T / 2), PORTAL_H / 2, 0]} castShadow>
           <boxGeometry args={[FRAME_T, PORTAL_H, FRAME_T]} />
-          <meshStandardMaterial color="#d7d4cf" roughness={0.9} metalness={0} />
+          <meshBasicMaterial color="#d7d4cf" />
         </mesh>
         {/* Top lintel */}
         <mesh position={[0, PORTAL_H + (FRAME_T / 2), 0]} castShadow>
           <boxGeometry args={[PORTAL_W + FRAME_T * 2, FRAME_T, FRAME_T]} />
-          <meshStandardMaterial color="#d7d4cf" roughness={0.9} metalness={0} />
+          <meshBasicMaterial color="#d7d4cf" />
         </mesh>
       </group>
 
@@ -829,12 +784,12 @@ function EntrancePortal({ position, rotation }: { position: [number, number, num
         {/* Corridor left wall */}
         <mesh position={[-(PORTAL_W / 2) - (FRAME_T / 2), PORTAL_H / 2, -CORRIDOR_DEPTH / 2]}>
           <boxGeometry args={[FRAME_T, PORTAL_H, CORRIDOR_DEPTH]} />
-          <meshStandardMaterial color="#e8e5e0" roughness={0.95} metalness={0} />
+          <meshBasicMaterial color="#e8e5e0" />
         </mesh>
         {/* Corridor right wall */}
         <mesh position={[(PORTAL_W / 2) + (FRAME_T / 2), PORTAL_H / 2, -CORRIDOR_DEPTH / 2]}>
           <boxGeometry args={[FRAME_T, PORTAL_H, CORRIDOR_DEPTH]} />
-          <meshStandardMaterial color="#e8e5e0" roughness={0.95} metalness={0} />
+          <meshBasicMaterial color="#e8e5e0" />
         </mesh>
         {/* Corridor ceiling */}
         <mesh position={[0, PORTAL_H, -CORRIDOR_DEPTH / 2]}>
@@ -859,19 +814,19 @@ function EntrancePortal({ position, rotation }: { position: [number, number, num
         {/* Secondary gallery back wall - slightly darker */}
         <mesh position={[0, PORTAL_H / 2, -SECONDARY_D]}>
           <boxGeometry args={[SECONDARY_W, PORTAL_H + 0.5, 0.15]} />
-          <meshStandardMaterial color="#d8d5d0" roughness={0.95} metalness={0} />
+          <meshBasicMaterial color="#d8d5d0" />
         </mesh>
         
         {/* Secondary gallery left wall */}
         <mesh position={[-SECONDARY_W / 2, PORTAL_H / 2, -SECONDARY_D / 2]}>
           <boxGeometry args={[0.15, PORTAL_H + 0.5, SECONDARY_D]} />
-          <meshStandardMaterial color="#dcd9d4" roughness={0.95} metalness={0} />
+          <meshBasicMaterial color="#dcd9d4" />
         </mesh>
         
         {/* Secondary gallery right wall */}
         <mesh position={[SECONDARY_W / 2, PORTAL_H / 2, -SECONDARY_D / 2]}>
           <boxGeometry args={[0.15, PORTAL_H + 0.5, SECONDARY_D]} />
-          <meshStandardMaterial color="#dcd9d4" roughness={0.95} metalness={0} />
+          <meshBasicMaterial color="#dcd9d4" />
         </mesh>
         
         {/* Secondary gallery ceiling */}
@@ -986,7 +941,7 @@ function ArtworkPlane({
         onPointerOut={() => setHovered(false)}
       >
         <planeGeometry args={[slot.width, slot.height]} />
-        <meshStandardMaterial 
+        <meshBasicMaterial 
           color={hovered ? '#e0e0e0' : '#d0d0d0'}
           transparent
           opacity={hasArtwork ? 0 : 0.3}
@@ -1171,27 +1126,19 @@ function ArtworkImage({
       </mesh>
       
       {/* Frame - solid box behind canvas, slightly larger */}
-      <mesh position={[0, 0, 0]} castShadow receiveShadow>
+      <mesh position={[0, 0, 0]}>
         <boxGeometry args={[
           dimensions.width + frameT * 2, 
           dimensions.height + frameT * 2, 
           frameD
         ]} />
-        <meshStandardMaterial 
-          color={FRAME_CONFIG.color} 
-          roughness={0.3} 
-          metalness={0.15} 
-        />
+        <meshBasicMaterial color={FRAME_CONFIG.color} />
       </mesh>
 
       {/* Canvas body - off-white edge visible between frame and image */}
-      <mesh position={[0, 0, frameD / 2 + canvasD / 2 - 0.001]} castShadow>
+      <mesh position={[0, 0, frameD / 2 + canvasD / 2 - 0.001]}>
         <boxGeometry args={[dimensions.width, dimensions.height, canvasD]} />
-        <meshStandardMaterial 
-          color={FRAME_CONFIG.canvasEdge} 
-          roughness={0.85} 
-          metalness={0.0} 
-        />
+        <meshBasicMaterial color={FRAME_CONFIG.canvasEdge} />
       </mesh>
       
       {/* Artwork image - on front of canvas */}
