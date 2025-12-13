@@ -130,6 +130,55 @@ function SafeFloorMaterial({ color }: { color?: string }) {
   return <meshBasicMaterial color={safeColor} />;
 }
 
+const FLOOR_MESH_NAMES = [
+  'tiledFloorMain',
+  'woodFloorMain', 
+  'defaultFloorMain',
+  'outerEnclosureFloor',
+  'corridorFloor',
+  'secondaryGalleryFloor',
+  'floorClickArea'
+];
+
+function FloorGuard() {
+  const { scene } = useThree();
+  const hasRun = useRef(false);
+  
+  useEffect(() => {
+    if (hasRun.current) return;
+    hasRun.current = true;
+    
+    const fixedMeshes: string[] = [];
+    const safeColor = new THREE.Color(GALLERY_FLOOR_COLOR);
+    
+    scene.traverse((obj) => {
+      if (!(obj instanceof THREE.Mesh)) return;
+      
+      const meshName = obj.name || '';
+      const isFloorMesh = FLOOR_MESH_NAMES.some(name => meshName.includes(name) || meshName.toLowerCase().includes('floor'));
+      
+      if (!isFloorMesh) return;
+      if (meshName === 'floorClickArea') return;
+      
+      const mat = obj.material as THREE.Material;
+      const isBlackColor = mat && 'color' in mat && (mat as any).color && 
+        ((mat as any).color.getHexString() === '000000' || 
+         (mat as any).color.getHexString() === '000' ||
+         (mat as any).color.r < 0.05 && (mat as any).color.g < 0.05 && (mat as any).color.b < 0.05);
+      const isNotBasic = mat && mat.type !== 'MeshBasicMaterial';
+      
+      if (isBlackColor || isNotBasic) {
+        obj.material = new THREE.MeshBasicMaterial({ color: safeColor });
+        fixedMeshes.push(meshName || `unnamed-${obj.uuid.slice(0, 8)}`);
+      }
+    });
+    
+    console.log(`[FLOOR_GUARD] applied to ${fixedMeshes.length} meshes: ${fixedMeshes.length > 0 ? fixedMeshes.join(', ') : 'none (all floors already safe)'}`);
+  }, [scene]);
+  
+  return null;
+}
+
 export interface ArtworkFocusTarget {
   position: [number, number, number];
   rotation: [number, number, number];
@@ -1823,6 +1872,7 @@ export function Gallery360Scene({
       <directionalLight position={[-12, 6, -6]} intensity={0.3} color="#f8f5ff" />
 
       <GalleryRoom preset={preset} />
+      <FloorGuard />
 
       {preset.slots.map(slot => {
         const assignment = slotAssignments.find(sa => sa.slotId === slot.id);
