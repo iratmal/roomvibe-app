@@ -9,6 +9,9 @@ import { SlotAssignment } from './useArtworkSlots';
  * VISUAL-STABLE: Classic Gallery 360 Scene
  * Do not modify lighting/materials in this scene without staging verification.
  * Last stabilized: 2024-12-13
+ * 
+ * IMPORTANT: Classic Gallery uses MeshBasicMaterial to avoid WebGL sampler limits.
+ * There are two floor meshes: outerEnclosureFloor and tiledFloorMain; both guarded by FloorGuard.
  */
 
 const GALLERY_WALL_COLOR = '#f2f2f2';
@@ -182,6 +185,7 @@ function FloorGuard() {
       }
     });
     
+    // FloorGuard runs in all environments but logs only in development
     if (process.env.NODE_ENV === 'development' && fixedMeshes.length > 0) {
       console.log(`[FLOOR_GUARD] applied to ${fixedMeshes.length} meshes: ${fixedMeshes.join(', ')}`);
     }
