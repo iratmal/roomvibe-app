@@ -6,6 +6,11 @@ import { YourPlanCard } from '../YourPlanCard';
 import { UpgradePrompt } from '../UpgradePrompt';
 import { SiteHeader } from '../SiteHeader';
 import { PLAN_LIMITS } from '../../config/planLimits';
+import { ArtistProfileForm } from './ArtistProfileForm';
+import { ArtistInbox } from './ArtistInbox';
+import { ArtistConnectWidget } from './ArtistConnectWidget';
+
+type DashboardTab = 'artworks' | 'profile' | 'inbox' | 'settings';
 
 const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
 
@@ -21,10 +26,33 @@ interface Artwork {
   price_currency: string;
   buy_url: string;
   tags?: string[];
+  orientation?: string;
+  style_tags?: string[];
+  dominant_colors?: string[];
+  medium?: string;
+  availability?: string;
   created_at: string;
   updated_at: string;
   artist_email?: string;
 }
+
+const STYLE_TAG_OPTIONS = [
+  'Abstract', 'Contemporary', 'Figurative', 'Impressionist', 'Minimalist',
+  'Modern', 'Pop Art', 'Realist', 'Surrealist', 'Traditional',
+  'Expressionist', 'Conceptual', 'Street Art', 'Digital', 'Mixed Media'
+];
+
+const MEDIUM_OPTIONS = [
+  'Oil', 'Acrylic', 'Watercolor', 'Pastel', 'Charcoal',
+  'Ink', 'Mixed Media', 'Digital', 'Photography', 'Sculpture',
+  'Printmaking', 'Collage', 'Encaustic', 'Gouache', 'Other'
+];
+
+const AVAILABILITY_OPTIONS = [
+  { value: 'available', label: 'Available' },
+  { value: 'sold', label: 'Sold' },
+  { value: 'on_request', label: 'On Request' }
+];
 
 function formatPrice(priceAmount: number | string | null | undefined, currency: string): string | null {
   if (priceAmount === null || priceAmount === undefined || priceAmount === '') {
@@ -42,6 +70,8 @@ function formatPrice(priceAmount: number | string | null | undefined, currency: 
 
 export function ArtistDashboard() {
   const { user, logout } = useAuth();
+  const [activeTab, setActiveTab] = useState<DashboardTab>('artworks');
+  const [unreadCount, setUnreadCount] = useState(0);
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -67,12 +97,30 @@ export function ArtistDashboard() {
     priceAmount: '',
     priceCurrency: 'EUR',
     buyUrl: '',
-    image: null as File | null
+    image: null as File | null,
+    medium: '',
+    styleTags: [] as string[],
+    availability: 'available'
   });
 
   useEffect(() => {
     fetchArtworks();
+    fetchUnreadCount();
   }, []);
+
+  const fetchUnreadCount = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/artist/profile/connect-stats`, {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setUnreadCount(data.stats?.unreadMessages || 0);
+      }
+    } catch (err) {
+      console.error('Error fetching unread count:', err);
+    }
+  };
 
   const fetchArtworks = async () => {
     try {
@@ -101,6 +149,17 @@ export function ArtistDashboard() {
     if (e.target.files && e.target.files[0]) {
       setFormData(prev => ({ ...prev, image: e.target.files![0] }));
     }
+  };
+
+  const handleStyleTagToggle = (tag: string) => {
+    setFormData(prev => {
+      if (prev.styleTags.includes(tag)) {
+        return { ...prev, styleTags: prev.styleTags.filter(t => t !== tag) };
+      } else if (prev.styleTags.length < 5) {
+        return { ...prev, styleTags: [...prev.styleTags, tag] };
+      }
+      return prev;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -139,6 +198,13 @@ export function ArtistDashboard() {
       if (formData.image) {
         formDataObj.append('image', formData.image);
       }
+      if (formData.medium) {
+        formDataObj.append('medium', formData.medium);
+      }
+      if (formData.styleTags.length > 0) {
+        formDataObj.append('styleTags', JSON.stringify(formData.styleTags));
+      }
+      formDataObj.append('availability', formData.availability);
 
       const url = editingArtwork
         ? `${API_URL}/api/artist/artworks/${editingArtwork.id}`
@@ -188,7 +254,10 @@ export function ArtistDashboard() {
         priceAmount: '',
         priceCurrency: 'EUR',
         buyUrl: '',
-        image: null
+        image: null,
+        medium: '',
+        styleTags: [],
+        availability: 'available'
       });
       setEditingArtwork(null);
       
@@ -224,7 +293,10 @@ export function ArtistDashboard() {
       priceAmount: priceAmountStr,
       priceCurrency: artwork.price_currency || 'EUR',
       buyUrl: artwork.buy_url,
-      image: null
+      image: null,
+      medium: artwork.medium || '',
+      styleTags: artwork.style_tags || [],
+      availability: artwork.availability || 'available'
     });
     setError('');
     setSuccess('');
@@ -241,7 +313,10 @@ export function ArtistDashboard() {
       priceAmount: '',
       priceCurrency: 'EUR',
       buyUrl: '',
-      image: null
+      image: null,
+      medium: '',
+      styleTags: [],
+      availability: 'available'
     });
     setError('');
     setSuccess('');
@@ -302,7 +377,7 @@ export function ArtistDashboard() {
       <SiteHeader showPlanBadge={true} />
       <ImpersonationBanner />
       <div className="max-w-7xl mx-auto px-4 py-10">
-        <div className="flex justify-between items-center mb-10">
+        <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold mb-2 text-rv-primary">Artist Dashboard</h1>
             <p className="text-rv-textMuted">Upload and manage your artworks</p>
@@ -321,17 +396,95 @@ export function ArtistDashboard() {
           </div>
         </div>
 
-        {error && (
+        <div className="flex gap-1 mb-8 border-b border-rv-neutral overflow-x-auto">
+          <button
+            onClick={() => setActiveTab('artworks')}
+            className={`px-4 py-3 text-sm font-semibold transition-colors whitespace-nowrap ${
+              activeTab === 'artworks'
+                ? 'text-rv-primary border-b-2 border-rv-primary'
+                : 'text-rv-textMuted hover:text-rv-text'
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Artworks
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab('profile')}
+            className={`px-4 py-3 text-sm font-semibold transition-colors whitespace-nowrap ${
+              activeTab === 'profile'
+                ? 'text-rv-primary border-b-2 border-rv-primary'
+                : 'text-rv-textMuted hover:text-rv-text'
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              Artist Profile
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab('inbox')}
+            className={`px-4 py-3 text-sm font-semibold transition-colors whitespace-nowrap ${
+              activeTab === 'inbox'
+                ? 'text-rv-primary border-b-2 border-rv-primary'
+                : 'text-rv-textMuted hover:text-rv-text'
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              Inbox
+              {unreadCount > 0 && (
+                <span className="ml-1 px-1.5 py-0.5 text-xs bg-rv-primary text-white rounded-full">
+                  {unreadCount}
+                </span>
+              )}
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={`px-4 py-3 text-sm font-semibold transition-colors whitespace-nowrap ${
+              activeTab === 'settings'
+                ? 'text-rv-primary border-b-2 border-rv-primary'
+                : 'text-rv-textMuted hover:text-rv-text'
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Settings
+            </span>
+          </button>
+        </div>
+
+        {activeTab === 'artworks' && error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-rvMd text-red-700">
             {error}
           </div>
         )}
 
-        {success && (
+        {activeTab === 'artworks' && success && (
           <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-rvMd text-green-700">
             {success}
           </div>
         )}
+
+        {activeTab === 'artworks' && (
+          <>
+            <div className="mb-6">
+              <ArtistConnectWidget 
+                onViewInbox={() => setActiveTab('inbox')}
+                onEditProfile={() => setActiveTab('profile')}
+              />
+            </div>
 
         {/* Usage indicator for free users */}
         {maxArtworks !== -1 && (
@@ -487,6 +640,61 @@ export function ArtistDashboard() {
                   className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
                   placeholder="https://your-shop.com/product"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-rv-text">
+                  Medium
+                </label>
+                <select
+                  name="medium"
+                  value={formData.medium}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary bg-white"
+                >
+                  <option value="">Select medium</option>
+                  {MEDIUM_OPTIONS.map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-rv-text">
+                  Availability
+                </label>
+                <select
+                  name="availability"
+                  value={formData.availability}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary bg-white"
+                >
+                  {AVAILABILITY_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-semibold mb-2 text-rv-text">
+                  Style Tags <span className="font-normal text-rv-textMuted">(select up to 5)</span>
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {STYLE_TAG_OPTIONS.map(tag => (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => handleStyleTagToggle(tag)}
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                        formData.styleTags.includes(tag)
+                          ? 'bg-rv-primary text-white'
+                          : 'bg-rv-surface text-rv-text border border-rv-neutral hover:border-rv-primary'
+                      }`}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -654,24 +862,38 @@ export function ArtistDashboard() {
             </p>
           </div>
         </div>
+          </>
+        )}
 
-        <div className="mb-8">
-          <YourPlanCard />
-        </div>
+        {activeTab === 'profile' && (
+          <ArtistProfileForm />
+        )}
 
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="p-6 bg-purple-50 rounded-rvLg border border-purple-200">
-            <h3 className="text-lg font-bold mb-3 text-purple-700">Artist Account</h3>
-            <div className="space-y-2 text-sm">
-              <p><span className="font-semibold text-rv-text">Email:</span> <span className="text-rv-textMuted">{user?.email}</span></p>
-              <p><span className="font-semibold text-rv-text">Role:</span> <span className="text-rv-textMuted">Artist</span></p>
-              <p><span className="font-semibold text-rv-text">Status:</span> {user?.emailConfirmed ? <span className="text-green-600 font-semibold">✓ Verified</span> : <span className="text-amber-600 font-semibold">⚠ Pending</span>}</p>
-              <p><span className="font-semibold text-rv-text">Artworks:</span> <span className="text-rv-textMuted">{artworks.length}</span></p>
+        {activeTab === 'inbox' && (
+          <ArtistInbox onUnreadCountChange={setUnreadCount} />
+        )}
+
+        {activeTab === 'settings' && (
+          <>
+            <div className="mb-8">
+              <YourPlanCard />
             </div>
-          </div>
 
-          <ChangePassword />
-        </div>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="p-6 bg-purple-50 rounded-rvLg border border-purple-200">
+                <h3 className="text-lg font-bold mb-3 text-purple-700">Artist Account</h3>
+                <div className="space-y-2 text-sm">
+                  <p><span className="font-semibold text-rv-text">Email:</span> <span className="text-rv-textMuted">{user?.email}</span></p>
+                  <p><span className="font-semibold text-rv-text">Role:</span> <span className="text-rv-textMuted">Artist</span></p>
+                  <p><span className="font-semibold text-rv-text">Status:</span> {user?.emailConfirmed ? <span className="text-green-600 font-semibold">✓ Verified</span> : <span className="text-amber-600 font-semibold">⚠ Pending</span>}</p>
+                  <p><span className="font-semibold text-rv-text">Artworks:</span> <span className="text-rv-textMuted">{artworks.length}</span></p>
+                </div>
+              </div>
+
+              <ChangePassword />
+            </div>
+          </>
+        )}
 
         {showWidgetModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
