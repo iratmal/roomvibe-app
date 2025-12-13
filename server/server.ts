@@ -17,6 +17,7 @@ import exhibition360Routes from './api/exhibition360.js';
 import { initializeDatabase } from './db/init.js';
 import { query } from './db/database.js';
 import { ObjectStorageService, ObjectNotFoundError } from './objectStorage.js';
+import { requireGalleryFeature, requireStripeFeature } from './middleware/featureFlags.js';
 
 dotenv.config();
 
@@ -38,6 +39,7 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
   ? [
       process.env.FRONTEND_URL,
       'https://app.roomvibe.app',
+      'https://staging.roomvibe.app',
       replitDomain ? `https://${replitDomain}` : null,
     ].filter(Boolean) as string[]
   : ['http://localhost:5000', 'http://127.0.0.1:5000'];
@@ -64,14 +66,21 @@ app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/artist', artworksRoutes);
 app.use('/api/designer', projectsRoutes);
-app.use('/api/gallery', galleryRoutes);
-app.use('/api/gallery', exhibition360Routes);
-app.use('/api/billing', billingRoutes);
+app.use('/api/gallery', requireGalleryFeature, galleryRoutes);
+app.use('/api/gallery', requireGalleryFeature, exhibition360Routes);
+app.use('/api/billing', requireStripeFeature, billingRoutes);
 app.use('/api/widget', widgetRoutes);
 app.use('/api/exports', exportsRoutes);
 
 // Server readiness flag - set to true after database initialization
 let isServerReady = false;
+
+app.get('/api/feature-flags', (req, res) => {
+  res.json({
+    galleryEnabled: process.env.FEATURE_GALLERY_ENABLED !== 'false',
+    stripeEnabled: process.env.STRIPE_ENABLED === 'true',
+  });
+});
 
 app.get('/api/health', (req, res) => {
   if (!isServerReady) {

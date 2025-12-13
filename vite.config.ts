@@ -10,6 +10,6 @@ export default defineConfig({
   preview: {
     host: '0.0.0.0',
     port: 5000,
-    allowedHosts: ['app.roomvibe.app', '.replit.dev', '.repl.co']
+    allowedHosts: ['app.roomvibe.app', 'staging.roomvibe.app', '.replit.dev', '.repl.co']
   }
 })

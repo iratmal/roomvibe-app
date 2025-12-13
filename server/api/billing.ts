@@ -9,6 +9,9 @@ const getBaseUrl = () => {
   if (process.env.FRONTEND_URL) {
     return process.env.FRONTEND_URL;
   }
+  if (process.env.STAGING_ENVIRONMENT === 'true') {
+    return 'https://staging.roomvibe.app';
+  }
   return 'https://app.roomvibe.app';
 };
 
