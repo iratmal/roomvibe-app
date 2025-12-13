@@ -705,6 +705,29 @@ export async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_pdf_exports_user_month ON pdf_exports(user_id, export_month);
     `);
 
+    // =====================================================
+    // Designer Connect Core - Project Artworks table
+    // Links artworks from the art library to designer projects
+    // =====================================================
+    await query(`
+      CREATE TABLE IF NOT EXISTS designer_project_artworks (
+        id SERIAL PRIMARY KEY,
+        project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+        artwork_id INTEGER NOT NULL REFERENCES artworks(id) ON DELETE CASCADE,
+        added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        notes TEXT,
+        UNIQUE(project_id, artwork_id)
+      );
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS idx_designer_project_artworks_project ON designer_project_artworks(project_id);
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS idx_designer_project_artworks_artwork ON designer_project_artworks(artwork_id);
+    `);
+
     console.log('✅ Database schema initialized successfully');
     return true;
   } catch (error) {
