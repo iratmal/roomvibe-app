@@ -202,10 +202,10 @@ export default function ArtworkEdit() {
         body: JSON.stringify({
           title: formData.title,
           artistName: formData.artistName,
-          widthValue: formData.widthValue,
-          heightValue: formData.heightValue,
+          widthValue: parseFloat(formData.widthValue),
+          heightValue: parseFloat(formData.heightValue),
           dimensionUnit: formData.dimensionUnit,
-          priceAmount: formData.priceAmount || null,
+          priceAmount: formData.priceAmount ? parseFloat(formData.priceAmount) : null,
           priceCurrency: formData.priceCurrency,
           buyUrl: formData.buyUrl || null,
           description: formData.description || null
