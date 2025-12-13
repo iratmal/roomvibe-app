@@ -1,0 +1,140 @@
+# TASK: Napravi odvojeni STAGING environment za RoomVibe (Replit + Namecheap)
+
+## Cilj
+
+Napraviti **odvojeni Replit app** za staging (clone/fork), s potpuno odvojenim environment varijablama i bazom, i spojiti ga na domenu **staging.roomvibe.app**. Live/production (**RoomVibe → app.roomvibe.app**) se ne dira.
+
+## Kontekst (trenutno stanje)
+
+* Postojeći production repl: **RoomVibe** (live domena: **app.roomvibe.app**)
+* U ovom Replit sučelju **nema** multi-environment deploymenta unutar istog repl-a.
+* Zato staging mora biti **drugi repl**.
+
+---
+
+## A) Replit: napravi STAGING repl (clone/fork)
+
+1. U Replitu otvori postojeći repl **RoomVibe**.
+2. Napravi **Fork/Clone** u mom accountu.
+3. Nazovi novi repl točno: **RoomVibe-staging**
+4. Provjeri da se novi repl normalno builda i da se može Publishati.
+
+**Acceptance:** Novi repl postoji, zove se `RoomVibe-staging`, aplikacija se može pokrenuti i publishati.
+
+---
+
+## B) Baza: staging mora imati svoju bazu (nikad production)
+
+1. Napravi (ili konfiguriraj) **odvojenu STAGING bazu**.
+
+   * Ako koristimo Replit Postgres: kreirati novi Postgres za `RoomVibe-staging`.
+   * Ako koristimo Neon: kreirati novi Neon project/DB za staging.
+2. U staging repl-u postavi DB varijablu na staging bazu.
+3. Ako u kodu postoji DB Guard (`server/db/envGuard.ts`), konfiguriraj da staging **ne može** krenuti s production hostom.
+
+**Acceptance:** Staging repl koristi staging DB, a startup FAIL-a ako netko slučajno upiše production DB.
+
+---
+
+## C) Environment varijable (RoomVibe-staging)
+
+U **RoomVibe-staging** postavi sljedeće varijable:
+
+### Obavezno
+
+* `STAGING_ENVIRONMENT=true`
+* `VITE_STAGING_ENVIRONMENT=true`
+* `STRIPE_ENABLED=false`
+
+### Baza
+
+* Postavi DB varijablu na staging bazu (ovisno o vašoj shemi):
+
+  * Ako koristite split varijable:
+
+    * `DATABASE_URL_STAGING=<staging db url>`
+    * `DATABASE_URL_PRODUCTION=<production db url>` (opcionalno u stagingu, ali najbolje NE držati prod u staging secrets)
+  * Ako koristite samo jednu:
+
+    * `DATABASE_URL=<staging db url>`
+
+### Stripe (staging)
+
+* Stripe ključeve **NE postavljati** u staging dok ne zatražimo. `STRIPE_ENABLED=false` mora ostati.
+
+**Acceptance:** U stagingu je badge “STAGING” vidljiv (ako je već implementiran), Stripe je off, DB je staging.
+
+---
+
+## D) Publish staging repl
+
+1. U `RoomVibe-staging` klikni **Publish**.
+2. Zapiši dobiveni Replit public URL (npr. `roomvibe-staging.replit.app`).
+
+**Acceptance:** Staging repl je published i radi na replit.app domeni.
+
+---
+
+## E) Replit Domains: spoji custom domenu
+
+U `RoomVibe-staging` → tab **Domains** → **Connect your own domain**:
+
+* Upisati: `staging.roomvibe.app`
+* Proći wizard do “Verified” (ili čekati DNS pa verify).
+
+**Acceptance:** Replit prikazuje `staging.roomvibe.app` kao connected/verified domenu.
+
+---
+
+## F) Namecheap DNS: što točno treba upisati
+
+Ja (Irena) imam Namecheap. Trebaš mi napisati **točne DNS vrijednosti** koje moram upisati.
+
+### Očekivani DNS record
+
+U Namecheap → Advanced DNS → Host Records:
+
+* Type: **CNAME**
+* Host: **staging**
+* Value/Target: **<točan replit target koji Replit traži>**
+* TTL: Automatic
+
+⚠️ Važno: Replit ponekad daje specifičan target u wizardu. Trebaš mi dati **copy-paste točan target** iz Replita.
+
+**Acceptance:** Nakon DNS propagacije, `staging.roomvibe.app` otvara staging app.
+
+---
+
+## G) Smoke test (obavezno)
+
+Kad staging proradi na domeni, prođi checklist:
+
+* Otvori `docs/smoke-tests.md` i odradi ključne stavke:
+
+  * Staging badge vidljiv
+  * DB Guard ok
+  * 360 galerija: 4 pozicije (Entrance/Center/Back Left/Back Right)
+  * Nema WebGL sampler errora
+  * Stripe disabled
+
+**Acceptance:** Smoke test “PASS” i zabilježen u kratkoj poruci.
+
+---
+
+## H) Output / što mi moraš vratiti
+
+Na kraju mi pošalji:
+
+1. Link na staging repl (Replit link)
+2. Staging public URL (`*.replit.app`)
+3. Točan DNS CNAME target koji trebam upisati u Namecheap
+4. Popis env varova koje si postavio u stagingu (bez tajni/ključeva – samo nazivi i true/false)
+5. Potvrdu da staging DB nije production
+
+---
+
+## Pravila
+
+* **NE dirati** production repl `RoomVibe` (osim čitanja informacija)
+* Staging DB mora biti odvojen
+* Stripe u stagingu mora ostati disabled
