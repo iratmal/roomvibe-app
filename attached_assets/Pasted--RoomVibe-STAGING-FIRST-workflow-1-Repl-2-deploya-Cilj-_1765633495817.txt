@@ -1,0 +1,158 @@
+# RoomVibe — STAGING-FIRST workflow (1 Repl → 2 deploya)
+
+**Cilj:** Uvesti *staging* deployment na `staging.roomvibe.app` koristeći **isti Repl/isti codebase**, ali **odvojene env varove + odvojenu bazu**. Nakon ovoga: **svaka promjena ide prvo na staging**, tek onda na live (`app.roomvibe.app`).
+
+---
+
+## 0) Kontekst
+
+* Trenutno imamo produkciju na: `app.roomvibe.app`
+* Već imamo:
+
+  * `STAGING_ENVIRONMENT` i DB guard koji sprječava spajanje staginga na prod bazu
+  * `VITE_STAGING_ENVIRONMENT` badge u headeru (STAGING badge)
+  * `STRIPE_ENABLED` feature flag (treba ostati **false** za staging i prod dok ne dođe Stripe go-live)
+  * Feature flagove za galeriju / public exhibitions (postoje)
+
+---
+
+## 1) Najvažnije pravilo
+
+**Staging mora imati svoju bazu.**
+
+* Staging *nikad* ne smije čitati/pisati produkcijske podatke.
+* DB guard mora failati ako su env varovi krivo postavljeni.
+
+---
+
+## 2) Zadatak — Staging deployment unutar ISTOG Repl-a (bez novog Repl-a)
+
+### 2.1) Setup domene
+
+1. U Replit Deployments / Domains:
+
+   * Dodaj novi custom domain: `staging.roomvibe.app`
+   * Poveži ga na **staging deployment** (ili drugi deployment/branch u istom replu, ovisno o Replit mogućnostima)
+2. Provjeri da je `staging.roomvibe.app` dodan u:
+
+   * `vite.config.ts` (allowedHosts)
+   * `server/server.ts` (CORS allow list)
+   * Stripe return URL logiku (ali Stripe ostaje disabled)
+
+### 2.2) Staging environment varovi (u Replit Deploy → Configure)
+
+Za **STAGING deployment** postavi / potvrdi:
+
+* `STAGING_ENVIRONMENT=true`
+* `VITE_STAGING_ENVIRONMENT=true`  *(da se vidi STAGING badge)*
+* `STRIPE_ENABLED=false`
+* `VITE_DEBUG_GALLERY360=false`  *(default off)*
+
+**Database (obavezno odvojeno):**
+
+* `DATABASE_URL_STAGING=<staging postgres url>`
+* `DATABASE_URL_PRODUCTION=<prod postgres url>`
+
+Napomena:
+
+* Staging mora koristiti `DATABASE_URL_STAGING`.
+* Produkcija mora koristiti `DATABASE_URL_PRODUCTION`.
+* Ako su stari `DATABASE_URL` varovi još tu, ostaviti samo kao fallback ako kod to traži — ali primarno koristiti *_STAGING i *_PRODUCTION.
+
+### 2.3) Produkcija env varovi (za live)
+
+Za **PRODUCTION deployment** potvrdi:
+
+* `STAGING_ENVIRONMENT=false`
+* `VITE_STAGING_ENVIRONMENT=false` (ili ne setati)
+* `STRIPE_ENABLED=false` (dok ne dođe Stripe go-live)
+* `DATABASE_URL_PRODUCTION=<prod postgres url>`
+
+### 2.4) DB Guard provjera (must-have)
+
+1. U logovima staging deploya mora pisati da je STAGING + da koristi staging DB.
+2. Ako se slučajno staging spoji na neon/prod host, proces mora FAILATI (exit), kao i prije.
+
+### 2.5) Preview deploy za promjene (ako Replit podržava)
+
+* Uvesti workflow: svaka promjena ide na staging deploy prije produkcije.
+* Ako postoji mogućnost "preview" deploymenta po commit-u / build-u, uključiti.
+
+---
+
+## 3) Release workflow (staging-first) — implementirati u docs
+
+Kreirati/azurirati dokument:
+
+* `docs/release-workflow.md`
+
+Sadržaj (kratko, ali jasno):
+
+1. Promjena se testira lokalno / dev
+2. Deploy na **staging**
+3. Smoke test na staging:
+
+   * STAGING badge vidljiv
+   * Login radi
+   * 360 Classic Gallery radi (4 pozicije)
+   * Public exhibitions (ovisno o flagovima) radi ili je isključeno s friendly page
+4. Tek nakon OK → deploy na **production**
+
+---
+
+## 4) Smoke test checklist (obavezno)
+
+Kreirati `docs/smoke-tests.md` ili dio u release-workflow:
+
+### Staging smoke test (minimum):
+
+* Otvori `staging.roomvibe.app` → STAGING badge vidljiv
+* Otvori 360 editor (Classic Gallery):
+
+  * Entrance / Center / Back Left / Back Right
+  * floor stabilan, zidovi/strop bijeli
+  * nema WebGL sampler errora
+* Provjeri da `STRIPE_ENABLED=false` (nema real payment flow-a)
+
+### Production smoke test (minimum):
+
+* Otvori `app.roomvibe.app` → NEMA staging badge
+* Provjeri da je `STRIPE_ENABLED=false`
+* 360 editor radi
+
+---
+
+## 5) Acceptance criteria (što znači "gotovo")
+
+✅ `staging.roomvibe.app` radi i ima STAGING badge
+✅ Staging i production koriste različite baze (DB guard potvrđen u logovima)
+✅ Deploy workflow dokumentiran (staging-first)
+✅ Smoke test checklist postoji i potvrđena
+✅ Stripe je disabled svugdje (do finalnog go-live)
+
+---
+
+## 6) Bonus (ako stigneš)
+
+* Dodaj mali banner ili watermark u staging (osim badge-a) na /app rute: "STAGING" (nenametljivo)
+* Dodaj u UI footer sitan tekst: "Environment: STAGING" kad je `VITE_STAGING_ENVIRONMENT=true`
+
+---
+
+## 7) Deliverables
+
+* Screenshot / potvrda:
+
+  * staging domain setup (Replit Domains)
+  * staging app radi s badgeom
+  * staging logs potvrđuju DB guard i staging DB
+* Linkovi:
+
+  * `https://staging.roomvibe.app`
+  * `https://app.roomvibe.app`
+
+---
+
+## Napomena
+
+**Ne dirati**: kretanje kamere / controls / Street View feel. Classic Gallery je zaključan kao baseline.
