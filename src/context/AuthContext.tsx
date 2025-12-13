@@ -39,7 +39,7 @@ interface AuthContextType {
   error: string | null;
   clearError: () => void;
   impersonatedRole: string | null;
-  setImpersonation: (role: 'user' | 'artist' | 'designer' | 'gallery' | null) => void;
+  setImpersonation: (role: 'user' | 'artist' | 'designer' | 'gallery' | 'allin' | null) => void;
   clearImpersonation: () => void;
   effectiveRole: string;
   hasEntitlement: (entitlement: 'artist_access' | 'designer_access' | 'gallery_access') => boolean;
@@ -200,7 +200,7 @@ export function AuthProvider({ children }: { children: React.ReactNode}) {
 
   const clearError = () => setError(null);
 
-  const setImpersonation = (role: 'user' | 'artist' | 'designer' | 'gallery' | null) => {
+  const setImpersonation = (role: 'user' | 'artist' | 'designer' | 'gallery' | 'allin' | null) => {
     if (user?.role !== 'admin') {
       console.warn('Only admin users can impersonate other roles');
       return;

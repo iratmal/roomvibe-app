@@ -223,7 +223,7 @@ function OnboardingRouter() {
 }
 
 function DashboardRouter() {
-  const { user, loading, hasEntitlement } = useAuth();
+  const { user, loading, hasEntitlement, impersonatedRole } = useAuth();
 
   if (loading) {
     return (
@@ -241,7 +241,7 @@ function DashboardRouter() {
     return null;
   }
 
-  // Check if user is admin using actual user properties (not effectiveRole which changes during impersonation)
+  // Check if user is admin using actual user properties
   const isAdmin = user.role === 'admin' || user.isAdmin;
 
   // Redirect first-time users to onboarding (skip for admins)
@@ -250,7 +250,19 @@ function DashboardRouter() {
     return null;
   }
 
-  // Admin always goes to admin dashboard (regardless of impersonation or entitlements)
+  // Admin can impersonate other roles to preview their dashboards
+  // When impersonating, show the appropriate dashboard instead of AdminDashboard
+  if (isAdmin && impersonatedRole) {
+    if (impersonatedRole === 'user') {
+      return <UserDashboard />;
+    }
+    if (impersonatedRole === 'allin') {
+      return <UnifiedDashboard />;
+    }
+    // For artist/designer/gallery, they go to RoleDashboardRouter via specific routes
+  }
+
+  // Admin without impersonation goes to admin dashboard
   if (isAdmin) {
     return <AdminDashboard />;
   }
