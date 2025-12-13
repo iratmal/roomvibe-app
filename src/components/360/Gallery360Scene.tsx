@@ -344,34 +344,13 @@ function TiledFloor({ width, depth, color }: { width: number; depth: number; col
   const baseColor = new THREE.Color(color);
   const groutColor = baseColor.clone().multiplyScalar(0.85);
 
+  // Production fix: Simple off-white floor using MeshBasicMaterial (never black)
   return (
     <group position={[0, 0.001, 0]}>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+      <mesh rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
-        <meshStandardMaterial 
-          color={groutColor}
-          roughness={0.95}
-          metalness={0.0}
-        />
+        <meshBasicMaterial color="#f2f2f2" />
       </mesh>
-      {tiles.tiles.map((tile, i) => {
-        const tileColor = baseColor.clone().multiplyScalar(tile.shade);
-        return (
-          <mesh
-            key={i}
-            position={[tile.x, 0.002, tile.z]}
-            rotation={[-Math.PI / 2, 0, 0]}
-            receiveShadow
-          >
-            <planeGeometry args={[tiles.tileActual, tiles.tileActual]} />
-            <meshStandardMaterial
-              color={tileColor}
-              roughness={tile.roughnessVar}
-              metalness={0.02}
-            />
-          </mesh>
-        );
-      })}
     </group>
   );
 }
@@ -395,6 +374,50 @@ function OuterEnclosure({ width, height, depth }: { width: number; height: numbe
 }
 
 function WoodFloor({ width, depth, color }: { width: number; depth: number; color: string }) {
+  const floorData = useMemo(() => {
+    const plankWidth = 0.15;
+    const plankLength = 1.2;
+    const gapSize = 0.004;
+    const rows = Math.ceil(depth / (plankWidth + gapSize)) + 1;
+    const cols = Math.ceil(width / plankLength) + 3;
+    const planks: Array<{ x: number; z: number; shade: number; roughVar: number; grainAngle: number }> = [];
+    
+    const seededRandom = (seed: number) => {
+      const x = Math.sin(seed * 12.9898 + seed * 78.233) * 43758.5453;
+      return x - Math.floor(x);
+    };
+    
+    for (let row = 0; row < rows; row++) {
+      const offset = (row % 4) * (plankLength / 4);
+      for (let col = 0; col < cols; col++) {
+        const seed = row * 1000 + col;
+        const x = -width / 2 + col * plankLength + offset - plankLength / 2;
+        const z = -depth / 2 + row * (plankWidth + gapSize) + plankWidth / 2;
+        if (x < width / 2 + plankLength && x > -width / 2 - plankLength && 
+            z < depth / 2 && z > -depth / 2) {
+          const shade = 0.88 + seededRandom(seed) * 0.24;
+          const roughVar = 0.45 + seededRandom(seed + 100) * 0.2;
+          const grainAngle = (seededRandom(seed + 200) - 0.5) * 0.02;
+          planks.push({ x, z, shade, roughVar, grainAngle });
+        }
+      }
+    }
+    return { planks, plankWidth, plankLength, gapSize };
+  }, [width, depth]);
+
+  // Production fix: Simple off-white floor using MeshBasicMaterial (never black)
+  return (
+    <group position={[0, 0.001, 0]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[width, depth]} />
+        <meshBasicMaterial color="#f2f2f2" />
+      </mesh>
+    </group>
+  );
+}
+
+function WoodFloorOriginal({ width, depth, color }: { width: number; depth: number; color: string }) {
+  // Original WoodFloor code preserved for future restoration
   const floorData = useMemo(() => {
     const plankWidth = 0.15;
     const plankLength = 1.2;
