@@ -6,6 +6,80 @@ This document provides step-by-step instructions for releasing new features to s
 
 ---
 
+## 🔴 CRITICAL: Database Environment Guard
+
+RoomVibe uses a **fail-fast database environment guard** that prevents staging from accessing production data (and vice versa).
+
+### How It Works
+
+On server startup, the guard:
+1. Reads `STAGING_ENVIRONMENT` (true/false)
+2. Selects the appropriate database URL
+3. **Exits immediately** if environment/database mismatch is detected
+
+### Environment Variables
+
+| Variable | Staging Deployment | Production Deployment |
+|----------|-------------------|----------------------|
+| `STAGING_ENVIRONMENT` | `true` | `false` |
+| `DATABASE_URL_STAGING` | Replit PostgreSQL URL | (optional) |
+| `DATABASE_URL_PRODUCTION` | (optional) | Neon PostgreSQL URL |
+| `DATABASE_URL` | Fallback (Replit PG) | Fallback (Neon PG) |
+
+### Selection Logic
+
+```
+If STAGING_ENVIRONMENT=true:
+  → Use DATABASE_URL_STAGING (or DATABASE_URL as fallback)
+  → FAIL if URL matches DATABASE_URL_PRODUCTION
+
+If STAGING_ENVIRONMENT=false:
+  → Use DATABASE_URL_PRODUCTION (or DATABASE_URL as fallback)
+  → FAIL if URL matches DATABASE_URL_STAGING
+```
+
+### Quick Verification
+
+Check server logs on startup:
+```
+[DB Guard] Environment: STAGING
+[DB Guard] Using STAGING database (host: ***.replit.co/***)
+```
+
+or
+
+```
+[DB Guard] Environment: PRODUCTION  
+[DB Guard] Using PRODUCTION database (host: ***.neon.tech/***)
+```
+
+### Development Bypass
+
+For local development where you may need to use production data temporarily:
+- Set `DB_GUARD_BYPASS` = `true` in development
+- This ONLY works when `NODE_ENV` is not `production`
+- **Never set this in deployed environments**
+
+### Setting Up in Replit
+
+**For Development (Replit Editor):**
+1. Click **Secrets** (lock icon) in left sidebar
+2. Set `STAGING_ENVIRONMENT` = `true`
+3. Set `DB_GUARD_BYPASS` = `true` (for local dev only)
+4. `DATABASE_URL` is auto-set by Replit PostgreSQL
+
+**For Staging Deployment:**
+1. Click **Deploy** → **Configure**
+2. Add: `STAGING_ENVIRONMENT` = `true`
+3. Add: `DATABASE_URL_STAGING` = (copy from Secrets → DATABASE_URL)
+
+**For Production Deployment:**
+1. Click **Deploy** → **Configure**  
+2. Add: `STAGING_ENVIRONMENT` = `false`
+3. Add: `DATABASE_URL_PRODUCTION` = (your Neon connection string)
+
+---
+
 ## Phase 1: Development Testing
 
 ### Before Deployment
@@ -38,14 +112,15 @@ This document provides step-by-step instructions for releasing new features to s
    | Key | Value |
    |-----|-------|
    | `STAGING_ENVIRONMENT` | `true` |
+   | `DATABASE_URL_STAGING` | (Replit PostgreSQL URL from Secrets) |
    | `FEATURE_GALLERY_ENABLED` | `true` or `false` |
    | `FEATURE_EXHIBITION_PUBLIC_ENABLED` | `true` or `false` |
    | `STRIPE_ENABLED` | `false` |
    | `NODE_ENV` | `production` |
 
-5. **Verify DATABASE_URL:**
-   - Should be Replit PostgreSQL (auto-configured)
-   - NOT the production Neon database
+5. **Verify Database Guard:**
+   - Check deployment logs for: `[DB Guard] Using STAGING database`
+   - If you see FATAL error, the database URL is misconfigured
 
 6. **Click "Deploy"**
 
@@ -82,15 +157,19 @@ This document provides step-by-step instructions for releasing new features to s
    | Key | Value |
    |-----|-------|
    | `STAGING_ENVIRONMENT` | `false` |
-   | `DATABASE_URL` | (Neon production string) |
+   | `DATABASE_URL_PRODUCTION` | (Neon production string) |
    | `FEATURE_GALLERY_ENABLED` | `true` or `false` |
    | `FEATURE_EXHIBITION_PUBLIC_ENABLED` | `true` or `false` |
    | `STRIPE_ENABLED` | `false` |
    | `NODE_ENV` | `production` |
 
-4. **Click "Deploy"**
+4. **Verify Database Guard:**
+   - Check deployment logs for: `[DB Guard] Using PRODUCTION database`
+   - If you see FATAL error, the database URL is misconfigured
 
-5. **Monitor for 30 minutes:**
+5. **Click "Deploy"**
+
+6. **Monitor for 30 minutes:**
    - Check app.roomvibe.app loads
    - Monitor error logs
    - Verify key user flows
