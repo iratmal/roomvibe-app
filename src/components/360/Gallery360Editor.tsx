@@ -330,11 +330,16 @@ export function Gallery360Editor({
 
   return (
     <div ref={containerRef} className={`flex h-full ${className}`}>
-      <div className={`${panelCollapsed ? 'w-12' : 'w-80'} bg-white border-r border-gray-200 flex flex-col overflow-hidden transition-all duration-300`}>
+      <div 
+        className={`bg-white border-r border-gray-200 flex flex-col transition-[width] duration-300 ease-out ${
+          panelCollapsed ? 'w-12' : 'w-80'
+        }`}
+        style={{ minWidth: panelCollapsed ? '48px' : '320px', maxWidth: panelCollapsed ? '48px' : '320px' }}
+      >
         {panelCollapsed ? (
           <button
             onClick={() => setPanelCollapsed(false)}
-            className="w-full h-full flex items-center justify-center hover:bg-gray-100 transition-colors"
+            className="w-12 h-full flex items-center justify-center hover:bg-gray-100 transition-colors flex-shrink-0"
             title="Expand panel"
           >
             <svg className="w-5 h-5 text-[#264C61]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -342,7 +347,7 @@ export function Gallery360Editor({
             </svg>
           </button>
         ) : (
-          <>
+          <div className="flex flex-col h-full w-80 overflow-hidden">
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
             {onBack && (
@@ -479,7 +484,7 @@ export function Gallery360Editor({
             {saving ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save All Changes'}
           </button>
         </div>
-          </>
+          </div>
         )}
       </div>
 
