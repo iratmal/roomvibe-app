@@ -159,10 +159,11 @@ export const gallery360Presets: Gallery360Preset[] = [
       { id: 'wall-west-3', wallId: 'west', position: [-9.95, 2.0, 1.5], rotation: [0, Math.PI / 2, 0], width: 1.0, height: 0.75, label: 'West Wall - 3' },
       { id: 'wall-west-4', wallId: 'west', position: [-9.95, 2.0, 4.5], rotation: [0, Math.PI / 2, 0], width: 1.0, height: 0.75, label: 'West Wall - 4' },
       // South Wall - artworks on sides, avoiding center portal (3.5m wide = ±1.75m from center)
-      { id: 'wall-south-1', wallId: 'south', position: [-7, 2.0, 7.95], rotation: [0, Math.PI, 0], width: 1.0, height: 0.75, label: 'South Wall - Left 1' },
-      { id: 'wall-south-2', wallId: 'south', position: [-4.5, 2.0, 7.95], rotation: [0, Math.PI, 0], width: 1.0, height: 0.75, label: 'South Wall - Left 2' },
-      { id: 'wall-south-3', wallId: 'south', position: [4.5, 2.0, 7.95], rotation: [0, Math.PI, 0], width: 1.0, height: 0.75, label: 'South Wall - Right 1' },
-      { id: 'wall-south-4', wallId: 'south', position: [7, 2.0, 7.95], rotation: [0, Math.PI, 0], width: 1.0, height: 0.75, label: 'South Wall - Right 2' }
+      // Increased spacing: 3.5m center-to-center to prevent large artworks from touching
+      { id: 'wall-south-1', wallId: 'south', position: [-7.75, 2.0, 7.95], rotation: [0, Math.PI, 0], width: 1.0, height: 0.75, label: 'South Wall - Left 1' },
+      { id: 'wall-south-2', wallId: 'south', position: [-4.25, 2.0, 7.95], rotation: [0, Math.PI, 0], width: 1.0, height: 0.75, label: 'South Wall - Left 2' },
+      { id: 'wall-south-3', wallId: 'south', position: [4.25, 2.0, 7.95], rotation: [0, Math.PI, 0], width: 1.0, height: 0.75, label: 'South Wall - Right 1' },
+      { id: 'wall-south-4', wallId: 'south', position: [7.75, 2.0, 7.95], rotation: [0, Math.PI, 0], width: 1.0, height: 0.75, label: 'South Wall - Right 2' }
     ]
   }
 ];
