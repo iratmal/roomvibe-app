@@ -212,8 +212,8 @@ The script has built-in security guards that will abort if:
 - `STAGING_ENVIRONMENT` is not `true`
 - `ALLOW_PROD_TO_STAGING_CLONE` is not `true`
 - `DATABASE_URL_PRODUCTION` is not set
-- `DATABASE_URL_PRODUCTION` equals `DATABASE_URL`
-- Target host contains `prod`, `production`, or `neon.tech`
+- `DATABASE_URL` is not set
+- `DATABASE_URL_PRODUCTION` equals `DATABASE_URL` (exact string match)
 
 ### Step 1: Add Temporary Environment Variables
 

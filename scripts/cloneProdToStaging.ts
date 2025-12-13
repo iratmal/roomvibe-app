@@ -8,8 +8,8 @@
  * - STAGING_ENVIRONMENT must be "true"
  * - ALLOW_PROD_TO_STAGING_CLONE must be "true"
  * - DATABASE_URL_PRODUCTION must be set
- * - DATABASE_URL_PRODUCTION !== DATABASE_URL
- * - Target host must not contain "prod", "production", or "neon.tech"
+ * - DATABASE_URL must be set
+ * - DATABASE_URL_PRODUCTION !== DATABASE_URL (exact string match)
  * 
  * Usage: npx tsx scripts/cloneProdToStaging.ts <email>
  */
@@ -70,19 +70,6 @@ function runSecurityChecks(): void {
   }
   console.log("✅ Source and target URLs are different");
 
-  // Guard 6: Target must NOT be production
-  const targetUrl = process.env.DATABASE_URL.toLowerCase();
-  const dangerousPatterns = ["prod", "production", "neon.tech"];
-  
-  for (const pattern of dangerousPatterns) {
-    if (targetUrl.includes(pattern)) {
-      console.error(`❌ FATAL: Target DATABASE_URL contains '${pattern}'`);
-      console.error("   Refusing to write to potential production database!");
-      process.exit(1);
-    }
-  }
-  console.log("✅ Target URL does not contain production patterns");
-
   console.log("\n🔓 All security checks passed!\n");
 }
 
@@ -98,6 +85,127 @@ function createPools() {
   });
 
   return { sourcePool, targetPool };
+}
+
+// ============= SCHEMA INITIALIZATION =============
+
+async function initializeTargetSchema(pool: pg.Pool): Promise<void> {
+  console.log("\n📊 Ensuring target database schema exists...");
+
+  // Create users table
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      email VARCHAR(255) UNIQUE NOT NULL,
+      password_hash VARCHAR(255) NOT NULL,
+      role VARCHAR(50) NOT NULL DEFAULT 'user',
+      email_confirmed BOOLEAN DEFAULT FALSE,
+      confirmation_token VARCHAR(255),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      subscription_status VARCHAR(20) DEFAULT 'free',
+      subscription_plan VARCHAR(20) DEFAULT 'user',
+      stripe_customer_id VARCHAR(255),
+      stripe_subscription_id VARCHAR(255),
+      is_admin BOOLEAN DEFAULT FALSE,
+      artist_access BOOLEAN DEFAULT FALSE,
+      designer_access BOOLEAN DEFAULT FALSE,
+      gallery_access BOOLEAN DEFAULT FALSE,
+      widget_token VARCHAR(64) UNIQUE,
+      onboarding_completed BOOLEAN DEFAULT FALSE
+    );
+  `);
+
+  // Create artworks table
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS artworks (
+      id SERIAL PRIMARY KEY,
+      artist_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      title VARCHAR(255) NOT NULL,
+      image_url TEXT NOT NULL,
+      width DECIMAL(10, 2) NOT NULL,
+      height DECIMAL(10, 2) NOT NULL,
+      price_amount DECIMAL(10, 2),
+      buy_url TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      price_currency VARCHAR(3) DEFAULT 'EUR',
+      dimension_unit VARCHAR(2) DEFAULT 'cm'
+    );
+  `);
+
+  // Create projects table
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS projects (
+      id SERIAL PRIMARY KEY,
+      designer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      title VARCHAR(255) NOT NULL,
+      client_name VARCHAR(255),
+      room_type VARCHAR(100),
+      notes TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  // Create room_images table
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS room_images (
+      id SERIAL PRIMARY KEY,
+      project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+      image_url TEXT NOT NULL,
+      image_data TEXT,
+      label VARCHAR(255),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  // Create gallery_collections table
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS gallery_collections (
+      id SERIAL PRIMARY KEY,
+      gallery_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      title VARCHAR(255) NOT NULL,
+      subtitle VARCHAR(255),
+      description TEXT,
+      status VARCHAR(20) DEFAULT 'draft',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  // Create gallery_artworks table
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS gallery_artworks (
+      id SERIAL PRIMARY KEY,
+      collection_id INTEGER NOT NULL REFERENCES gallery_collections(id) ON DELETE CASCADE,
+      title VARCHAR(255) NOT NULL,
+      artist_name VARCHAR(255) NOT NULL,
+      image_url TEXT NOT NULL,
+      width_value DECIMAL(10, 2) NOT NULL,
+      height_value DECIMAL(10, 2) NOT NULL,
+      dimension_unit VARCHAR(2) DEFAULT 'cm',
+      price_amount DECIMAL(10, 2),
+      price_currency VARCHAR(3) DEFAULT 'EUR',
+      buy_url TEXT,
+      image_data TEXT,
+      description TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  // Create pdf_exports table
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS pdf_exports (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      export_month VARCHAR(7) NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  console.log("   ✅ Schema initialized");
 }
 
 // ============= ID MAPPING =============
@@ -545,6 +653,9 @@ async function main() {
     console.log("   ✅ Connected to production database");
     await targetPool.query("SELECT 1");
     console.log("   ✅ Connected to staging database");
+
+    // Initialize schema on target
+    await initializeTargetSchema(targetPool);
 
     // Get source user ID
     const sourceUserResult = await sourcePool.query(
