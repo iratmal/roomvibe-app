@@ -18,6 +18,11 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 - **Authentication & Authorization**: Express.js backend with JWT, HttpOnly cookies, bcrypt, CORS, and PostgreSQL manages user authentication, role-based access control (user, artist, designer, gallery, admin), and entitlements.
 - **Studio Editor**: Features a left panel for scene browsing, a central canvas for artwork visualization, and a right panel for controls (artwork, size, frame selection). Includes AI-suggested rooms, premium room libraries, and tiered access based on subscription plans. Supports image (1200px, 3000px) and PDF exports with plan-based restrictions and watermarking.
 - **Role-Based Dashboards**: Dedicated dashboards for users, artists, designers, and galleries, providing CRUD operations for artworks, project management, and widget embedding. Paid users access a unified dashboard with modular content.
+- **Designer Connect (FAZA 1)**: Designer Dashboard features a tabbed interface with four sections:
+  - Art Library: Browse artworks from artists who have enabled "Visible to Designers", with filters for style, medium, orientation, color, and dimensions
+  - My Projects: Create and manage client visualization projects
+  - Project Boards: View and manage artworks saved to projects from the Art Library
+  - Sent Messages: Track inquiries sent to artists about their work
 - **Subscription Management**: Full Stripe integration for five plans (Free, Artist, Designer, Gallery, All-Access) handling checkout, customer portal, and webhook events to manage user roles and entitlements.
 - **Multi-Entitlement System**: Users can accumulate and retain access to multiple modules (Artist, Designer, Gallery) via additive subscriptions.
 - **Unified Widget System**: A single embeddable JavaScript widget adapts its functionality based on user entitlements (Artist, Designer, Gallery modes).
