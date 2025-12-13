@@ -23,6 +23,12 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
   - My Projects: Create and manage client visualization projects
   - Project Boards: View and manage artworks saved to projects from the Art Library
   - Sent Messages: Track inquiries sent to artists about their work
+- **Gallery Connect (FAZA 1)**: Gallery Dashboard features a tabbed interface with three sections:
+  - Gallery Hub: Manage artworks, exhibitions, collections, and account settings
+  - Artist Directory: Browse artists who have enabled "Visible to Galleries", with filters for style, medium, availability, dimensions, and location
+  - Sent Messages: Track inquiries sent to artists about exhibitions and collaborations
+  - Connect status widget showing available artists and contacted count
+  - Note: Gallery sees only Artists (not Designers), no designer projects/interiors visible
 - **Subscription Management**: Full Stripe integration for five plans (Free, Artist, Designer, Gallery, All-Access) handling checkout, customer portal, and webhook events to manage user roles and entitlements.
 - **Multi-Entitlement System**: Users can accumulate and retain access to multiple modules (Artist, Designer, Gallery) via additive subscriptions.
 - **Unified Widget System**: A single embeddable JavaScript widget adapts its functionality based on user entitlements (Artist, Designer, Gallery modes).
