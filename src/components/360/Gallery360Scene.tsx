@@ -1680,13 +1680,17 @@ export function Gallery360Scene({
         toneMapping: THREE.ACESFilmicToneMapping,
         toneMappingExposure: 1.15
       }}
+      onCreated={({ gl }) => {
+        // Enable legacy lights for consistent intensity values
+        (gl as any).useLegacyLights = true;
+      }}
     >
-      <ambientLight intensity={0.25} color="#fff8f2" />
-      <hemisphereLight args={['#faf8f5', '#a09080', 0.4]} />
+      <ambientLight intensity={0.6} color="#fff8f2" />
+      <hemisphereLight args={['#faf8f5', '#a09080', 0.8]} />
       
       <directionalLight 
         position={[0, preset.dimensions.height + 8, 0]} 
-        intensity={0.5}
+        intensity={1.0}
         color="#fffcf8"
         castShadow
         shadow-mapSize={[2048, 2048]}
@@ -1699,8 +1703,8 @@ export function Gallery360Scene({
         shadow-radius={4}
       />
       
-      <directionalLight position={[12, 6, 6]} intensity={0.2} color="#fff5e8" />
-      <directionalLight position={[-12, 6, -6]} intensity={0.15} color="#f8f5ff" />
+      <directionalLight position={[12, 6, 6]} intensity={0.4} color="#fff5e8" />
+      <directionalLight position={[-12, 6, -6]} intensity={0.3} color="#f8f5ff" />
 
       <GalleryRoom preset={preset} />
 
