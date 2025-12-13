@@ -1,9 +1,61 @@
-import React, { useRef, useState, useEffect, useCallback, Suspense, useMemo } from 'react';
+import React, { useRef, useState, useEffect, useCallback, Suspense, useMemo, Component, ErrorInfo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Html, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
 import { Gallery360Preset, Slot, Hotspot, Viewpoint } from '../../config/gallery360Presets';
 import { SlotAssignment } from './useArtworkSlots';
+
+interface TextureErrorBoundaryProps {
+  children: React.ReactNode;
+  fallback: React.ReactNode;
+  slotLabel?: string;
+}
+
+interface TextureErrorBoundaryState {
+  hasError: boolean;
+}
+
+class TextureErrorBoundary extends Component<TextureErrorBoundaryProps, TextureErrorBoundaryState> {
+  constructor(props: TextureErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(_error: Error): TextureErrorBoundaryState {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('[TextureErrorBoundary] Artwork texture failed to load:', {
+      slotLabel: this.props.slotLabel,
+      error: error.message,
+      componentStack: errorInfo.componentStack
+    });
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+    return this.props.children;
+  }
+}
+
+function isValidArtworkUrl(url: string | undefined | null): boolean {
+  if (!url) return false;
+  if (typeof url !== 'string') return false;
+  if (url.trim() === '') return false;
+  if (url.startsWith('data:image/')) return true;
+  if (url.startsWith('/') && url.length > 1) return true;
+  try {
+    const parsed = new URL(url);
+    if (!parsed.hostname || parsed.hostname.length < 3) return false;
+    if (!['http:', 'https:'].includes(parsed.protocol)) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 /**
  * VISUAL-STABLE: Classic Gallery 360 Scene
@@ -940,7 +992,21 @@ function ArtworkPlane({
   const meshRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
 
-  const hasArtwork = assignment?.artworkUrl;
+  const hasValidArtwork = isValidArtworkUrl(assignment?.artworkUrl);
+
+  const errorFallback = (
+    <group>
+      <mesh>
+        <planeGeometry args={[slot.width * 0.9, slot.height * 0.9]} />
+        <meshBasicMaterial color="#f0e0e0" />
+      </mesh>
+      <Html center>
+        <div className="bg-red-100 text-red-700 px-2 py-1 rounded text-xs whitespace-nowrap pointer-events-none">
+          Failed to load
+        </div>
+      </Html>
+    </group>
+  );
 
   return (
     <group position={slot.position} rotation={slot.rotation}>
@@ -957,33 +1023,35 @@ function ArtworkPlane({
         <meshBasicMaterial 
           color={hovered ? '#e0e0e0' : '#d0d0d0'}
           transparent
-          opacity={hasArtwork ? 0 : 0.3}
+          opacity={hasValidArtwork ? 0 : 0.3}
         />
       </mesh>
 
-      {hasArtwork && (
-        <Suspense fallback={
-          <mesh>
-            <planeGeometry args={[slot.width * 0.9, slot.height * 0.9]} />
-            <meshBasicMaterial color="#cccccc" />
-          </mesh>
-        }>
-          <ArtworkImage 
-            url={assignment!.artworkUrl!} 
-            slotWidth={slot.width}
-            slotHeight={slot.height}
-            assignmentWidth={assignment?.width}
-            assignmentHeight={assignment?.height}
-            onClick={onClick}
-            hovered={hovered}
-            setHovered={setHovered}
-            presetId={presetId}
-            wallHeight={wallHeight}
-          />
-        </Suspense>
+      {hasValidArtwork && (
+        <TextureErrorBoundary key={assignment?.artworkUrl} fallback={errorFallback} slotLabel={slot.label}>
+          <Suspense fallback={
+            <mesh>
+              <planeGeometry args={[slot.width * 0.9, slot.height * 0.9]} />
+              <meshBasicMaterial color="#cccccc" />
+            </mesh>
+          }>
+            <ArtworkImage 
+              url={assignment!.artworkUrl!} 
+              slotWidth={slot.width}
+              slotHeight={slot.height}
+              assignmentWidth={assignment?.width}
+              assignmentHeight={assignment?.height}
+              onClick={onClick}
+              hovered={hovered}
+              setHovered={setHovered}
+              presetId={presetId}
+              wallHeight={wallHeight}
+            />
+          </Suspense>
+        </TextureErrorBoundary>
       )}
 
-      {!hasArtwork && isEditor && (
+      {!hasValidArtwork && isEditor && (
         <Html center>
           <div className="bg-white/80 px-2 py-1 rounded text-xs text-gray-600 whitespace-nowrap pointer-events-none">
             {slot.label}
