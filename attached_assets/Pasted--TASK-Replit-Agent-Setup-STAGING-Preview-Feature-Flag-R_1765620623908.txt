@@ -1,0 +1,140 @@
+# TASK — Replit Agent: Setup STAGING + Preview + Feature Flag + Rollback (RoomVibe)
+
+**Priority:** HIGH
+**Goal:** Protect production by enforcing a staging-first workflow. Production must never break due to experiments.
+
+---
+
+## 0) Summary (what you are building)
+
+Create a safe release pipeline:
+
+1. **STAGING deployment** on `staging.roomvibe.app`
+2. **Preview deploy** for every change/PR (if supported; otherwise document how we simulate it)
+3. Put **Gallery / Virtual Exhibition** behind a **feature flag kill-switch**
+4. Write a simple **rollback plan** + **publishing rules** docs
+
+---
+
+## 1) Must-have rules (non-negotiable)
+
+* **NEVER deploy untested changes directly to production.**
+* **All changes must be verified on staging first.**
+* **Staging must NOT use production DB.**
+
+---
+
+## 2) Deliverables
+
+### A) STAGING deployment + domain
+
+1. Create a dedicated **staging deployment** (separate from production deployment).
+2. Connect domain: **`staging.roomvibe.app` → staging deployment**
+3. Keep production as-is: **`app.roomvibe.app` → production deployment**
+
+**Acceptance:**
+
+* Opening `staging.roomvibe.app` loads the app (staging)
+* Opening `app.roomvibe.app` loads the app (production)
+
+### B) Environment separation (critical)
+
+Set up separate environment variables for staging vs production.
+
+**Minimum required envs:**
+
+* `DATABASE_URL` (must be a separate staging database; NEVER production)
+* `NEXT_PUBLIC_ENV` = `staging` on staging, `production` on prod (or similar)
+* `FEATURE_GALLERY_ENABLED` (see section C)
+* `STRIPE_ENABLED` = `false` on both (payments stay OFF)
+
+**Acceptance:**
+
+* There is NO scenario where staging reads/writes production DB.
+
+### C) Feature flag (kill switch) for Gallery / Virtual Exhibition
+
+Implement environment-driven feature flag:
+
+* `FEATURE_GALLERY_ENABLED=true|false`
+
+**When OFF:**
+
+* Hide all UI entry points (buttons/links) that lead to Gallery/Virtual Exhibition.
+* Block direct route access and show a friendly fallback page:
+
+  * “This feature is temporarily unavailable. Please try again later.”
+
+**When ON:**
+
+* Gallery works normally.
+
+**Acceptance tests:**
+
+* On staging: flag ON → gallery loads.
+* On staging: flag OFF → links hidden + route shows fallback.
+* On production: flag OFF → same behavior.
+
+### D) Preview deploys (best-effort)
+
+If Replit supports preview deployments for PRs/branches:
+
+* Enable it.
+* Ensure preview uses safe env (staging-like) and NEVER production DB.
+
+If Replit does NOT support it as we need:
+
+* Provide an alternative workflow:
+
+  * e.g., `staging` deployment always tracks a `staging` branch.
+  * production deployment tracks `main`.
+
+**Acceptance:**
+
+* There is always a “preview place” to verify changes before production.
+
+### E) Documentation (must create these files)
+
+Create 3 short docs (max 1–2 pages each):
+
+1. `/docs/publishing-rules.md`
+
+   * Staging-first rule
+   * Step-by-step: change → staging → verify → production
+   * Payments remain OFF until final go-live
+
+2. `/docs/release-workflow.md`
+
+   * How to deploy to staging
+   * How to publish to production
+   * Where to find logs
+
+3. `/docs/rollback-plan.md`
+
+   * How to rollback production to previous stable deployment
+   * How to disable gallery instantly (`FEATURE_GALLERY_ENABLED=false` + redeploy)
+   * 3 quick verification checks after rollback
+
+---
+
+## 3) Non-scope (do NOT do)
+
+* No redesign, no refactors unrelated to flags/deploy
+* No new gallery features
+* No DB schema migrations unless absolutely necessary (prefer env-only)
+* No Stripe live mode, no payments activation
+
+---
+
+## 4) Final report (required)
+
+At the end, send a concise summary:
+
+* What deployments exist (names)
+* What domains map to which deployment
+* Which env vars exist in staging vs prod
+* Exact steps (copy/paste) for Irena to:
+
+  * deploy staging
+  * deploy production
+  * instantly disable gallery in under 2 minutes
