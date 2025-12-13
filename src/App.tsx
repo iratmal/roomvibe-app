@@ -39,7 +39,6 @@ import { initHotjar, resetHotjar } from "./utils/hotjar";
 import { getRecommendedUpgradePlan, getUpgradeMessageForFeature, type FeatureKey, type PlanKey } from "./utils/upgradeLogic";
 import { Gallery360Editor } from "./components/360/Gallery360Editor";
 import { Viewer360 } from "./components/360/Viewer360";
-import { Gallery360Test } from "./components/360/Gallery360Test";
 import { isExhibitionPublicEnabled } from "./utils/featureFlags";
 import { FeatureDisabled } from "./components/FeatureDisabled";
 
@@ -107,7 +106,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-white text-rv-text">
-      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/privacy" && normalizedHash !== "#/terms" && normalizedHash !== "#/upload-consent" && normalizedHash !== "#/pricing" && normalizedHash !== "#/billing" && normalizedHash !== "#/onboarding" && normalizedHash !== "#/test-360" && !normalizedHash.startsWith("#/exhibition") && !normalizedHash.startsWith("#/gallery/exhibitions/") && !normalizedHash.startsWith("#/exhibitions/") && !normalizedHash.startsWith("#/app/exhibitions/") && !normalizedHash.startsWith("#/embed/exhibitions/") && <TopNav />}
+      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/privacy" && normalizedHash !== "#/terms" && normalizedHash !== "#/upload-consent" && normalizedHash !== "#/pricing" && normalizedHash !== "#/billing" && normalizedHash !== "#/onboarding" && !normalizedHash.startsWith("#/exhibition") && !normalizedHash.startsWith("#/gallery/exhibitions/") && !normalizedHash.startsWith("#/exhibitions/") && !normalizedHash.startsWith("#/app/exhibitions/") && !normalizedHash.startsWith("#/embed/exhibitions/") && <TopNav />}
       {normalizedHash === "#/onboarding" ? (
         <OnboardingRouter />
       ) : normalizedHash === "#/pricing" ? (
@@ -138,8 +137,6 @@ function AppContent() {
         <Exhibition360EditorPage />
       ) : normalizedHash.startsWith("#/gallery/exhibitions/") ? (
         <VirtualExhibitionRoom />
-      ) : normalizedHash === "#/test-360" ? (
-        <Gallery360Test />
       ) : normalizedHash === "#/docs" ? (
         <DocsPage />
       ) : normalizedHash === "#/login" ? (
