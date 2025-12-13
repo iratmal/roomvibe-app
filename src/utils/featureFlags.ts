@@ -2,6 +2,7 @@ export const FEATURE_FLAGS = {
   GALLERY_ENABLED: import.meta.env.VITE_FEATURE_GALLERY_ENABLED !== 'false',
   EXHIBITION_PUBLIC_ENABLED: import.meta.env.VITE_FEATURE_EXHIBITION_PUBLIC_ENABLED !== 'false',
   STRIPE_ENABLED: import.meta.env.VITE_STRIPE_ENABLED === 'true',
+  IS_STAGING: import.meta.env.VITE_STAGING_ENVIRONMENT === 'true',
 };
 
 export function isGalleryEnabled(): boolean {
@@ -14,4 +15,8 @@ export function isExhibitionPublicEnabled(): boolean {
 
 export function isStripeEnabled(): boolean {
   return FEATURE_FLAGS.STRIPE_ENABLED;
+}
+
+export function isStagingEnvironment(): boolean {
+  return FEATURE_FLAGS.IS_STAGING;
 }

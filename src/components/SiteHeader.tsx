@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { isStagingEnvironment } from '../utils/featureFlags';
 
 function MenuIcon({ className }: { className?: string }) {
   return (
@@ -62,6 +63,11 @@ export function SiteHeader({ showPlanBadge = false }: SiteHeaderProps) {
               className="h-16 lg:h-[68px] w-auto"
             />
           </a>
+          {isStagingEnvironment() && (
+            <span className="ml-2 px-2 py-0.5 text-xs font-bold bg-orange-500 text-white rounded uppercase tracking-wide">
+              STAGING
+            </span>
+          )}
           <nav className="hidden md:flex items-center gap-8 lg:gap-12 text-sm font-medium">
             <a href="#how" className="text-[#1A1A1A] hover:text-[#264C61] transition-colors">
               How it works
