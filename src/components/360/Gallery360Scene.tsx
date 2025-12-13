@@ -5,6 +5,143 @@ import * as THREE from 'three';
 import { Gallery360Preset, Slot, Hotspot, Viewpoint } from '../../config/gallery360Presets';
 import { SlotAssignment } from './useArtworkSlots';
 
+const DEBUG_GALLERY = import.meta.env.VITE_DEBUG_GALLERY360 === 'true';
+
+const SAFE_WALL_COLOR = '#F5F3EF';
+const SAFE_FLOOR_COLOR = '#E8E4DC';
+const SAFE_CEILING_COLOR = '#ECEBE7';
+const MIN_AMBIENT_INTENSITY = 0.5;
+const MIN_HEMISPHERE_INTENSITY = 0.6;
+
+function DebugOverlay() {
+  const { scene, gl } = useThree();
+  const [info, setInfo] = useState<{
+    lightsCount: number;
+    lights: Array<{ type: string; intensity: number; color: string }>;
+    toneMapping: string;
+    exposure: number;
+    outputColorSpace: string;
+    wallMaterials: Array<{ type: string; color: string }>;
+  } | null>(null);
+
+  useEffect(() => {
+    const lights: Array<{ type: string; intensity: number; color: string }> = [];
+    const wallMaterials: Array<{ type: string; color: string }> = [];
+    
+    scene.traverse((obj) => {
+      if (obj instanceof THREE.Light) {
+        lights.push({
+          type: obj.type,
+          intensity: (obj as any).intensity || 0,
+          color: obj.color ? `#${obj.color.getHexString()}` : 'N/A'
+        });
+      }
+      if (obj instanceof THREE.Mesh && obj.material) {
+        const mat = obj.material as THREE.MeshStandardMaterial;
+        if (mat.type === 'MeshStandardMaterial' && mat.color) {
+          const colorHex = `#${mat.color.getHexString()}`;
+          if (!wallMaterials.find(w => w.color === colorHex)) {
+            wallMaterials.push({ type: mat.type, color: colorHex });
+          }
+        }
+      }
+    });
+
+    const toneMappingNames: Record<number, string> = {
+      [THREE.NoToneMapping]: 'NoToneMapping',
+      [THREE.LinearToneMapping]: 'LinearToneMapping',
+      [THREE.ReinhardToneMapping]: 'ReinhardToneMapping',
+      [THREE.CineonToneMapping]: 'CineonToneMapping',
+      [THREE.ACESFilmicToneMapping]: 'ACESFilmicToneMapping',
+    };
+
+    setInfo({
+      lightsCount: lights.length,
+      lights: lights.slice(0, 10),
+      toneMapping: toneMappingNames[gl.toneMapping] || `Unknown(${gl.toneMapping})`,
+      exposure: gl.toneMappingExposure,
+      outputColorSpace: gl.outputColorSpace,
+      wallMaterials: wallMaterials.slice(0, 5)
+    });
+  }, [scene, gl]);
+
+  if (!info) return null;
+
+  return (
+    <Html position={[0, 3, 0]} center style={{ pointerEvents: 'none' }}>
+      <div style={{
+        background: 'rgba(0,0,0,0.85)',
+        color: '#0f0',
+        padding: '12px',
+        borderRadius: '8px',
+        fontFamily: 'monospace',
+        fontSize: '11px',
+        minWidth: '280px',
+        border: '1px solid #0f0'
+      }}>
+        <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#ff0' }}>
+          DEBUG: Gallery360 Diagnostics
+        </div>
+        <div><strong>Lights:</strong> {info.lightsCount} total</div>
+        {info.lights.map((l, i) => (
+          <div key={i} style={{ paddingLeft: '10px', fontSize: '10px' }}>
+            {l.type}: intensity={l.intensity.toFixed(2)}, color={l.color}
+          </div>
+        ))}
+        <div style={{ marginTop: '6px' }}>
+          <strong>Renderer:</strong>
+        </div>
+        <div style={{ paddingLeft: '10px', fontSize: '10px' }}>
+          ToneMapping: {info.toneMapping}
+        </div>
+        <div style={{ paddingLeft: '10px', fontSize: '10px' }}>
+          Exposure: {info.exposure.toFixed(2)}
+        </div>
+        <div style={{ paddingLeft: '10px', fontSize: '10px' }}>
+          ColorSpace: {info.outputColorSpace}
+        </div>
+        <div style={{ marginTop: '6px' }}>
+          <strong>Materials ({info.wallMaterials.length}):</strong>
+        </div>
+        {info.wallMaterials.map((m, i) => (
+          <div key={i} style={{ paddingLeft: '10px', fontSize: '10px' }}>
+            {m.type}: {m.color}
+          </div>
+        ))}
+      </div>
+    </Html>
+  );
+}
+
+function DebugWallMaterial({ color }: { color: string }) {
+  if (DEBUG_GALLERY) {
+    return <meshNormalMaterial side={THREE.DoubleSide} />;
+  }
+  return (
+    <meshStandardMaterial 
+      color={color || SAFE_WALL_COLOR}
+      side={THREE.DoubleSide}
+      roughness={0.9}
+      metalness={0}
+    />
+  );
+}
+
+function SafeWallMaterial({ color }: { color?: string }) {
+  const safeColor = color && color !== '#000000' && color !== '#000' ? color : SAFE_WALL_COLOR;
+  if (DEBUG_GALLERY) {
+    return <meshNormalMaterial side={THREE.DoubleSide} />;
+  }
+  return (
+    <meshStandardMaterial 
+      color={safeColor}
+      side={THREE.DoubleSide}
+      roughness={0.95}
+      metalness={0}
+    />
+  );
+}
+
 export interface ArtworkFocusTarget {
   position: [number, number, number];
   rotation: [number, number, number];
@@ -1746,6 +1883,8 @@ export function Gallery360Scene({
         focusTarget={focusTarget}
         onFocusDismiss={onFocusDismiss}
       />
+      
+      {DEBUG_GALLERY && <DebugOverlay />}
     </Canvas>
   );
 }
