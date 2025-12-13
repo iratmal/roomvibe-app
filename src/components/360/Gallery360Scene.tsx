@@ -5,6 +5,9 @@ import * as THREE from 'three';
 import { Gallery360Preset, Slot, Hotspot, Viewpoint } from '../../config/gallery360Presets';
 import { SlotAssignment } from './useArtworkSlots';
 
+// GUARANTEED PRODUCTION MARKER - This MUST appear in console when module loads
+console.warn('[GALLERY360 DEBUG] build active - v2025.12.13.A');
+
 const DEBUG_GALLERY = import.meta.env.VITE_DEBUG_GALLERY360 === 'true';
 const DEBUG_FORCE_BASIC = import.meta.env.VITE_DEBUG_FORCE_BASIC === 'true';
 const DEBUG_USE_LAMBERT = import.meta.env.VITE_DEBUG_USE_LAMBERT === 'true';
@@ -16,11 +19,9 @@ const MIN_AMBIENT_INTENSITY = 0.5;
 const MIN_HEMISPHERE_INTENSITY = 0.6;
 
 // Log debug state on load
-if (typeof window !== 'undefined') {
-  console.log('[Gallery360] DEBUG_GALLERY:', DEBUG_GALLERY);
-  console.log('[Gallery360] DEBUG_FORCE_BASIC:', DEBUG_FORCE_BASIC);
-  console.log('[Gallery360] DEBUG_USE_LAMBERT:', DEBUG_USE_LAMBERT);
-}
+console.warn('[GALLERY360 DEBUG] DEBUG_GALLERY:', DEBUG_GALLERY);
+console.warn('[GALLERY360 DEBUG] DEBUG_FORCE_BASIC:', DEBUG_FORCE_BASIC);
+console.warn('[GALLERY360 DEBUG] DEBUG_USE_LAMBERT:', DEBUG_USE_LAMBERT);
 
 function DebugOverlay() {
   const { scene, gl } = useThree();
