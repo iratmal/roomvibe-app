@@ -138,88 +138,21 @@ function DebugWallMaterial({ color }: { color: string }) {
 }
 
 function SafeWallMaterial({ color }: { color?: string }) {
-  const safeColor = color && color !== '#000000' && color !== '#000' ? color : SAFE_WALL_COLOR;
-  
-  // Step 1: Force white MeshBasicMaterial (no lighting) to confirm geometry
-  if (DEBUG_FORCE_BASIC) {
-    console.log('[SafeWallMaterial] Using MeshBasicMaterial #ffffff');
-    return <meshBasicMaterial color="#ffffff" side={THREE.DoubleSide} />;
-  }
-  
-  // Step 2: Test with MeshLambertMaterial (simple lighting)
-  if (DEBUG_USE_LAMBERT) {
-    console.log('[SafeWallMaterial] Using MeshLambertMaterial', safeColor);
-    return <meshLambertMaterial color={safeColor} side={THREE.DoubleSide} />;
-  }
-  
-  if (DEBUG_GALLERY) {
-    return <meshNormalMaterial side={THREE.DoubleSide} />;
-  }
-  
-  // Production: MeshStandardMaterial with safe color
-  console.log('[SafeWallMaterial] Using MeshStandardMaterial', safeColor);
-  return (
-    <meshStandardMaterial 
-      color={safeColor}
-      side={THREE.DoubleSide}
-      roughness={0.95}
-      metalness={0}
-    />
-  );
+  // HOT PINK TEST - Proving we're in the correct render path
+  console.warn('[SafeWallMaterial] FORCED HOT PINK MeshBasicMaterial');
+  return <meshBasicMaterial color="#FF1493" side={THREE.DoubleSide} />;
 }
 
 function SafeCeilingMaterial({ color }: { color?: string }) {
-  const safeColor = color && color !== '#000000' && color !== '#000' ? color : SAFE_CEILING_COLOR;
-  
-  if (DEBUG_FORCE_BASIC) {
-    console.log('[SafeCeilingMaterial] Using MeshBasicMaterial #ffffff');
-    return <meshBasicMaterial color="#ffffff" side={THREE.DoubleSide} />;
-  }
-  
-  if (DEBUG_USE_LAMBERT) {
-    console.log('[SafeCeilingMaterial] Using MeshLambertMaterial', safeColor);
-    return <meshLambertMaterial color={safeColor} side={THREE.DoubleSide} />;
-  }
-  
-  if (DEBUG_GALLERY) {
-    return <meshNormalMaterial side={THREE.DoubleSide} />;
-  }
-  
-  console.log('[SafeCeilingMaterial] Using MeshStandardMaterial', safeColor);
-  return (
-    <meshStandardMaterial 
-      color={safeColor}
-      roughness={0.9}
-      metalness={0}
-    />
-  );
+  // HOT PINK TEST - Proving we're in the correct render path
+  console.warn('[SafeCeilingMaterial] FORCED HOT PINK MeshBasicMaterial');
+  return <meshBasicMaterial color="#FF1493" side={THREE.DoubleSide} />;
 }
 
 function SafeFloorMaterial({ color }: { color?: string }) {
-  const safeColor = color && color !== '#000000' && color !== '#000' ? color : SAFE_FLOOR_COLOR;
-  
-  if (DEBUG_FORCE_BASIC) {
-    console.log('[SafeFloorMaterial] Using MeshBasicMaterial #ffffff');
-    return <meshBasicMaterial color="#ffffff" />;
-  }
-  
-  if (DEBUG_USE_LAMBERT) {
-    console.log('[SafeFloorMaterial] Using MeshLambertMaterial', safeColor);
-    return <meshLambertMaterial color={safeColor} />;
-  }
-  
-  if (DEBUG_GALLERY) {
-    return <meshNormalMaterial />;
-  }
-  
-  console.log('[SafeFloorMaterial] Using MeshStandardMaterial', safeColor);
-  return (
-    <meshStandardMaterial 
-      color={safeColor}
-      roughness={0.8}
-      metalness={0}
-    />
-  );
+  // HOT PINK TEST - Proving we're in the correct render path
+  console.warn('[SafeFloorMaterial] FORCED HOT PINK MeshBasicMaterial');
+  return <meshBasicMaterial color="#FF1493" />;
 }
 
 export interface ArtworkFocusTarget {
