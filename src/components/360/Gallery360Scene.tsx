@@ -182,7 +182,9 @@ function FloorGuard() {
       }
     });
     
-    console.log(`[FLOOR_GUARD] applied to ${fixedMeshes.length} meshes: ${fixedMeshes.length > 0 ? fixedMeshes.join(', ') : 'none (all floors already safe)'}`);
+    if (process.env.NODE_ENV === 'development' && fixedMeshes.length > 0) {
+      console.log(`[FLOOR_GUARD] applied to ${fixedMeshes.length} meshes: ${fixedMeshes.join(', ')}`);
+    }
   }, [scene]);
   
   return null;
@@ -362,6 +364,13 @@ function TiledFloor({ width, depth, color }: { width: number; depth: number; col
   );
 }
 
+/**
+ * OuterEnclosure creates TWO floor meshes:
+ * 1. outerEnclosureFloor - large plane below gallery (-0.8 Y offset)
+ * 2. The gallery's main floor (tiledFloorMain/woodFloorMain) from TiledFloor/WoodFloor
+ * Both must use MeshBasicMaterial to avoid WebGL sampler overflow.
+ * FloorGuard provides runtime protection if materials regress.
+ */
 function OuterEnclosure({ width, height, depth }: { width: number; height: number; depth: number }) {
   const size = Math.max(width, depth) + 80;
   const verticalSize = height + 60;
