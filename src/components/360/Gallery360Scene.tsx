@@ -321,7 +321,7 @@ function TiledFloor({ width, depth, color }: { width: number; depth: number; col
 
   return (
     <group position={[0, 0.001, 0]}>
-      <mesh rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh name="tiledFloorMain" rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
         <meshBasicMaterial color={GALLERY_FLOOR_COLOR} />
       </mesh>
@@ -335,13 +335,13 @@ function OuterEnclosure({ width, height, depth }: { width: number; height: numbe
   
   return (
     <group>
-      <mesh>
+      <mesh name="outerEnclosureBox">
         <boxGeometry args={[size, verticalSize, size]} />
         <meshBasicMaterial color="#1a1a1a" side={THREE.BackSide} />
       </mesh>
-      <mesh position={[0, -0.8, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh name="outerEnclosureFloor" position={[0, -0.8, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[size, size]} />
-        <meshStandardMaterial color="#1a1a1a" roughness={0.98} />
+        <meshBasicMaterial color={GALLERY_FLOOR_COLOR} />
       </mesh>
     </group>
   );
@@ -381,7 +381,7 @@ function WoodFloor({ width, depth, color }: { width: number; depth: number; colo
 
   return (
     <group position={[0, 0.001, 0]}>
-      <mesh rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh name="woodFloorMain" rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
         <meshBasicMaterial color={GALLERY_FLOOR_COLOR} />
       </mesh>
@@ -524,7 +524,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       ) : preset.floorType === 'tile' ? (
         <TiledFloor width={width} depth={depth} color={preset.floorColor} />
       ) : (
-        <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <mesh name="defaultFloorMain" position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
           <planeGeometry args={[width, depth]} />
           <SafeFloorMaterial color={preset.floorColor} />
         </mesh>
@@ -784,7 +784,7 @@ function EntrancePortal({ position, rotation }: { position: [number, number, num
           <SafeCeilingMaterial color="#ebe8e3" />
         </mesh>
         {/* Corridor floor - matching gallery tiles */}
-        <mesh position={[0, 0.005, -CORRIDOR_DEPTH / 2]} rotation={[-Math.PI / 2, 0, 0]}>
+        <mesh name="corridorFloor" position={[0, 0.005, -CORRIDOR_DEPTH / 2]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[PORTAL_W, CORRIDOR_DEPTH]} />
           <SafeFloorMaterial color="#e8e4dc" />
         </mesh>
@@ -793,7 +793,7 @@ function EntrancePortal({ position, rotation }: { position: [number, number, num
       {/* Secondary gallery space visible through corridor */}
       <group position={[0, 0, -CORRIDOR_DEPTH]}>
         {/* Secondary gallery floor - same tiles, extends further */}
-        <mesh position={[0, 0.003, -SECONDARY_D / 2]} rotation={[-Math.PI / 2, 0, 0]}>
+        <mesh name="secondaryGalleryFloor" position={[0, 0.003, -SECONDARY_D / 2]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[SECONDARY_W, SECONDARY_D]} />
           <SafeFloorMaterial color="#e5e1d9" />
         </mesh>
