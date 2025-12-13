@@ -5,23 +5,15 @@ import * as THREE from 'three';
 import { Gallery360Preset, Slot, Hotspot, Viewpoint } from '../../config/gallery360Presets';
 import { SlotAssignment } from './useArtworkSlots';
 
-// GUARANTEED PRODUCTION MARKER - This MUST appear in console when module loads
-console.warn('[GALLERY360 DEBUG] build active - v2025.12.13.A');
+/**
+ * VISUAL-STABLE: Classic Gallery 360 Scene
+ * Do not modify lighting/materials in this scene without staging verification.
+ * Last stabilized: 2024-12-13
+ */
 
-const DEBUG_GALLERY = import.meta.env.VITE_DEBUG_GALLERY360 === 'true';
-const DEBUG_FORCE_BASIC = import.meta.env.VITE_DEBUG_FORCE_BASIC === 'true';
-const DEBUG_USE_LAMBERT = import.meta.env.VITE_DEBUG_USE_LAMBERT === 'true';
-
-const SAFE_WALL_COLOR = '#F5F3EF';
-const SAFE_FLOOR_COLOR = '#E8E4DC';
-const SAFE_CEILING_COLOR = '#ECEBE7';
-const MIN_AMBIENT_INTENSITY = 0.5;
-const MIN_HEMISPHERE_INTENSITY = 0.6;
-
-// Log debug state on load
-console.warn('[GALLERY360 DEBUG] DEBUG_GALLERY:', DEBUG_GALLERY);
-console.warn('[GALLERY360 DEBUG] DEBUG_FORCE_BASIC:', DEBUG_FORCE_BASIC);
-console.warn('[GALLERY360 DEBUG] DEBUG_USE_LAMBERT:', DEBUG_USE_LAMBERT);
+const GALLERY_WALL_COLOR = '#f2f2f2';
+const GALLERY_CEILING_COLOR = '#f2f2f2';
+const GALLERY_FLOOR_COLOR = '#2a2a2a';
 
 function DebugOverlay() {
   const { scene, gl } = useThree();
@@ -123,35 +115,18 @@ function DebugOverlay() {
   );
 }
 
-function DebugWallMaterial({ color }: { color: string }) {
-  if (DEBUG_GALLERY) {
-    return <meshNormalMaterial side={THREE.DoubleSide} />;
-  }
-  return (
-    <meshStandardMaterial 
-      color={color || SAFE_WALL_COLOR}
-      side={THREE.DoubleSide}
-      roughness={0.9}
-      metalness={0}
-    />
-  );
-}
-
 function SafeWallMaterial({ color }: { color?: string }) {
-  // Production fix: Off-white MeshBasicMaterial (lighting-independent, never black)
-  const safeColor = (color && color !== '#000000' && color !== '#000' && color !== 'black') ? color : '#f2f2f2';
+  const safeColor = (color && color !== '#000000' && color !== '#000' && color !== 'black') ? color : GALLERY_WALL_COLOR;
   return <meshBasicMaterial color={safeColor} side={THREE.DoubleSide} />;
 }
 
 function SafeCeilingMaterial({ color }: { color?: string }) {
-  // Production fix: Off-white MeshBasicMaterial (lighting-independent, never black)
-  const safeColor = (color && color !== '#000000' && color !== '#000' && color !== 'black') ? color : '#f2f2f2';
+  const safeColor = (color && color !== '#000000' && color !== '#000' && color !== 'black') ? color : GALLERY_CEILING_COLOR;
   return <meshBasicMaterial color={safeColor} side={THREE.DoubleSide} />;
 }
 
 function SafeFloorMaterial({ color }: { color?: string }) {
-  // Production fix: Off-white MeshBasicMaterial (lighting-independent, never black)
-  const safeColor = (color && color !== '#000000' && color !== '#000' && color !== 'black') ? color : '#f2f2f2';
+  const safeColor = (color && color !== '#000000' && color !== '#000' && color !== 'black') ? color : GALLERY_FLOOR_COLOR;
   return <meshBasicMaterial color={safeColor} />;
 }
 
@@ -344,12 +319,11 @@ function TiledFloor({ width, depth, color }: { width: number; depth: number; col
   const baseColor = new THREE.Color(color);
   const groutColor = baseColor.clone().multiplyScalar(0.85);
 
-  // Production fix: Simple off-white floor using MeshBasicMaterial (never black)
   return (
     <group position={[0, 0.001, 0]}>
       <mesh rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
-        <meshBasicMaterial color="#f2f2f2" />
+        <meshBasicMaterial color={GALLERY_FLOOR_COLOR} />
       </mesh>
     </group>
   );
@@ -405,12 +379,11 @@ function WoodFloor({ width, depth, color }: { width: number; depth: number; colo
     return { planks, plankWidth, plankLength, gapSize };
   }, [width, depth]);
 
-  // Production fix: Simple off-white floor using MeshBasicMaterial (never black)
   return (
     <group position={[0, 0.001, 0]}>
       <mesh rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
-        <meshBasicMaterial color="#f2f2f2" />
+        <meshBasicMaterial color={GALLERY_FLOOR_COLOR} />
       </mesh>
     </group>
   );
@@ -1890,7 +1863,6 @@ export function Gallery360Scene({
         onFocusDismiss={onFocusDismiss}
       />
       
-      {DEBUG_GALLERY && <DebugOverlay />}
     </Canvas>
   );
 }
