@@ -344,6 +344,75 @@ export async function initializeDatabase() {
       END $$;
     `);
 
+    // =====================================================
+    // GDPR Consent Fields - Terms of Service & Marketing
+    // =====================================================
+
+    // tos_accepted_at - When Terms of Service was accepted
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'tos_accepted_at'
+        ) THEN
+          ALTER TABLE users ADD COLUMN tos_accepted_at TIMESTAMP;
+        END IF;
+      END $$;
+    `);
+
+    // privacy_accepted_at - When Privacy Policy was accepted
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'privacy_accepted_at'
+        ) THEN
+          ALTER TABLE users ADD COLUMN privacy_accepted_at TIMESTAMP;
+        END IF;
+      END $$;
+    `);
+
+    // tos_version - Version of ToS accepted (e.g., 2025-12-13)
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'tos_version'
+        ) THEN
+          ALTER TABLE users ADD COLUMN tos_version VARCHAR(20);
+        END IF;
+      END $$;
+    `);
+
+    // marketing_opt_in - Whether user opted in to marketing emails
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'marketing_opt_in'
+        ) THEN
+          ALTER TABLE users ADD COLUMN marketing_opt_in BOOLEAN DEFAULT FALSE;
+        END IF;
+      END $$;
+    `);
+
+    // marketing_opt_in_at - When marketing opt-in was given
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'marketing_opt_in_at'
+        ) THEN
+          ALTER TABLE users ADD COLUMN marketing_opt_in_at TIMESTAMP;
+        END IF;
+      END $$;
+    `);
+
     await query(`
       CREATE TABLE IF NOT EXISTS artworks (
         id SERIAL PRIMARY KEY,

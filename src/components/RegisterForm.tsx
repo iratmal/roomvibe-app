@@ -10,6 +10,9 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<string>('user');
+  const [tosAccepted, setTosAccepted] = useState(false);
+  const [marketingOptIn, setMarketingOptIn] = useState(false);
+  const [tosError, setTosError] = useState('');
   const [success, setSuccess] = useState<string | null>(null);
   const { register, loading, error, clearError } = useAuth();
 
@@ -17,8 +20,15 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
     e.preventDefault();
     clearError();
     setSuccess(null);
+    setTosError('');
+
+    if (!tosAccepted) {
+      setTosError('You must accept the Terms of Service to create an account.');
+      return;
+    }
+
     try {
-      const data = await register(email, password, role);
+      const data = await register(email, password, role, tosAccepted, marketingOptIn);
       setSuccess(data.message || 'Registration successful! You are now logged in.');
       setEmail('');
       setPassword('');
@@ -110,6 +120,36 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
               </option>
             ))}
           </select>
+        </div>
+
+        <div className="space-y-3 pt-2">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={tosAccepted}
+              onChange={(e) => { setTosAccepted(e.target.checked); setTosError(''); }}
+              className="mt-0.5 w-4 h-4 rounded border-rv-neutral text-rv-primary focus:ring-rv-primary"
+            />
+            <span className="text-sm text-rv-text">
+              I agree to the RoomVibe{' '}
+              <a href="#/terms" target="_blank" rel="noopener noreferrer" className="text-rv-primary hover:underline">Terms of Service</a>
+              {' '}and{' '}
+              <a href="#/privacy" target="_blank" rel="noopener noreferrer" className="text-rv-primary hover:underline">Privacy Policy</a>.
+            </span>
+          </label>
+          {tosError && <p className="text-xs text-red-600 ml-7">{tosError}</p>}
+
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={marketingOptIn}
+              onChange={(e) => setMarketingOptIn(e.target.checked)}
+              className="mt-0.5 w-4 h-4 rounded border-rv-neutral text-rv-primary focus:ring-rv-primary"
+            />
+            <span className="text-sm text-rv-textMuted">
+              I'd like to receive RoomVibe emails and updates for artists, designers, and galleries (you can unsubscribe anytime).
+            </span>
+          </label>
         </div>
 
         <button
