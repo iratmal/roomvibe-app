@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ImpersonationBanner } from '../ImpersonationBanner';
 
@@ -20,6 +20,7 @@ interface Artwork {
 
 export default function ArtworkEdit() {
   const { user } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const getArtworkIdFromHash = () => {
     const hash = window.location.hash;
@@ -33,6 +34,10 @@ export default function ArtworkEdit() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [imageError, setImageError] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadPreview, setUploadPreview] = useState<string | null>(null);
+  const [uploadLoading, setUploadLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -117,6 +122,63 @@ export default function ArtworkEdit() {
       [e.target.name]: e.target.value
     });
   };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setUploadPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleReplaceImage = async () => {
+    if (!selectedFile || !artworkId) return;
+
+    setUploadLoading(true);
+    setError('');
+
+    try {
+      const formData = new FormData();
+      formData.append('image', selectedFile);
+
+      const response = await fetch(`${API_URL}/api/gallery/artworks/${artworkId}/replace-image`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to replace image');
+      }
+
+      const data = await response.json();
+      setSuccess(data.message || 'Image replaced successfully!');
+      setSelectedFile(null);
+      setUploadPreview(null);
+      setImageError(false);
+      
+      if (artwork) {
+        setArtwork({
+          ...artwork,
+          image_url: data.image_url + '?t=' + Date.now()
+        });
+      }
+
+      window.dispatchEvent(new CustomEvent('gallery-collection-updated'));
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setUploadLoading(false);
+    }
+  };
+
+  const isAdmin = user?.role === 'admin' || user?.isAdmin;
+  const canReplaceImage = imageError || !artwork?.image_url || isAdmin;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -256,16 +318,90 @@ export default function ArtworkEdit() {
           <p className="text-sm text-slate-400 mb-8">Update artwork details</p>
           
           <div className="mb-8">
-            <div className="aspect-[4/3] max-w-md mx-auto bg-slate-100 rounded-xl overflow-hidden">
-              <img
-                src={artwork.image_url}
-                alt={artwork.title}
-                className="w-full h-full object-cover"
-              />
+            <div className="aspect-[4/3] max-w-md mx-auto bg-slate-100 rounded-xl overflow-hidden relative">
+              {uploadPreview ? (
+                <img
+                  src={uploadPreview}
+                  alt="New image preview"
+                  className="w-full h-full object-cover"
+                />
+              ) : imageError || !artwork.image_url ? (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-100">
+                  <svg className="w-16 h-16 text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span className="text-sm text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg font-medium">Image missing</span>
+                </div>
+              ) : (
+                <img
+                  src={artwork.image_url}
+                  alt={artwork.title}
+                  className="w-full h-full object-cover"
+                  onError={() => setImageError(true)}
+                />
+              )}
             </div>
-            <p className="text-sm text-slate-400 text-center mt-3">
-              Image cannot be changed. Delete and re-upload if you need a different image.
-            </p>
+            
+            {canReplaceImage ? (
+              <div className="mt-4 max-w-md mx-auto">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                
+                {!selectedFile ? (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full px-4 py-3 border-2 border-dashed border-amber-300 rounded-xl text-amber-600 hover:bg-amber-50 transition-colors font-medium flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {imageError || !artwork.image_url ? 'Upload Image' : 'Replace Image'}
+                  </button>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-sm text-slate-500 text-center">
+                      Selected: {selectedFile.name}
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={handleReplaceImage}
+                        disabled={uploadLoading}
+                        className="flex-1 px-4 py-2.5 bg-[#264C61] text-white rounded-lg hover:bg-[#1D3A4A] transition-colors font-semibold disabled:opacity-50"
+                      >
+                        {uploadLoading ? 'Uploading...' : 'Confirm Upload'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedFile(null);
+                          setUploadPreview(null);
+                        }}
+                        className="px-4 py-2.5 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors font-medium"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+                
+                {(imageError || !artwork.image_url) && (
+                  <p className="text-xs text-amber-600 text-center mt-2">
+                    This artwork's image is missing. Please upload a new image.
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-400 text-center mt-3">
+                Image cannot be changed. Delete and re-upload if you need a different image.
+              </p>
+            )}
           </div>
           
           <form onSubmit={handleSubmit} className="space-y-6">
