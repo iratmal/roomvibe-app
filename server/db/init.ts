@@ -582,6 +582,17 @@ export async function initializeDatabase() {
     `);
 
     // =====================================================
+    // Artist Connect Core - User profile images table
+    // =====================================================
+    await query(`
+      CREATE TABLE IF NOT EXISTS user_profile_images (
+        user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        image_data TEXT NOT NULL,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // =====================================================
     // Artist Connect Core - Messages/Inbox table
     // =====================================================
     await query(`

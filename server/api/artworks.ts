@@ -35,13 +35,13 @@ router.get('/artworks', authenticateToken, async (req: any, res) => {
     let queryParams;
 
     if (effectivePlan === 'admin') {
-      queryText = `SELECT a.id, a.artist_id, a.title, a.image_url, a.width, a.height, a.dimension_unit, a.price_amount, a.price_currency, a.buy_url, a.tags, a.created_at, a.updated_at, u.email as artist_email
+      queryText = `SELECT a.id, a.artist_id, a.title, a.image_url, a.width, a.height, a.dimension_unit, a.price_amount, a.price_currency, a.buy_url, a.tags, a.orientation, a.style_tags, a.dominant_colors, a.medium, a.availability, a.created_at, a.updated_at, u.email as artist_email
                    FROM artworks a
                    LEFT JOIN users u ON a.artist_id = u.id
                    ORDER BY a.created_at DESC`;
       queryParams = [];
     } else {
-      queryText = `SELECT id, artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, created_at, updated_at
+      queryText = `SELECT id, artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, created_at, updated_at
                    FROM artworks 
                    WHERE artist_id = $1 
                    ORDER BY created_at DESC`;
@@ -69,7 +69,7 @@ router.get('/mine', authenticateToken, async (req: any, res) => {
     console.log('[/mine] Fetching artworks for logged-in user:', req.user.id);
     
     const result = await query(
-      `SELECT id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, created_at
+      `SELECT id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, created_at
        FROM artworks 
        WHERE artist_id = $1 
        ORDER BY created_at DESC`,
@@ -87,7 +87,12 @@ router.get('/mine', authenticateToken, async (req: any, res) => {
       priceAmount: row.price_amount,
       priceCurrency: row.price_currency || 'EUR',
       buyUrl: row.buy_url,
-      tags: row.tags || []
+      tags: row.tags || [],
+      orientation: row.orientation || null,
+      styleTags: row.style_tags || [],
+      dominantColors: row.dominant_colors || [],
+      medium: row.medium || null,
+      availability: row.availability || 'available'
     }));
     
     console.log(`[/mine] Found ${artworks.length} artworks for user ${req.user.id}`);
@@ -105,9 +110,9 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
     // Allow all authenticated users to upload artworks (limit enforced by checkArtworkLimit middleware)
     // Free users can upload 1 artwork, paid users have higher limits
 
-    const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, artistId } = req.body;
+    const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, artistId, orientation, styleTags, dominantColors, medium, availability } = req.body;
 
-    console.log('[Upload] Creating artwork with data:', { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, hasFile: !!req.file });
+    console.log('[Upload] Creating artwork with data:', { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, hasFile: !!req.file, orientation, medium, availability });
 
     if (!title || !width || !height || !buyUrl) {
       console.error('Missing required fields:', { title: !!title, width: !!width, height: !!height, buyUrl: !!buyUrl });
@@ -131,12 +136,19 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
     const tags = await generateTagsFromImage(req.file.buffer.toString('base64'), req.file.mimetype);
     console.log('[Upload] Generated tags:', tags);
 
+    // Parse connect metadata
+    const styleTagsJson = styleTags ? (typeof styleTags === 'string' ? styleTags : JSON.stringify(styleTags)) : '[]';
+    const dominantColorsJson = dominantColors ? (typeof dominantColors === 'string' ? dominantColors : JSON.stringify(dominantColors)) : '[]';
+    const artworkOrientation = orientation || null;
+    const artworkMedium = medium || null;
+    const artworkAvailability = availability || 'available';
+
     console.log('Inserting artwork into database...');
     const result = await query(
-      `INSERT INTO artworks (artist_id, title, image_url, image_data, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, CURRENT_TIMESTAMP)
-       RETURNING id, artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, created_at, updated_at`,
-      [targetArtistId, title, `/api/artwork-image/${Date.now()}`, imageData, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, tags]
+      `INSERT INTO artworks (artist_id, title, image_url, image_data, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, CURRENT_TIMESTAMP)
+       RETURNING id, artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, created_at, updated_at`,
+      [targetArtistId, title, `/api/artwork-image/${Date.now()}`, imageData, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, tags, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability]
     );
 
     const artworkId = result.rows[0].id;
@@ -166,7 +178,7 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
     }
 
     const artworkId = parseInt(req.params.id);
-    const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl } = req.body;
+    const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, orientation, styleTags, dominantColors, medium, availability } = req.body;
 
     let existingArtwork;
     if (effectivePlan === 'admin') {
@@ -191,12 +203,23 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
     const currency = priceCurrency || existingArtwork.rows[0].price_currency || 'EUR';
     const unit = dimensionUnit || existingArtwork.rows[0].dimension_unit || 'cm';
 
+    // Parse connect metadata for update
+    const styleTagsJson = styleTags !== undefined 
+      ? (typeof styleTags === 'string' ? styleTags : JSON.stringify(styleTags || [])) 
+      : JSON.stringify(existingArtwork.rows[0].style_tags || []);
+    const dominantColorsJson = dominantColors !== undefined 
+      ? (typeof dominantColors === 'string' ? dominantColors : JSON.stringify(dominantColors || [])) 
+      : JSON.stringify(existingArtwork.rows[0].dominant_colors || []);
+    const artworkOrientation = orientation !== undefined ? orientation : existingArtwork.rows[0].orientation;
+    const artworkMedium = medium !== undefined ? medium : existingArtwork.rows[0].medium;
+    const artworkAvailability = availability !== undefined ? availability : (existingArtwork.rows[0].availability || 'available');
+
     const result = await query(
       `UPDATE artworks 
-       SET title = $1, image_url = $2, image_data = $3, width = $4, height = $5, dimension_unit = $6, price_amount = $7, price_currency = $8, buy_url = $9, updated_at = CURRENT_TIMESTAMP
-       WHERE id = $10
-       RETURNING id, artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, created_at, updated_at`,
-      [title, imageUrl, imageData, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, artworkId]
+       SET title = $1, image_url = $2, image_data = $3, width = $4, height = $5, dimension_unit = $6, price_amount = $7, price_currency = $8, buy_url = $9, orientation = $10, style_tags = $11, dominant_colors = $12, medium = $13, availability = $14, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $15
+       RETURNING id, artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, orientation, style_tags, dominant_colors, medium, availability, created_at, updated_at`,
+      [title, imageUrl, imageData, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability, artworkId]
     );
 
     res.json({ artwork: result.rows[0], message: 'Artwork updated successfully' });
