@@ -3,6 +3,7 @@ import multer from 'multer';
 import { query } from '../db/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { checkGalleryArtworkLimit, getEffectivePlan, requireMinimumPlan, getPlanLimits } from '../middleware/subscription.js';
+import { requireGalleryFeature } from '../middleware/featureFlags.js';
 
 const router = express.Router();
 
@@ -20,7 +21,7 @@ const upload = multer({
   }
 });
 
-router.get('/collections', authenticateToken, async (req: any, res) => {
+router.get('/collections', authenticateToken, requireGalleryFeature, async (req: any, res) => {
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
     
@@ -66,7 +67,7 @@ router.get('/collections', authenticateToken, async (req: any, res) => {
   }
 });
 
-router.post('/collections', authenticateToken, async (req: any, res) => {
+router.post('/collections', authenticateToken, requireGalleryFeature, async (req: any, res) => {
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
     
@@ -124,7 +125,7 @@ router.post('/collections', authenticateToken, async (req: any, res) => {
   }
 });
 
-router.put('/collections/:id', authenticateToken, async (req: any, res) => {
+router.put('/collections/:id', authenticateToken, requireGalleryFeature, async (req: any, res) => {
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
     
@@ -171,7 +172,7 @@ router.put('/collections/:id', authenticateToken, async (req: any, res) => {
   }
 });
 
-router.delete('/collections/:id', authenticateToken, async (req: any, res) => {
+router.delete('/collections/:id', authenticateToken, requireGalleryFeature, async (req: any, res) => {
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
     
@@ -205,7 +206,7 @@ router.delete('/collections/:id', authenticateToken, async (req: any, res) => {
   }
 });
 
-router.get('/collections/:id/artworks', authenticateToken, async (req: any, res) => {
+router.get('/collections/:id/artworks', authenticateToken, requireGalleryFeature, async (req: any, res) => {
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
     
@@ -280,7 +281,7 @@ router.get('/collections/:id/artworks', authenticateToken, async (req: any, res)
   }
 });
 
-router.post('/collections/:id/artworks', authenticateToken, checkGalleryArtworkLimit, upload.single('image'), async (req: any, res) => {
+router.post('/collections/:id/artworks', authenticateToken, requireGalleryFeature, checkGalleryArtworkLimit, upload.single('image'), async (req: any, res) => {
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
     
@@ -365,7 +366,7 @@ router.post('/collections/:id/artworks', authenticateToken, checkGalleryArtworkL
   }
 });
 
-router.get('/artworks/:id', authenticateToken, async (req: any, res) => {
+router.get('/artworks/:id', authenticateToken, requireGalleryFeature, async (req: any, res) => {
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
     
@@ -400,7 +401,7 @@ router.get('/artworks/:id', authenticateToken, async (req: any, res) => {
   }
 });
 
-router.put('/artworks/:id', authenticateToken, async (req: any, res) => {
+router.put('/artworks/:id', authenticateToken, requireGalleryFeature, async (req: any, res) => {
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
     
@@ -473,7 +474,7 @@ router.put('/artworks/:id', authenticateToken, async (req: any, res) => {
   }
 });
 
-router.delete('/artworks/:id', authenticateToken, async (req: any, res) => {
+router.delete('/artworks/:id', authenticateToken, requireGalleryFeature, async (req: any, res) => {
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
     
@@ -510,7 +511,7 @@ router.delete('/artworks/:id', authenticateToken, async (req: any, res) => {
   }
 });
 
-router.get('/collections/:id/scene', authenticateToken, async (req: any, res) => {
+router.get('/collections/:id/scene', authenticateToken, requireGalleryFeature, async (req: any, res) => {
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
     
@@ -549,7 +550,7 @@ router.get('/collections/:id/scene', authenticateToken, async (req: any, res) =>
   }
 });
 
-router.put('/collections/:id/scene', authenticateToken, async (req: any, res) => {
+router.put('/collections/:id/scene', authenticateToken, requireGalleryFeature, async (req: any, res) => {
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
     
