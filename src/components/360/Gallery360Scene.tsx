@@ -593,12 +593,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       {/* Gallery walls - clean gallery white */}
       <mesh position={[0, height / 2, -halfD]} receiveShadow>
         <planeGeometry args={[width, height]} />
-        <meshStandardMaterial 
-          color="#F4F3EF"
-          side={THREE.DoubleSide} 
-          roughness={0.95}
-          metalness={0.0}
-        />
+        <SafeWallMaterial color="#F4F3EF" />
       </mesh>
 
       {/* South wall with entrance opening */}
@@ -612,22 +607,12 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
 
       <mesh position={[halfW, height / 2, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
-        <meshStandardMaterial 
-          color="#F4F3EF"
-          side={THREE.DoubleSide}
-          roughness={0.95}
-          metalness={0.0}
-        />
+        <SafeWallMaterial color="#F4F3EF" />
       </mesh>
 
       <mesh position={[-halfW, height / 2, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
-        <meshStandardMaterial 
-          color="#F4F3EF"
-          side={THREE.DoubleSide}
-          roughness={0.95}
-          metalness={0.0}
-        />
+        <SafeWallMaterial color="#F4F3EF" />
       </mesh>
 
       {columnPositions.map((pos, i) => (
@@ -882,34 +867,19 @@ function SouthWallWithOpening({
       {/* Left section of wall */}
       <mesh position={[-(width / 2 - leftWidth / 2), height / 2, 0]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[leftWidth, height]} />
-        <meshStandardMaterial 
-          color="#F4F3EF"
-          side={THREE.DoubleSide}
-          roughness={0.95}
-          metalness={0.0}
-        />
+        <SafeWallMaterial color="#F4F3EF" />
       </mesh>
 
       {/* Right section of wall */}
       <mesh position={[(width / 2 - rightWidth / 2), height / 2, 0]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[rightWidth, height]} />
-        <meshStandardMaterial 
-          color="#F4F3EF"
-          side={THREE.DoubleSide}
-          roughness={0.95}
-          metalness={0.0}
-        />
+        <SafeWallMaterial color="#F4F3EF" />
       </mesh>
 
       {/* Top section above portal */}
       <mesh position={[0, portalH + topHeight / 2, 0]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[portalW, topHeight]} />
-        <meshStandardMaterial 
-          color="#F4F3EF"
-          side={THREE.DoubleSide}
-          roughness={0.95}
-          metalness={0.0}
-        />
+        <SafeWallMaterial color="#F4F3EF" />
       </mesh>
     </group>
   );
