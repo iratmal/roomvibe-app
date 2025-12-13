@@ -6,12 +6,21 @@ import { Gallery360Preset, Slot, Hotspot, Viewpoint } from '../../config/gallery
 import { SlotAssignment } from './useArtworkSlots';
 
 const DEBUG_GALLERY = import.meta.env.VITE_DEBUG_GALLERY360 === 'true';
+const DEBUG_FORCE_BASIC = import.meta.env.VITE_DEBUG_FORCE_BASIC === 'true';
+const DEBUG_USE_LAMBERT = import.meta.env.VITE_DEBUG_USE_LAMBERT === 'true';
 
 const SAFE_WALL_COLOR = '#F5F3EF';
 const SAFE_FLOOR_COLOR = '#E8E4DC';
 const SAFE_CEILING_COLOR = '#ECEBE7';
 const MIN_AMBIENT_INTENSITY = 0.5;
 const MIN_HEMISPHERE_INTENSITY = 0.6;
+
+// Log debug state on load
+if (typeof window !== 'undefined') {
+  console.log('[Gallery360] DEBUG_GALLERY:', DEBUG_GALLERY);
+  console.log('[Gallery360] DEBUG_FORCE_BASIC:', DEBUG_FORCE_BASIC);
+  console.log('[Gallery360] DEBUG_USE_LAMBERT:', DEBUG_USE_LAMBERT);
+}
 
 function DebugOverlay() {
   const { scene, gl } = useThree();
@@ -129,9 +138,25 @@ function DebugWallMaterial({ color }: { color: string }) {
 
 function SafeWallMaterial({ color }: { color?: string }) {
   const safeColor = color && color !== '#000000' && color !== '#000' ? color : SAFE_WALL_COLOR;
+  
+  // Step 1: Force white MeshBasicMaterial (no lighting) to confirm geometry
+  if (DEBUG_FORCE_BASIC) {
+    console.log('[SafeWallMaterial] Using MeshBasicMaterial #ffffff');
+    return <meshBasicMaterial color="#ffffff" side={THREE.DoubleSide} />;
+  }
+  
+  // Step 2: Test with MeshLambertMaterial (simple lighting)
+  if (DEBUG_USE_LAMBERT) {
+    console.log('[SafeWallMaterial] Using MeshLambertMaterial', safeColor);
+    return <meshLambertMaterial color={safeColor} side={THREE.DoubleSide} />;
+  }
+  
   if (DEBUG_GALLERY) {
     return <meshNormalMaterial side={THREE.DoubleSide} />;
   }
+  
+  // Production: MeshStandardMaterial with safe color
+  console.log('[SafeWallMaterial] Using MeshStandardMaterial', safeColor);
   return (
     <meshStandardMaterial 
       color={safeColor}
@@ -144,9 +169,22 @@ function SafeWallMaterial({ color }: { color?: string }) {
 
 function SafeCeilingMaterial({ color }: { color?: string }) {
   const safeColor = color && color !== '#000000' && color !== '#000' ? color : SAFE_CEILING_COLOR;
+  
+  if (DEBUG_FORCE_BASIC) {
+    console.log('[SafeCeilingMaterial] Using MeshBasicMaterial #ffffff');
+    return <meshBasicMaterial color="#ffffff" side={THREE.DoubleSide} />;
+  }
+  
+  if (DEBUG_USE_LAMBERT) {
+    console.log('[SafeCeilingMaterial] Using MeshLambertMaterial', safeColor);
+    return <meshLambertMaterial color={safeColor} side={THREE.DoubleSide} />;
+  }
+  
   if (DEBUG_GALLERY) {
     return <meshNormalMaterial side={THREE.DoubleSide} />;
   }
+  
+  console.log('[SafeCeilingMaterial] Using MeshStandardMaterial', safeColor);
   return (
     <meshStandardMaterial 
       color={safeColor}
@@ -158,9 +196,22 @@ function SafeCeilingMaterial({ color }: { color?: string }) {
 
 function SafeFloorMaterial({ color }: { color?: string }) {
   const safeColor = color && color !== '#000000' && color !== '#000' ? color : SAFE_FLOOR_COLOR;
+  
+  if (DEBUG_FORCE_BASIC) {
+    console.log('[SafeFloorMaterial] Using MeshBasicMaterial #ffffff');
+    return <meshBasicMaterial color="#ffffff" />;
+  }
+  
+  if (DEBUG_USE_LAMBERT) {
+    console.log('[SafeFloorMaterial] Using MeshLambertMaterial', safeColor);
+    return <meshLambertMaterial color={safeColor} />;
+  }
+  
   if (DEBUG_GALLERY) {
     return <meshNormalMaterial />;
   }
+  
+  console.log('[SafeFloorMaterial] Using MeshStandardMaterial', safeColor);
   return (
     <meshStandardMaterial 
       color={safeColor}
