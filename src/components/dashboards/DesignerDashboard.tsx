@@ -3,8 +3,13 @@ import { useAuth } from '../../context/AuthContext';
 import { ImpersonationBanner } from '../ImpersonationBanner';
 import { SiteHeader } from '../SiteHeader';
 import { PLAN_LIMITS } from '../../config/planLimits';
+import { DesignerArtLibrary } from './DesignerArtLibrary';
+import { DesignerProjectBoards } from './DesignerProjectBoards';
+import { DesignerSentMessages } from './DesignerSentMessages';
 
 const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
+
+type DashboardTab = 'projects' | 'art-library' | 'boards' | 'messages';
 
 interface Project {
   id: number;
@@ -31,6 +36,7 @@ interface Artwork {
 
 export function DesignerDashboard() {
   const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<DashboardTab>('projects');
   const [projects, setProjects] = useState<Project[]>([]);
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [loading, setLoading] = useState(false);
@@ -278,13 +284,79 @@ export function DesignerDashboard() {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16">
         {/* Header Section */}
-        <div className="mb-12 pb-8 border-b border-slate-200">
+        <div className="mb-8 pb-6 border-b border-slate-200">
           <h1 className="text-4xl md:text-5xl font-semibold mb-2 text-[#264C61] tracking-tight" style={{ fontFamily: 'Inter, sans-serif' }}>
             Designer Dashboard
           </h1>
           <p className="text-lg text-slate-500" style={{ fontFamily: 'Inter, sans-serif' }}>
             Welcome back, {user?.email || 'Designer'}!
           </p>
+        </div>
+
+        {/* Tabs Navigation */}
+        <div className="mb-8 border-b border-slate-200">
+          <nav className="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs">
+            <button
+              onClick={() => setActiveTab('projects')}
+              className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'projects'
+                  ? 'border-[#264C61] text-[#264C61]'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                </svg>
+                My Projects
+              </span>
+            </button>
+            <button
+              onClick={() => setActiveTab('art-library')}
+              className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'art-library'
+                  ? 'border-[#264C61] text-[#264C61]'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Art Library
+              </span>
+            </button>
+            <button
+              onClick={() => setActiveTab('boards')}
+              className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'boards'
+                  ? 'border-[#264C61] text-[#264C61]'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+                </svg>
+                Project Boards
+              </span>
+            </button>
+            <button
+              onClick={() => setActiveTab('messages')}
+              className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'messages'
+                  ? 'border-[#264C61] text-[#264C61]'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                Sent Messages
+              </span>
+            </button>
+          </nav>
         </div>
 
         {error && (
@@ -299,6 +371,26 @@ export function DesignerDashboard() {
           </div>
         )}
 
+        {/* Tab Content */}
+        {activeTab === 'art-library' && (
+          <DesignerArtLibrary 
+            projects={projects.map(p => ({ id: p.id, title: p.title }))}
+          />
+        )}
+
+        {activeTab === 'boards' && (
+          <DesignerProjectBoards 
+            projects={projects} 
+            onRefresh={fetchProjects}
+          />
+        )}
+
+        {activeTab === 'messages' && (
+          <DesignerSentMessages />
+        )}
+
+        {activeTab === 'projects' && (
+          <>
         {/* Premium Create New Project Card */}
         <div className="mb-12 p-8 bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100">
           <h2 className="text-2xl font-semibold mb-2 text-[#264C61]" style={{ fontFamily: 'Inter, sans-serif' }}>
@@ -840,6 +932,8 @@ export function DesignerDashboard() {
 
           <ChangePasswordDesigner />
         </div>
+          </>
+        )}
       </div>
     </div>
   );
