@@ -14,6 +14,20 @@ export function requireGalleryFeature(req: Request, res: Response, next: NextFun
   next();
 }
 
+export function requireExhibitionPublicFeature(req: Request, res: Response, next: NextFunction) {
+  const exhibitionPublicEnabled = process.env.FEATURE_EXHIBITION_PUBLIC_ENABLED !== 'false';
+  
+  if (!exhibitionPublicEnabled) {
+    return res.status(503).json({
+      error: 'Feature temporarily unavailable',
+      message: 'This feature is temporarily unavailable. Please try again later.',
+      feature: 'exhibition_public'
+    });
+  }
+  
+  next();
+}
+
 export function requireStripeFeature(req: Request, res: Response, next: NextFunction) {
   const stripeEnabled = process.env.STRIPE_ENABLED === 'true';
   
@@ -30,6 +44,10 @@ export function requireStripeFeature(req: Request, res: Response, next: NextFunc
 
 export function isGalleryEnabled(): boolean {
   return process.env.FEATURE_GALLERY_ENABLED !== 'false';
+}
+
+export function isExhibitionPublicEnabled(): boolean {
+  return process.env.FEATURE_EXHIBITION_PUBLIC_ENABLED !== 'false';
 }
 
 export function isStripeEnabled(): boolean {

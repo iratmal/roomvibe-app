@@ -3,7 +3,7 @@ import multer from 'multer';
 import { query } from '../db/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { checkGalleryArtworkLimit, getEffectivePlan, requireMinimumPlan, getPlanLimits } from '../middleware/subscription.js';
-import { requireGalleryFeature } from '../middleware/featureFlags.js';
+import { requireGalleryFeature, requireExhibitionPublicFeature } from '../middleware/featureFlags.js';
 
 const router = express.Router();
 
@@ -618,7 +618,7 @@ router.put('/collections/:id/scene', authenticateToken, requireGalleryFeature, a
   }
 });
 
-router.get('/exhibitions/:id/public', async (req, res) => {
+router.get('/exhibitions/:id/public', requireExhibitionPublicFeature, async (req, res) => {
   try {
     const collectionId = req.params.id;
     

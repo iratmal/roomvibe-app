@@ -2,108 +2,147 @@
 
 ## Overview
 
-This document outlines the step-by-step process for releasing new features to production.
+This document provides step-by-step instructions for releasing new features to staging and production.
 
-## Release Process
+---
 
-### Phase 1: Development
+## Phase 1: Development Testing
 
-1. **Develop Feature**
-   - Work in the development environment
-   - Use feature flags for new features
-   - Write tests where applicable
+### Before Deployment
 
-2. **Local Testing**
-   - Test feature with workflows running
-   - Verify no console errors
-   - Check responsive design
+1. **Verify workflows are running:**
+   - Backend API shows "Server is now ready"
+   - Frontend Vite shows no errors
 
-### Phase 2: Staging Deployment
+2. **Test locally in Replit:**
+   - Open the Webview panel
+   - Navigate through key user flows
+   - Check browser console for errors
 
-1. **Prepare Staging**
-   ```bash
-   # Ensure staging environment variables are set
-   FEATURE_GALLERY_ENABLED=true/false
-   STRIPE_ENABLED=false
-   STAGING_ENVIRONMENT=true
-   ```
+---
 
-2. **Deploy to Staging**
-   - Click "Deploy" in Replit
-   - Select staging deployment configuration
-   - Verify deployment completes successfully
+## Phase 2: Staging Deployment
 
-3. **Staging Verification**
-   - [ ] Application loads correctly
-   - [ ] Authentication works
-   - [ ] Core features functional
-   - [ ] New feature works as expected
+### Step-by-Step: Deploy to Staging
+
+1. **Open Replit Project**
+
+2. **Click "Deploy" button** (top right, rocket icon)
+
+3. **Click "Configure deployment"** (gear icon)
+
+4. **Set Environment Variables:**
+   - Scroll to "Environment Variables" section
+   - Add the following:
+
+   | Key | Value |
+   |-----|-------|
+   | `STAGING_ENVIRONMENT` | `true` |
+   | `FEATURE_GALLERY_ENABLED` | `true` or `false` |
+   | `FEATURE_EXHIBITION_PUBLIC_ENABLED` | `true` or `false` |
+   | `STRIPE_ENABLED` | `false` |
+   | `NODE_ENV` | `production` |
+
+5. **Verify DATABASE_URL:**
+   - Should be Replit PostgreSQL (auto-configured)
+   - NOT the production Neon database
+
+6. **Click "Deploy"**
+
+7. **Wait for deployment to complete**
+
+8. **Test on staging.roomvibe.app:**
+   - [ ] Application loads
+   - [ ] Login works
+   - [ ] Dashboard accessible
+   - [ ] Feature flags respected
    - [ ] No console errors
-   - [ ] API responses correct
-   - [ ] Mobile responsiveness verified
 
-### Phase 3: Production Deployment
+---
 
-1. **Pre-Production Checklist**
-   - [ ] Staging verification complete
-   - [ ] All team members notified
-   - [ ] Rollback plan ready
-   - [ ] Feature flags configured for production
+## Phase 3: Production Deployment
 
-2. **Production Environment Variables**
-   ```bash
-   FEATURE_GALLERY_ENABLED=true/false
-   STRIPE_ENABLED=true
-   STAGING_ENVIRONMENT=false
-   ```
+### Pre-Production Checklist
 
-3. **Deploy to Production**
-   - Update production deployment configuration
-   - Deploy with production environment
-   - Monitor for errors
+- [ ] Staging tested and verified
+- [ ] Feature flags configured for production
+- [ ] Database is PRODUCTION Neon (not staging)
+- [ ] STRIPE_ENABLED=false confirmed
 
-4. **Post-Deployment Verification**
-   - [ ] Application loads at app.roomvibe.app
-   - [ ] Authentication works
-   - [ ] Payment processing works (if enabled)
-   - [ ] Monitor error logs for 30 minutes
-   - [ ] Verify key user flows
+### Step-by-Step: Deploy to Production
 
-## Feature Flag Release Strategy
+1. **Prepare production DATABASE_URL:**
+   - Get Neon PostgreSQL connection string
+   - This MUST be different from staging
 
-### Soft Launch (Recommended)
-1. Deploy with feature flag OFF
-2. Enable for internal testing
-3. Enable for beta users
-4. Full rollout
+2. **Click "Deploy" button** (top right)
 
-### Hard Launch
-1. Deploy with feature flag ON
-2. Monitor closely
-3. Be ready to rollback
+3. **Configure for Production:**
+   
+   | Key | Value |
+   |-----|-------|
+   | `STAGING_ENVIRONMENT` | `false` |
+   | `DATABASE_URL` | (Neon production string) |
+   | `FEATURE_GALLERY_ENABLED` | `true` or `false` |
+   | `FEATURE_EXHIBITION_PUBLIC_ENABLED` | `true` or `false` |
+   | `STRIPE_ENABLED` | `false` |
+   | `NODE_ENV` | `production` |
 
-## Hotfix Process
+4. **Click "Deploy"**
 
-For critical bugs in production:
+5. **Monitor for 30 minutes:**
+   - Check app.roomvibe.app loads
+   - Monitor error logs
+   - Verify key user flows
 
-1. **Assess Impact**
-   - Determine severity
-   - Identify affected users
+---
 
-2. **Quick Fix**
-   - Create minimal fix
-   - Skip extensive staging if critical
+## Emergency: Disable Features in Production
 
-3. **Deploy Hotfix**
-   - Deploy to production immediately
-   - Create follow-up ticket for proper testing
+### Disable Gallery Dashboard (Under 2 Minutes)
 
-4. **Post-Mortem**
-   - Document what went wrong
-   - Update processes to prevent recurrence
+1. Go to **Deployments** in Replit
+2. Click **"Edit"** or gear icon on production deployment
+3. Change: `FEATURE_GALLERY_ENABLED` → `false`
+4. Click **"Redeploy"**
 
-## Communication
+### Disable ALL Public Exhibitions (Under 2 Minutes)
 
-- Notify team before production deployments
-- Document all deployments in project changelog
-- Update replit.md with significant changes
+1. Go to **Deployments** in Replit
+2. Click **"Edit"** or gear icon on production deployment
+3. Change: `FEATURE_EXHIBITION_PUBLIC_ENABLED` → `false`
+4. Click **"Redeploy"**
+
+### Disable Both Gallery + Exhibitions
+
+Set both flags to `false` and redeploy.
+
+---
+
+## Verify Current Deployment
+
+### Check Which Deployment is Live
+
+1. **Click "Deploy"** button
+2. **Look at "Deployments" list**
+3. **Green checkmark** = currently live deployment
+4. Check the domain column for staging vs production
+
+### Check Feature Flag Status
+
+Visit: `https://[your-domain]/api/feature-flags`
+
+Response shows current flag states:
+```json
+{
+  "galleryEnabled": true,
+  "exhibitionPublicEnabled": true,
+  "stripeEnabled": false
+}
+```
+
+---
+
+## Rollback (See rollback-plan.md)
+
+If issues occur, refer to `docs/rollback-plan.md` for emergency procedures.

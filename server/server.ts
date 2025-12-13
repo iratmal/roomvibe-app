@@ -78,6 +78,7 @@ let isServerReady = false;
 app.get('/api/feature-flags', (req, res) => {
   res.json({
     galleryEnabled: process.env.FEATURE_GALLERY_ENABLED !== 'false',
+    exhibitionPublicEnabled: process.env.FEATURE_EXHIBITION_PUBLIC_ENABLED !== 'false',
     stripeEnabled: process.env.STRIPE_ENABLED === 'true',
   });
 });

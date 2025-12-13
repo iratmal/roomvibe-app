@@ -2,7 +2,7 @@ import express from 'express';
 import { query } from '../db/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { gallery360Presets } from '../../src/config/gallery360Presets';
-import { requireGalleryFeature } from '../middleware/featureFlags.js';
+import { requireGalleryFeature, requireExhibitionPublicFeature } from '../middleware/featureFlags.js';
 
 const router = express.Router();
 
@@ -158,7 +158,7 @@ router.put('/collections/:id/360-scene', authenticateToken, requireGalleryFeatur
   }
 });
 
-router.get('/exhibitions/:id/360-public', async (req, res) => {
+router.get('/exhibitions/:id/360-public', requireExhibitionPublicFeature, async (req, res) => {
   try {
     const collectionId = req.params.id;
 

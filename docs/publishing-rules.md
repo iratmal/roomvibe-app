@@ -2,74 +2,130 @@
 
 ## Environment Overview
 
-RoomVibe operates in two environments:
+RoomVibe operates in two completely separate environments:
 
 | Environment | Domain | Database | Purpose |
 |-------------|--------|----------|---------|
 | **Staging** | staging.roomvibe.app | Replit PostgreSQL | Testing new features before production |
 | **Production** | app.roomvibe.app | External Neon PostgreSQL | Live user-facing application |
 
-## Deployment Principles
+## 🔴 CRITICAL: Database Separation
 
-### 1. Never Skip Staging
-All changes must be tested on staging before production deployment.
+### Staging Database
+- **Provider:** Replit PostgreSQL (built-in)
+- **Connection:** `DATABASE_URL` secret in Replit's development environment
+- **Created:** Automatically provisioned by Replit
 
-### 2. Database Isolation
-- Staging uses Replit's built-in PostgreSQL (DATABASE_URL environment variable)
-- Production uses external Neon PostgreSQL (configured separately in production deployment)
-- **Never connect staging to production database**
+### Production Database
+- **Provider:** External Neon PostgreSQL
+- **Connection:** Separate `DATABASE_URL` set ONLY in production deployment
+- **NEVER** share the same DATABASE_URL between staging and production
 
-### 3. Feature Flags
-Use feature flags to control feature availability:
-- `FEATURE_GALLERY_ENABLED` - Controls Gallery/Virtual Exhibition features
-- `STRIPE_ENABLED` - Controls payment processing
+### Why Separate Databases?
+- Staging data corruption cannot affect production users
+- Safe to test destructive operations
+- Clear separation of test vs real data
 
-Set in staging to test new features without affecting production.
+---
 
-## Pre-Deployment Checklist
+## Feature Flags (Kill Switches)
 
-### Before Staging Deployment
-- [ ] All code changes committed
-- [ ] Feature flags configured appropriately
-- [ ] No hardcoded production URLs
-- [ ] Environment variables documented
+### Available Flags
 
-### Before Production Deployment
-- [ ] Staging tested and verified working
-- [ ] Database migrations tested on staging first
-- [ ] Feature flags set correctly for production
-- [ ] Rollback plan documented
+| Flag | Purpose | Default |
+|------|---------|---------|
+| `FEATURE_GALLERY_ENABLED` | Gallery dashboard access | true |
+| `FEATURE_EXHIBITION_PUBLIC_ENABLED` | Public exhibition pages + 360° viewers | true |
+| `STRIPE_ENABLED` | Payment processing | false |
 
-## Environment Variables
+### Emergency Disable (Under 2 Minutes)
 
-### Backend (Server)
-| Variable | Staging | Production |
-|----------|---------|------------|
-| `DATABASE_URL` | Replit PostgreSQL | Neon PostgreSQL |
-| `NODE_ENV` | production | production |
-| `FRONTEND_URL` | https://staging.roomvibe.app | https://app.roomvibe.app |
-| `FEATURE_GALLERY_ENABLED` | true/false | true/false |
-| `STRIPE_ENABLED` | false | true |
-| `STAGING_ENVIRONMENT` | true | false |
+To instantly disable gallery/exhibition features:
 
-### Frontend (Vite)
-| Variable | Staging | Production |
-|----------|---------|------------|
-| `VITE_API_URL` | (uses same origin) | (uses same origin) |
-| `VITE_FEATURE_GALLERY_ENABLED` | true/false | true/false |
-| `VITE_STRIPE_ENABLED` | false | true |
+1. **Open Replit Project**
+2. **Click "Secrets" in left sidebar** (lock icon)
+3. **Find or Add the flag:**
+   - `FEATURE_GALLERY_ENABLED` → set to `false`
+   - `FEATURE_EXHIBITION_PUBLIC_ENABLED` → set to `false`
+4. **Click "Redeploy" button** (if deployed) OR workflows auto-restart
 
-## Domain Configuration
+---
 
-Both environments are configured in:
-- `vite.config.ts` - allowedHosts includes both domains
-- `server/server.ts` - CORS allowedOrigins includes both domains
-- `server/api/billing.ts` - getBaseUrl() returns environment-appropriate URL
+## Environment Variables Per Deployment
+
+### Development (Replit Editor)
+Set in: **Secrets** panel (left sidebar, lock icon)
+
+| Variable | Value |
+|----------|-------|
+| `FEATURE_GALLERY_ENABLED` | true |
+| `FEATURE_EXHIBITION_PUBLIC_ENABLED` | true |
+| `STRIPE_ENABLED` | false |
+| `DATABASE_URL` | (auto-set by Replit PostgreSQL) |
+
+### Staging Deployment
+Set in: **Deployments → Configure → Environment Variables**
+
+| Variable | Value |
+|----------|-------|
+| `STAGING_ENVIRONMENT` | true |
+| `FEATURE_GALLERY_ENABLED` | true/false (your choice) |
+| `FEATURE_EXHIBITION_PUBLIC_ENABLED` | true/false (your choice) |
+| `STRIPE_ENABLED` | false |
+| `DATABASE_URL` | (Replit PostgreSQL connection string) |
+| `NODE_ENV` | production |
+
+### Production Deployment
+Set in: **Separate production deployment environment**
+
+| Variable | Value |
+|----------|-------|
+| `STAGING_ENVIRONMENT` | false |
+| `FEATURE_GALLERY_ENABLED` | true/false |
+| `FEATURE_EXHIBITION_PUBLIC_ENABLED` | true/false |
+| `STRIPE_ENABLED` | false (keep disabled) |
+| `DATABASE_URL` | (Neon PostgreSQL - DIFFERENT from staging) |
+| `NODE_ENV` | production |
+
+---
+
+## Replit Click-by-Click: Setting Environment Variables
+
+### For Development Environment:
+1. Open your Replit project
+2. Click the **lock icon (Secrets)** in the left sidebar
+3. Click **"New Secret"**
+4. Enter key (e.g., `FEATURE_GALLERY_ENABLED`)
+5. Enter value (e.g., `true` or `false`)
+6. Click **"Add Secret"**
+7. Workflows auto-restart with new value
+
+### For Deployment Environment:
+1. Click **"Deploy"** button (top right)
+2. Click **"Configure deployment"** or gear icon
+3. Scroll to **"Environment Variables"** section
+4. Add each variable with its value
+5. Click **"Deploy"** to apply
+
+---
 
 ## Forbidden Actions
 
-1. **DO NOT** use production DATABASE_URL in staging
-2. **DO NOT** enable Stripe in staging without test keys
-3. **DO NOT** deploy to production without staging verification
-4. **DO NOT** modify `public/presets` folder
-5. **DO NOT** modify `server.js` file
+1. ❌ **DO NOT** use production DATABASE_URL in staging
+2. ❌ **DO NOT** enable Stripe (`STRIPE_ENABLED=true`) without explicit approval
+3. ❌ **DO NOT** deploy to production without staging verification
+4. ❌ **DO NOT** modify `public/presets` folder
+5. ❌ **DO NOT** modify `server.js` file
+6. ❌ **DO NOT** flip env vars on a single deployment - use separate deployments
+
+---
+
+## Verification Checklist
+
+Before any deployment:
+
+- [ ] Correct DATABASE_URL for environment
+- [ ] STAGING_ENVIRONMENT correctly set
+- [ ] Feature flags configured appropriately
+- [ ] STRIPE_ENABLED=false (unless explicitly approved)
+- [ ] Tested on staging first (for production deploys)

@@ -39,6 +39,8 @@ import { initHotjar, resetHotjar } from "./utils/hotjar";
 import { getRecommendedUpgradePlan, getUpgradeMessageForFeature, type FeatureKey, type PlanKey } from "./utils/upgradeLogic";
 import { Gallery360Editor } from "./components/360/Gallery360Editor";
 import { Viewer360 } from "./components/360/Viewer360";
+import { isExhibitionPublicEnabled } from "./utils/featureFlags";
+import { FeatureDisabled } from "./components/FeatureDisabled";
 
 /**
  * RoomVibe — App + Landing + Studio + Authentication
@@ -124,13 +126,13 @@ function AppContent() {
       ) : normalizedHash.startsWith("#/exhibition/") ? (
         <Exhibition />
       ) : normalizedHash.startsWith("#/exhibitions/") && normalizedHash.endsWith("/public") ? (
-        <PublicExhibitionPage />
+        isExhibitionPublicEnabled() ? <PublicExhibitionPage /> : <FeatureDisabled featureName="Virtual Exhibitions" />
       ) : normalizedHash.startsWith("#/exhibitions/") && normalizedHash.endsWith("/360") ? (
-        <Exhibition360Viewer />
+        isExhibitionPublicEnabled() ? <Exhibition360Viewer /> : <FeatureDisabled featureName="Virtual Exhibitions" />
       ) : normalizedHash.startsWith("#/app/exhibitions/") ? (
-        <PublicExhibition360Viewer />
+        isExhibitionPublicEnabled() ? <PublicExhibition360Viewer /> : <FeatureDisabled featureName="Virtual Exhibitions" />
       ) : normalizedHash.startsWith("#/embed/exhibitions/") ? (
-        <EmbedExhibition360Viewer />
+        isExhibitionPublicEnabled() ? <EmbedExhibition360Viewer /> : <FeatureDisabled featureName="Virtual Exhibitions" />
       ) : normalizedHash.startsWith("#/gallery/exhibitions/") && normalizedHash.endsWith("/360-editor") ? (
         <Exhibition360EditorPage />
       ) : normalizedHash.startsWith("#/gallery/exhibitions/") ? (

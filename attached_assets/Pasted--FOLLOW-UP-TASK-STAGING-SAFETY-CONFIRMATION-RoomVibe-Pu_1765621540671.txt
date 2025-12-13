@@ -1,0 +1,118 @@
+# FOLLOW‑UP TASK — STAGING SAFETY CONFIRMATION (RoomVibe)
+
+**Purpose:** Close all critical safety gaps before we consider staging setup finished.
+
+---
+
+## 🔴 MUST CONFIRM BEFORE CLOSING TASK
+
+### 1️⃣ STAGING DATABASE SEPARATION (CRITICAL)
+
+Confirm and document **explicitly**:
+
+* Was a **separate STAGING database** created?
+
+  * If yes: which provider (Replit PostgreSQL / Neon / other) and database name (no secrets).
+* Confirm that **staging deployment uses a different `DATABASE_URL`** than production.
+* Implement clear separation, e.g.:
+
+  * `DATABASE_URL_STAGING`
+  * `DATABASE_URL_PRODUCTION`
+* Deployment must select DB based on:
+
+  * `STAGING_ENVIRONMENT=true` → staging DB
+  * `STAGING_ENVIRONMENT=false` → production DB
+
+🚫 **There must be NO possible scenario where staging can read/write production DB.**
+
+---
+
+### 2️⃣ KILL SWITCH FOR PUBLIC EXHIBITIONS (CRITICAL)
+
+Currently, public exhibition viewing remains accessible even when gallery dashboard is hidden.
+
+This is **not acceptable for risk control**.
+
+Please implement **one** of the following:
+
+**Option A (simpler):**
+
+* `FEATURE_GALLERY_ENABLED` gates:
+
+  * Gallery dashboard
+  * ALL public exhibition routes
+  * ALL 360° viewers
+
+**Option B (preferred if cleaner):**
+
+* Introduce separate flag:
+
+  * `FEATURE_EXHIBITION_PUBLIC_ENABLED`
+* Gate ALL public exhibition pages + 360 viewers behind it.
+* When OFF:
+
+  * Block routes
+  * Show fallback page: “This feature is temporarily unavailable. Please try again later.”
+
+Goal: **ability to instantly disable ANY gallery/exhibition surface in production.**
+
+---
+
+### 3️⃣ DEPLOYMENT‑LEVEL ENV VARS (IDIOT‑PROOF)
+
+Ensure **separate deployments** have **separate env var sets**.
+
+* Staging deployment:
+
+  * `STAGING_ENVIRONMENT=true`
+  * `STRIPE_ENABLED=false`
+  * staging `DATABASE_URL`
+
+* Production deployment:
+
+  * `STAGING_ENVIRONMENT=false`
+  * `STRIPE_ENABLED=false`
+  * production `DATABASE_URL`
+
+⚠️ No manual flipping of env vars on a single deployment.
+
+---
+
+### 4️⃣ DOCUMENTATION UPDATE (REQUIRED)
+
+Update docs with **exact Replit click‑paths**, not abstractions:
+
+* Where to set env vars **per deployment** in Replit
+* How to verify which deployment is live
+* How to:
+
+  * deploy staging
+  * deploy production
+  * disable gallery/exhibitions in under 2 minutes
+
+Files to update:
+
+* `/docs/publishing-rules.md`
+* `/docs/release-workflow.md`
+* `/docs/rollback-plan.md`
+
+---
+
+### 5️⃣ STRIPE REMINDER (DO NOT CHANGE)
+
+* Stripe stays OFF.
+* `STRIPE_ENABLED=false` on both staging and production.
+* Do NOT switch to live mode or enable payments.
+
+---
+
+## ✅ COMPLETION CRITERIA
+
+Task is complete only when:
+
+1. Staging DB separation is confirmed and documented.
+2. Public exhibition kill switch exists and is tested.
+3. Deployments have isolated env var sets.
+4. Docs contain clear, click‑by‑click instructions.
+
+Only after this we consider staging setup **production‑safe**.

@@ -2,123 +2,166 @@
 
 ## Overview
 
-This document provides procedures for rolling back the application when issues occur in production.
+Emergency procedures for rolling back when issues occur in production or staging.
+
+---
+
+## Quick Reference: Disable Features
+
+### Disable Gallery/Exhibitions in Under 2 Minutes
+
+| What to Disable | Flag to Change | Set To |
+|-----------------|----------------|--------|
+| Gallery Dashboard only | `FEATURE_GALLERY_ENABLED` | `false` |
+| Public Exhibitions + 360° Viewers | `FEATURE_EXHIBITION_PUBLIC_ENABLED` | `false` |
+| All Gallery Features | Both flags | `false` |
+| Payments | `STRIPE_ENABLED` | `false` |
+
+### Replit Click Path:
+1. **Deployments** → Click active deployment
+2. **Edit Environment Variables**
+3. Change flag value
+4. **Redeploy** (< 1 minute)
+
+---
 
 ## Rollback Methods
 
-### Method 1: Replit Checkpoints (Recommended)
+### Method 1: Feature Flag Toggle (Fastest - Under 2 Min)
 
-Replit automatically creates checkpoints during development. To rollback:
+**When to use:** Feature-specific issues, need immediate disable
 
-1. **Access Checkpoints**
-   - Open Replit project
-   - Navigate to Version History / Checkpoints
-   - Select a stable checkpoint
+**Steps:**
+1. Open Replit project
+2. Click **"Deploy"** button (top right)
+3. Find your active deployment (green checkmark)
+4. Click **"Edit"** or gear icon
+5. In Environment Variables:
+   - `FEATURE_GALLERY_ENABLED` → `false`
+   - OR `FEATURE_EXHIBITION_PUBLIC_ENABLED` → `false`
+6. Click **"Redeploy"**
+7. Wait ~30 seconds for deployment
 
-2. **Restore Checkpoint**
-   - Click "Restore to this checkpoint"
-   - Verify code reverted correctly
-   - Redeploy to production
+**Verification:**
+- Visit `https://[domain]/api/feature-flags`
+- Confirm flag shows `false`
 
-### Method 2: Feature Flag Toggle
+---
 
-For feature-specific issues:
+### Method 2: Replit Checkpoints (Code Rollback - 5 Min)
 
-1. **Disable Feature**
-   ```bash
-   # Set in production environment
-   FEATURE_GALLERY_ENABLED=false
-   ```
+**When to use:** Code bug, need to revert to previous version
 
-2. **Redeploy**
-   - Restart the deployment
-   - Feature will be hidden without code changes
+**Steps:**
+1. Open Replit project
+2. Click **"Version History"** in left sidebar (clock icon)
+3. Browse checkpoints by date/time
+4. Find last known good checkpoint
+5. Click **"Restore this version"**
+6. Confirm restore
+7. **Redeploy** if deployed
 
-### Method 3: Git Revert
+**Note:** Replit auto-creates checkpoints during development.
 
-For code-level rollback:
+---
 
-1. **Identify Last Good Commit**
-   ```bash
-   git log --oneline
-   ```
+### Method 3: Previous Deployment (Instant Rollback - 2 Min)
 
-2. **Create Revert**
-   ```bash
-   git revert HEAD
-   # or revert specific commit
-   git revert <commit-hash>
-   ```
+**When to use:** New deployment broke something
 
-3. **Deploy Reverted Code**
-   - Push changes
-   - Redeploy application
+**Steps:**
+1. Click **"Deploy"** button
+2. Find previous deployment in list
+3. Click **"Promote"** or **"Rollback to this version"**
+4. Wait for rollback to complete
+
+---
 
 ## Database Rollback
 
-### Staging Database
-- Replit PostgreSQL supports rollback through Replit's database panel
-- Can restore to previous state if needed
+### Staging Database (Replit PostgreSQL)
 
-### Production Database (Neon)
-- Contact Neon support for point-in-time recovery
-- **Never** attempt manual schema changes during incident
+1. Open Replit project
+2. Click **"Database"** in left sidebar
+3. Look for **"Restore"** or **"Rollback"** option
+4. Select restore point
+5. Confirm restore
 
-## Rollback Decision Tree
+### Production Database (Neon PostgreSQL)
+
+1. Log into Neon console
+2. Go to your project
+3. Click **"Branches"** or **"Backups"**
+4. Select point-in-time recovery
+5. Follow Neon's restore wizard
+
+**⚠️ WARNING:** Database rollback affects all data since the restore point.
+
+---
+
+## Decision Tree
 
 ```
-Issue Detected
-     │
-     ├─> Feature-specific issue?
-     │        │
-     │        └─> YES → Toggle feature flag OFF
-     │
-     ├─> Code bug introduced recently?
-     │        │
-     │        └─> YES → Use Replit checkpoint or git revert
-     │
-     ├─> Database issue?
-     │        │
-     │        └─> YES → Contact database provider, do NOT make schema changes
-     │
-     └─> Unknown cause?
-              │
-              └─> Rollback to last known good checkpoint
+Issue Detected in Production
+            │
+            ├─> Is it a feature-specific issue?
+            │         │
+            │         └─> YES → Disable feature flag → Redeploy
+            │
+            ├─> Is it a code bug from recent deploy?
+            │         │
+            │         └─> YES → Use previous deployment or Replit checkpoint
+            │
+            ├─> Is it a database issue?
+            │         │
+            │         └─> YES → Contact Neon support for PITR
+            │
+            └─> Unknown cause?
+                      │
+                      └─> Disable all features → Investigate
 ```
 
-## Rollback Timing Guidelines
+---
 
-| Severity | Response Time | Rollback Trigger |
-|----------|---------------|------------------|
-| Critical (app down) | Immediate | Within 5 minutes |
-| High (major feature broken) | < 15 minutes | If fix not identified in 15 min |
-| Medium (minor feature broken) | < 1 hour | If fix complex |
-| Low (cosmetic issue) | Next business day | Usually not needed |
+## Severity Response Times
+
+| Severity | Response | Rollback Trigger |
+|----------|----------|------------------|
+| **Critical** (app down) | Immediately | Within 5 minutes |
+| **High** (major feature broken) | < 15 minutes | If fix not found in 15 min |
+| **Medium** (minor feature broken) | < 1 hour | If fix is complex |
+| **Low** (cosmetic) | Next business day | Usually not needed |
+
+---
 
 ## Post-Rollback Actions
 
-1. **Notify Stakeholders**
-   - Inform team of rollback
-   - Document what was rolled back
+### Immediate (Within 1 Hour)
+1. **Notify stakeholders** - Inform team of rollback
+2. **Document** - Write what was rolled back and why
+3. **Monitor** - Watch for any remaining issues
 
-2. **Root Cause Analysis**
-   - Identify what caused the issue
-   - Document in incident report
+### Follow-Up (Within 24 Hours)
+1. **Root Cause Analysis** - Identify what caused the issue
+2. **Fix Forward** - Create proper fix in development
+3. **Test on Staging** - Verify fix before production
+4. **Update Docs** - Add learnings to prevent recurrence
 
-3. **Fix Forward**
-   - Create proper fix in development
-   - Test thoroughly on staging
-   - Re-deploy when confident
+---
 
 ## Emergency Contacts
 
-- Replit Support: Via Replit dashboard
-- Neon Support: Via Neon console (for production database)
+- **Replit Support:** Via Replit dashboard (? icon)
+- **Neon Support:** Via Neon console (production DB)
 
-## Prevention Measures
+---
 
-1. Always test on staging first
-2. Use feature flags for new features
-3. Deploy during low-traffic periods
-4. Have rollback plan ready before deploying
-5. Monitor closely after deployments
+## Prevention Checklist
+
+Before every deployment:
+- [ ] Tested on staging first
+- [ ] Feature flags configured correctly
+- [ ] Database is correct for environment
+- [ ] STRIPE_ENABLED=false confirmed
+- [ ] Rollback plan understood
+- [ ] Team notified of deployment
