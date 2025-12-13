@@ -149,7 +149,7 @@ function FloorGuard() {
     hasRun.current = true;
     
     const fixedMeshes: string[] = [];
-    const safeColor = new THREE.Color(GALLERY_FLOOR_COLOR);
+    const fallbackColor = new THREE.Color(GALLERY_FLOOR_COLOR);
     
     scene.traverse((obj) => {
       if (!(obj instanceof THREE.Mesh)) return;
@@ -161,15 +161,24 @@ function FloorGuard() {
       if (meshName === 'floorClickArea') return;
       
       const mat = obj.material as THREE.Material;
-      const isBlackColor = mat && 'color' in mat && (mat as any).color && 
-        ((mat as any).color.getHexString() === '000000' || 
-         (mat as any).color.getHexString() === '000' ||
-         (mat as any).color.r < 0.05 && (mat as any).color.g < 0.05 && (mat as any).color.b < 0.05);
+      const hasColor = mat && 'color' in mat && (mat as any).color;
+      const existingColor = hasColor ? (mat as any).color.clone() : null;
+      
+      const isBlackColor = existingColor && 
+        (existingColor.getHexString() === '000000' || 
+         existingColor.getHexString() === '000' ||
+         (existingColor.r < 0.05 && existingColor.g < 0.05 && existingColor.b < 0.05));
       const isNotBasic = mat && mat.type !== 'MeshBasicMaterial';
       
-      if (isBlackColor || isNotBasic) {
-        obj.material = new THREE.MeshBasicMaterial({ color: safeColor });
-        fixedMeshes.push(meshName || `unnamed-${obj.uuid.slice(0, 8)}`);
+      if (isBlackColor) {
+        obj.material = new THREE.MeshBasicMaterial({ color: fallbackColor });
+        fixedMeshes.push(`${meshName || `unnamed-${obj.uuid.slice(0, 8)}`} (black->safe)`);
+      } else if (isNotBasic && existingColor) {
+        obj.material = new THREE.MeshBasicMaterial({ color: existingColor });
+        fixedMeshes.push(`${meshName || `unnamed-${obj.uuid.slice(0, 8)}`} (std->basic)`);
+      } else if (isNotBasic) {
+        obj.material = new THREE.MeshBasicMaterial({ color: fallbackColor });
+        fixedMeshes.push(`${meshName || `unnamed-${obj.uuid.slice(0, 8)}`} (unknown->safe)`);
       }
     });
     
