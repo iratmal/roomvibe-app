@@ -602,6 +602,19 @@ export async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_gallery_collections_gallery_id ON gallery_collections(gallery_id);
     `);
 
+    // Add scene_360_data column to gallery_collections if it doesn't exist (for 360 virtual exhibitions)
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'gallery_collections' AND column_name = 'scene_360_data'
+        ) THEN
+          ALTER TABLE gallery_collections ADD COLUMN scene_360_data JSONB;
+        END IF;
+      END $$;
+    `);
+
     await query(`
       CREATE TABLE IF NOT EXISTS gallery_artworks (
         id SERIAL PRIMARY KEY,
