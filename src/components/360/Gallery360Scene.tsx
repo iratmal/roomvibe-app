@@ -142,6 +142,34 @@ function SafeWallMaterial({ color }: { color?: string }) {
   );
 }
 
+function SafeCeilingMaterial({ color }: { color?: string }) {
+  const safeColor = color && color !== '#000000' && color !== '#000' ? color : SAFE_CEILING_COLOR;
+  if (DEBUG_GALLERY) {
+    return <meshNormalMaterial side={THREE.DoubleSide} />;
+  }
+  return (
+    <meshStandardMaterial 
+      color={safeColor}
+      roughness={0.9}
+      metalness={0}
+    />
+  );
+}
+
+function SafeFloorMaterial({ color }: { color?: string }) {
+  const safeColor = color && color !== '#000000' && color !== '#000' ? color : SAFE_FLOOR_COLOR;
+  if (DEBUG_GALLERY) {
+    return <meshNormalMaterial />;
+  }
+  return (
+    <meshStandardMaterial 
+      color={safeColor}
+      roughness={0.8}
+      metalness={0}
+    />
+  );
+}
+
 export interface ArtworkFocusTarget {
   position: [number, number, number];
   rotation: [number, number, number];
@@ -517,7 +545,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       ) : (
         <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
           <planeGeometry args={[width, depth]} />
-          <meshStandardMaterial color={preset.floorColor} roughness={0.8} />
+          <SafeFloorMaterial color={preset.floorColor} />
         </mesh>
       )}
       
@@ -534,7 +562,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       {/* Main ceiling plane - light warm off-white */}
       <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
-        <meshStandardMaterial color="#ECEBE7" roughness={0.9} metalness={0} />
+        <SafeCeilingMaterial color="#ECEBE7" />
       </mesh>
       
       {/* Cove edge - lighter dark grey for contrast */}
@@ -577,7 +605,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
           {/* Recessed ceiling panel */}
           <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
             <planeGeometry args={[panel.w, panel.d]} />
-            <meshStandardMaterial color="#ECEBE7" roughness={0.9} metalness={0} />
+            <SafeCeilingMaterial color="#ECEBE7" />
           </mesh>
         </group>
       ))}
@@ -772,12 +800,12 @@ function EntrancePortal({ position, rotation }: { position: [number, number, num
         {/* Corridor ceiling */}
         <mesh position={[0, PORTAL_H, -CORRIDOR_DEPTH / 2]}>
           <boxGeometry args={[PORTAL_W + FRAME_T * 2, 0.08, CORRIDOR_DEPTH]} />
-          <meshStandardMaterial color="#ebe8e3" roughness={0.9} metalness={0} />
+          <SafeCeilingMaterial color="#ebe8e3" />
         </mesh>
         {/* Corridor floor - matching gallery tiles */}
         <mesh position={[0, 0.005, -CORRIDOR_DEPTH / 2]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[PORTAL_W, CORRIDOR_DEPTH]} />
-          <meshStandardMaterial color="#e8e4dc" roughness={0.8} metalness={0} />
+          <SafeFloorMaterial color="#e8e4dc" />
         </mesh>
       </group>
 
@@ -786,7 +814,7 @@ function EntrancePortal({ position, rotation }: { position: [number, number, num
         {/* Secondary gallery floor - same tiles, extends further */}
         <mesh position={[0, 0.003, -SECONDARY_D / 2]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[SECONDARY_W, SECONDARY_D]} />
-          <meshStandardMaterial color="#e5e1d9" roughness={0.85} metalness={0} />
+          <SafeFloorMaterial color="#e5e1d9" />
         </mesh>
         
         {/* Secondary gallery back wall - slightly darker */}
@@ -810,7 +838,7 @@ function EntrancePortal({ position, rotation }: { position: [number, number, num
         {/* Secondary gallery ceiling */}
         <mesh position={[0, PORTAL_H + 0.2, -SECONDARY_D / 2]}>
           <boxGeometry args={[SECONDARY_W, 0.1, SECONDARY_D]} />
-          <meshStandardMaterial color="#e0ddd8" roughness={0.9} metalness={0} />
+          <SafeCeilingMaterial color="#e0ddd8" />
         </mesh>
 
         {/* Dimmer ambient lighting in secondary space */}
