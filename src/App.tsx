@@ -223,7 +223,7 @@ function OnboardingRouter() {
 }
 
 function DashboardRouter() {
-  const { user, loading, effectiveRole } = useAuth();
+  const { user, loading, hasEntitlement } = useAuth();
 
   if (loading) {
     return (
@@ -241,19 +241,21 @@ function DashboardRouter() {
     return null;
   }
 
+  // Check if user is admin using actual user properties (not effectiveRole which changes during impersonation)
+  const isAdmin = user.role === 'admin' || user.isAdmin;
+
   // Redirect first-time users to onboarding (skip for admins)
-  if (!user.onboardingCompleted && effectiveRole !== 'admin') {
+  if (!user.onboardingCompleted && !isAdmin) {
     window.location.hash = '#/onboarding';
     return null;
   }
 
-  // Admin goes to admin dashboard
-  if (effectiveRole === 'admin') {
+  // Admin always goes to admin dashboard (regardless of impersonation or entitlements)
+  if (isAdmin) {
     return <AdminDashboard />;
   }
 
   // Free users get UserDashboard with basic artwork upload (max 3)
-  // Dashboard type is driven by subscription plan, not account type
   const effectivePlan = user?.effectivePlan || 'user';
   const isFreePlan = effectivePlan === 'user' || effectivePlan === 'free';
   
@@ -261,9 +263,26 @@ function DashboardRouter() {
     return <UserDashboard />;
   }
 
-  // Paid users get the unified dashboard with sidebar navigation
-  // The sidebar shows modules based on their entitlements
-  return <UnifiedDashboard />;
+  // Count how many role entitlements the user has
+  const hasArtist = hasEntitlement('artist_access');
+  const hasDesigner = hasEntitlement('designer_access');
+  const hasGallery = hasEntitlement('gallery_access');
+  const roleCount = [hasArtist, hasDesigner, hasGallery].filter(Boolean).length;
+
+  // Multi-role users (2+ entitlements) → All-In Dashboard
+  if (roleCount >= 2) {
+    return <UnifiedDashboard />;
+  }
+
+  // Single-role users → their specific role dashboard
+  if (roleCount === 1) {
+    if (hasArtist) return <ArtistDashboard />;
+    if (hasDesigner) return <DesignerDashboard />;
+    if (hasGallery) return <GalleryDashboard />;
+  }
+
+  // Fallback for paid users without specific entitlements (shouldn't happen normally)
+  return <UserDashboard />;
 }
 
 function RoleDashboardRouter({ requiredRole }: { requiredRole: string }) {
