@@ -16,6 +16,7 @@ interface Artwork {
   price_amount?: number;
   price_currency?: string;
   buy_url?: string;
+  description?: string;
 }
 
 export default function ArtworkEdit() {
@@ -47,7 +48,8 @@ export default function ArtworkEdit() {
     dimensionUnit: 'cm' as 'cm' | 'in',
     priceAmount: '',
     priceCurrency: 'EUR',
-    buyUrl: ''
+    buyUrl: '',
+    description: ''
   });
 
   const fetchArtwork = useCallback(async () => {
@@ -76,7 +78,8 @@ export default function ArtworkEdit() {
         dimensionUnit: art.dimension_unit || 'cm',
         priceAmount: art.price_amount?.toString() || '',
         priceCurrency: art.price_currency || 'EUR',
-        buyUrl: art.buy_url || ''
+        buyUrl: art.buy_url || '',
+        description: art.description || ''
       });
     } catch (err: any) {
       console.error('Error fetching artwork:', err);
@@ -116,7 +119,7 @@ export default function ArtworkEdit() {
     }
   }, [artworkId, fetchArtwork]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
@@ -204,7 +207,8 @@ export default function ArtworkEdit() {
           dimensionUnit: formData.dimensionUnit,
           priceAmount: formData.priceAmount || null,
           priceCurrency: formData.priceCurrency,
-          buyUrl: formData.buyUrl || null
+          buyUrl: formData.buyUrl || null,
+          description: formData.description || null
         })
       });
 
@@ -522,6 +526,18 @@ export default function ArtworkEdit() {
                 onChange={handleInputChange}
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] bg-slate-50 hover:bg-white transition-all"
                 placeholder="https://example.com/artwork/123"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Description (optional)</label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                rows={4}
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] bg-slate-50 hover:bg-white transition-all resize-none"
+                placeholder="Describe the artwork, technique, inspiration, etc."
               />
             </div>
 
