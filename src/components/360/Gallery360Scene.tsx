@@ -138,21 +138,21 @@ function DebugWallMaterial({ color }: { color: string }) {
 }
 
 function SafeWallMaterial({ color }: { color?: string }) {
-  // HOT PINK TEST - Proving we're in the correct render path
-  console.warn('[SafeWallMaterial] FORCED HOT PINK MeshBasicMaterial');
-  return <meshBasicMaterial color="#FF1493" side={THREE.DoubleSide} />;
+  // Production fix: Off-white MeshBasicMaterial (lighting-independent, never black)
+  const safeColor = (color && color !== '#000000' && color !== '#000' && color !== 'black') ? color : '#f2f2f2';
+  return <meshBasicMaterial color={safeColor} side={THREE.DoubleSide} />;
 }
 
 function SafeCeilingMaterial({ color }: { color?: string }) {
-  // HOT PINK TEST - Proving we're in the correct render path
-  console.warn('[SafeCeilingMaterial] FORCED HOT PINK MeshBasicMaterial');
-  return <meshBasicMaterial color="#FF1493" side={THREE.DoubleSide} />;
+  // Production fix: Off-white MeshBasicMaterial (lighting-independent, never black)
+  const safeColor = (color && color !== '#000000' && color !== '#000' && color !== 'black') ? color : '#f2f2f2';
+  return <meshBasicMaterial color={safeColor} side={THREE.DoubleSide} />;
 }
 
 function SafeFloorMaterial({ color }: { color?: string }) {
-  // HOT PINK TEST - Proving we're in the correct render path
-  console.warn('[SafeFloorMaterial] FORCED HOT PINK MeshBasicMaterial');
-  return <meshBasicMaterial color="#FF1493" />;
+  // Production fix: Off-white MeshBasicMaterial (lighting-independent, never black)
+  const safeColor = (color && color !== '#000000' && color !== '#000' && color !== 'black') ? color : '#f2f2f2';
+  return <meshBasicMaterial color={safeColor} />;
 }
 
 export interface ArtworkFocusTarget {
