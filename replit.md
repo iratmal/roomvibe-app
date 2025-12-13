@@ -17,7 +17,13 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 **Technical Implementations & Feature Specifications:**
 - **Authentication & Authorization**: Express.js backend with JWT, HttpOnly cookies, bcrypt, CORS, and PostgreSQL manages user authentication, role-based access control (user, artist, designer, gallery, admin), and entitlements.
 - **Studio Editor**: Features a left panel for scene browsing, a central canvas for artwork visualization, and a right panel for controls (artwork, size, frame selection). Includes AI-suggested rooms, premium room libraries, and tiered access based on subscription plans. Supports image (1200px, 3000px) and PDF exports with plan-based restrictions and watermarking.
-- **Role-Based Dashboards**: Dedicated dashboards for users, artists, designers, and galleries, providing CRUD operations for artworks, project management, and widget embedding. Paid users access a unified dashboard with modular content.
+- **Role-Based Dashboards**: Six distinct dashboards with smart routing:
+  1. **User Dashboard**: For free/basic users with limited artwork upload
+  2. **Artist Dashboard**: For single-role artist users - artwork management and widget embedding
+  3. **Designer Dashboard**: For single-role designer users - project management and client room uploads
+  4. **Gallery Dashboard**: For single-role gallery users - collections, exhibitions, and artist curation
+  5. **All-In Dashboard**: For multi-role users (2+ entitlements) - consolidated view with quick links to role dashboards
+  6. **Admin Dashboard**: System administration, visible only to admins (based on user.role/isAdmin, not impersonation)
 - **Designer Connect (FAZA 1)**: Designer Dashboard features a tabbed interface with four sections:
   - Art Library: Browse artworks from artists who have enabled "Visible to Designers", with filters for style, medium, orientation, color, and dimensions
   - My Projects: Create and manage client visualization projects
