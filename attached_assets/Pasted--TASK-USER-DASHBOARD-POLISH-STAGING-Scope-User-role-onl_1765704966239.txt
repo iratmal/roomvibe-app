@@ -1,0 +1,148 @@
+# 🎯 TASK: USER DASHBOARD POLISH (STAGING)
+
+**Scope:** User role only (Free plan)
+**Environment:** STAGING ONLY
+**Rule:** Do not move to Artist dashboard until this is 100% green
+
+---
+
+## 1️⃣ GOAL
+
+Polish **User Dashboard** so that:
+
+* it feels clean, calm and confidence-building
+* there are **no false errors** or red states
+* user immediately understands **what they can do**
+* dashboard is production-ready for first real users
+
+This is NOT feature work. This is **UX + state + copy polish only**.
+
+---
+
+## 2️⃣ BLOCKERS (MUST BE FIXED)
+
+### ❌ False error: "Failed to fetch artworks"
+
+**Expected behaviour:**
+
+* If user has **0 artworks** → show **neutral empty state**
+* Red error state is shown **ONLY IF**:
+
+  * API returns 4xx/5xx
+  * network error
+  * unauthorized access
+
+**Empty state copy:**
+
+> "No artworks yet. Upload your first artwork above."
+
+**DO NOT:**
+
+* retry automatically
+* refactor API
+* change backend logic
+
+---
+
+## 3️⃣ EMPTY STATE POLISH
+
+### 🎨 My Artworks section
+
+**When 0 artworks:**
+
+* no red banners
+* no technical language
+* calm, encouraging tone
+
+Optional helper text (allowed):
+
+> "You can upload up to 3 artworks on the Free plan."
+
+---
+
+## 4️⃣ USER CLARITY & FIRST ACTION
+
+### 🧭 Dashboard header clarity
+
+Under **"User Dashboard"** title, add ONE short explanatory sentence:
+
+> "Upload up to 3 artworks and instantly visualize them in our mockup rooms."
+
+This is **copy only**, no layout refactor.
+
+---
+
+## 5️⃣ PRIMARY CTA CHECK
+
+### ✅ Open Studio button
+
+Verify:
+
+* button is visible without scrolling
+* leads to correct Studio route
+* no console errors
+
+**Do not rename or redesign button.**
+
+---
+
+## 6️⃣ PLAN CARD – KEEP AS IS
+
+### 🟢 Your Plan (Free)
+
+* Keep existing layout
+* Keep feature list
+* No upsell changes at this stage
+
+This section is already OK.
+
+---
+
+## 7️⃣ ACCOUNT SECTION SANITY CHECK
+
+### 🔐 Account Information / Change Password
+
+Verify:
+
+* fields render correctly
+* no validation errors on load
+* no broken submit states
+
+No UX changes required unless something is broken.
+
+---
+
+## 8️⃣ WHAT NOT TO TOUCH ❌
+
+* Pricing logic
+* Plan limits
+* Studio functionality
+* API contracts
+* Role system
+* Admin impersonation logic
+
+---
+
+## 9️⃣ DEFINITION OF DONE ✅
+
+User Dashboard is considered **DONE** when:
+
+* [ ] No red error shown for empty artworks
+* [ ] Empty state is clean and friendly
+* [ ] User immediately understands what to do
+* [ ] Open Studio works
+* [ ] Page reload shows consistent state
+* [ ] No console errors
+
+Once all boxes are checked → **LOCK USER DASHBOARD** and move to **Artist**.
+
+---
+
+## 🔒 FINAL NOTE
+
+This dashboard is the **first impression** of RoomVibe.
+It must feel **safe, simple and professional**.
+
+No rushing. No skipping.
+
+When this is green → we move on.
