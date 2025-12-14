@@ -152,9 +152,15 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
     const unit = dimensionUnit || 'cm';
 
     // Generate AI tags from image (non-blocking, with fallback to empty array)
-    console.log('[Upload] Generating AI tags for artwork...');
-    const tags = await generateTagsFromImage(req.file.buffer.toString('base64'), req.file.mimetype);
-    console.log('[Upload] Generated tags:', tags);
+    let tags: string[] = [];
+    try {
+      console.log('[Upload] Generating AI tags for artwork...');
+      tags = await generateTagsFromImage(req.file.buffer.toString('base64'), req.file.mimetype);
+      console.log('[Upload] Generated tags:', tags);
+    } catch (tagError: any) {
+      console.warn('[Upload] AI tag generation failed, continuing without tags:', tagError.message);
+      tags = [];
+    }
 
     // Parse connect metadata
     const styleTagsJson = styleTags ? (typeof styleTags === 'string' ? styleTags : JSON.stringify(styleTags)) : '[]';
