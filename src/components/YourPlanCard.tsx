@@ -165,7 +165,7 @@ export function YourPlanCard() {
         </div>
 
         {!isCanceledOrExpired && planDisplay.bullets.length > 0 && (
-          <ul className="mb-6 space-y-2">
+          <ul className="mb-4 space-y-2">
             {planDisplay.bullets.map((bullet, i) => (
               <li key={i} className="flex items-center text-sm text-rv-textMuted">
                 <svg className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -175,6 +175,15 @@ export function YourPlanCard() {
               </li>
             ))}
           </ul>
+        )}
+
+        {isFree && (
+          <p className="text-sm text-rv-textMuted mb-6">
+            Want more mockup rooms and uploads?{' '}
+            <a href="#/pricing" className="text-rv-primary hover:text-rv-primaryHover font-semibold">
+              Upgrade your plan →
+            </a>
+          </p>
         )}
 
         {error && (

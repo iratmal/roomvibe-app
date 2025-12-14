@@ -467,6 +467,7 @@ export function UserDashboard() {
                   className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
                   placeholder="https://your-shop.com/product"
                 />
+                <p className="text-xs text-rv-textMuted mt-1">This link enables the Buy button in Studio and widgets.</p>
               </div>
             </div>
 
@@ -601,6 +602,7 @@ export function UserDashboard() {
           <h2 className="text-2xl font-bold mb-4 text-rv-primary">Widget Embed</h2>
           <p className="text-rv-textMuted text-sm mb-4">
             Embed a widget on your website to let visitors preview your artworks in mockup rooms directly from your site.
+            Preview how your widget will look once enabled.
           </p>
           {artworks.length === 0 ? (
             <div className="p-4 bg-rv-surface rounded-rvMd border border-rv-neutral">
@@ -660,7 +662,7 @@ export function UserDashboard() {
         <div className="mb-10 p-6 bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral">
           <h2 className="text-2xl font-bold mb-4 text-rv-primary">Buy Button Integration</h2>
           <p className="text-rv-textMuted text-sm mb-4">
-            Add a Buy URL to your artworks to enable a purchase button in the Studio and Widget.
+            Add a Buy URL to your artworks to let viewers purchase directly from your Studio and embedded widgets.
           </p>
           
           <div className="p-4 bg-rv-surface rounded-rvMd border border-rv-neutral mb-4">
