@@ -25,6 +25,12 @@ const upload = multer({
 
 router.get('/artworks', authenticateToken, async (req: any, res) => {
   try {
+    // Safeguard: ensure user is authenticated with valid ID
+    if (!req.user || !req.user.id) {
+      console.warn('[GET /artworks] Missing user ID in request');
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
     
     // Allow all authenticated users to view their own artworks (for usage tracking)
@@ -49,8 +55,9 @@ router.get('/artworks', authenticateToken, async (req: any, res) => {
     }
 
     const result = await query(queryText, queryParams);
-    console.log(`Found ${result.rows.length} artworks`);
-    res.json({ artworks: result.rows });
+    const artworks = result.rows || [];
+    console.log(`Found ${artworks.length} artworks`);
+    res.json({ artworks });
   } catch (error: any) {
     console.error('Error fetching artworks:', error);
     console.error('Error details:', {
@@ -66,6 +73,12 @@ router.get('/artworks', authenticateToken, async (req: any, res) => {
 // Works for any account type: User, Artist, Designer, Gallery
 router.get('/mine', authenticateToken, async (req: any, res) => {
   try {
+    // Safeguard: ensure user is authenticated with valid ID
+    if (!req.user || !req.user.id) {
+      console.warn('[/mine] Missing user ID in request');
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
     console.log('[/mine] Fetching artworks for logged-in user:', req.user.id);
     
     const result = await query(
@@ -76,8 +89,9 @@ router.get('/mine', authenticateToken, async (req: any, res) => {
       [req.user.id]
     );
     
-    // Transform to Studio-friendly format
-    const artworks = result.rows.map((row: any) => ({
+    // Transform to Studio-friendly format - gracefully handle empty results
+    const rows = result.rows || [];
+    const artworks = rows.map((row: any) => ({
       id: `db-${row.id}`,
       title: row.title,
       overlayImageUrl: row.image_url,
