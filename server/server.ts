@@ -147,30 +147,29 @@ app.get('/api/artwork-image/:id', async (req: any, res) => {
       return res.status(400).json({ error: 'Invalid artwork ID' });
     }
 
-    const result = await query('SELECT image_data FROM artworks WHERE id = $1', [artworkId]);
+    const result = await query('SELECT image_url FROM artworks WHERE id = $1', [artworkId]);
 
-    if (result.rows.length === 0 || !result.rows[0].image_data) {
+    if (result.rows.length === 0 || !result.rows[0].image_url) {
       return res.status(404).json({ error: 'Image not found' });
     }
 
-    const imageData = result.rows[0].image_data;
-    const matches = imageData.match(/^data:([^;]+);base64,(.+)$/);
+    const imageUrl = result.rows[0].image_url;
     
-    if (!matches) {
-      return res.status(500).json({ error: 'Invalid image data format' });
+    // If image is stored in Object Storage, serve from there
+    if (imageUrl.startsWith('/objects/')) {
+      const objectStorageService = new ObjectStorageService();
+      const objectFile = await objectStorageService.getObjectFile(imageUrl);
+      objectStorageService.downloadObject(objectFile, res);
+      return;
     }
 
-    const mimeType = matches[1];
-    const base64Data = matches[2];
-    const buffer = Buffer.from(base64Data, 'base64');
+    // Redirect to the image URL if it's an external URL
+    if (imageUrl.startsWith('http')) {
+      return res.redirect(imageUrl);
+    }
 
-    res.set({
-      'Content-Type': mimeType,
-      'Content-Length': buffer.length,
-      'Cache-Control': 'public, max-age=31536000'
-    });
-    
-    res.send(buffer);
+    // Fallback: return 404 for unrecognized formats
+    return res.status(404).json({ error: 'Image not found' });
   } catch (error) {
     console.error('Error serving artwork image:', error);
     res.status(500).json({ error: 'Failed to serve image' });

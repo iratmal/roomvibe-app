@@ -5,6 +5,7 @@ import { query } from '../db/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { checkArtworkLimit, getEffectivePlan, requireMinimumPlan } from '../middleware/subscription.js';
 import { generateTagsFromImage } from '../services/imageTagging.js';
+import { ObjectStorageService } from '../objectStorage.js';
 
 const router = express.Router();
 
@@ -64,6 +65,14 @@ router.get('/artworks', authenticateToken, async (req: any, res) => {
     const result = await query(queryText, queryParams);
     // Always return array, never null/undefined
     const artworks = result?.rows || [];
+    
+    // Normalize image_url to API endpoint format for frontend compatibility
+    artworks.forEach((a: any) => {
+      if (a.image_url && a.image_url.startsWith('/objects/')) {
+        a.image_url = `/api/artwork-image/${a.id}`;
+      }
+    });
+    
     console.log(`Found ${artworks.length} artworks`);
     res.json({ artworks });
   } catch (error: any) {
@@ -97,23 +106,30 @@ router.get('/mine', authenticateToken, async (req: any, res) => {
     
     // Transform to Studio-friendly format - gracefully handle empty results
     const rows = result.rows || [];
-    const artworks = rows.map((row: any) => ({
-      id: `db-${row.id}`,
-      title: row.title,
-      overlayImageUrl: row.image_url,
-      widthCm: parseFloat(row.width),
-      heightCm: parseFloat(row.height),
-      dimensionUnit: row.dimension_unit || 'cm',
-      priceAmount: row.price_amount,
-      priceCurrency: row.price_currency || 'EUR',
-      buyUrl: row.buy_url,
-      tags: row.tags || [],
-      orientation: row.orientation || null,
-      styleTags: row.style_tags || [],
-      dominantColors: row.dominant_colors || [],
-      medium: row.medium || null,
-      availability: row.availability || 'available'
-    }));
+    const artworks = rows.map((row: any) => {
+      // Normalize image_url to API endpoint format
+      const imageUrl = row.image_url && row.image_url.startsWith('/objects/')
+        ? `/api/artwork-image/${row.id}`
+        : row.image_url;
+      
+      return {
+        id: `db-${row.id}`,
+        title: row.title,
+        overlayImageUrl: imageUrl,
+        widthCm: parseFloat(row.width),
+        heightCm: parseFloat(row.height),
+        dimensionUnit: row.dimension_unit || 'cm',
+        priceAmount: row.price_amount,
+        priceCurrency: row.price_currency || 'EUR',
+        buyUrl: row.buy_url,
+        tags: row.tags || [],
+        orientation: row.orientation || null,
+        styleTags: row.style_tags || [],
+        dominantColors: row.dominant_colors || [],
+        medium: row.medium || null,
+        availability: row.availability || 'available'
+      };
+    });
     
     console.log(`[/mine] Found ${artworks.length} artworks for user ${req.user.id}`);
     res.json({ artworks });
@@ -155,12 +171,19 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
       return res.status(400).json({ error: 'Image file is required' });
     }
 
-    const imageData = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
-    console.log('[Upload] Image converted to base64, size:', imageData.length);
-    
     const targetArtistId = effectivePlan === 'admin' && artistId ? parseInt(artistId) : req.user.id;
     const currency = priceCurrency || 'EUR';
     const unit = dimensionUnit || 'cm';
+
+    // Upload image to Object Storage
+    console.log('[Upload] Uploading image to Object Storage...');
+    const objectStorage = new ObjectStorageService();
+    const imageUrl = await objectStorage.uploadBuffer(
+      req.file.buffer,
+      req.file.originalname,
+      req.file.mimetype
+    );
+    console.log('[Upload] Image uploaded to Object Storage:', imageUrl);
 
     // Generate AI tags from image (non-blocking, with fallback to empty array)
     let tags: string[] = [];
@@ -182,16 +205,15 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
 
     console.log('Inserting artwork into database...');
     const result = await query(
-      `INSERT INTO artworks (artist_id, title, image_url, image_data, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, CURRENT_TIMESTAMP)
+      `INSERT INTO artworks (artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, CURRENT_TIMESTAMP)
        RETURNING id, artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, created_at, updated_at`,
-      [targetArtistId, title, `/api/artwork-image/${Date.now()}`, imageData, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, tags, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability]
+      [targetArtistId, title, imageUrl, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, tags, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability]
     );
 
     const artworkId = result.rows[0].id;
-    await query(`UPDATE artworks SET image_url = $1 WHERE id = $2`, [`/api/artwork-image/${artworkId}`, artworkId]);
+    // Return the API endpoint URL for frontend compatibility (actual path is stored in DB)
     result.rows[0].image_url = `/api/artwork-image/${artworkId}`;
-
     console.log('Artwork created successfully:', artworkId);
     res.status(201).json({ artwork: result.rows[0], message: 'Artwork created successfully' });
   } catch (error: any) {
@@ -229,12 +251,17 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
     }
 
     let imageUrl = existingArtwork.rows[0].image_url;
-    let imageData = existingArtwork.rows[0].image_data;
     
     if (req.file) {
-      imageData = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
-      imageUrl = `/api/artwork-image/${artworkId}`;
-      console.log('[Update] New image converted to base64, size:', imageData.length);
+      // Upload new image to Object Storage
+      console.log('[Update] Uploading new image to Object Storage...');
+      const objectStorage = new ObjectStorageService();
+      imageUrl = await objectStorage.uploadBuffer(
+        req.file.buffer,
+        req.file.originalname,
+        req.file.mimetype
+      );
+      console.log('[Update] New image uploaded:', imageUrl);
     }
 
     const currency = priceCurrency || existingArtwork.rows[0].price_currency || 'EUR';
@@ -253,12 +280,14 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
 
     const result = await query(
       `UPDATE artworks 
-       SET title = $1, image_url = $2, image_data = $3, width = $4, height = $5, dimension_unit = $6, price_amount = $7, price_currency = $8, buy_url = $9, orientation = $10, style_tags = $11, dominant_colors = $12, medium = $13, availability = $14, updated_at = CURRENT_TIMESTAMP
-       WHERE id = $15
+       SET title = $1, image_url = $2, width = $3, height = $4, dimension_unit = $5, price_amount = $6, price_currency = $7, buy_url = $8, orientation = $9, style_tags = $10, dominant_colors = $11, medium = $12, availability = $13, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $14
        RETURNING id, artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, orientation, style_tags, dominant_colors, medium, availability, created_at, updated_at`,
-      [title, imageUrl, imageData, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability, artworkId]
+      [title, imageUrl, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability, artworkId]
     );
 
+    // Return the API endpoint URL for frontend compatibility (actual path is stored in DB)
+    result.rows[0].image_url = `/api/artwork-image/${artworkId}`;
     res.json({ artwork: result.rows[0], message: 'Artwork updated successfully' });
   } catch (error) {
     console.error('Error updating artwork:', error);
