@@ -1,0 +1,232 @@
+# 🧠 ROOMVIBE — STAGING SANITY RESET (LIVE-LIKE, SAFE)
+
+**Purpose:**
+Make **staging.roomvibe.app** behave **identical to production** (same UX, same flows), **WITHOUT** touching or reverting any existing staging design, layout, or data.
+
+The goal is to fix recurring functional issues ("Feature not available", broken upgrade buttons, pricing glitches) by correcting **environment configuration and feature gating** — *not by redesigning or syncing with live*.
+
+---
+
+## 🔒 NON-NEGOTIABLE — READ FIRST
+
+These rules are absolute:
+
+* ❌ **DO NOT** copy, merge, sync, or overwrite anything from **production** into **staging**
+* ❌ **DO NOT** revert or delete any existing staging pages, components, layouts, copy, or design
+* ❌ **DO NOT** redesign pricing cards, buttons, spacing, colors, or typography
+* ❌ **DO NOT** reset, migrate, or modify database data
+* ❌ **DO NOT** introduce "temporary" staging hacks or conditionals
+
+👉 **Staging is the source of truth.**
+👉 Only configuration + logic fixes are allowed.
+
+---
+
+## ✅ WHAT IS ALLOWED
+
+You may **ONLY**:
+
+* Adjust **environment variables** for the **staging deployment**
+* Fix **feature gating logic** that incorrectly blocks features (e.g. pricing / upgrade)
+* Add **staging-only diagnostics** (no secrets)
+* Make **minimal, targeted code changes** strictly required for the above
+
+Everything that already exists on staging must remain **unchanged visually and structurally**.
+
+---
+
+## 🎯 GOAL
+
+* Remove all incorrect **"Feature not available"** states
+* Ensure pricing & upgrade flows behave correctly
+* Make staging **live-like**, with the **only differences** being:
+
+  * Stripe in **TEST** mode
+  * Analytics optional OFF
+  * GDPR optional OFF
+
+Same code paths. Same UX. Different ENV.
+
+---
+
+## 1️⃣ ENVIRONMENT VARIABLE ALIGNMENT
+
+Ensure the following variables **exist and are used consistently**.
+
+### REQUIRED (BOTH ENVIRONMENTS)
+
+* `APP_ENV=staging | production`
+* `STRIPE_MODE=test | live`
+* `STRIPE_ENABLED=true | false`
+* `PAYMENTS_ENABLED=true | false`
+* `ENABLE_ANALYTICS=true | false`
+* `ENABLE_GDPR=true | false`
+* Cookie flags:
+
+  * `COOKIE_SECURE=true`
+  * `COOKIE_SAMESITE=none`
+* Any pricing-related feature flags (e.g. `FEATURE_PRICING_ENABLED=true`)
+
+---
+
+### TARGET VALUES
+
+#### ✅ STAGING
+
+```
+APP_ENV=staging
+STRIPE_MODE=test
+PAYMENTS_ENABLED=true
+STRIPE_ENABLED=true
+ENABLE_ANALYTICS=false (optional)
+ENABLE_GDPR=false (optional)
+```
+
+#### ✅ PRODUCTION (REFERENCE ONLY — DO NOT TOUCH)
+
+```
+APP_ENV=production
+STRIPE_MODE=live
+PAYMENTS_ENABLED=true
+STRIPE_ENABLED=true
+ENABLE_ANALYTICS=true
+ENABLE_GDPR=true
+```
+
+⚠️ **Important:**
+
+* Staging must allow full upgrade flows
+* The ONLY difference is that Stripe checkout is **TEST**
+
+---
+
+## 2️⃣ FIX "FEATURE NOT AVAILABLE" ROOT CAUSE
+
+### Current problem
+
+Features are blocked based on **wrong conditions** (e.g. `APP_ENV !== production`).
+
+### Required fix
+
+* ❌ Remove checks like:
+
+  ```ts
+  if (APP_ENV !== 'production') showFeatureNotAvailable()
+  ```
+
+* ✅ Replace with **explicit gating**:
+
+  ```ts
+  if (!PAYMENTS_ENABLED) showPaymentsDisabledMessage()
+  ```
+
+### Correct behavior
+
+* If `PAYMENTS_ENABLED=true` → Upgrade buttons **must work**
+* If `PAYMENTS_ENABLED=false` → Show clear message:
+
+  > "Payments are disabled in this environment."
+
+Never show "Feature not available" due to environment confusion.
+
+---
+
+## 3️⃣ STAGING-ONLY DIAGNOSTICS (MANDATORY)
+
+Add **safe, read-only visibility** into staging configuration.
+
+### Option A (Preferred): API Endpoint
+
+**Route:** `/api/health/env`
+
+Returns (no secrets):
+
+```json
+{
+  "appEnv": "staging",
+  "stripeMode": "test",
+  "paymentsEnabled": true,
+  "stripeEnabled": true,
+  "analyticsEnabled": false,
+  "gdprEnabled": false,
+  "version": "<git_sha_or_build_id>"
+}
+```
+
+* Enabled on staging
+* Production may return minimal or be disabled
+
+### Option B: UI Badge (optional)
+
+Small footer badge on staging only:
+
+> `STAGING · Stripe:test · Payments:on · v123`
+
+---
+
+## 4️⃣ AUTH & COOKIE CONSISTENCY
+
+Ensure frontend requests behave identically:
+
+* `fetch(..., { credentials: 'include' })`
+* or `axios({ withCredentials: true })`
+
+No environment-specific auth logic allowed.
+
+---
+
+## 5️⃣ VALIDATION CHECKLIST (MUST TEST)
+
+### Pricing & Upgrade
+
+* Pricing page renders correctly
+* No "Feature not available" messages
+* Upgrade buttons:
+
+  * redirect to **Stripe TEST checkout**, OR
+  * show "Payments disabled" ONLY if intentionally disabled
+
+### Core App
+
+* Login persists after refresh
+* Studio works normally
+* No console errors related to env flags
+
+### Diagnostics
+
+* `/api/health/env` returns correct values
+* Version/build updates after deploy
+
+---
+
+## 6️⃣ STOP CONDITIONS (ALL REQUIRED)
+
+* Staging works end-to-end with existing UI
+* Pricing & upgrade flows are functional
+* No env-related blockers remain
+* No staging design or data was modified
+
+---
+
+## 7️⃣ AGENT DELIVERABLE
+
+Provide:
+
+1. List of files changed
+2. Exact ENV variables expected for staging
+3. Output or screenshot of `/api/health/env`
+4. Short explanation:
+
+   * What caused the issue
+   * How it was fixed
+
+---
+
+## 🧩 FINAL NOTE
+
+This task is a **configuration & logic stabilization**, not a redesign.
+
+If staging is unstable → production would be unstable.
+Fix staging **once**, properly, and all future deploys become safe.
+
+**Do not over-engineer. Do not improvise. Do not touch UI.**

@@ -151,6 +151,18 @@ app.get('/api/version', (req, res) => {
   });
 });
 
+app.get('/api/health/env', (req, res) => {
+  res.json({
+    appEnv: process.env.APP_ENV || 'development',
+    stripeMode: process.env.STRIPE_MODE || 'test',
+    paymentsEnabled: process.env.PAYMENTS_ENABLED === 'true',
+    stripeEnabled: process.env.STRIPE_ENABLED === 'true',
+    analyticsEnabled: process.env.ENABLE_ANALYTICS === 'true',
+    gdprEnabled: process.env.ENABLE_GDPR === 'true',
+    version: '1.0.3'
+  });
+});
+
 app.get('/api/artwork-image/:id', async (req: any, res) => {
   try {
     const artworkId = parseInt(req.params.id);
