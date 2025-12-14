@@ -1,26 +1,36 @@
-import { Client } from "@replit/object-storage";
+import { Storage, File } from "@google-cloud/storage";
 import { Response } from "express";
 import { randomUUID } from "crypto";
 
-// Get bucket ID from PRIVATE_OBJECT_DIR (format: /bucket-name or bucket-name)
-function getBucketId(): string {
+const REPLIT_SIDECAR_ENDPOINT = "http://127.0.0.1:1106";
+
+// GCS client with Replit sidecar credentials (from blueprint)
+export const objectStorageClient = new Storage({
+  credentials: {
+    audience: "replit",
+    subject_token_type: "access_token",
+    token_url: `${REPLIT_SIDECAR_ENDPOINT}/token`,
+    type: "external_account",
+    credential_source: {
+      url: `${REPLIT_SIDECAR_ENDPOINT}/credential`,
+      format: {
+        type: "json",
+        subject_token_field_name: "access_token",
+      },
+    },
+    universe_domain: "googleapis.com",
+  },
+  projectId: "",
+});
+
+// Extract bucket name from PRIVATE_OBJECT_DIR (format: /bucket-name or bucket-name)
+function getBucketName(): string {
   const dir = process.env.PRIVATE_OBJECT_DIR || "";
   const cleaned = dir.replace(/^\/+/, "").split("/")[0];
   if (!cleaned) {
     throw new Error("PRIVATE_OBJECT_DIR not set or invalid");
   }
   return cleaned;
-}
-
-// Lazy-init client to allow env vars to be loaded first
-let _replitStorageClient: Client | null = null;
-function getReplitStorageClient(): Client {
-  if (!_replitStorageClient) {
-    const bucketId = getBucketId();
-    console.log('[ObjectStorage] Initializing Replit client with bucket:', bucketId);
-    _replitStorageClient = new Client({ bucketId });
-  }
-  return _replitStorageClient;
 }
 
 export class ObjectNotFoundError extends Error {
@@ -34,7 +44,7 @@ export class ObjectNotFoundError extends Error {
 export class ObjectStorageService {
   constructor() {}
 
-  async getObjectFile(objectPath: string): Promise<{ objectName: string; exists: boolean }> {
+  async getObjectFile(objectPath: string): Promise<{ file: File; objectName: string }> {
     if (!objectPath.startsWith("/objects/")) {
       throw new ObjectNotFoundError();
     }
@@ -45,20 +55,35 @@ export class ObjectStorageService {
     }
 
     const entityId = pathParts.slice(1).join("/");
+    const bucketName = getBucketName();
+    const bucket = objectStorageClient.bucket(bucketName);
+    const file = bucket.file(entityId);
     
-    const { ok, value: exists } = await getReplitStorageClient().exists(entityId);
-    if (!ok || !exists) {
+    console.log('[ObjectStorage] getObjectFile:', { bucketName, entityId });
+    const [exists] = await file.exists();
+    
+    if (!exists) {
       throw new ObjectNotFoundError();
     }
     
-    return { objectName: entityId, exists: true };
+    return { file, objectName: entityId };
   }
 
-  async downloadObject(objectInfo: { objectName: string }, res: Response, cacheTtlSec: number = 3600) {
+  async downloadObject(objectInfo: { file?: File; objectName: string }, res: Response, cacheTtlSec: number = 3600) {
     try {
-      const stream = getReplitStorageClient().downloadAsStream(objectInfo.objectName);
+      let file = objectInfo.file;
+      if (!file) {
+        const bucketName = getBucketName();
+        const bucket = objectStorageClient.bucket(bucketName);
+        file = bucket.file(objectInfo.objectName);
+      }
+
+      console.log('[ObjectStorage] downloadObject:', objectInfo.objectName);
       
-      // Determine content type from extension
+      // Get file metadata
+      const [metadata] = await file.getMetadata();
+      
+      // Determine content type
       const ext = objectInfo.objectName.split('.').pop()?.toLowerCase() || '';
       const contentTypes: Record<string, string> = {
         'jpg': 'image/jpeg',
@@ -70,15 +95,18 @@ export class ObjectStorageService {
         'pdf': 'application/pdf',
         'txt': 'text/plain',
       };
-      const contentType = contentTypes[ext] || 'application/octet-stream';
+      const contentType = metadata.contentType || contentTypes[ext] || 'application/octet-stream';
       
       res.set({
         "Content-Type": contentType,
+        "Content-Length": metadata.size,
         "Cache-Control": `public, max-age=${cacheTtlSec}`,
       });
 
+      const stream = file.createReadStream();
+
       stream.on("error", (err) => {
-        console.error("Stream error:", err);
+        console.error("[ObjectStorage] Stream error:", err);
         if (!res.headersSent) {
           res.status(500).json({ error: "Error streaming file" });
         }
@@ -86,39 +114,90 @@ export class ObjectStorageService {
 
       stream.pipe(res);
     } catch (error) {
-      console.error("Error downloading file:", error);
+      console.error("[ObjectStorage] Error downloading file:", error);
       if (!res.headersSent) {
         res.status(500).json({ error: "Error downloading file" });
       }
     }
   }
 
+  async testConnection(): Promise<{ ok: boolean; error?: any; bucketInfo?: any }> {
+    console.log('[ObjectStorage] ====== CONNECTION TEST ======');
+    console.log('[ObjectStorage] Backend: @google-cloud/storage with sidecar');
+    console.log('[ObjectStorage] PRIVATE_OBJECT_DIR:', process.env.PRIVATE_OBJECT_DIR || 'NOT SET');
+    
+    try {
+      const bucketName = getBucketName();
+      console.log('[ObjectStorage] Testing bucket:', bucketName);
+      
+      const bucket = objectStorageClient.bucket(bucketName);
+      const [files] = await bucket.getFiles({ maxResults: 1 });
+      
+      console.log('[ObjectStorage] Connection OK, sample files:', files.length);
+      return { ok: true, bucketInfo: { bucket: bucketName, sampleCount: files.length } };
+    } catch (err: any) {
+      console.error('[ObjectStorage] Connection test exception:', err.message);
+      console.error('[ObjectStorage] Error code:', err.code);
+      console.error('[ObjectStorage] Error status:', err.response?.status);
+      console.error('[ObjectStorage] Error data:', JSON.stringify(err.response?.data || err.errors || {}, null, 2));
+      return { 
+        ok: false, 
+        error: { 
+          message: err.message, 
+          code: err.code,
+          status: err.response?.status,
+          errors: err.errors
+        } 
+      };
+    }
+  }
+
   async uploadBuffer(buffer: Buffer, filename: string, contentType: string): Promise<string> {
-    console.log('[ObjectStorage] uploadBuffer START', { filename, contentType, bufferSize: buffer.length });
+    console.log('[ObjectStorage] ====== UPLOAD START ======');
+    console.log('[ObjectStorage] backend=@google-cloud/storage with sidecar');
+    console.log('[ObjectStorage] PRIVATE_OBJECT_DIR:', process.env.PRIVATE_OBJECT_DIR || 'NOT SET');
+    console.log('[ObjectStorage] NODE_ENV:', process.env.NODE_ENV);
+    console.log('[ObjectStorage] APP_ENV:', process.env.APP_ENV);
+    console.log('[ObjectStorage] File:', { filename, contentType, bufferSize: buffer.length });
+    
+    // Validate buffer
+    if (!buffer || buffer.length === 0) {
+      throw new Error('Invalid buffer: empty or undefined');
+    }
     
     const objectId = randomUUID();
     const extension = filename.includes('.') ? filename.split('.').pop() : 'jpg';
     const objectName = `artworks/${objectId}.${extension}`;
 
-    console.log('[ObjectStorage] Uploading to:', objectName);
+    console.log('[ObjectStorage] Target objectName:', objectName);
     
     try {
-      const result = await getReplitStorageClient().uploadFromBytes(objectName, buffer);
+      const bucketName = getBucketName();
+      console.log('[ObjectStorage] Using bucket:', bucketName);
       
-      if (!result.ok) {
-        console.error('[ObjectStorage] Upload FAILED:', result.error);
-        throw new Error(`Storage write failed: ${result.error?.message || 'Unknown error'}`);
-      }
+      const bucket = objectStorageClient.bucket(bucketName);
+      const file = bucket.file(objectName);
+      
+      // Direct upload using GCS save method
+      console.log('[ObjectStorage] Starting direct upload...');
+      await file.save(buffer, {
+        contentType: contentType,
+        resumable: false,
+      });
       
       console.log('[ObjectStorage] Upload SUCCESS:', objectName);
     } catch (err: any) {
-      const errMessage = err?.message || 'Unknown error';
-      console.error('[ObjectStorage] Upload FAILED:', errMessage);
-      console.error('[ObjectStorage] Full error:', err);
-      throw new Error(`Storage write failed: ${errMessage}`);
+      console.error('[ObjectStorage] Upload EXCEPTION:', err.message);
+      console.error('[ObjectStorage] Full error:', {
+        message: err.message,
+        code: err.code,
+        errors: err.errors,
+        response: err.response?.data
+      });
+      throw new Error(`Storage write failed: ${err.message}`);
     }
 
-    const resultPath = `/objects/artworks/${objectId}.${extension}`;
+    const resultPath = `/objects/${objectName}`;
     console.log('[ObjectStorage] uploadBuffer END - returning:', resultPath);
     return resultPath;
   }

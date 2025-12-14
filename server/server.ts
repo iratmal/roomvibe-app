@@ -164,21 +164,31 @@ app.get('/api/health/env', (req, res) => {
     analyticsEnabled: envBool(process.env.ENABLE_ANALYTICS),
     gdprEnabled: envBool(process.env.ENABLE_GDPR),
     storageConfigured: !!process.env.PRIVATE_OBJECT_DIR,
-    version: '1.0.5'
+    privateObjectDir: process.env.PRIVATE_OBJECT_DIR ? process.env.PRIVATE_OBJECT_DIR.substring(0, 50) : null,
+    storageBackend: '@google-cloud/storage',
+    version: '1.0.7-gcs-direct',
+    buildTime: '2025-12-14T23:10:00Z'
   });
 });
 
 app.get('/api/health/storage', async (req, res) => {
-  const SIDECAR = "http://127.0.0.1:1106";
   const results: Record<string, any> = {
+    version: '1.0.7-gcs-direct',
+    backend: '@google-cloud/storage',
+    replitBucketId: process.env.REPLIT_OBJECT_STORAGE_BUCKET_ID ? 'SET' : 'NOT_SET',
     privateObjectDir: process.env.PRIVATE_OBJECT_DIR ? 'SET' : 'NOT_SET',
-    privateObjectDirValue: process.env.PRIVATE_OBJECT_DIR?.substring(0, 30) + '...',
+    privateObjectDirValue: process.env.PRIVATE_OBJECT_DIR?.substring(0, 50) || 'EMPTY',
     timestamp: new Date().toISOString(),
     nodeEnv: process.env.NODE_ENV,
     appEnv: process.env.APP_ENV,
-    uploadMethod: 'direct-gcs-write',
   };
 
+  // Test actual SDK connection
+  const objectStorage = new ObjectStorageService();
+  const connectionTest = await objectStorage.testConnection();
+  results.connectionTest = connectionTest;
+
+  const SIDECAR = "http://127.0.0.1:1106";
   try {
     const credentialRes = await fetch(`${SIDECAR}/credential`, { method: 'GET' });
     results.credentialStatus = credentialRes.status;
@@ -205,21 +215,39 @@ app.get('/api/health/storage', async (req, res) => {
 });
 
 app.get('/api/health/storage/write-test', async (req, res) => {
+  console.log('[StorageWriteTest] ====== STARTING WRITE TEST ======');
+  console.log('[StorageWriteTest] PRIVATE_OBJECT_DIR:', process.env.PRIVATE_OBJECT_DIR || 'NOT SET');
+  console.log('[StorageWriteTest] NODE_ENV:', process.env.NODE_ENV);
+  console.log('[StorageWriteTest] APP_ENV:', process.env.APP_ENV);
+  
   const objectStorage = new ObjectStorageService();
   try {
     const storedObjectName = await objectStorage.uploadBuffer(
-      Buffer.from('ping'),
+      Buffer.from('ping-test-content'),
       `ping-${Date.now()}.txt`,
       'text/plain'
     );
-    return res.json({ ok: true, storedObjectName, timestamp: new Date().toISOString() });
+    console.log('[StorageWriteTest] SUCCESS:', storedObjectName);
+    return res.json({ 
+      ok: true, 
+      storedObjectName, 
+      timestamp: new Date().toISOString(),
+      backend: '@replit/object-storage',
+      version: '1.0.6-storage-diag',
+      privateObjectDir: process.env.PRIVATE_OBJECT_DIR || 'NOT SET'
+    });
   } catch (err: any) {
+    console.error('[StorageWriteTest] FAILED:', err);
     return res.status(500).json({
       ok: false,
+      backend: '@replit/object-storage',
+      version: '1.0.6-storage-diag',
+      privateObjectDir: process.env.PRIVATE_OBJECT_DIR || 'NOT SET',
       error: {
         name: err?.name,
         message: err?.message,
         code: err?.code,
+        stack: err?.stack?.split('\n').slice(0, 5),
         statusCode: err?.statusCode,
         details: err?.details,
       },
