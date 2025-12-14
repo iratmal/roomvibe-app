@@ -120,22 +120,44 @@ export class ObjectStorageService {
   }
 
   async uploadBuffer(buffer: Buffer, filename: string, contentType: string): Promise<string> {
+    console.log('[ObjectStorage] uploadBuffer START', { filename, contentType, bufferSize: buffer.length });
+    
     const privateObjectDir = this.getPrivateObjectDir();
+    console.log('[ObjectStorage] privateObjectDir resolved:', privateObjectDir ? 'SET' : 'NOT SET');
+    
     const objectId = randomUUID();
     const extension = filename.includes('.') ? filename.split('.').pop() : 'jpg';
     const objectName = `artworks/${objectId}.${extension}`;
     const fullPath = `${privateObjectDir}/${objectName}`;
 
+    console.log('[ObjectStorage] Preparing upload:', { objectName, extension });
+
     const { bucketName, objectName: storedObjectName } = this.parseObjectPath(fullPath);
+    console.log('[ObjectStorage] Parsed path:', { bucketName, storedObjectName });
+    
     const bucket = objectStorageClient.bucket(bucketName);
     const file = bucket.file(storedObjectName);
 
-    await file.save(buffer, {
-      contentType,
-      resumable: false,
-    });
+    try {
+      console.log('[ObjectStorage] Calling file.save()...');
+      await file.save(buffer, {
+        contentType,
+        resumable: false,
+      });
+      console.log('[ObjectStorage] file.save() SUCCESS');
+    } catch (saveError: any) {
+      console.error('[ObjectStorage] file.save() FAILED:', {
+        message: saveError.message,
+        code: saveError.code,
+        name: saveError.name,
+        stack: saveError.stack?.split('\n').slice(0, 5).join('\n')
+      });
+      throw new Error(`Storage write failed: ${saveError.message || saveError.code || 'Unknown error'}`);
+    }
 
-    return `/objects/artworks/${objectId}.${extension}`;
+    const resultPath = `/objects/artworks/${objectId}.${extension}`;
+    console.log('[ObjectStorage] uploadBuffer END - returning:', resultPath);
+    return resultPath;
   }
 
   private parseObjectPath(path: string): { bucketName: string; objectName: string } {
