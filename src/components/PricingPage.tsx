@@ -9,6 +9,7 @@ interface PlanConfig {
   name: string;
   price: string;
   priceValue: number;
+  valuePromise: string;
   whoItsFor: string;
   features: string[];
   highlightFeature?: string;
@@ -24,12 +25,13 @@ const PLANS: PlanConfig[] = [
     name: 'Free',
     price: '€0',
     priceValue: 0,
+    valuePromise: 'See instantly how your artwork looks on a real wall.',
     whoItsFor: 'People trying RoomVibe for the first time.',
     features: [
       'Upload up to 3 artworks',
-      'Up to 10 basic mockup rooms',
-      'Upload your own wall or use basic rooms',
-      'See instantly how your artwork looks on a real wall',
+      '10 basic mockup rooms',
+      'Upload your own wall photo or use basic rooms',
+      'See instantly how your artwork looks on a wall',
       'Download images for preview and sharing',
     ],
     buttonText: 'Get Started Free',
@@ -39,18 +41,17 @@ const PLANS: PlanConfig[] = [
     name: 'Artist',
     price: '€9',
     priceValue: 9,
-    whoItsFor: 'Independent artists who want to present, share, and sell their art online.',
+    valuePromise: 'Present, share, and sell your art online – without technical hassle.',
+    whoItsFor: 'Independent artists and creatives.',
     entitlement: 'artist_access',
     features: [
       'Upload up to 50 artworks',
       'Up to 40 standard mockup rooms',
-      'Upload your own wall photos or use realistic interiors',
-      'See your artwork instantly on real walls',
-      'Create and share 1 active virtual exhibition',
+      'Upload your own walls or use realistic interiors',
+      'Create 1 active virtual exhibition',
       'Download images for website & social media',
-      'Add a Buy button to sell your artwork',
     ],
-    highlightFeature: 'Get discovered by interior designers and galleries using RoomVibe.',
+    highlightFeature: 'Get discovered by interior designers and galleries using RoomVibe',
     buttonText: 'Activate Artist Plan',
   },
   {
@@ -58,16 +59,17 @@ const PLANS: PlanConfig[] = [
     name: 'Designer',
     price: '€29',
     priceValue: 29,
-    whoItsFor: 'Interior designers presenting visual concepts to clients.',
+    valuePromise: 'Create clear visual concepts for clients using real artworks.',
+    whoItsFor: 'Interior designers working with clients.',
     entitlement: 'designer_access',
     features: [
       'Upload up to 100 artworks',
-      'Access to 100+ premium mockup rooms',
+      '100+ premium mockup rooms',
       'Upload client wall photos or use premium rooms',
       'Create visual concepts and PDF presentations',
       'Unlimited previews while designing',
     ],
-    highlightFeature: 'Find and connect with artists for your interior projects using RoomVibe.',
+    highlightFeature: 'Find and connect with artists for your interior projects using RoomVibe',
     buttonText: 'Unlock Designer Tools',
   },
   {
@@ -75,16 +77,17 @@ const PLANS: PlanConfig[] = [
     name: 'Gallery',
     price: '€49',
     priceValue: 49,
-    whoItsFor: 'Galleries, exhibition spaces, and artists hosting their own virtual exhibitions.',
+    valuePromise: 'Host professional virtual exhibitions and share them with the world.',
+    whoItsFor: 'Galleries, exhibition spaces, and artists hosting their own exhibitions.',
     entitlement: 'gallery_access',
     features: [
       'Upload unlimited artworks',
+      '100+ premium mockup rooms',
       'Upload real gallery or studio walls',
-      'Create virtual exhibitions (up to 3 active)',
-      'Share public exhibition links with visitors and collectors',
-      'Export exhibition PDFs',
+      'Create up to 3 active virtual exhibitions',
+      'Share public exhibition links with visitors & collectors',
     ],
-    highlightFeature: 'Discover and work with artists through the RoomVibe platform.',
+    highlightFeature: 'Discover and work with artists through the RoomVibe platform',
     buttonText: 'Unlock Exhibition Tools',
   },
   {
@@ -92,12 +95,14 @@ const PLANS: PlanConfig[] = [
     name: 'All-Access',
     price: '€79',
     priceValue: 79,
-    whoItsFor: 'Full-time art professionals, studios, galleries, and power users.',
+    valuePromise: 'Everything RoomVibe offers – without limits.',
+    whoItsFor: 'Full-time professionals, studios, galleries, and power users.',
     isAllAccess: true,
     recommended: true,
     features: [
-      'Unlimited artworks, walls, exhibitions, and exports',
+      'Unlimited artworks, walls, exhibitions & exports',
       'Full Artist + Designer + Gallery tools',
+      'Unlimited virtual exhibitions',
       'Priority support',
       'Early access to new features',
     ],
@@ -316,32 +321,34 @@ function HorizontalPlanCard({ plan, isActive, isLoading, onSelect }: HorizontalP
       )}
 
       <div className="p-6 sm:p-8">
-        {/* 4-Column Layout: Plan Name + Price | Who it's for | What you get | CTA */}
+        {/* 4-Column Layout: Plan Name + Price | Value Promise + Who it's for | What you get | CTA */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
           
           {/* Column 1: Plan Name + Price */}
           <div className="lg:col-span-2">
-            <h3 className="text-xl font-bold text-[#0B1F2A] mb-1">
+            <h3 className="text-xl font-bold text-[#264C61] mb-1">
               {plan.name}
             </h3>
             <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold text-[#0B1F2A]">{plan.price}</span>
+              <span className="text-2xl font-bold text-[#264C61]">{plan.price}</span>
               <span className="text-gray-500 text-sm">/ month</span>
             </div>
           </div>
 
-          {/* Column 2: Who it's for */}
-          <div className="lg:col-span-2">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Who it's for</p>
-            <p className="text-sm text-gray-700">
-              {plan.whoItsFor}
+          {/* Column 2: Value Promise + Who it's for */}
+          <div className="lg:col-span-3">
+            <p className="font-semibold text-[#264C61] mb-2">
+              {plan.valuePromise}
+            </p>
+            <p className="text-sm text-gray-600">
+              <span className="font-medium text-gray-500">Who it's for:</span> {plan.whoItsFor}
             </p>
           </div>
 
           {/* Column 3: What you get */}
-          <div className="lg:col-span-6">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">What you get</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5">
+          <div className="lg:col-span-5">
+            <p className="text-sm font-semibold text-gray-500 mb-3">What you get:</p>
+            <div className="space-y-1.5">
               {plan.features.map((feature, i) => (
                 <div key={i} className="flex items-start gap-2">
                   <NavyCheckIcon className="w-4 h-4 flex-shrink-0 mt-0.5" />
@@ -360,7 +367,7 @@ function HorizontalPlanCard({ plan, isActive, isLoading, onSelect }: HorizontalP
                 }}
               >
                 <StarIcon className="w-4 h-4 flex-shrink-0 text-[#C9A24D] mt-0.5" />
-                <p className="text-sm font-medium text-[#0B1F2A]">
+                <p className="text-sm font-medium text-[#264C61]">
                   {plan.highlightFeature}
                 </p>
               </div>
@@ -372,9 +379,9 @@ function HorizontalPlanCard({ plan, isActive, isLoading, onSelect }: HorizontalP
             {isActive && plan.id !== 'free' ? (
               <div 
                 className="w-full py-3 px-4 rounded-lg text-sm text-center flex items-center justify-center gap-2"
-                style={{ backgroundColor: '#E8EBF7', color: '#0B1F2A', fontWeight: 600 }}
+                style={{ backgroundColor: '#E8EBF7', color: '#264C61', fontWeight: 600 }}
               >
-                <CheckIcon className="w-5 h-5" color="#0B1F2A" />
+                <CheckIcon className="w-5 h-5" color="#264C61" />
                 {plan.isAllAccess ? 'All Modules Active' : 'Active'}
               </div>
             ) : (
@@ -383,10 +390,10 @@ function HorizontalPlanCard({ plan, isActive, isLoading, onSelect }: HorizontalP
                 disabled={isLoading}
                 className={`w-full py-3 px-4 rounded-lg font-semibold text-sm transition-all ${
                   plan.id === 'free'
-                    ? 'bg-white border-2 border-[#0B1F2A] text-[#0B1F2A] hover:bg-gray-50'
+                    ? 'bg-white border-2 border-[#264C61] text-[#264C61] hover:bg-gray-50'
                     : plan.recommended 
-                      ? 'bg-[#C9A24D] text-white hover:bg-[#b8923d] shadow-md'
-                      : 'bg-[#0B1F2A] text-white hover:bg-[#162a36]'
+                      ? 'bg-[#C9A24D] text-white hover:bg-[#b8933d] shadow-md'
+                      : 'bg-[#264C61] text-white hover:bg-[#1d3a4a]'
                 } disabled:opacity-50`}
               >
                 {isLoading ? 'Loading...' : plan.buttonText}
@@ -416,6 +423,8 @@ const FEATURE_ROWS: FeatureRow[] = [
   { feature: 'Frame styling controls', free: true, artist: true, designer: true, gallery: true, allAccess: true },
   { feature: 'Image downloads', free: true, artist: true, designer: true, gallery: true, allAccess: true },
   { feature: 'PDF exports', free: false, artist: false, designer: true, gallery: true, allAccess: true },
+  { feature: 'Widget embed', free: false, artist: true, designer: true, gallery: true, allAccess: true },
+  { feature: 'Buy button integration', free: false, artist: true, designer: true, gallery: true, allAccess: true },
   { feature: 'Virtual exhibitions', free: false, artist: '1 active', designer: false, gallery: '3 active', allAccess: 'Unlimited' },
   { feature: 'Public exhibition links', free: false, artist: true, designer: false, gallery: true, allAccess: true },
   { feature: 'Designer Studio tools', free: false, artist: false, designer: true, gallery: false, allAccess: true },
