@@ -141,9 +141,9 @@ app.get('/api/health', (req, res) => {
 
 app.get('/api/version', (req, res) => {
   res.json({
-    version: '1.0.1',
-    build: '2025-12-14T14:35:00Z',
-    commit: 'cookie-only-auth',
+    version: '1.0.2',
+    build: '2025-12-14T15:00:00Z',
+    commit: 'debug-auth-logging',
     features: {
       cookieAuth: true,
       objectStorage: true

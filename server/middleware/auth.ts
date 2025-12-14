@@ -26,13 +26,18 @@ export interface AuthRequest extends Request {
 }
 
 export const authenticateToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
-  // Cookie-only authentication
+  // Cookie-only authentication - DEBUG logging
+  console.log('[Auth] Cookies received:', JSON.stringify(req.cookies || {}));
+  console.log('[Auth] Request:', req.method, req.path);
+  
   const token = req.cookies?.token;
 
   if (!token) {
     console.warn('[Auth] No token cookie found for request:', req.method, req.path);
     return res.status(401).json({ error: 'Not authenticated. Please sign in.' });
   }
+  
+  console.log('[Auth] Token found, length:', token.length);
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as {
