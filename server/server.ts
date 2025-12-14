@@ -22,6 +22,7 @@ import { initializeDatabase } from './db/init.js';
 import { query } from './db/database.js';
 import { ObjectStorageService, ObjectNotFoundError } from './objectStorage.js';
 import { requireGalleryFeature, requireStripeFeature } from './middleware/featureFlags.js';
+import { authenticateToken } from './middleware/auth.js';
 
 dotenv.config();
 
@@ -76,6 +77,38 @@ app.use('/api/designer', designerConnectRoutes);
 app.use('/api/gallery', galleryRoutes);
 app.use('/api/gallery', galleryConnectRoutes);
 app.use('/api/gallery', exhibition360Routes);
+app.get('/api/billing/subscription', authenticateToken, async (req: any, res) => {
+  try {
+    const userId = req.user.id;
+    const userResult = await query(
+      'SELECT subscription_status, subscription_plan, stripe_customer_id, stripe_subscription_id FROM users WHERE id = $1',
+      [userId]
+    );
+    if (userResult.rows.length === 0) {
+      return res.json({
+        subscription_status: 'free',
+        subscription_plan: 'user',
+        has_stripe_customer: false,
+        has_active_subscription: false,
+      });
+    }
+    const user = userResult.rows[0];
+    res.json({
+      subscription_status: user.subscription_status || 'free',
+      subscription_plan: user.subscription_plan || 'user',
+      has_stripe_customer: !!user.stripe_customer_id,
+      has_active_subscription: !!user.stripe_subscription_id,
+    });
+  } catch (error: any) {
+    console.warn('[subscription] Error fetching, defaulting to free:', error.message);
+    res.json({
+      subscription_status: 'free',
+      subscription_plan: 'user',
+      has_stripe_customer: false,
+      has_active_subscription: false,
+    });
+  }
+});
 app.use('/api/billing', requireStripeFeature, billingRoutes);
 app.use('/api/widget', widgetRoutes);
 app.use('/api/exports', exportsRoutes);
