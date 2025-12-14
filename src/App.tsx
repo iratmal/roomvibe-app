@@ -149,6 +149,8 @@ function AppContent() {
         <ArtworkEdit />
       ) : normalizedHash.startsWith("#/dashboard/gallery/collection/") ? (
         <CollectionDetail />
+      ) : normalizedHash === "#/dashboard/user" ? (
+        <UserDashboardRouter />
       ) : normalizedHash === "#/dashboard/artist" ? (
         <RoleDashboardRouter requiredRole="artist" />
       ) : normalizedHash === "#/dashboard/designer" ? (
@@ -251,15 +253,28 @@ function DashboardRouter() {
   }
 
   // Admin can impersonate other roles to preview their dashboards
-  // When impersonating, show the appropriate dashboard instead of AdminDashboard
+  // When impersonating, redirect to the appropriate dashboard route
   if (isAdmin && impersonatedRole) {
     if (impersonatedRole === 'user') {
-      return <UserDashboard />;
+      window.location.hash = '#/dashboard/user';
+      return null;
     }
     if (impersonatedRole === 'allin') {
       return <UnifiedDashboard />;
     }
-    // For artist/designer/gallery, they go to RoleDashboardRouter via specific routes
+    // For artist/designer/gallery, redirect to specific routes
+    if (impersonatedRole === 'artist') {
+      window.location.hash = '#/dashboard/artist';
+      return null;
+    }
+    if (impersonatedRole === 'designer') {
+      window.location.hash = '#/dashboard/designer';
+      return null;
+    }
+    if (impersonatedRole === 'gallery') {
+      window.location.hash = '#/dashboard/gallery';
+      return null;
+    }
   }
 
   // Admin without impersonation goes to admin dashboard
@@ -267,12 +282,13 @@ function DashboardRouter() {
     return <AdminDashboard />;
   }
 
-  // Free users get UserDashboard with basic artwork upload (max 3)
+  // Free users redirect to /dashboard/user for routing consistency
   const effectivePlan = user?.effectivePlan || 'user';
   const isFreePlan = effectivePlan === 'user' || effectivePlan === 'free';
   
   if (isFreePlan) {
-    return <UserDashboard />;
+    window.location.hash = '#/dashboard/user';
+    return null;
   }
 
   // Count how many role entitlements the user has
@@ -294,6 +310,35 @@ function DashboardRouter() {
   }
 
   // Fallback for paid users without specific entitlements (shouldn't happen normally)
+  return <UserDashboard />;
+}
+
+function UserDashboardRouter() {
+  const { user, loading, impersonatedRole, setImpersonation } = useAuth();
+
+  useEffect(() => {
+    // Auto-set impersonation for admin visiting /dashboard/user
+    if (user?.role === 'admin' && impersonatedRole !== 'user') {
+      setImpersonation('user');
+    }
+  }, [user, impersonatedRole, setImpersonation]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-rv-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-rv-textMuted">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    window.location.hash = '#/login';
+    return null;
+  }
+
   return <UserDashboard />;
 }
 

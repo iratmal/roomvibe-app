@@ -285,6 +285,7 @@ export function UserDashboard() {
           <div>
             <h1 className="text-3xl font-bold mb-2 text-rv-primary">User Dashboard</h1>
             <p className="text-rv-textMuted">Welcome back, {user?.email}!</p>
+            <p className="text-rv-textMuted text-sm mt-1">Upload up to 3 artworks and instantly visualize them in our mockup rooms.</p>
           </div>
           <div className="flex items-center gap-3">
             <a
@@ -499,7 +500,7 @@ export function UserDashboard() {
           
           {artworks.length === 0 ? (
             <div className="text-center py-12 bg-rv-surface rounded-rvLg border border-rv-neutral">
-              <p className="text-rv-textMuted text-lg">No artworks yet. Upload your first piece above!</p>
+              <p className="text-rv-textMuted text-lg">No artworks yet. Upload your first artwork above.</p>
             </div>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
