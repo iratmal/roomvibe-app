@@ -140,35 +140,45 @@ router.get('/mine', authenticateToken, async (req: any, res) => {
 });
 
 router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('image'), async (req: any, res) => {
+  console.log('[UPLOAD] ========== POST /api/artist/artworks ==========');
+  console.log('[UPLOAD] Content-Type:', req.headers['content-type']);
+  console.log('[UPLOAD] Body keys:', Object.keys(req.body || {}));
+  console.log('[UPLOAD] File present:', !!req.file);
+  if (req.file) {
+    console.log('[UPLOAD] File details:', {
+      fieldname: req.file.fieldname,
+      originalname: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size,
+      bufferLen: req.file.buffer?.length || 0
+    });
+  } else {
+    console.log('[UPLOAD] NO FILE - req.file is undefined/null');
+  }
+  console.log('[UPLOAD] ==============================================');
+
+  if (!req.file) {
+    console.error('[UPLOAD] NO_FILE: Returning 400');
+    return res.status(400).json({ error: 'NO_FILE: Image file is required', code: 'NO_FILE' });
+  }
+
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
     
-    console.log('[POST /artworks] Request received:', {
+    console.log('[UPLOAD] User context:', {
       userId: req.user?.id,
       email: req.user?.email,
       effectivePlan,
-      role: req.user?.role,
-      subscription_status: req.user?.subscription_status,
-      subscription_plan: req.user?.subscription_plan,
-      artworkCount: req.user?.artworkCount,
-      planLimits: req.user?.planLimits
+      role: req.user?.role
     });
-    
-    // Allow all authenticated users to upload artworks (limit enforced by checkArtworkLimit middleware)
-    // Free users can upload up to 3 artworks, paid users have higher limits
 
     const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, artistId, orientation, styleTags, dominantColors, medium, availability } = req.body;
 
-    console.log('[Upload] Creating artwork with data:', { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, hasFile: !!req.file, orientation, medium, availability });
+    console.log('[UPLOAD] Artwork data:', { title, width, height, dimensionUnit, buyUrl, orientation, medium, availability });
 
     if (!title || !width || !height || !buyUrl) {
-      console.error('Missing required fields:', { title: !!title, width: !!width, height: !!height, buyUrl: !!buyUrl });
+      console.error('[UPLOAD] Missing required fields:', { title: !!title, width: !!width, height: !!height, buyUrl: !!buyUrl });
       return res.status(400).json({ error: 'Missing required fields: title, width, height, buyUrl' });
-    }
-
-    if (!req.file) {
-      console.error('No image file uploaded');
-      return res.status(400).json({ error: 'Image file is required' });
     }
 
     const targetArtistId = effectivePlan === 'admin' && artistId ? parseInt(artistId) : req.user.id;
