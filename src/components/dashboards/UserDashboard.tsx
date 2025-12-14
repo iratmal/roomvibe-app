@@ -596,6 +596,134 @@ export function UserDashboard() {
           )}
         </div>
 
+        {/* Widget Embed Section */}
+        <div className="mb-10 p-6 bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral">
+          <h2 className="text-2xl font-bold mb-4 text-rv-primary">Widget Embed</h2>
+          <p className="text-rv-textMuted text-sm mb-4">
+            Embed a widget on your website to let visitors preview your artworks in mockup rooms directly from your site.
+          </p>
+          {artworks.length === 0 ? (
+            <div className="p-4 bg-rv-surface rounded-rvMd border border-rv-neutral">
+              <p className="text-rv-textMuted text-sm">
+                Upload at least 1 artwork to enable widget embed.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-rv-text">Embed Code</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={`<iframe src="${window.location.origin}/#/studio?user=${user?.id}" width="100%" height="600" frameborder="0"></iframe>`}
+                    className="flex-1 px-4 py-2.5 border border-rv-neutral rounded-rvMd bg-rv-surface text-sm text-rv-textMuted font-mono"
+                  />
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`<iframe src="${window.location.origin}/#/studio?user=${user?.id}" width="100%" height="600" frameborder="0"></iframe>`);
+                      setSuccess('Embed code copied to clipboard!');
+                      setTimeout(() => setSuccess(''), 3000);
+                    }}
+                    className="px-4 py-2.5 bg-rv-primary text-white rounded-rvMd text-sm font-semibold hover:bg-rv-primaryHover transition-colors"
+                  >
+                    Copy
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-rv-text">Public Studio Link</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={`${window.location.origin}/#/studio?user=${user?.id}`}
+                    className="flex-1 px-4 py-2.5 border border-rv-neutral rounded-rvMd bg-rv-surface text-sm text-rv-textMuted"
+                  />
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}/#/studio?user=${user?.id}`);
+                      setSuccess('Link copied to clipboard!');
+                      setTimeout(() => setSuccess(''), 3000);
+                    }}
+                    className="px-4 py-2.5 bg-rv-primary text-white rounded-rvMd text-sm font-semibold hover:bg-rv-primaryHover transition-colors"
+                  >
+                    Copy
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Buy Button Integration Section */}
+        <div className="mb-10 p-6 bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral">
+          <h2 className="text-2xl font-bold mb-4 text-rv-primary">Buy Button Integration</h2>
+          <p className="text-rv-textMuted text-sm mb-4">
+            Add a Buy URL to your artworks to enable a purchase button in the Studio and Widget.
+          </p>
+          
+          <div className="p-4 bg-rv-surface rounded-rvMd border border-rv-neutral mb-4">
+            <div className="flex items-center gap-3 mb-3">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                artworks.length > 0 && artworks.filter(a => a.buy_url).length === artworks.length
+                  ? 'bg-green-100'
+                  : artworks.filter(a => a.buy_url).length > 0
+                  ? 'bg-amber-100'
+                  : 'bg-gray-100'
+              }`}>
+                <svg className={`w-5 h-5 ${
+                  artworks.length > 0 && artworks.filter(a => a.buy_url).length === artworks.length
+                    ? 'text-green-600'
+                    : artworks.filter(a => a.buy_url).length > 0
+                    ? 'text-amber-600'
+                    : 'text-gray-400'
+                }`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="font-semibold text-rv-text">
+                  {artworks.length === 0
+                    ? '0/0 artworks have a Buy URL'
+                    : `${artworks.filter(a => a.buy_url).length}/${artworks.length} artworks have a Buy URL`}
+                </p>
+                <p className="text-sm text-rv-textMuted">
+                  {artworks.length === 0
+                    ? 'Upload artworks to start selling'
+                    : artworks.filter(a => a.buy_url).length === artworks.length
+                    ? 'All artworks are ready for sale!'
+                    : 'Add Buy URLs to enable purchase buttons'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-rv-text">Quick Checklist:</p>
+            <ul className="space-y-1.5 text-sm text-rv-textMuted">
+              <li className="flex items-start gap-2">
+                <svg className="w-4 h-4 mt-0.5 text-rv-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Add a Buy URL when uploading or editing an artwork
+              </li>
+              <li className="flex items-start gap-2">
+                <svg className="w-4 h-4 mt-0.5 text-rv-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Use your shop's product page URL (e.g., Etsy, Shopify, personal site)
+              </li>
+              <li className="flex items-start gap-2">
+                <svg className="w-4 h-4 mt-0.5 text-rv-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                The Buy button will appear in Studio and embedded widgets
+              </li>
+            </ul>
+          </div>
+        </div>
+
         {/* Plan Card */}
         <div className="mb-10">
           <YourPlanCard />

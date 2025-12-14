@@ -1,0 +1,66 @@
+GOAL:
+Polish User Dashboard (Free plan) so plan features shown in UI match our Free plan promise,
+and user can actually find/understand “Widget embed” + “Buy button integration”.
+
+ENV:
+STAGING ONLY
+Admin Impersonation -> User
+Route: /dashboard/user
+
+SCOPE A — FREE PLAN FEATURE LIST (UI)
+Update “Your Plan” card (Free) to show THESE 4 items (at least):
+- Up to 3 artworks
+- 10 basic mockup rooms
+- Widget embed
+- Buy button integration
+
+Make sure this list is the same as our pricing/marketing claim for Free.
+
+SCOPE B — ADD 2 NEW SECTIONS ON USER DASHBOARD (MVP, NO COMPLEX FEATURE WORK)
+
+1) Widget Embed (MVP)
+Add a section on User dashboard called “Widget Embed”.
+It should include:
+- short explanation (what it is)
+- the public link / embed code the user can copy
+
+MVP rules (keep it simple):
+- If user has 0 artworks -> show disabled state + message:
+  “Upload at least 1 artwork to enable widget embed.”
+- Once user has at least 1 artwork -> show:
+  - a copy button for embed code (iframe snippet) OR
+  - a copy button for public URL (minimum acceptable)
+- Do NOT build a full widget builder. Just expose a working embed/link entry point.
+
+2) Buy Button Integration (clarity)
+Add a section called “Buy Button Integration”.
+Explain clearly:
+- Buy URL is already supported per artwork (field in upload/edit)
+- Provide a quick checklist:
+  “Add a Buy URL to your artwork to enable the Buy button in Studio/Widget.”
+- If possible: show an indicator:
+  - “0/0 artworks have a Buy URL” (when none exist)
+  - “X/Y artworks have a Buy URL” (when artworks exist)
+
+MVP rules:
+- Do NOT build e-commerce integrations.
+- This is visibility + guidance + status only.
+
+SCOPE C — PAGE POLISH
+- Keep the dashboard layout stable (no redesign).
+- Ensure no extra footer jumps or weird spacing.
+- Ensure all new sections look consistent with existing cards (same padding, headings, typography).
+
+DO NOT:
+- Change backend contracts
+- Add new billing logic
+- Implement complex widget editor
+- Touch other role dashboards
+
+DEFINITION OF DONE:
+- Free plan card shows the 4 promised features
+- User dashboard includes “Widget Embed” + “Buy Button Integration” sections
+- With 0 artworks: widget embed is disabled with clear instruction
+- With >=1 artwork: user can copy embed code or at minimum a public URL
+- Buy integration section clearly explains Buy URL + shows X/Y coverage
+- No console errors

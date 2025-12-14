@@ -19,10 +19,10 @@ interface PlanDisplay {
 
 const PLAN_DISPLAYS: Record<string, PlanDisplay> = {
   user: {
-    badge: 'User',
+    badge: 'Free',
     badgeColor: 'bg-gray-100 text-gray-700',
     description: "You're on the free plan. Perfect for testing RoomVibe with basic features.",
-    bullets: ['10 Basic Mockup Rooms', 'Up to 3 artworks'],
+    bullets: ['Up to 3 artworks', '10 basic mockup rooms', 'Widget embed', 'Buy button integration'],
   },
   artist: {
     badge: 'Artist',
