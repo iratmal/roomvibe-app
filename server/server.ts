@@ -164,7 +164,42 @@ app.get('/api/health/env', (req, res) => {
     analyticsEnabled: envBool(process.env.ENABLE_ANALYTICS),
     gdprEnabled: envBool(process.env.ENABLE_GDPR),
     storageConfigured: !!process.env.PRIVATE_OBJECT_DIR,
-    version: '1.0.4'
+    version: '1.0.5'
+  });
+});
+
+app.get('/api/health/storage', async (req, res) => {
+  const SIDECAR = "http://127.0.0.1:1106";
+  const results: Record<string, any> = {
+    privateObjectDir: process.env.PRIVATE_OBJECT_DIR ? 'SET' : 'NOT_SET',
+    privateObjectDirValue: process.env.PRIVATE_OBJECT_DIR?.substring(0, 30) + '...',
+    timestamp: new Date().toISOString(),
+    nodeEnv: process.env.NODE_ENV,
+    appEnv: process.env.APP_ENV,
+  };
+
+  try {
+    const credentialRes = await fetch(`${SIDECAR}/credential`, { method: 'GET' });
+    results.sidecarCredentialStatus = credentialRes.status;
+    if (credentialRes.ok) {
+      const credData = await credentialRes.json();
+      results.sidecarCredentialHasToken = !!credData.access_token;
+      results.sidecarCredentialExpiresIn = credData.expires_in;
+    } else {
+      results.sidecarCredentialError = await credentialRes.text();
+    }
+  } catch (e: any) {
+    results.sidecarConnectionError = e.message;
+  }
+
+  const sidecarOk = results.sidecarCredentialStatus === 200 && results.sidecarCredentialHasToken;
+  const storageConfigured = results.privateObjectDir === 'SET';
+  
+  res.status(sidecarOk && storageConfigured ? 200 : 500).json({
+    status: sidecarOk && storageConfigured ? 'healthy' : 'unhealthy',
+    sidecarReachable: sidecarOk,
+    storageConfigured,
+    ...results
   });
 });
 
