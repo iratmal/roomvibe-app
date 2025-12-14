@@ -203,6 +203,28 @@ app.get('/api/health/storage', async (req, res) => {
   });
 });
 
+app.get('/api/health/storage/write-test', async (req, res) => {
+  const objectStorage = new ObjectStorageService();
+  try {
+    const storedObjectName = await objectStorage.uploadBuffer(
+      Buffer.from('ping'),
+      `ping-${Date.now()}.txt`,
+      'text/plain'
+    );
+    return res.json({ ok: true, storedObjectName, timestamp: new Date().toISOString() });
+  } catch (err: any) {
+    return res.status(500).json({
+      ok: false,
+      error: {
+        name: err?.name,
+        message: err?.message,
+        code: err?.code,
+        statusCode: err?.statusCode,
+      },
+    });
+  }
+});
+
 app.get('/api/artwork-image/:id', async (req: any, res) => {
   try {
     const artworkId = parseInt(req.params.id);

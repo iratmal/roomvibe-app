@@ -152,31 +152,40 @@ export class ObjectStorageService {
     const objectName = `artworks/${objectId}.${extension}`;
     const storedObjectName = prefix ? `${prefix}/${objectName}` : objectName;
 
-    console.log('[ObjectStorage] Parsed config:', { 
-      privateDirRaw, 
-      bucketName, 
-      prefix: prefix || '(none)', 
-      storedObjectName 
-    });
+    console.log('[ObjectStorage] Using PRIVATE_OBJECT_DIR:', privateDirRaw);
+    console.log('[ObjectStorage] Parsed bucket/prefix:', { bucketName, prefix: prefix || '(none)', storedObjectName });
     
     const bucket = objectStorageClient.bucket(bucketName);
     const file = bucket.file(storedObjectName);
 
     try {
-      console.log('[ObjectStorage] Calling file.save()...');
-      await file.save(buffer, {
+      console.log('[ObjectStorage] Calling file.save()...', {
+        storedObjectName,
         contentType,
+        size: buffer.length,
+      });
+      
+      await file.save(buffer, {
         resumable: false,
+        metadata: { contentType },
       });
-      console.log('[ObjectStorage] file.save() SUCCESS');
-    } catch (saveError: any) {
-      console.error('[ObjectStorage] file.save() FAILED:', {
-        message: saveError.message,
-        code: saveError.code,
-        name: saveError.name,
-        stack: saveError.stack?.split('\n').slice(0, 5).join('\n')
+      
+      console.log('[ObjectStorage] file.save() SUCCESS', { storedObjectName });
+    } catch (err: any) {
+      console.error('[ObjectStorage] file.save() FAILED', {
+        name: err?.name,
+        message: err?.message,
+        code: err?.code,
+        statusCode: err?.statusCode,
+        errors: err?.errors,
+        stack: err?.stack,
+        response: err?.response?.data || err?.response,
       });
-      throw new Error(`Storage write failed: ${saveError.message || saveError.code || 'Unknown error'}`);
+      const error = new Error(`Storage write failed: ${err?.message || 'Unknown error'}`);
+      (error as any).code = err?.code;
+      (error as any).statusCode = err?.statusCode;
+      (error as any).originalError = err;
+      throw error;
     }
 
     const resultPath = `/objects/artworks/${objectId}.${extension}`;
