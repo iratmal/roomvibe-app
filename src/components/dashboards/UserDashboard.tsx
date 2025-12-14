@@ -76,14 +76,30 @@ export function UserDashboard() {
       });
       
       if (!response.ok) {
-        throw new Error('Failed to fetch artworks');
+        // Only show error for genuine failures (500+, network errors)
+        // For 401/403 unauthorized or 404 not found, treat as empty state
+        if (response.status >= 500) {
+          throw new Error('Server error. Please try again later.');
+        }
+        // For 401/403/404 - user may not have artworks or access, treat as empty
+        setArtworks([]);
+        return;
       }
 
       const data = await response.json();
       setArtworks(data.artworks || []);
     } catch (err: any) {
-      console.error('Error fetching artworks:', err);
-      setError(err.message);
+      // Only show error for network failures or server errors
+      if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
+        console.error('Network error fetching artworks:', err);
+        setError('Unable to connect. Please check your connection.');
+      } else if (err.message?.includes('Server error')) {
+        setError(err.message);
+      } else {
+        // For other errors, just log and show empty state
+        console.error('Error fetching artworks:', err);
+        setArtworks([]);
+      }
     }
   };
 
