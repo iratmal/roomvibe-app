@@ -1037,18 +1037,28 @@ function Studio() {
     fetchUserArtworks();
   }, [user]);
   
-  // Combine user artworks (first) with sample artworks
+  // Set artworks based on authentication state and plan
   useEffect(() => {
     if (hasLoadedUserArtworks) {
-      if (userArtworks.length > 0) {
-        // User has uploaded artworks - show them first, then sample artworks
-        setArtworksState([...userArtworks, ...(localArtworks as any[])]);
-      } else {
-        // No user artworks - show sample artworks
+      if (!user || isFreePlan) {
+        // Unauthenticated or free users: show demo artworks for marketing
         setArtworksState(localArtworks as any[]);
+      } else {
+        // Authenticated paid users: show ONLY their artworks (no demo fallback)
+        setArtworksState(userArtworks);
+        // Auto-select first artwork if current selection doesn't exist
+        if (userArtworks.length > 0) {
+          const currentExists = userArtworks.some((a: any) => a.id === artId);
+          if (!currentExists) {
+            setArtId(userArtworks[0].id);
+          }
+        } else {
+          // No artworks - clear artId to avoid stale references
+          setArtId('');
+        }
       }
     }
-  }, [userArtworks, hasLoadedUserArtworks]);
+  }, [userArtworks, hasLoadedUserArtworks, user, isFreePlan]);
   
   useEffect(() => {
     const loadArtworkFromUrl = async () => {
@@ -1121,9 +1131,11 @@ function Studio() {
   
   // AI Suggested Rooms - get top 3 rooms based on artwork tags, title keywords, or ID-based variation
   // useMemo ensures recalculation when artwork or filtered rooms change
+  // Guard: return empty array if art is undefined (paid users with no artworks)
   const aiSuggestedRooms = useMemo(() => {
+    if (!art) return [];
     return getTopSuggestedRooms(art?.tags, roomsFilteredByPlan, 3, art?.title, art?.id);
-  }, [art?.id, art?.tags, art?.title, roomsFilteredByPlan]);
+  }, [art?.id, art?.tags, art?.title, roomsFilteredByPlan, art]);
 
   const [frameStyle, setFrameStyle] = useState<string>("none");
   
@@ -2275,8 +2287,32 @@ function Studio() {
                     </div>
                   </div>
                 )}
-                {/* Frame container - only show when there's a background (user photo or preset room) */}
-                {(userPhoto || scene) && (
+                {/* Empty state for paid users with no artworks */}
+                {!isFreePlan && user && !art && hasLoadedUserArtworks && (
+                  <div className="absolute inset-0 flex items-center justify-center z-10">
+                    <div className="bg-white/95 rounded-rvLg shadow-lg p-8 text-center max-w-sm mx-4">
+                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-rv-primary/10 flex items-center justify-center">
+                        <svg className="w-8 h-8 text-rv-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-semibold text-rv-text mb-2">No artworks yet</h3>
+                      <p className="text-sm text-rv-textMuted mb-4">Upload your first artwork to start visualizing it in real rooms.</p>
+                      <a
+                        href="#/dashboard"
+                        className="inline-flex items-center gap-2 px-6 py-2.5 bg-rv-primary text-white rounded-rvMd font-semibold text-sm hover:bg-rv-primaryHover transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Go to Dashboard
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                {/* Frame container - only show when there's a background (user photo or preset room) and art exists */}
+                {(userPhoto || scene) && art && (
                 <div
                   className={frameConfig.id === "none" ? "rounded-md shadow-2xl" : "shadow-2xl"}
                   style={{ 
@@ -2591,31 +2627,20 @@ function Studio() {
                   </div>
                 )}
                 
-                {/* Artwork dropdown */}
-                <select
-                  className="w-full rounded-rvMd border border-rv-neutral px-3 py-2.5 text-sm font-medium text-rv-text bg-white focus:outline-none focus:ring-2 focus:ring-rv-primary/20 focus:border-rv-primary transition-all"
-                  value={artId}
-                  onChange={(e) => setArtId(e.target.value)}
-                >
-                  {/* User's artworks section */}
-                  {userArtworks.length > 0 && (
-                    <optgroup label="My Artworks">
-                      {userArtworks.map((a) => (
-                        <option key={a.id} value={a.id}>
-                          {a.title}
-                        </option>
-                      ))}
-                    </optgroup>
-                  )}
-                  {/* Sample artworks section */}
-                  <optgroup label="Sample Artworks">
-                    {(localArtworks as any[]).map((a) => (
+                {/* Artwork dropdown - only show if user has artworks */}
+                {userArtworks.length > 0 && (
+                  <select
+                    className="w-full rounded-rvMd border border-rv-neutral px-3 py-2.5 text-sm font-medium text-rv-text bg-white focus:outline-none focus:ring-2 focus:ring-rv-primary/20 focus:border-rv-primary transition-all"
+                    value={artId}
+                    onChange={(e) => setArtId(e.target.value)}
+                  >
+                    {userArtworks.map((a) => (
                       <option key={a.id} value={a.id}>
                         {a.title}
                       </option>
                     ))}
-                  </optgroup>
-                </select>
+                  </select>
+                )}
               </div>
             )}
             

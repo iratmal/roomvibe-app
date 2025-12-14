@@ -179,10 +179,7 @@ export function YourPlanCard() {
 
         {isFree && (
           <p className="text-sm text-rv-textMuted mb-6">
-            Want more mockup rooms and uploads?{' '}
-            <a href="#/pricing" className="text-rv-primary hover:text-rv-primaryHover font-semibold">
-              Upgrade your plan →
-            </a>
+            Want more mockup rooms and uploads?
           </p>
         )}
 
@@ -194,20 +191,13 @@ export function YourPlanCard() {
 
         <div className="flex flex-col sm:flex-row gap-3">
           {(isFree || isCanceledOrExpired) ? (
-            <>
-              <a
-                href="#/pricing"
-                className="flex-1 text-center py-2.5 px-4 rounded-rvMd font-semibold text-sm bg-rv-primary text-white hover:bg-rv-primaryHover transition-colors"
-              >
-                {isCanceledOrExpired ? 'Upgrade again' : 'Upgrade plan'}
-              </a>
-              <a
-                href="#/pricing"
-                className="flex-1 text-center py-2.5 px-4 rounded-rvMd font-semibold text-sm border-2 border-rv-neutral text-rv-text hover:border-rv-primary hover:text-rv-primary transition-colors"
-              >
-                View all plans
-              </a>
-            </>
+            <a
+              href="#/pricing"
+              onClick={() => window.scrollTo(0, 0)}
+              className="flex-1 text-center py-2.5 px-4 rounded-rvMd font-semibold text-sm bg-rv-primary text-white hover:bg-rv-primaryHover transition-colors"
+            >
+              {isCanceledOrExpired ? 'Upgrade again' : 'Upgrade plan'}
+            </a>
           ) : isActive ? (
             <>
               <button
