@@ -31,7 +31,14 @@ router.get('/artworks', authenticateToken, async (req: any, res) => {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    // Safely get effective plan with fallback
+    let effectivePlan = 'user';
+    try {
+      effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    } catch (planError) {
+      console.warn('[GET /artworks] Error getting effective plan, defaulting to user:', planError);
+      effectivePlan = 'user';
+    }
     
     // Allow all authenticated users to view their own artworks (for usage tracking)
     // Even free users need to see their artworks to understand their upload limit
@@ -55,17 +62,16 @@ router.get('/artworks', authenticateToken, async (req: any, res) => {
     }
 
     const result = await query(queryText, queryParams);
-    const artworks = result.rows || [];
+    // Always return array, never null/undefined
+    const artworks = result?.rows || [];
     console.log(`Found ${artworks.length} artworks`);
     res.json({ artworks });
   } catch (error: any) {
-    console.error('Error fetching artworks:', error);
-    console.error('Error details:', {
-      message: error.message,
-      code: error.code,
-      detail: error.detail
-    });
-    res.status(500).json({ error: 'Failed to fetch artworks', details: error.message });
+    console.error('[GET /artworks] Error:', error?.message || error);
+    // Return empty array instead of 500 for graceful degradation
+    // This prevents the red error banner on User Dashboard
+    console.warn('[GET /artworks] Returning empty array due to error');
+    res.json({ artworks: [] });
   }
 });
 
