@@ -45,13 +45,20 @@ export class ObjectStorageService {
   }
 
   async getUploadURL(filename: string): Promise<{ uploadURL: string; objectPath: string }> {
-    const privateObjectDir = this.getPrivateObjectDir();
+    const privateDirRaw = this.getPrivateObjectDir();
+    const privateDir = privateDirRaw.replace(/^\/+/, "");
+    const parts = privateDir.split("/").filter(Boolean);
+    const bucketName = parts[0];
+    const prefix = parts.slice(1).join("/");
+    
+    if (!bucketName) {
+      throw new Error(`Invalid PRIVATE_OBJECT_DIR: "${privateDirRaw}" (bucketName empty)`);
+    }
+    
     const objectId = randomUUID();
     const extension = filename.includes('.') ? filename.split('.').pop() : 'jpg';
     const objectName = `artworks/${objectId}.${extension}`;
-    const fullPath = `${privateObjectDir}/${objectName}`;
-
-    const { bucketName, objectName: storedObjectName } = this.parseObjectPath(fullPath);
+    const storedObjectName = prefix ? `${prefix}/${objectName}` : objectName;
 
     const uploadURL = await this.signObjectURL({
       bucketName,
@@ -71,18 +78,25 @@ export class ObjectStorageService {
       throw new ObjectNotFoundError();
     }
 
-    const parts = objectPath.slice(1).split("/");
-    if (parts.length < 2) {
+    const pathParts = objectPath.slice(1).split("/");
+    if (pathParts.length < 2) {
       throw new ObjectNotFoundError();
     }
 
-    const entityId = parts.slice(1).join("/");
-    let entityDir = this.getPrivateObjectDir();
-    if (!entityDir.endsWith("/")) {
-      entityDir = `${entityDir}/`;
+    const entityId = pathParts.slice(1).join("/");
+    
+    const privateDirRaw = this.getPrivateObjectDir();
+    const privateDir = privateDirRaw.replace(/^\/+/, "");
+    const dirParts = privateDir.split("/").filter(Boolean);
+    const bucketName = dirParts[0];
+    const prefix = dirParts.slice(1).join("/");
+    
+    if (!bucketName) {
+      throw new Error(`Invalid PRIVATE_OBJECT_DIR: "${privateDirRaw}" (bucketName empty)`);
     }
-    const objectEntityPath = `${entityDir}${entityId}`;
-    const { bucketName, objectName } = this.parseObjectPath(objectEntityPath);
+    
+    const objectName = prefix ? `${prefix}/${entityId}` : entityId;
+    
     const bucket = objectStorageClient.bucket(bucketName);
     const objectFile = bucket.file(objectName);
     const [exists] = await objectFile.exists();
@@ -122,18 +136,28 @@ export class ObjectStorageService {
   async uploadBuffer(buffer: Buffer, filename: string, contentType: string): Promise<string> {
     console.log('[ObjectStorage] uploadBuffer START', { filename, contentType, bufferSize: buffer.length });
     
-    const privateObjectDir = this.getPrivateObjectDir();
-    console.log('[ObjectStorage] privateObjectDir resolved:', privateObjectDir ? 'SET' : 'NOT SET');
+    const privateDirRaw = this.getPrivateObjectDir();
+    const privateDir = privateDirRaw.replace(/^\/+/, "");
+    
+    const parts = privateDir.split("/").filter(Boolean);
+    const bucketName = parts[0];
+    const prefix = parts.slice(1).join("/");
+    
+    if (!bucketName) {
+      throw new Error(`Invalid PRIVATE_OBJECT_DIR: "${privateDirRaw}" (bucketName empty)`);
+    }
     
     const objectId = randomUUID();
     const extension = filename.includes('.') ? filename.split('.').pop() : 'jpg';
     const objectName = `artworks/${objectId}.${extension}`;
-    const fullPath = `${privateObjectDir}/${objectName}`;
+    const storedObjectName = prefix ? `${prefix}/${objectName}` : objectName;
 
-    console.log('[ObjectStorage] Preparing upload:', { objectName, extension });
-
-    const { bucketName, objectName: storedObjectName } = this.parseObjectPath(fullPath);
-    console.log('[ObjectStorage] Parsed path:', { bucketName, storedObjectName });
+    console.log('[ObjectStorage] Parsed config:', { 
+      privateDirRaw, 
+      bucketName, 
+      prefix: prefix || '(none)', 
+      storedObjectName 
+    });
     
     const bucket = objectStorageClient.bucket(bucketName);
     const file = bucket.file(storedObjectName);
