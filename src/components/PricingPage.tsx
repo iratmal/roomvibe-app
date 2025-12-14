@@ -107,9 +107,14 @@ const PLANS: PlanConfig[] = [
 
 function NavyCheckIcon({ className = "w-5 h-5" }: { className?: string }) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="#0B1F2A" strokeWidth={2.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-    </svg>
+    <div 
+      className={`${className} rounded flex items-center justify-center`}
+      style={{ backgroundColor: '#0B1F2A' }}
+    >
+      <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="#FFFFFF" strokeWidth={3}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+      </svg>
+    </div>
   );
 }
 
