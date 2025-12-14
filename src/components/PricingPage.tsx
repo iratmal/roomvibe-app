@@ -24,13 +24,16 @@ const PLANS: PlanConfig[] = [
     name: 'Free',
     price: '€0',
     priceValue: 0,
-    whoItsFor: 'Trying RoomVibe for the first time.',
+    whoItsFor: 'People trying RoomVibe for the first time.',
     features: [
       'Upload up to 3 artworks',
+      'Up to 10 basic mockup rooms',
       'Upload a photo of your own wall or use basic rooms',
-      'Instantly see how your artwork looks on a wall',
+      'See instantly how your artwork looks on a real wall',
       'Download images for preview and sharing',
-      'Add a Buy button to link your artwork',
+      'Frame styling controls',
+      'Widget embed',
+      'Buy button integration',
     ],
     buttonText: 'Get Started Free',
   },
@@ -39,14 +42,18 @@ const PLANS: PlanConfig[] = [
     name: 'Artist',
     price: '€9',
     priceValue: 9,
-    whoItsFor: 'Independent artists who want to present, share, and sell their art online.',
+    whoItsFor: 'Independent artists and creatives who want to present, sell, and exhibit their art online.',
     entitlement: 'artist_access',
     features: [
       'Upload up to 50 artworks',
-      'Upload your own walls or use realistic interiors',
+      'Up to 40 standard mockup rooms',
+      'Upload your own wall photos or use realistic interiors',
       'See your artwork instantly on real walls',
-      'Create and share your own virtual exhibition',
-      'Download images for your website and social media',
+      'Create and share your own virtual exhibitions',
+      'Download images for your website & social media',
+      'Add a Buy button (Shopify, WooCommerce, Wix)',
+      'Frame styling controls',
+      'Widget embed',
     ],
     highlightFeature: 'Get discovered by interior designers and galleries using RoomVibe',
     buttonText: 'Activate Artist Plan',
@@ -60,10 +67,14 @@ const PLANS: PlanConfig[] = [
     entitlement: 'designer_access',
     features: [
       'Upload up to 100 artworks',
+      'Access to 100+ premium mockup rooms',
       'Upload client wall photos or use premium rooms',
-      'Create clear visual concepts for interiors',
-      'Export images and PDFs for client presentations',
-      'Unlimited previews while designing',
+      'Create visual concepts and PDF presentations',
+      'Designer Studio tools included',
+      'Multi-art wall presentations',
+      'Unlimited previews',
+      'Widget embed',
+      'Buy button integration',
     ],
     highlightFeature: 'Find and connect with artists for your interior projects using RoomVibe',
     buttonText: 'Unlock Designer Tools',
@@ -77,12 +88,16 @@ const PLANS: PlanConfig[] = [
     entitlement: 'gallery_access',
     features: [
       'Upload unlimited artworks',
+      'Access to 100+ premium mockup rooms',
       'Upload real gallery or studio walls',
       'Create virtual exhibitions (up to 3 active)',
-      'Share public exhibition links with visitors and collectors',
-      'Export exhibition PDFs',
+      'Share public exhibition links with collectors and visitors',
+      'Exhibition PDF export (20 per month)',
+      'Gallery Hub & multi-art walls',
+      'Widget embed',
+      'Buy button integration',
     ],
-    highlightFeature: 'Discover and work with artists through the RoomVibe platform',
+    highlightFeature: 'Discover and connect with artists on the RoomVibe platform',
     buttonText: 'Unlock Exhibition Tools',
   },
   {
@@ -90,13 +105,16 @@ const PLANS: PlanConfig[] = [
     name: 'All-Access',
     price: '€79',
     priceValue: 79,
-    whoItsFor: 'Full-time professionals, studios, and power users.',
+    whoItsFor: 'Full-time art professionals, studios, galleries, and power users.',
     isAllAccess: true,
     recommended: true,
     features: [
-      'Unlimited artworks, walls, and exhibitions',
-      'Full Artist, Designer, and Gallery tools',
-      'Unlimited exports',
+      'Upload unlimited artworks',
+      'Access to all premium mockup rooms (including future packs)',
+      'Unlimited walls, exhibitions, and exports',
+      'Artist + Designer + Gallery modules included',
+      'Unlimited virtual exhibitions',
+      'Unlimited PDF exports',
       'Priority support',
       'Early access to new features',
     ],
@@ -104,25 +122,7 @@ const PLANS: PlanConfig[] = [
   },
 ];
 
-const COMPARISON_FEATURES = [
-  { name: 'Artwork upload limit', free: '3', artist: '50', designer: '100', gallery: 'Unlimited', allaccess: 'Unlimited' },
-  { name: 'Upload your own wall photos', free: true, artist: true, designer: true, gallery: true, allaccess: true },
-  { name: 'Basic rooms (10)', free: true, artist: true, designer: true, gallery: true, allaccess: true },
-  { name: 'Standard rooms', free: false, artist: true, designer: true, gallery: true, allaccess: true },
-  { name: 'Premium rooms', free: false, artist: false, designer: true, gallery: true, allaccess: true },
-  { name: 'Instant wall visualization', free: true, artist: true, designer: true, gallery: true, allaccess: true },
-  { name: 'Image download', free: true, artist: true, designer: true, gallery: true, allaccess: true },
-  { name: 'PDF export', free: false, artist: false, designer: true, gallery: true, allaccess: true },
-  { name: 'Virtual exhibitions', free: false, artist: true, designer: false, gallery: 'Up to 3', allaccess: 'Unlimited' },
-  { name: 'Public exhibition share links', free: false, artist: true, designer: false, gallery: true, allaccess: true },
-  { name: 'Designer Studio tools', free: false, artist: false, designer: true, gallery: false, allaccess: true },
-  { name: 'Gallery / Exhibition Hub', free: false, artist: false, designer: false, gallery: true, allaccess: true },
-  { name: 'Buy button integration', free: true, artist: true, designer: true, gallery: true, allaccess: true },
-  { name: 'Priority support', free: false, artist: false, designer: false, gallery: false, allaccess: true },
-  { name: 'Early access to new features', free: false, artist: false, designer: false, gallery: false, allaccess: true },
-];
-
-function CheckIcon({ className = "w-5 h-5", color }: { className?: string; color?: string }) {
+function CheckIcon({ className = "w-4 h-4", color }: { className?: string; color?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke={color || "currentColor"} strokeWidth={2.5}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -214,12 +214,12 @@ export function PricingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gray-50">
       <SiteHeader showPlanBadge={false} />
 
-      <main className="py-12 sm:py-20">
+      <main className="py-12 sm:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {/* Section 1: Pricing Plans */}
+          {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-3xl sm:text-4xl font-bold text-[var(--roomvibe-navy)] tracking-tight mb-4">
               Choose the plan that fits your creative needs
@@ -235,10 +235,10 @@ export function PricingPage() {
             </div>
           )}
 
-          {/* Pricing Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5 mb-20">
+          {/* Horizontal Pricing Cards */}
+          <div className="space-y-6">
             {PLANS.map((plan) => (
-              <PlanCard
+              <HorizontalPlanCard
                 key={plan.id}
                 plan={plan}
                 isActive={isPlanActive(plan)}
@@ -246,49 +246,6 @@ export function PricingPage() {
                 onSelect={() => handlePlanClick(plan)}
               />
             ))}
-          </div>
-
-          {/* Section 2: Feature Comparison Table */}
-          <div className="mt-16">
-            <h2 className="text-2xl sm:text-3xl font-bold text-[var(--roomvibe-navy)] text-center mb-10">
-              Feature Comparison
-            </h2>
-            <div className="overflow-x-auto rounded-xl border border-rv-neutral">
-              <table className="w-full border-collapse bg-white">
-                <thead>
-                  <tr className="bg-gray-50">
-                    <th className="text-left py-4 px-4 font-semibold text-rv-text border-b border-rv-neutral">Feature</th>
-                    <th className="text-center py-4 px-3 font-semibold text-gray-500 border-b border-rv-neutral min-w-[70px]">Free</th>
-                    <th className="text-center py-4 px-3 font-semibold text-[#264C61] border-b border-rv-neutral min-w-[70px]">Artist</th>
-                    <th className="text-center py-4 px-3 font-semibold text-[#264C61] border-b border-rv-neutral min-w-[80px]">Designer</th>
-                    <th className="text-center py-4 px-3 font-semibold text-[#264C61] border-b border-rv-neutral min-w-[90px]">Gallery</th>
-                    <th className="text-center py-4 px-3 font-semibold text-[#C9A24A] border-b border-rv-neutral min-w-[90px]">All-Access</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {COMPARISON_FEATURES.map((feature, idx) => (
-                    <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
-                      <td className="py-3.5 px-4 text-sm text-rv-text border-b border-rv-neutral/30">{feature.name}</td>
-                      <td className="py-3.5 px-3 text-center border-b border-rv-neutral/30">
-                        <ComparisonCell value={feature.free} />
-                      </td>
-                      <td className="py-3.5 px-3 text-center border-b border-rv-neutral/30">
-                        <ComparisonCell value={feature.artist} />
-                      </td>
-                      <td className="py-3.5 px-3 text-center border-b border-rv-neutral/30">
-                        <ComparisonCell value={feature.designer} />
-                      </td>
-                      <td className="py-3.5 px-3 text-center border-b border-rv-neutral/30">
-                        <ComparisonCell value={feature.gallery} />
-                      </td>
-                      <td className="py-3.5 px-3 text-center border-b border-rv-neutral/30">
-                        <ComparisonCell value={feature.allaccess} isHighlighted />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
           </div>
 
           <div className="mt-12 text-center">
@@ -305,7 +262,7 @@ export function PricingPage() {
         </div>
       </main>
 
-      <footer className="py-8 border-t border-rv-neutral">
+      <footer className="py-8 border-t border-rv-neutral bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-rv-textMuted">
             <p>&copy; 2025 RoomVibe. All rights reserved.</p>
@@ -320,31 +277,30 @@ export function PricingPage() {
   );
 }
 
-interface PlanCardProps {
+interface HorizontalPlanCardProps {
   plan: PlanConfig;
   isActive: boolean;
   isLoading: boolean;
   onSelect: () => void;
 }
 
-function PlanCard({ plan, isActive, isLoading, onSelect }: PlanCardProps) {
+function HorizontalPlanCard({ plan, isActive, isLoading, onSelect }: HorizontalPlanCardProps) {
   return (
     <div
-      className="relative flex flex-col bg-white h-full"
+      className={`relative bg-white rounded-xl overflow-hidden ${
+        plan.recommended ? 'ring-2 ring-[#C9A24A]' : 'border border-gray-200'
+      }`}
       style={{
-        border: plan.recommended ? '2px solid #C9A24A' : '1.5px solid #DDE1E7',
-        borderRadius: '12px',
-        padding: '24px',
         boxShadow: plan.recommended 
-          ? '0px 8px 20px rgba(201, 162, 74, 0.18)' 
-          : '0px 4px 10px rgba(0,0,0,0.04)',
+          ? '0px 8px 24px rgba(201, 162, 74, 0.15)' 
+          : '0px 4px 12px rgba(0,0,0,0.05)',
       }}
     >
       {/* Recommended Badge */}
       {plan.recommended && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+        <div className="absolute top-0 right-0">
           <span 
-            className="px-3 py-1 text-xs font-semibold rounded-full"
+            className="inline-block px-4 py-1.5 text-xs font-semibold rounded-bl-lg"
             style={{
               backgroundColor: '#C9A24A',
               color: 'white',
@@ -355,124 +311,93 @@ function PlanCard({ plan, isActive, isLoading, onSelect }: PlanCardProps) {
         </div>
       )}
 
-      {/* Header */}
-      <div className="mb-4">
-        <h3 
-          className="text-xl font-semibold"
-          style={{ color: '#264C61' }}
-        >
-          {plan.name}
-        </h3>
-        <div className="mt-1 flex items-baseline gap-1">
-          <span className="text-2xl font-bold" style={{ color: '#264C61' }}>
-            {plan.price}
-          </span>
-          <span className="text-rv-textMuted text-sm">/ month</span>
+      <div className="p-6 sm:p-8">
+        {/* Top Row: Plan Name, Price, Who it's for, and CTA Button */}
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-6 pb-6 border-b border-gray-100">
+          {/* Left: Plan info */}
+          <div className="flex-1">
+            <div className="flex flex-wrap items-baseline gap-3 mb-2">
+              <h3 className="text-2xl font-bold" style={{ color: '#264C61' }}>
+                {plan.name}
+              </h3>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-bold" style={{ color: '#264C61' }}>
+                  {plan.price}
+                </span>
+                <span className="text-gray-500 text-sm">/ month</span>
+              </div>
+            </div>
+            <p className="text-gray-600 text-sm sm:text-base">
+              <span className="font-medium text-[#264C61]">Who it's for:</span> {plan.whoItsFor}
+            </p>
+          </div>
+
+          {/* Right: CTA Button */}
+          <div className="flex-shrink-0 lg:min-w-[200px]">
+            {isActive && plan.id !== 'free' ? (
+              <div 
+                className="py-3 px-6 rounded-lg text-sm text-center flex items-center justify-center gap-2"
+                style={{
+                  backgroundColor: '#E8EBF7',
+                  color: '#264C61',
+                  fontWeight: 600,
+                }}
+              >
+                <CheckIcon className="w-5 h-5" color="#264C61" />
+                {plan.isAllAccess ? 'All Modules Active' : 'Active'}
+              </div>
+            ) : (
+              <button
+                onClick={onSelect}
+                disabled={isLoading}
+                className={`w-full py-3 px-6 rounded-lg font-semibold text-sm transition-all ${
+                  plan.id === 'free'
+                    ? 'bg-white border-2 border-[#264C61] text-[#264C61] hover:bg-gray-50'
+                    : plan.recommended 
+                      ? 'bg-[#C9A24A] text-white hover:bg-[#b8933f] shadow-md'
+                      : 'bg-[#264C61] text-white hover:bg-[#1d3a4a]'
+                } disabled:opacity-50`}
+              >
+                {isLoading ? 'Loading...' : plan.buttonText}
+              </button>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Who it's for */}
-      <div className="mb-4 pb-4 border-b border-rv-neutral/50">
-        <p className="text-sm text-rv-textMuted">
-          <span className="font-medium text-[#264C61]">Who it's for:</span><br />
-          {plan.whoItsFor}
-        </p>
-      </div>
+        {/* Features Grid */}
+        <div>
+          <p className="text-sm font-semibold text-[#264C61] mb-4">What you get:</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-2">
+            {plan.features.map((feature, i) => (
+              <div 
+                key={i} 
+                className="flex items-start gap-2"
+              >
+                <CheckIcon className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                <span className="text-sm text-gray-600">{feature}</span>
+              </div>
+            ))}
+          </div>
+        </div>
 
-      {/* What you get */}
-      <div className="mb-2">
-        <p className="text-sm font-medium text-[#264C61] mb-2">What you get:</p>
-      </div>
-
-      {/* Features */}
-      <ul className="flex-1 space-y-2 mb-4">
-        {plan.features.map((feature, i) => (
-          <li 
-            key={i} 
-            className="flex items-start gap-2"
-            style={{ fontSize: '14px', color: '#4A5A7F', lineHeight: '1.5' }}
+        {/* Highlight Feature */}
+        {plan.highlightFeature && (
+          <div 
+            className="mt-5 p-4 rounded-lg flex items-start gap-3"
+            style={{ 
+              backgroundColor: 'rgba(201, 162, 74, 0.08)',
+              border: '1px solid rgba(201, 162, 74, 0.2)'
+            }}
           >
-            <CheckIcon className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-            <span>{feature}</span>
-          </li>
-        ))}
-      </ul>
-
-      {/* Highlight Feature */}
-      {plan.highlightFeature && (
-        <div 
-          className="mb-4 p-3 rounded-lg"
-          style={{ 
-            backgroundColor: plan.recommended ? 'rgba(201, 162, 74, 0.1)' : 'rgba(38, 76, 97, 0.06)',
-            border: plan.recommended ? '1px solid rgba(201, 162, 74, 0.3)' : '1px solid rgba(38, 76, 97, 0.1)'
-          }}
-        >
-          <div className="flex items-start gap-2">
-            <StarIcon className={`w-4 h-4 flex-shrink-0 mt-0.5 ${plan.recommended ? 'text-[#C9A24A]' : 'text-[#C9A24A]'}`} />
-            <p className="text-sm font-medium" style={{ color: '#264C61' }}>
+            <StarIcon className="w-5 h-5 flex-shrink-0 text-[#C9A24A]" />
+            <p className="text-sm font-medium text-[#264C61]">
               {plan.highlightFeature}
             </p>
           </div>
-        </div>
-      )}
-
-      {/* Active Badge - Don't show for Free plan */}
-      {isActive && plan.id !== 'free' && (
-        <div 
-          className="mb-4 py-2 px-3 rounded-lg text-sm text-center flex items-center justify-center gap-2"
-          style={{
-            backgroundColor: '#E8EBF7',
-            color: '#264C61',
-            fontWeight: 600,
-          }}
-        >
-          <CheckIcon className="w-4 h-4" color="#264C61" />
-          {plan.isAllAccess ? 'Active – All Modules Unlocked' : 'Active'}
-        </div>
-      )}
-
-      {/* Button */}
-      <button
-        onClick={onSelect}
-        disabled={isActive && plan.id !== 'free' || isLoading}
-        className={`w-full ${
-          isActive && plan.id !== 'free'
-            ? 'btn-primary text-sm bg-gray-100 !text-gray-400 cursor-not-allowed' 
-            : plan.id === 'free'
-              ? 'btn-outline text-sm'
-              : plan.recommended 
-                ? 'btn-premium text-sm' 
-                : 'btn-primary text-sm'
-        } disabled:opacity-50`}
-      >
-        {isLoading ? 'Loading...' : (isActive && plan.id !== 'free' ? 'Already Active' : plan.buttonText)}
-      </button>
+        )}
+      </div>
     </div>
   );
-}
-
-function ComparisonCell({ value, isHighlighted }: { value: boolean | string; isHighlighted?: boolean }) {
-  if (typeof value === 'string') {
-    return (
-      <span 
-        className="text-sm font-medium"
-        style={{ color: isHighlighted ? '#C9A24A' : '#264C61' }}
-      >
-        {value}
-      </span>
-    );
-  }
-  
-  if (value) {
-    return (
-      <CheckIcon 
-        className="w-5 h-5 mx-auto" 
-        color={isHighlighted ? '#C9A24A' : '#22c55e'}
-      />
-    );
-  }
-  
-  return <span className="text-gray-400 text-lg">—</span>;
 }
 
 export default PricingPage;
