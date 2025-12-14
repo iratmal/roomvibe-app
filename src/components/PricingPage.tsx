@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { SiteHeader } from './SiteHeader';
 
@@ -138,6 +138,10 @@ export function PricingPage() {
   const { user, hasEntitlement } = useAuth();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const isAdmin = user?.isAdmin || user?.role === 'admin';
 
