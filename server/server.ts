@@ -141,12 +141,11 @@ app.get('/api/health', (req, res) => {
 
 app.get('/api/version', (req, res) => {
   res.json({
-    version: '1.0.0',
-    build: '2025-12-14T13:30:00Z',
-    commit: 'fix-auth-cookie-and-db-schema',
+    version: '1.0.1',
+    build: '2025-12-14T14:35:00Z',
+    commit: 'cookie-only-auth',
     features: {
       cookieAuth: true,
-      bearerAuth: true,
       objectStorage: true
     }
   });
