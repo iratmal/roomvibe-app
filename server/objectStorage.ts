@@ -44,35 +44,6 @@ export class ObjectStorageService {
     return dir;
   }
 
-  async getUploadURL(filename: string): Promise<{ uploadURL: string; objectPath: string }> {
-    const privateDirRaw = this.getPrivateObjectDir();
-    const privateDir = privateDirRaw.replace(/^\/+/, "");
-    const parts = privateDir.split("/").filter(Boolean);
-    const bucketName = parts[0];
-    const prefix = parts.slice(1).join("/");
-    
-    if (!bucketName) {
-      throw new Error(`Invalid PRIVATE_OBJECT_DIR: "${privateDirRaw}" (bucketName empty)`);
-    }
-    
-    const objectId = randomUUID();
-    const extension = filename.includes('.') ? filename.split('.').pop() : 'jpg';
-    const objectName = `artworks/${objectId}.${extension}`;
-    const storedObjectName = prefix ? `${prefix}/${objectName}` : objectName;
-
-    const uploadURL = await this.signObjectURL({
-      bucketName,
-      objectName: storedObjectName,
-      method: "PUT",
-      ttlSec: 900,
-    });
-
-    return {
-      uploadURL,
-      objectPath: `/objects/artworks/${objectId}.${extension}`
-    };
-  }
-
   async getObjectFile(objectPath: string): Promise<File> {
     if (!objectPath.startsWith("/objects/")) {
       throw new ObjectNotFoundError();
@@ -198,56 +169,4 @@ export class ObjectStorageService {
     return resultPath;
   }
 
-  private parseObjectPath(path: string): { bucketName: string; objectName: string } {
-    if (!path.startsWith("/")) {
-      path = `/${path}`;
-    }
-    const pathParts = path.split("/");
-    if (pathParts.length < 3) {
-      throw new Error("Invalid path: must contain at least a bucket name");
-    }
-
-    const bucketName = pathParts[1];
-    const objectName = pathParts.slice(2).join("/");
-
-    return { bucketName, objectName };
-  }
-
-  private async signObjectURL({
-    bucketName,
-    objectName,
-    method,
-    ttlSec,
-  }: {
-    bucketName: string;
-    objectName: string;
-    method: "GET" | "PUT" | "DELETE" | "HEAD";
-    ttlSec: number;
-  }): Promise<string> {
-    const request = {
-      bucket_name: bucketName,
-      object_name: objectName,
-      method,
-      expires_at: new Date(Date.now() + ttlSec * 1000).toISOString(),
-    };
-    const response = await fetch(
-      `${REPLIT_SIDECAR_ENDPOINT}/object-storage/signed-object-url`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(request),
-      }
-    );
-    if (!response.ok) {
-      throw new Error(
-        `Failed to sign object URL, errorcode: ${response.status}, ` +
-          `make sure you're running on Replit`
-      );
-    }
-
-    const { signed_url: signedURL } = await response.json();
-    return signedURL;
-  }
 }

@@ -176,6 +176,7 @@ app.get('/api/health/storage', async (req, res) => {
     timestamp: new Date().toISOString(),
     nodeEnv: process.env.NODE_ENV,
     appEnv: process.env.APP_ENV,
+    uploadMethod: 'direct-gcs-write',
   };
 
   try {
@@ -190,25 +191,6 @@ app.get('/api/health/storage', async (req, res) => {
     }
   } catch (e: any) {
     results.credentialConnectionError = e.message;
-  }
-
-  try {
-    const signedUrlRes = await fetch(`${SIDECAR}/object-storage/signed-object-url`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        bucket_name: 'test-bucket',
-        object_name: 'test-object',
-        method: 'GET',
-        expires_at: new Date(Date.now() + 60000).toISOString(),
-      }),
-    });
-    results.signedUrlStatus = signedUrlRes.status;
-    if (!signedUrlRes.ok) {
-      results.signedUrlError = await signedUrlRes.text();
-    }
-  } catch (e: any) {
-    results.signedUrlConnectionError = e.message;
   }
 
   const credentialOk = results.credentialStatus === 200 && results.credentialHasToken;
