@@ -65,6 +65,14 @@ export function UserDashboard() {
     image: null as File | null
   });
 
+  const [fieldErrors, setFieldErrors] = useState<{
+    title?: string;
+    width?: string;
+    height?: string;
+    buyUrl?: string;
+    image?: string;
+  }>({});
+
   useEffect(() => {
     fetchArtworks();
   }, []);
@@ -106,49 +114,92 @@ export function UserDashboard() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    if (fieldErrors[name as keyof typeof fieldErrors]) {
+      setFieldErrors(prev => ({ ...prev, [name]: undefined }));
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFormData(prev => ({ ...prev, image: e.target.files![0] }));
+      if (fieldErrors.image) {
+        setFieldErrors(prev => ({ ...prev, image: undefined }));
+      }
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    console.log('SUBMIT_START', {
+      title: formData.title,
+      width: formData.width,
+      height: formData.height,
+      buyUrl: formData.buyUrl,
+      hasImage: !!formData.image,
+      imageName: formData.image?.name,
+      imageSize: formData.image?.size,
+      isEditing: !!editingArtwork,
+      isAtLimit,
+      artworkCount: artworks.length,
+      maxArtworks
+    });
+    
     setError('');
     setSuccess('');
+    setFieldErrors({});
 
-    if (!formData.title || !formData.width || !formData.height || !formData.buyUrl) {
-      setError('Please fill in all required fields');
-      return;
+    const errors: typeof fieldErrors = {};
+    
+    if (!formData.title.trim()) {
+      errors.title = 'Title is required';
     }
-
+    
+    if (!formData.width) {
+      errors.width = 'Width is required';
+    } else if (isNaN(parseFloat(formData.width)) || parseFloat(formData.width) <= 0) {
+      errors.width = 'Width must be a positive number';
+    }
+    
+    if (!formData.height) {
+      errors.height = 'Height is required';
+    } else if (isNaN(parseFloat(formData.height)) || parseFloat(formData.height) <= 0) {
+      errors.height = 'Height must be a positive number';
+    }
+    
+    if (!formData.buyUrl.trim()) {
+      errors.buyUrl = 'Buy URL is required';
+    } else if (!formData.buyUrl.startsWith('http://') && !formData.buyUrl.startsWith('https://')) {
+      errors.buyUrl = 'Buy URL must start with http:// or https://';
+    }
+    
     if (!formData.image && !editingArtwork) {
-      setError('Please select an image');
-      return;
+      errors.image = 'Please select an image file';
     }
-
-    if (!formData.buyUrl.startsWith('http://') && !formData.buyUrl.startsWith('https://')) {
-      setError('Buy URL must start with http:// or https://');
+    
+    if (Object.keys(errors).length > 0) {
+      console.warn('SUBMIT_BLOCKED', { reason: 'validation_failed', errors });
+      setFieldErrors(errors);
       return;
     }
 
     setLoading(true);
+    console.log('VALIDATION_PASSED, preparing FormData...');
 
     try {
       const formDataObj = new FormData();
-      formDataObj.append('title', formData.title);
+      formDataObj.append('title', formData.title.trim());
       formDataObj.append('width', formData.width);
       formDataObj.append('height', formData.height);
       formDataObj.append('dimensionUnit', formData.dimensionUnit);
-      formDataObj.append('buyUrl', formData.buyUrl);
+      formDataObj.append('buyUrl', formData.buyUrl.trim());
       formDataObj.append('priceCurrency', formData.priceCurrency);
       if (formData.priceAmount) {
         formDataObj.append('priceAmount', formData.priceAmount);
       }
       if (formData.image) {
         formDataObj.append('image', formData.image);
+        console.log('IMAGE_ATTACHED', { name: formData.image.name, size: formData.image.size, type: formData.image.type });
       }
 
       const url = editingArtwork
@@ -157,24 +208,31 @@ export function UserDashboard() {
       
       const method = editingArtwork ? 'PUT' : 'POST';
 
+      console.log('FETCH_CALL', { method, url, hasImage: !!formData.image });
+
       const response = await fetch(url, {
         method,
         credentials: 'include',
         body: formDataObj
       });
 
+      console.log('FETCH_RESPONSE', { status: response.status, statusText: response.statusText, ok: response.ok });
+
       if (!response.ok) {
         let errorMessage = 'Failed to save artwork';
         let isLimitError = false;
+        let responseBody: any = null;
         try {
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorData.error || errorMessage;
+          responseBody = await response.json();
+          errorMessage = responseBody.message || responseBody.error || errorMessage;
+          console.error('SERVER_ERROR_RESPONSE', { status: response.status, body: responseBody });
           
-          if (errorData.error === 'Artwork limit reached' || response.status === 403 && errorData.limit !== undefined) {
+          if (responseBody.error === 'Artwork limit reached' || (response.status === 403 && responseBody.limit !== undefined)) {
             isLimitError = true;
           }
         } catch (parseError) {
           errorMessage = `Server error: ${response.status} ${response.statusText}`;
+          console.error('SERVER_ERROR_PARSE_FAILED', { status: response.status, statusText: response.statusText });
         }
         
         if (isLimitError) {
@@ -187,6 +245,7 @@ export function UserDashboard() {
       }
 
       const data = await response.json();
+      console.log('UPLOAD_SUCCESS', data);
       setSuccess(data.message || (editingArtwork ? 'Artwork updated successfully!' : 'Artwork uploaded successfully!'));
       
       setFormData({
@@ -210,7 +269,7 @@ export function UserDashboard() {
 
       setTimeout(() => setSuccess(''), 5000);
     } catch (err: any) {
-      console.error('Error saving artwork:', err);
+      console.error('SUBMIT_ERROR', { message: err.message, stack: err.stack });
       setError(err.message || 'An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
@@ -219,6 +278,8 @@ export function UserDashboard() {
 
   const handleEdit = (artwork: Artwork) => {
     setEditingArtwork(artwork);
+    setFieldErrors({});
+    setError('');
     
     let priceAmountStr = '';
     if (artwork.price_amount !== null && artwork.price_amount !== undefined && artwork.price_amount !== '') {
@@ -241,6 +302,8 @@ export function UserDashboard() {
 
   const handleCancelEdit = () => {
     setEditingArtwork(null);
+    setFieldErrors({});
+    setError('');
     setFormData({
       title: '',
       width: '',
@@ -366,10 +429,10 @@ export function UserDashboard() {
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                  className={`w-full px-4 py-2.5 border rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary ${fieldErrors.title ? 'border-red-500 bg-red-50' : 'border-rv-neutral'}`}
                   placeholder="Enter artwork title"
                 />
+                {fieldErrors.title && <p className="text-xs text-red-500 mt-1">{fieldErrors.title}</p>}
               </div>
 
               <div>
@@ -381,9 +444,9 @@ export function UserDashboard() {
                   type="file"
                   accept="image/*"
                   onChange={handleImageChange}
-                  required={!editingArtwork}
-                  className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                  className={`w-full px-4 py-2.5 border rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary ${fieldErrors.image ? 'border-red-500 bg-red-50' : 'border-rv-neutral'}`}
                 />
+                {fieldErrors.image && <p className="text-xs text-red-500 mt-1">{fieldErrors.image}</p>}
               </div>
 
               <div className="md:col-span-2">
@@ -391,29 +454,33 @@ export function UserDashboard() {
                   Dimensions <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-3">
-                  <input
-                    type="number"
-                    name="width"
-                    value={formData.width}
-                    onChange={handleInputChange}
-                    required
-                    step="0.01"
-                    min="0"
-                    className="flex-1 px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
-                    placeholder="Width"
-                  />
+                  <div className="flex-1">
+                    <input
+                      type="number"
+                      name="width"
+                      value={formData.width}
+                      onChange={handleInputChange}
+                      step="0.01"
+                      min="0"
+                      className={`w-full px-4 py-2.5 border rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary ${fieldErrors.width ? 'border-red-500 bg-red-50' : 'border-rv-neutral'}`}
+                      placeholder="Width"
+                    />
+                    {fieldErrors.width && <p className="text-xs text-red-500 mt-1">{fieldErrors.width}</p>}
+                  </div>
                   <span className="flex items-center text-rv-textMuted font-bold">×</span>
-                  <input
-                    type="number"
-                    name="height"
-                    value={formData.height}
-                    onChange={handleInputChange}
-                    required
-                    step="0.01"
-                    min="0"
-                    className="flex-1 px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
-                    placeholder="Height"
-                  />
+                  <div className="flex-1">
+                    <input
+                      type="number"
+                      name="height"
+                      value={formData.height}
+                      onChange={handleInputChange}
+                      step="0.01"
+                      min="0"
+                      className={`w-full px-4 py-2.5 border rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary ${fieldErrors.height ? 'border-red-500 bg-red-50' : 'border-rv-neutral'}`}
+                      placeholder="Height"
+                    />
+                    {fieldErrors.height && <p className="text-xs text-red-500 mt-1">{fieldErrors.height}</p>}
+                  </div>
                   <select
                     name="dimensionUnit"
                     value={formData.dimensionUnit}
@@ -459,15 +526,18 @@ export function UserDashboard() {
                   Buy URL <span className="text-red-500">*</span>
                 </label>
                 <input
-                  type="url"
+                  type="text"
                   name="buyUrl"
                   value={formData.buyUrl}
                   onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                  className={`w-full px-4 py-2.5 border rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary ${fieldErrors.buyUrl ? 'border-red-500 bg-red-50' : 'border-rv-neutral'}`}
                   placeholder="https://your-shop.com/product"
                 />
-                <p className="text-xs text-rv-textMuted mt-1">This link enables the Buy button in Studio and widgets.</p>
+                {fieldErrors.buyUrl ? (
+                  <p className="text-xs text-red-500 mt-1">{fieldErrors.buyUrl}</p>
+                ) : (
+                  <p className="text-xs text-rv-textMuted mt-1">This link enables the Buy button in Studio and widgets.</p>
+                )}
               </div>
             </div>
 
