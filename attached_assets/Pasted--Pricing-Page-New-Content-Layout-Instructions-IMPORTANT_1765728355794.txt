@@ -1,0 +1,161 @@
+# Pricing Page – New Content & Layout Instructions
+
+**IMPORTANT:** Replace the existing pricing tables with the content and structure below.
+This is a **full replacement**, not an edit of the old tables.
+
+---
+
+## HOW TO DESIGN THE PRICING SECTION (READ FIRST)
+
+### Overall layout logic
+
+1. **First section = Plan Cards (primary decision layer)**
+
+   * This section explains *what the user gets* in simple, human language.
+   * Cards should be easy to read, balanced in height, and not text-heavy.
+   * This section is written for **non-technical users** (including elderly artists).
+
+2. **Second section = Feature Comparison Table (confirmation layer)**
+
+   * This section is for users who want details.
+   * Use checkmarks / dashes only.
+   * No long explanations here.
+
+### Rules for Plan Cards
+
+* Maximum **5–6 bullet points** per card
+* One idea per bullet
+* Plain English (no technical jargon)
+* Focus on outcomes, not features
+* Each card ends with **one clear CTA button**
+
+---
+
+# SECTION 1 — PRICING PLANS
+
+## Free — €0 / month
+
+**Who it’s for:**
+Trying RoomVibe for the first time.
+
+**What you get:**
+
+* Upload up to **3 artworks**
+* Upload a photo of **your own wall** or use basic rooms
+* Instantly see how your artwork looks on a wall
+* Download images for preview and sharing
+* Add a Buy button to link your artwork
+
+**CTA:** Get Started Free
+
+---
+
+## Artist — €9 / month
+
+**Who it’s for:**
+Independent artists who want to present, share, and sell their art online.
+
+**What you get:**
+
+* Upload up to **50 artworks**
+* Upload **your own walls** or use realistic interiors
+* See your artwork instantly on real walls
+* Create and share **your own virtual exhibition**
+* Download images for your website and social media
+
+**Highlight:**
+⭐ **Get discovered by interior designers and galleries using RoomVibe**
+
+**CTA:** Activate Artist Plan
+
+---
+
+## Designer — €29 / month
+
+**Who it’s for:**
+Interior designers presenting visual concepts to clients.
+
+**What you get:**
+
+* Upload up to **100 artworks**
+* Upload client wall photos or use premium rooms
+* Create clear visual concepts for interiors
+* Export images and PDFs for client presentations
+* Unlimited previews while designing
+
+**Highlight:**
+⭐ **Find and connect with artists for your interior projects using RoomVibe**
+
+**CTA:** Unlock Designer Tools
+
+---
+
+## Gallery — €49 / month
+
+**Who it’s for:**
+Galleries, exhibition spaces, and artists hosting their own virtual exhibitions.
+
+**What you get:**
+
+* Upload **unlimited artworks**
+* Upload real gallery or studio walls
+* Create **virtual exhibitions** (up to 3 active)
+* Share public exhibition links with visitors and collectors
+* Export exhibition PDFs
+
+**Highlight:**
+⭐ **Discover and work with artists through the RoomVibe platform**
+
+**CTA:** Unlock Exhibition Tools
+
+---
+
+## All-Access — €79 / month
+
+**Who it’s for:**
+Full-time professionals, studios, and power users.
+
+**What you get:**
+
+* Unlimited artworks, walls, and exhibitions
+* Full Artist, Designer, and Gallery tools
+* Unlimited exports
+* Priority support
+* Early access to new features
+
+**CTA:** Upgrade to All-Access
+
+---
+
+# SECTION 2 — FEATURE COMPARISON
+
+> This table supports the decision but does not replace the plan cards.
+
+| Feature                       | Free | Artist | Designer |   Gallery   |   All-Access  |
+| ----------------------------- | :--: | :----: | :------: | :---------: | :-----------: |
+| Artwork upload limit          |   3  |   50   |    100   |  Unlimited  |   Unlimited   |
+| Upload your own wall photos   |   ✓  |    ✓   |     ✓    |      ✓      |       ✓       |
+| Basic rooms (10)              |   ✓  |    ✓   |     ✓    |      ✓      |       ✓       |
+| Standard rooms                |   —  |    ✓   |     ✓    |      ✓      |       ✓       |
+| Premium rooms                 |   —  |    —   |     ✓    |      ✓      |       ✓       |
+| Instant wall visualization    |   ✓  |    ✓   |     ✓    |      ✓      |       ✓       |
+| Image download                |   ✓  |    ✓   |     ✓    |      ✓      |       ✓       |
+| PDF export                    |   —  |    —   |     ✓    |      ✓      |       ✓       |
+| Virtual exhibitions           |   —  |    ✓   |     —    | ✓ (up to 3) | ✓ (Unlimited) |
+| Public exhibition share links |   —  |    ✓   |     —    |      ✓      |       ✓       |
+| Designer Studio tools         |   —  |    —   |     ✓    |      —      |       ✓       |
+| Gallery / Exhibition Hub      |   —  |    —   |     —    |      ✓      |       ✓       |
+| Buy button integration        |   ✓  |    ✓   |     ✓    |      ✓      |       ✓       |
+| Priority support              |   —  |    —   |     —    |      —      |       ✓       |
+| Early access to new features  |   —  |    —   |     —    |      —      |       ✓       |
+
+---
+
+## FINAL NOTES (DO NOT IGNORE)
+
+* ❌ Remove **High-Resolution Export** everywhere
+* ✔ Use this content as the **single source of truth**
+* ✔ Replace old pricing tables completely
+* ✔ This version is optimized for clarity, trust, and ease of use
+
+End of task.
