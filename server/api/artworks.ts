@@ -224,7 +224,23 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
       detail: error.detail,
       stack: error.stack
     });
-    res.status(500).json({ error: 'Failed to create artwork', details: error.message });
+    
+    let errorMessage = 'Failed to create artwork';
+    if (error.message?.includes('PRIVATE_OBJECT_DIR')) {
+      errorMessage = 'Storage not configured. Please contact support.';
+    } else if (error.message?.includes('storage') || error.message?.includes('bucket')) {
+      errorMessage = 'Image upload failed. Storage service unavailable.';
+    } else if (error.code === '23505') {
+      errorMessage = 'Duplicate artwork detected.';
+    } else if (error.code?.startsWith('23')) {
+      errorMessage = 'Database constraint error. Please check your input.';
+    }
+    
+    res.status(500).json({ 
+      error: errorMessage, 
+      details: process.env.APP_ENV === 'staging' ? error.message : undefined,
+      code: error.code 
+    });
   }
 });
 

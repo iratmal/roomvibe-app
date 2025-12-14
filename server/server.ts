@@ -163,7 +163,8 @@ app.get('/api/health/env', (req, res) => {
     paymentsAvailable: envBool(process.env.STRIPE_ENABLED) && envBool(process.env.PAYMENTS_ENABLED),
     analyticsEnabled: envBool(process.env.ENABLE_ANALYTICS),
     gdprEnabled: envBool(process.env.ENABLE_GDPR),
-    version: '1.0.3'
+    storageConfigured: !!process.env.PRIVATE_OBJECT_DIR,
+    version: '1.0.4'
   });
 });
 
