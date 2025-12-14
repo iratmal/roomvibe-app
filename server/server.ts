@@ -23,6 +23,7 @@ import { query } from './db/database.js';
 import { ObjectStorageService, ObjectNotFoundError } from './objectStorage.js';
 import { requireGalleryFeature, requireStripeFeature } from './middleware/featureFlags.js';
 import { authenticateToken } from './middleware/auth.js';
+import { envBool, envBoolDefaultTrue } from './utils/envBool.js';
 
 dotenv.config();
 
@@ -118,9 +119,11 @@ let isServerReady = false;
 
 app.get('/api/feature-flags', (req, res) => {
   res.json({
-    galleryEnabled: process.env.FEATURE_GALLERY_ENABLED !== 'false',
-    exhibitionPublicEnabled: process.env.FEATURE_EXHIBITION_PUBLIC_ENABLED !== 'false',
-    stripeEnabled: process.env.STRIPE_ENABLED === 'true',
+    galleryEnabled: envBoolDefaultTrue(process.env.FEATURE_GALLERY_ENABLED),
+    exhibitionPublicEnabled: envBoolDefaultTrue(process.env.FEATURE_EXHIBITION_PUBLIC_ENABLED),
+    stripeEnabled: envBool(process.env.STRIPE_ENABLED),
+    paymentsEnabled: envBool(process.env.PAYMENTS_ENABLED),
+    paymentsAvailable: envBool(process.env.STRIPE_ENABLED) && envBool(process.env.PAYMENTS_ENABLED),
   });
 });
 
@@ -155,10 +158,11 @@ app.get('/api/health/env', (req, res) => {
   res.json({
     appEnv: process.env.APP_ENV || 'development',
     stripeMode: process.env.STRIPE_MODE || 'test',
-    paymentsEnabled: process.env.PAYMENTS_ENABLED === 'true',
-    stripeEnabled: process.env.STRIPE_ENABLED === 'true',
-    analyticsEnabled: process.env.ENABLE_ANALYTICS === 'true',
-    gdprEnabled: process.env.ENABLE_GDPR === 'true',
+    paymentsEnabled: envBool(process.env.PAYMENTS_ENABLED),
+    stripeEnabled: envBool(process.env.STRIPE_ENABLED),
+    paymentsAvailable: envBool(process.env.STRIPE_ENABLED) && envBool(process.env.PAYMENTS_ENABLED),
+    analyticsEnabled: envBool(process.env.ENABLE_ANALYTICS),
+    gdprEnabled: envBool(process.env.ENABLE_GDPR),
     version: '1.0.3'
   });
 });

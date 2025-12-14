@@ -1,11 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
+import { envBool, envBoolDefaultTrue } from '../utils/envBool.js';
 
 export function requireGalleryFeature(req: Request, res: Response, next: NextFunction) {
-  const galleryEnabled = process.env.FEATURE_GALLERY_ENABLED !== 'false';
+  const galleryEnabled = envBoolDefaultTrue(process.env.FEATURE_GALLERY_ENABLED);
   
   if (!galleryEnabled) {
-    return res.status(503).json({
-      error: 'Feature not available',
+    return res.status(403).json({
+      error: 'Feature disabled',
       message: 'The Gallery feature is currently being prepared for launch. Please check back soon.',
       feature: 'gallery'
     });
@@ -15,11 +16,11 @@ export function requireGalleryFeature(req: Request, res: Response, next: NextFun
 }
 
 export function requireExhibitionPublicFeature(req: Request, res: Response, next: NextFunction) {
-  const exhibitionPublicEnabled = process.env.FEATURE_EXHIBITION_PUBLIC_ENABLED !== 'false';
+  const exhibitionPublicEnabled = envBoolDefaultTrue(process.env.FEATURE_EXHIBITION_PUBLIC_ENABLED);
   
   if (!exhibitionPublicEnabled) {
-    return res.status(503).json({
-      error: 'Feature temporarily unavailable',
+    return res.status(403).json({
+      error: 'Feature disabled',
       message: 'This feature is temporarily unavailable. Please try again later.',
       feature: 'exhibition_public'
     });
@@ -29,12 +30,14 @@ export function requireExhibitionPublicFeature(req: Request, res: Response, next
 }
 
 export function requireStripeFeature(req: Request, res: Response, next: NextFunction) {
-  const stripeEnabled = process.env.STRIPE_ENABLED === 'true';
+  const stripeEnabled = envBool(process.env.STRIPE_ENABLED);
+  const paymentsEnabled = envBool(process.env.PAYMENTS_ENABLED);
+  const paymentsAvailable = stripeEnabled && paymentsEnabled;
   
-  if (!stripeEnabled) {
-    return res.status(503).json({
-      error: 'Feature not available',
-      message: 'Payment processing is currently disabled.',
+  if (!paymentsAvailable) {
+    return res.status(403).json({
+      error: 'Payments disabled',
+      message: 'Payments are disabled in this environment.',
       feature: 'stripe'
     });
   }
@@ -43,13 +46,21 @@ export function requireStripeFeature(req: Request, res: Response, next: NextFunc
 }
 
 export function isGalleryEnabled(): boolean {
-  return process.env.FEATURE_GALLERY_ENABLED !== 'false';
+  return envBoolDefaultTrue(process.env.FEATURE_GALLERY_ENABLED);
 }
 
 export function isExhibitionPublicEnabled(): boolean {
-  return process.env.FEATURE_EXHIBITION_PUBLIC_ENABLED !== 'false';
+  return envBoolDefaultTrue(process.env.FEATURE_EXHIBITION_PUBLIC_ENABLED);
 }
 
 export function isStripeEnabled(): boolean {
-  return process.env.STRIPE_ENABLED === 'true';
+  return envBool(process.env.STRIPE_ENABLED);
+}
+
+export function isPaymentsEnabled(): boolean {
+  return envBool(process.env.PAYMENTS_ENABLED);
+}
+
+export function isPaymentsAvailable(): boolean {
+  return isStripeEnabled() && isPaymentsEnabled();
 }

@@ -1,0 +1,308 @@
+# 🧠 ROOMVIBE — STAGING SANITY RESET (LIVE-LIKE, SAFE)
+
+**Purpose:**
+Make **staging.roomvibe.app** behave **identical to production** (same UX, same flows), **WITHOUT** touching or reverting any existing staging design, layout, or data.
+
+The goal is to fix recurring functional issues ("Feature not available", broken upgrade buttons, pricing glitches) by correcting **environment configuration and feature gating** — *not by redesigning or syncing with live*.
+
+---
+
+## 🔒 NON-NEGOTIABLE — READ FIRST
+
+These rules are absolute:
+
+* ❌ **DO NOT** copy, merge, sync, or overwrite anything from **production** into **staging**
+* ❌ **DO NOT** revert or delete any existing staging pages, components, layouts, copy, or design
+* ❌ **DO NOT** redesign pricing cards, buttons, spacing, colors, or typography
+* ❌ **DO NOT** reset, migrate, or modify database data
+* ❌ **DO NOT** introduce "temporary" staging hacks or environment-specific UI behavior
+
+👉 **Staging is the source of truth.**
+👉 Only configuration + logic fixes are allowed.
+
+---
+
+## ✅ WHAT IS ALLOWED
+
+You may **ONLY**:
+
+* Adjust **environment variables** for the **staging deployment**
+* Fix **feature gating logic** that incorrectly blocks features (pricing / upgrade / checkout)
+* Add **staging-only diagnostics** (no secrets)
+* Make **minimal, targeted code changes** strictly required for the above
+
+Everything that already exists on staging must remain **unchanged visually and structurally**.
+
+---
+
+## 🎯 GOAL
+
+* Remove all incorrect **"Feature not available"** states
+* Ensure pricing & upgrade flows behave correctly
+* Make staging **live-like**, with the **only differences** being:
+
+  * Stripe in **TEST** mode
+  * Analytics optional OFF
+  * GDPR optional OFF
+
+Same code paths. Same UX. Different ENV.
+
+---
+
+## 1️⃣ ENVIRONMENT VARIABLE ALIGNMENT
+
+Ensure the following variables **exist and are used consistently**.
+
+### REQUIRED (BOTH ENVIRONMENTS)
+
+* `APP_ENV=staging | production`
+* `STRIPE_MODE=test | live`
+* `STRIPE_ENABLED=true | false`
+* `PAYMENTS_ENABLED=true | false`
+* `ENABLE_ANALYTICS=true | false`
+* `ENABLE_GDPR=true | false`
+* Cookie flags:
+
+  * `COOKIE_SECURE=true`
+  * `COOKIE_SAMESITE=none`
+* Any pricing-related feature flags (e.g. `FEATURE_PRICING_ENABLED=true`)
+
+### TARGET VALUES
+
+#### ✅ STAGING
+
+```
+APP_ENV=staging
+STRIPE_MODE=test
+PAYMENTS_ENABLED=true
+STRIPE_ENABLED=true
+ENABLE_ANALYTICS=false   # optional
+ENABLE_GDPR=false        # optional
+COOKIE_SECURE=true
+COOKIE_SAMESITE=none
+```
+
+#### ✅ PRODUCTION (REFERENCE ONLY — DO NOT TOUCH)
+
+```
+APP_ENV=production
+STRIPE_MODE=live
+PAYMENTS_ENABLED=true
+STRIPE_ENABLED=true
+ENABLE_ANALYTICS=true
+ENABLE_GDPR=true
+COOKIE_SECURE=true
+COOKIE_SAMESITE=none
+```
+
+⚠️ **Important:**
+
+* Staging must allow full upgrade flows.
+* The ONLY difference is Stripe is **TEST**.
+
+---
+
+## 2️⃣ FIX "FEATURE NOT AVAILABLE" — GLOBAL BANNER RULE
+
+**Never show a global "Feature not available" banner on page load.**
+
+### Required behavior
+
+* Pricing page loads cleanly with plans and CTAs.
+* Only on user action (click Upgrade) can a message appear.
+
+If payments are intentionally disabled, show a clear message:
+
+> "Payments are disabled in this environment."
+
+---
+
+## 3️⃣ STAGING-ONLY DIAGNOSTICS (MANDATORY)
+
+Add safe, read-only visibility into staging configuration.
+
+### API Endpoint (Preferred)
+
+**Route:** `/api/health/env`
+
+Return JSON (no secrets):
+
+```json
+{
+  "appEnv": "staging",
+  "stripeMode": "test",
+  "paymentsEnabled": true,
+  "stripeEnabled": true,
+  "analyticsEnabled": false,
+  "gdprEnabled": false,
+  "version": "<git_sha_or_build_id>"
+}
+```
+
+* Enabled on staging
+* Production may return minimal or be disabled
+
+Optional: small UI badge (staging only):
+
+> `STAGING · Stripe:test · Payments:on · v123`
+
+---
+
+## 4️⃣ AUTH & COOKIE CONSISTENCY
+
+Ensure frontend requests behave identically across envs:
+
+* `fetch(..., { credentials: 'include' })`
+* or `axios({ withCredentials: true })`
+
+No environment-specific auth logic allowed.
+
+---
+
+# 🧨 CRITICAL FIX (NEW) — Payments click returns “Feature not available” + 503
+
+## ✅ Confirmed Symptoms
+
+On staging, clicking **Activate Artist Plan** triggers:
+
+* `POST /api/billing/create-checkout-session` → status **503**
+* Response body:
+
+```json
+{
+  "error": "Feature not available",
+  "message": "Payment processing is currently disabled.",
+  "feature": "stripe"
+}
+```
+
+Staging `/api/health/env` confirms:
+
+* `PAYMENTS_ENABLED=true`
+* `STRIPE_ENABLED=true`
+
+➡️ This means backend boolean ENV checks are wrong.
+
+---
+
+## 5️⃣ REQUIRED BACKEND FIX — Standardize ENV boolean parsing
+
+### 5.1 Create a single helper (server-side) and use it everywhere
+
+Create a helper file (name/location flexible), for example:
+
+```ts
+// envBool.ts
+export function envBool(value: unknown): boolean {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') {
+    return ['true', '1', 'yes', 'on'].includes(value.toLowerCase());
+  }
+  return false;
+}
+```
+
+### 5.2 Replace ALL direct env checks
+
+❌ Remove patterns like:
+
+```ts
+if (!process.env.STRIPE_ENABLED) { ... }
+if (process.env.STRIPE_ENABLED === 'true') { ... }
+if (!process.env.PAYMENTS_ENABLED) { ... }
+if (process.env.PAYMENTS_ENABLED === true) { ... }
+```
+
+✅ Replace with:
+
+```ts
+import { envBool } from './envBool';
+
+const stripeEnabled = envBool(process.env.STRIPE_ENABLED);
+const paymentsEnabled = envBool(process.env.PAYMENTS_ENABLED);
+
+const paymentsAvailable = stripeEnabled && paymentsEnabled;
+```
+
+---
+
+## 6️⃣ Fix checkout endpoint gating + error codes
+
+In `POST /api/billing/create-checkout-session`:
+
+### 6.1 Correct gating
+
+```ts
+if (!paymentsAvailable) {
+  return res.status(403).json({
+    error: 'Payments disabled',
+    message: 'Payments are disabled in this environment.',
+    feature: 'stripe'
+  });
+}
+```
+
+### 6.2 Error code rules (IMPORTANT)
+
+* Feature disabled (flag) → **403**
+* Missing config (keys/price IDs) → **500** with clear message
+* Stripe API failure → **500** with safe message
+* Success → **200** with checkout URL/session
+
+🚫 Do NOT return 503 for logical gating.
+🚫 Do NOT use generic “Feature not available” for everything.
+
+---
+
+## 7️⃣ VALIDATION CHECKLIST (MUST TEST)
+
+### Pricing & Upgrade
+
+* `/pricing` loads with no global banner
+* Clicking **Activate Artist Plan**:
+
+  * returns **200**
+  * redirects to **Stripe TEST** checkout
+
+### Diagnostics
+
+* `/api/health/env` returns correct values
+
+### Core
+
+* Login persists after refresh
+* No console errors related to env flags
+
+---
+
+## 8️⃣ STOP CONDITIONS (ALL REQUIRED)
+
+* Staging UI/design unchanged
+* `/pricing` shows no "Feature not available" on load
+* Clicking **Activate Artist Plan** redirects to Stripe **TEST** checkout
+* Endpoint returns correct status codes (no 503 for gating)
+
+---
+
+## 9️⃣ AGENT DELIVERABLE
+
+Provide:
+
+1. List of files changed
+2. Exact env vars required for staging (names only)
+3. Evidence:
+
+   * response from `/api/health/env`
+   * successful checkout creation (status 200)
+4. Short explanation:
+
+   * What caused backend to think payments are disabled
+   * What was changed to fix it
+
+---
+
+## ✅ FINAL NOTE
+
+This is a stabilization task. Do not over-engineer. Do not touch UI.
+
+Once fixed, staging becomes trustworthy and future deploys become safe.
