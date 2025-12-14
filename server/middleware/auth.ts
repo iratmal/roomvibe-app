@@ -29,7 +29,7 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
   const token = req.cookies?.token;
 
   if (!token) {
-    return res.status(401).json({ error: 'Access denied. No token provided.' });
+    return res.status(401).json({ error: 'Not authenticated. Please sign in.' });
   }
 
   try {

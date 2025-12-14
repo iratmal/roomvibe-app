@@ -6,8 +6,7 @@ import { YourPlanCard } from '../YourPlanCard';
 import { UpgradePrompt } from '../UpgradePrompt';
 import { SiteHeader } from '../SiteHeader';
 import { PLAN_LIMITS } from '../../config/planLimits';
-
-const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
+import { API_URL, isAuthenticationError } from '../../utils/api';
 
 interface Artwork {
   id: number;
@@ -41,6 +40,11 @@ function formatPrice(priceAmount: number | string | null | undefined, currency: 
 
 export function UserDashboard() {
   const { user, logout } = useAuth();
+  
+  const handleSessionExpired = () => {
+    logout();
+    window.location.hash = '#/login';
+  };
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -84,12 +88,16 @@ export function UserDashboard() {
       });
       
       if (!response.ok) {
+        // Handle authentication errors - logout and redirect to login
+        if (isAuthenticationError(response.status)) {
+          handleSessionExpired();
+          return;
+        }
         // Only show error for genuine failures (500+, network errors)
-        // For 401/403 unauthorized or 404 not found, treat as empty state
         if (response.status >= 500) {
           throw new Error('Server error. Please try again later.');
         }
-        // For 401/403/404 - user may not have artworks or access, treat as empty
+        // For 403/404 - user may not have artworks or access, treat as empty
         setArtworks([]);
         return;
       }
@@ -219,6 +227,12 @@ export function UserDashboard() {
       console.log('FETCH_RESPONSE', { status: response.status, statusText: response.statusText, ok: response.ok });
 
       if (!response.ok) {
+        // Handle authentication errors - logout and redirect to login
+        if (isAuthenticationError(response.status)) {
+          handleSessionExpired();
+          return;
+        }
+        
         let errorMessage = 'Failed to save artwork';
         let isLimitError = false;
         let responseBody: any = null;
@@ -325,6 +339,11 @@ export function UserDashboard() {
       });
 
       if (!response.ok) {
+        // Handle authentication errors - logout and redirect to login
+        if (isAuthenticationError(response.status)) {
+          handleSessionExpired();
+          return;
+        }
         throw new Error('Failed to delete artwork');
       }
 
