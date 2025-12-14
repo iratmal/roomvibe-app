@@ -100,3 +100,6 @@ STRIPE_PRICE_ARTIST = "price_1SZV6qIpcKai6mhJaZRJBhdC"
 STRIPE_PRICE_DESIGNER = "price_1SZV7SIpcKai6mhJIJLIwumX"
 STRIPE_PRICE_GALLERY = "price_1SZV7xIpcKai6mhJxwXRayJv"
 PRIVATE_OBJECT_DIR = "/replit-objstore-e128010c-7164-401f-a2d8-39f5267b3a96"
+
+[userenv.production]
+APP_ENV = "staging"
