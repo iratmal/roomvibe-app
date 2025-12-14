@@ -1,0 +1,282 @@
+# RoomVibe Pricing Page – Design & Implementation Brief
+
+**Purpose:**
+Replace the current pricing layout with a **clear, human‑friendly, horizontal design** that is easy to understand for non‑technical users (including older artists), while still being professional and SaaS‑grade.
+
+This brief **replaces the existing pricing tables entirely**.
+
+---
+
+## 1. CORE DESIGN PRINCIPLES (MANDATORY)
+
+1. **Clarity over density** – fewer words, stronger hierarchy
+2. **Scan‑first design** – users must understand their plan in under 10 seconds
+3. **Plain English** – no technical jargon
+4. **Two-step understanding**:
+
+   * Step 1: *Which plan is for me?*
+   * Step 2: *What exactly do I get compared to others?*
+
+---
+
+## 2. PAGE STRUCTURE (TOP → BOTTOM)
+
+### SECTION 1 — Pricing Plans (Horizontal Layout)
+
+**Layout:**
+
+* Full-width container
+* Plans stacked vertically (one block per plan)
+* Each plan is a horizontal card with **4 clear columns**:
+
+```
+[ Plan Name + Price ] | [ Value Promise ] | [ What You Get ] | [ CTA Button ]
+```
+
+---
+
+### SECTION 1A — Plan Block Anatomy (STRICT)
+
+#### Column 1: Plan Header
+
+* Plan name (H3)
+* Price (large, bold)
+* Billing period (/month)
+* Optional tag: "RECOMMENDED" (All‑Access only)
+
+---
+
+#### Column 2: Value & Audience
+
+**A. One‑sentence VALUE PROMISE (bold)**
+
+> This is the most important sentence in the entire block.
+
+**B. Who it’s for (1 short line)**
+
+---
+
+#### Column 3: What You Get (MAX 5 bullets)
+
+Rules:
+
+* Max **5 bullets only**
+* Each bullet = **one clear benefit**
+* No technical wording
+* Numbers always explicit (3, 50, 100, Unlimited)
+
+Optional:
+
+* One highlighted discovery box at the bottom (⭐) if relevant
+
+---
+
+#### Column 4: CTA
+
+* One primary button
+* Calm, confident wording
+* No pressure language
+
+---
+
+## 3. FINAL COPY – PRICING PLANS (USE EXACTLY)
+
+---
+
+### FREE — €0 / month
+
+**Value promise:**
+**See instantly how your artwork looks on a real wall.**
+
+**Who it’s for:**
+People trying RoomVibe for the first time.
+
+**What you get:**
+
+* Upload up to **3 artworks**
+* **10 basic mockup rooms**
+* Upload your own wall photo or use basic rooms
+* See instantly how your artwork looks on a wall
+* Download images for preview and sharing
+
+**CTA:**
+Get Started Free
+
+---
+
+### ARTIST — €9 / month
+
+**Value promise:**
+**Present, share, and sell your art online – without technical hassle.**
+
+**Who it’s for:**
+Independent artists and creatives.
+
+**What you get:**
+
+* Upload up to **50 artworks**
+* **Up to 40 standard mockup rooms**
+* Upload your own walls or use realistic interiors
+* Create **1 active virtual exhibition**
+* Download images for website & social media
+
+⭐ **Get discovered by interior designers and galleries using RoomVibe**
+
+**CTA:**
+Activate Artist Plan
+
+---
+
+### DESIGNER — €29 / month
+
+**Value promise:**
+**Create clear visual concepts for clients using real artworks.**
+
+**Who it’s for:**
+Interior designers working with clients.
+
+**What you get:**
+
+* Upload up to **100 artworks**
+* **100+ premium mockup rooms**
+* Upload client wall photos or use premium rooms
+* Create visual concepts and PDF presentations
+* Unlimited previews while designing
+
+⭐ **Find and connect with artists for your interior projects using RoomVibe**
+
+**CTA:**
+Unlock Designer Tools
+
+---
+
+### GALLERY — €49 / month
+
+**Value promise:**
+**Host professional virtual exhibitions and share them with the world.**
+
+**Who it’s for:**
+Galleries, exhibition spaces, and artists hosting their own exhibitions.
+
+**What you get:**
+
+* Upload **unlimited artworks**
+* **100+ premium mockup rooms**
+* Upload real gallery or studio walls
+* Create **up to 3 active virtual exhibitions**
+* Share public exhibition links with visitors & collectors
+
+⭐ **Discover and work with artists through the RoomVibe platform**
+
+**CTA:**
+Unlock Exhibition Tools
+
+---
+
+### ALL‑ACCESS — €79 / month
+
+**Value promise:**
+**Everything RoomVibe offers – without limits.**
+
+**Who it’s for:**
+Full‑time professionals, studios, galleries, and power users.
+
+**What you get:**
+
+* Unlimited artworks, walls, exhibitions & exports
+* Full Artist + Designer + Gallery tools
+* Unlimited virtual exhibitions
+* Priority support
+* Early access to new features
+
+**CTA:**
+Upgrade to All‑Access
+
+---
+
+## 4. SECTION 2 — FEATURE COMPARISON TABLE (HORIZONTAL)
+
+### Layout
+
+* Classic horizontal comparison table
+* Columns:
+
+```
+Feature | Free | Artist | Designer | Gallery | All‑Access
+```
+
+---
+
+### Icon Rules (IMPORTANT)
+
+* ✅ Green checkmark = Feature included
+* ❌ Red cross = Feature not included
+* **No dashes** anywhere
+
+---
+
+### Feature Values (KEY RULES)
+
+* Use **numbers instead of text** where possible
+* Be explicit:
+
+  * 3 / 50 / 100 / Unlimited
+  * 1 active / 3 active / Unlimited
+
+---
+
+### Required Feature Rows (MINIMUM)
+
+* Artwork uploads
+* Mockup rooms
+* Upload own wall photos
+* Real‑scale preview
+* Frame styling controls
+* Image downloads
+* PDF exports
+* Widget embed
+* Buy button integration
+* Virtual exhibitions
+* Public exhibition links
+* Designer Studio tools
+* Multi‑art wall presentations
+* Gallery Hub
+* Connect with designers
+* Connect with galleries
+* Browse artist directory
+* Priority support
+* Early access to features
+
+---
+
+### Special Rule — Virtual Exhibitions
+
+* Free: ❌
+* Artist: ✅ **(up to 1 active)**
+* Designer: ❌
+* Gallery: ✅ **(up to 3 active)**
+* All‑Access: ✅ **Unlimited**
+
+---
+
+## 5. VISUAL DESIGN GUIDELINES
+
+* Plenty of white space
+* Clear column separation
+* Bullets aligned vertically
+* Highlight boxes (⭐) with subtle background
+* Buttons aligned consistently
+* No visual noise
+
+---
+
+## 6. IMPLEMENTATION NOTES
+
+* Replace the **entire existing pricing layout**
+* This design goes **first to STAGING**
+* Functional bugs ("Feature not available", buttons) are ignored for now
+* After design approval → return to bug fixing
+
+---
+
+**This document is the single source of truth for the pricing page redesign.**

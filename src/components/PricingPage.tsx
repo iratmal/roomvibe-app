@@ -9,6 +9,7 @@ interface PlanConfig {
   name: string;
   price: string;
   priceValue: number;
+  valuePromise: string;
   whoItsFor: string;
   features: string[];
   highlightFeature?: string;
@@ -24,16 +25,14 @@ const PLANS: PlanConfig[] = [
     name: 'Free',
     price: '€0',
     priceValue: 0,
+    valuePromise: 'See instantly how your artwork looks on a real wall.',
     whoItsFor: 'People trying RoomVibe for the first time.',
     features: [
       'Upload up to 3 artworks',
-      'Up to 10 basic mockup rooms',
-      'Upload a photo of your own wall or use basic rooms',
-      'See instantly how your artwork looks on a real wall',
+      '10 basic mockup rooms',
+      'Upload your own wall photo or use basic rooms',
+      'See instantly how your artwork looks on a wall',
       'Download images for preview and sharing',
-      'Frame styling controls',
-      'Widget embed',
-      'Buy button integration',
     ],
     buttonText: 'Get Started Free',
   },
@@ -42,18 +41,15 @@ const PLANS: PlanConfig[] = [
     name: 'Artist',
     price: '€9',
     priceValue: 9,
-    whoItsFor: 'Independent artists and creatives who want to present, sell, and exhibit their art online.',
+    valuePromise: 'Present, share, and sell your art online – without technical hassle.',
+    whoItsFor: 'Independent artists and creatives.',
     entitlement: 'artist_access',
     features: [
       'Upload up to 50 artworks',
       'Up to 40 standard mockup rooms',
-      'Upload your own wall photos or use realistic interiors',
-      'See your artwork instantly on real walls',
-      'Create and share your own virtual exhibitions',
-      'Download images for your website & social media',
-      'Add a Buy button (Shopify, WooCommerce, Wix)',
-      'Frame styling controls',
-      'Widget embed',
+      'Upload your own walls or use realistic interiors',
+      'Create 1 active virtual exhibition',
+      'Download images for website & social media',
     ],
     highlightFeature: 'Get discovered by interior designers and galleries using RoomVibe',
     buttonText: 'Activate Artist Plan',
@@ -63,18 +59,15 @@ const PLANS: PlanConfig[] = [
     name: 'Designer',
     price: '€29',
     priceValue: 29,
-    whoItsFor: 'Interior designers presenting visual concepts to clients.',
+    valuePromise: 'Create clear visual concepts for clients using real artworks.',
+    whoItsFor: 'Interior designers working with clients.',
     entitlement: 'designer_access',
     features: [
       'Upload up to 100 artworks',
-      'Access to 100+ premium mockup rooms',
+      '100+ premium mockup rooms',
       'Upload client wall photos or use premium rooms',
       'Create visual concepts and PDF presentations',
-      'Designer Studio tools included',
-      'Multi-art wall presentations',
-      'Unlimited previews',
-      'Widget embed',
-      'Buy button integration',
+      'Unlimited previews while designing',
     ],
     highlightFeature: 'Find and connect with artists for your interior projects using RoomVibe',
     buttonText: 'Unlock Designer Tools',
@@ -84,20 +77,17 @@ const PLANS: PlanConfig[] = [
     name: 'Gallery',
     price: '€49',
     priceValue: 49,
-    whoItsFor: 'Galleries, exhibition spaces, and artists hosting their own virtual exhibitions.',
+    valuePromise: 'Host professional virtual exhibitions and share them with the world.',
+    whoItsFor: 'Galleries, exhibition spaces, and artists hosting their own exhibitions.',
     entitlement: 'gallery_access',
     features: [
       'Upload unlimited artworks',
-      'Access to 100+ premium mockup rooms',
+      '100+ premium mockup rooms',
       'Upload real gallery or studio walls',
-      'Create virtual exhibitions (up to 3 active)',
-      'Share public exhibition links with collectors and visitors',
-      'Exhibition PDF export (20 per month)',
-      'Gallery Hub & multi-art walls',
-      'Widget embed',
-      'Buy button integration',
+      'Create up to 3 active virtual exhibitions',
+      'Share public exhibition links with visitors & collectors',
     ],
-    highlightFeature: 'Discover and connect with artists on the RoomVibe platform',
+    highlightFeature: 'Discover and work with artists through the RoomVibe platform',
     buttonText: 'Unlock Exhibition Tools',
   },
   {
@@ -105,16 +95,14 @@ const PLANS: PlanConfig[] = [
     name: 'All-Access',
     price: '€79',
     priceValue: 79,
-    whoItsFor: 'Full-time art professionals, studios, galleries, and power users.',
+    valuePromise: 'Everything RoomVibe offers – without limits.',
+    whoItsFor: 'Full-time professionals, studios, galleries, and power users.',
     isAllAccess: true,
     recommended: true,
     features: [
-      'Upload unlimited artworks',
-      'Access to all premium mockup rooms (including future packs)',
-      'Unlimited walls, exhibitions, and exports',
-      'Artist + Designer + Gallery modules included',
+      'Unlimited artworks, walls, exhibitions & exports',
+      'Full Artist + Designer + Gallery tools',
       'Unlimited virtual exhibitions',
-      'Unlimited PDF exports',
       'Priority support',
       'Early access to new features',
     ],
@@ -126,6 +114,14 @@ function CheckIcon({ className = "w-4 h-4", color }: { className?: string; color
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke={color || "currentColor"} strokeWidth={2.5}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+    </svg>
+  );
+}
+
+function CrossIcon({ className = "w-4 h-4" }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
     </svg>
   );
 }
@@ -221,10 +217,10 @@ export function PricingPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-3xl sm:text-4xl font-bold text-[var(--roomvibe-navy)] tracking-tight mb-4">
+            <h1 className="text-3xl sm:text-4xl font-bold text-[#264C61] tracking-tight mb-4">
               Choose the plan that fits your creative needs
             </h1>
-            <p className="text-lg text-rv-textMuted max-w-2xl mx-auto">
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Simple, transparent pricing. Upgrade or cancel anytime.
             </p>
           </div>
@@ -257,12 +253,12 @@ export function PricingPage() {
           </div>
 
           <div className="mt-12 text-center">
-            <p className="text-sm text-rv-textMuted">
+            <p className="text-sm text-gray-500">
               All plans include a 14-day money-back guarantee. Cancel anytime.
             </p>
-            <p className="text-sm text-rv-textMuted mt-2">
+            <p className="text-sm text-gray-500 mt-2">
               Need help choosing?{' '}
-              <a href="mailto:hello@roomvibe.app" className="text-rv-primary hover:underline">
+              <a href="mailto:hello@roomvibe.app" className="text-[#264C61] hover:underline">
                 Contact us
               </a>
             </p>
@@ -270,13 +266,13 @@ export function PricingPage() {
         </div>
       </main>
 
-      <footer className="py-8 border-t border-rv-neutral bg-white">
+      <footer className="py-8 border-t border-gray-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-rv-textMuted">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-500">
             <p>&copy; 2025 RoomVibe. All rights reserved.</p>
             <div className="flex gap-6">
-              <a href="#/privacy" className="hover:text-rv-primary transition-colors">Privacy</a>
-              <a href="#/terms" className="hover:text-rv-primary transition-colors">Terms</a>
+              <a href="#/privacy" className="hover:text-[#264C61] transition-colors">Privacy</a>
+              <a href="#/terms" className="hover:text-[#264C61] transition-colors">Terms</a>
             </div>
           </div>
         </div>
@@ -309,10 +305,7 @@ function HorizontalPlanCard({ plan, isActive, isLoading, onSelect }: HorizontalP
         <div className="absolute top-0 right-0">
           <span 
             className="inline-block px-4 py-1.5 text-xs font-semibold rounded-bl-lg"
-            style={{
-              backgroundColor: '#C9A24A',
-              color: 'white',
-            }}
+            style={{ backgroundColor: '#C9A24A', color: 'white' }}
           >
             RECOMMENDED
           </span>
@@ -320,36 +313,65 @@ function HorizontalPlanCard({ plan, isActive, isLoading, onSelect }: HorizontalP
       )}
 
       <div className="p-6 sm:p-8">
-        {/* Top Row: Plan Name, Price, Who it's for, and CTA Button */}
-        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-6 pb-6 border-b border-gray-100">
-          {/* Left: Plan info */}
-          <div className="flex-1">
-            <div className="flex flex-wrap items-baseline gap-3 mb-2">
-              <h3 className="text-2xl font-bold" style={{ color: '#264C61' }}>
-                {plan.name}
-              </h3>
-              <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold" style={{ color: '#264C61' }}>
-                  {plan.price}
-                </span>
-                <span className="text-gray-500 text-sm">/ month</span>
-              </div>
+        {/* 4-Column Layout: Plan Header | Value Promise | What You Get | CTA */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+          
+          {/* Column 1: Plan Header */}
+          <div className="lg:col-span-2">
+            <h3 className="text-xl font-bold text-[#264C61] mb-1">
+              {plan.name}
+            </h3>
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-bold text-[#264C61]">{plan.price}</span>
+              <span className="text-gray-500 text-sm">/ month</span>
             </div>
-            <p className="text-gray-600 text-sm sm:text-base">
-              <span className="font-medium text-[#264C61]">Who it's for:</span> {plan.whoItsFor}
+          </div>
+
+          {/* Column 2: Value Promise & Who it's for */}
+          <div className="lg:col-span-3">
+            <p className="font-semibold text-[#264C61] mb-2">
+              {plan.valuePromise}
+            </p>
+            <p className="text-sm text-gray-600">
+              <span className="font-medium">Who it's for:</span> {plan.whoItsFor}
             </p>
           </div>
 
-          {/* Right: CTA Button */}
-          <div className="flex-shrink-0 lg:min-w-[200px]">
+          {/* Column 3: What You Get (max 5 bullets) */}
+          <div className="lg:col-span-5">
+            <p className="text-sm font-semibold text-[#264C61] mb-3">What you get:</p>
+            <div className="space-y-1.5">
+              {plan.features.map((feature, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <CheckIcon className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span className="text-sm text-gray-700">{feature}</span>
+                </div>
+              ))}
+            </div>
+            
+            {/* Highlight Feature */}
+            {plan.highlightFeature && (
+              <div 
+                className="mt-4 p-3 rounded-lg flex items-start gap-2"
+                style={{ 
+                  backgroundColor: 'rgba(201, 162, 74, 0.08)',
+                  border: '1px solid rgba(201, 162, 74, 0.2)'
+                }}
+              >
+                <StarIcon className="w-4 h-4 flex-shrink-0 text-[#C9A24A] mt-0.5" />
+                <p className="text-sm font-medium text-[#264C61]">
+                  {plan.highlightFeature}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Column 4: CTA Button */}
+          <div className="lg:col-span-2 flex items-center">
             {isActive && plan.id !== 'free' ? (
               <div 
-                className="py-3 px-6 rounded-lg text-sm text-center flex items-center justify-center gap-2"
-                style={{
-                  backgroundColor: '#E8EBF7',
-                  color: '#264C61',
-                  fontWeight: 600,
-                }}
+                className="w-full py-3 px-4 rounded-lg text-sm text-center flex items-center justify-center gap-2"
+                style={{ backgroundColor: '#E8EBF7', color: '#264C61', fontWeight: 600 }}
               >
                 <CheckIcon className="w-5 h-5" color="#264C61" />
                 {plan.isAllAccess ? 'All Modules Active' : 'Active'}
@@ -358,7 +380,7 @@ function HorizontalPlanCard({ plan, isActive, isLoading, onSelect }: HorizontalP
               <button
                 onClick={onSelect}
                 disabled={isLoading}
-                className={`w-full py-3 px-6 rounded-lg font-semibold text-sm transition-all ${
+                className={`w-full py-3 px-4 rounded-lg font-semibold text-sm transition-all ${
                   plan.id === 'free'
                     ? 'bg-white border-2 border-[#264C61] text-[#264C61] hover:bg-gray-50'
                     : plan.recommended 
@@ -371,38 +393,6 @@ function HorizontalPlanCard({ plan, isActive, isLoading, onSelect }: HorizontalP
             )}
           </div>
         </div>
-
-        {/* Features Grid */}
-        <div>
-          <p className="text-sm font-semibold text-[#264C61] mb-4">What you get:</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-2">
-            {plan.features.map((feature, i) => (
-              <div 
-                key={i} 
-                className="flex items-start gap-2"
-              >
-                <CheckIcon className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-gray-600">{feature}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Highlight Feature */}
-        {plan.highlightFeature && (
-          <div 
-            className="mt-5 p-4 rounded-lg flex items-start gap-3"
-            style={{ 
-              backgroundColor: 'rgba(201, 162, 74, 0.08)',
-              border: '1px solid rgba(201, 162, 74, 0.2)'
-            }}
-          >
-            <StarIcon className="w-5 h-5 flex-shrink-0 text-[#C9A24A]" />
-            <p className="text-sm font-medium text-[#264C61]">
-              {plan.highlightFeature}
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -415,29 +405,28 @@ interface FeatureRow {
   designer: string | boolean;
   gallery: string | boolean;
   allAccess: string | boolean;
-  category?: string;
 }
 
 const FEATURE_ROWS: FeatureRow[] = [
-  { feature: 'Artwork Uploads', free: '3', artist: '50', designer: '100', gallery: 'Unlimited', allAccess: 'Unlimited', category: 'Artworks' },
-  { feature: 'Mockup Rooms', free: '10 basic', artist: '40 standard', designer: '100+ premium', gallery: '100+ premium', allAccess: 'All rooms', category: 'Rooms' },
-  { feature: 'Upload Own Wall Photos', free: true, artist: true, designer: true, gallery: true, allAccess: true },
-  { feature: 'Real-Scale Preview', free: true, artist: true, designer: true, gallery: true, allAccess: true },
-  { feature: 'Frame Styling Controls', free: true, artist: true, designer: true, gallery: true, allAccess: true },
-  { feature: 'Image Downloads', free: 'Preview only', artist: true, designer: true, gallery: true, allAccess: true, category: 'Exports' },
-  { feature: 'PDF Exports', free: false, artist: false, designer: true, gallery: '20/month', allAccess: 'Unlimited' },
-  { feature: 'Widget Embed', free: true, artist: true, designer: true, gallery: true, allAccess: true, category: 'Integration' },
-  { feature: 'Buy Button Integration', free: true, artist: true, designer: true, gallery: true, allAccess: true },
-  { feature: 'Virtual Exhibitions', free: false, artist: true, designer: false, gallery: '3 active', allAccess: 'Unlimited', category: 'Exhibitions' },
-  { feature: 'Public Exhibition Links', free: false, artist: true, designer: false, gallery: true, allAccess: true },
-  { feature: 'Designer Studio Tools', free: false, artist: false, designer: true, gallery: false, allAccess: true, category: 'Pro Tools' },
-  { feature: 'Multi-Art Wall Presentations', free: false, artist: false, designer: true, gallery: true, allAccess: true },
+  { feature: 'Artwork uploads', free: '3', artist: '50', designer: '100', gallery: 'Unlimited', allAccess: 'Unlimited' },
+  { feature: 'Mockup rooms', free: '10 basic', artist: '40 standard', designer: '100+ premium', gallery: '100+ premium', allAccess: 'All rooms' },
+  { feature: 'Upload own wall photos', free: true, artist: true, designer: true, gallery: true, allAccess: true },
+  { feature: 'Real-scale preview', free: true, artist: true, designer: true, gallery: true, allAccess: true },
+  { feature: 'Frame styling controls', free: true, artist: true, designer: true, gallery: true, allAccess: true },
+  { feature: 'Image downloads', free: true, artist: true, designer: true, gallery: true, allAccess: true },
+  { feature: 'PDF exports', free: false, artist: false, designer: true, gallery: true, allAccess: true },
+  { feature: 'Widget embed', free: true, artist: true, designer: true, gallery: true, allAccess: true },
+  { feature: 'Buy button integration', free: true, artist: true, designer: true, gallery: true, allAccess: true },
+  { feature: 'Virtual exhibitions', free: false, artist: '1 active', designer: false, gallery: '3 active', allAccess: 'Unlimited' },
+  { feature: 'Public exhibition links', free: false, artist: true, designer: false, gallery: true, allAccess: true },
+  { feature: 'Designer Studio tools', free: false, artist: false, designer: true, gallery: false, allAccess: true },
+  { feature: 'Multi-art wall presentations', free: false, artist: false, designer: true, gallery: true, allAccess: true },
   { feature: 'Gallery Hub', free: false, artist: false, designer: false, gallery: true, allAccess: true },
-  { feature: 'Connect with Designers', free: false, artist: true, designer: false, gallery: false, allAccess: true, category: 'Network' },
-  { feature: 'Connect with Galleries', free: false, artist: true, designer: false, gallery: false, allAccess: true },
-  { feature: 'Browse Artist Directory', free: false, artist: false, designer: true, gallery: true, allAccess: true },
-  { feature: 'Priority Support', free: false, artist: false, designer: false, gallery: false, allAccess: true, category: 'Support' },
-  { feature: 'Early Access to Features', free: false, artist: false, designer: false, gallery: false, allAccess: true },
+  { feature: 'Connect with designers', free: false, artist: true, designer: false, gallery: false, allAccess: true },
+  { feature: 'Connect with galleries', free: false, artist: true, designer: false, gallery: false, allAccess: true },
+  { feature: 'Browse artist directory', free: false, artist: false, designer: true, gallery: true, allAccess: true },
+  { feature: 'Priority support', free: false, artist: false, designer: false, gallery: false, allAccess: true },
+  { feature: 'Early access to features', free: false, artist: false, designer: false, gallery: false, allAccess: true },
 ];
 
 function FeatureComparisonTable() {
@@ -446,7 +435,7 @@ function FeatureComparisonTable() {
       return <CheckIcon className="w-5 h-5 text-green-500 mx-auto" />;
     }
     if (value === false) {
-      return <span className="text-gray-300">—</span>;
+      return <CrossIcon className="w-5 h-5 text-red-400 mx-auto" />;
     }
     return <span className="text-sm text-gray-700">{value}</span>;
   };
@@ -456,12 +445,12 @@ function FeatureComparisonTable() {
       <table className="w-full bg-white rounded-xl border border-gray-200 overflow-hidden" style={{ boxShadow: '0px 4px 12px rgba(0,0,0,0.05)' }}>
         <thead>
           <tr className="bg-gray-50 border-b border-gray-200">
-            <th className="text-left py-4 px-4 sm:px-6 font-semibold text-[#264C61] text-sm">Feature</th>
-            <th className="text-center py-4 px-2 sm:px-4 font-semibold text-[#264C61] text-sm">Free</th>
-            <th className="text-center py-4 px-2 sm:px-4 font-semibold text-[#264C61] text-sm">Artist</th>
-            <th className="text-center py-4 px-2 sm:px-4 font-semibold text-[#264C61] text-sm">Designer</th>
-            <th className="text-center py-4 px-2 sm:px-4 font-semibold text-[#264C61] text-sm">Gallery</th>
-            <th className="text-center py-4 px-2 sm:px-4 font-semibold text-sm" style={{ backgroundColor: 'rgba(201, 162, 74, 0.1)', color: '#264C61' }}>All-Access</th>
+            <th className="text-left py-4 px-4 sm:px-6 font-semibold text-[#264C61] text-sm min-w-[200px]">Feature</th>
+            <th className="text-center py-4 px-2 sm:px-4 font-semibold text-[#264C61] text-sm min-w-[80px]">Free</th>
+            <th className="text-center py-4 px-2 sm:px-4 font-semibold text-[#264C61] text-sm min-w-[80px]">Artist</th>
+            <th className="text-center py-4 px-2 sm:px-4 font-semibold text-[#264C61] text-sm min-w-[80px]">Designer</th>
+            <th className="text-center py-4 px-2 sm:px-4 font-semibold text-[#264C61] text-sm min-w-[80px]">Gallery</th>
+            <th className="text-center py-4 px-2 sm:px-4 font-semibold text-sm min-w-[100px]" style={{ backgroundColor: 'rgba(201, 162, 74, 0.1)', color: '#264C61' }}>All-Access</th>
           </tr>
         </thead>
         <tbody>
