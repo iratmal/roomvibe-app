@@ -154,39 +154,24 @@ export class ObjectStorageService {
 
     console.log('[ObjectStorage] Using PRIVATE_OBJECT_DIR:', privateDirRaw);
     console.log('[ObjectStorage] Parsed bucket/prefix:', { bucketName, prefix: prefix || '(none)', storedObjectName });
+    
+    const bucket = objectStorageClient.bucket(bucketName);
+    const file = bucket.file(storedObjectName);
 
     try {
-      console.log('[ObjectStorage] Getting signed URL for upload...', { bucketName, storedObjectName });
-      
-      const signedUrl = await this.signObjectURL({
+      console.log('[ObjectStorage] Calling file.save() with GCS client...', {
         bucketName,
-        objectName: storedObjectName,
-        method: "PUT",
-        ttlSec: 900,
+        storedObjectName,
+        contentType,
+        size: buffer.length,
       });
       
-      console.log('[ObjectStorage] Got signed URL, uploading via PUT...', { size: buffer.length, contentType });
-      
-      const uploadResponse = await fetch(signedUrl, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': contentType,
-          'Content-Length': buffer.length.toString(),
-        },
-        body: buffer,
+      await file.save(buffer, {
+        resumable: false,
+        contentType,
       });
       
-      if (!uploadResponse.ok) {
-        const errorText = await uploadResponse.text();
-        console.error('[ObjectStorage] Signed URL upload FAILED', {
-          status: uploadResponse.status,
-          statusText: uploadResponse.statusText,
-          body: errorText,
-        });
-        throw new Error(`Upload failed: ${uploadResponse.status} ${uploadResponse.statusText} - ${errorText}`);
-      }
-      
-      console.log('[ObjectStorage] Signed URL upload SUCCESS', { status: uploadResponse.status });
+      console.log('[ObjectStorage] file.save() SUCCESS', { storedObjectName });
     } catch (err: any) {
       const errMessage = err?.message || err?.response?.data || err?.response || 'Unknown error';
       const errCode = err?.code || err?.statusCode || err?.response?.status;
@@ -198,7 +183,7 @@ export class ObjectStorageService {
         errors: err?.errors,
         response: err?.response?.data || err?.response,
       };
-      console.error('[ObjectStorage] uploadBuffer FAILED', errDetails);
+      console.error('[ObjectStorage] file.save() FAILED', errDetails);
       console.error('[ObjectStorage] Full error stack:', err?.stack);
       
       const error = new Error(`Storage write failed: ${errMessage}`);

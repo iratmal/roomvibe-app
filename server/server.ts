@@ -180,24 +180,43 @@ app.get('/api/health/storage', async (req, res) => {
 
   try {
     const credentialRes = await fetch(`${SIDECAR}/credential`, { method: 'GET' });
-    results.sidecarCredentialStatus = credentialRes.status;
+    results.credentialStatus = credentialRes.status;
     if (credentialRes.ok) {
       const credData = await credentialRes.json();
-      results.sidecarCredentialHasToken = !!credData.access_token;
-      results.sidecarCredentialExpiresIn = credData.expires_in;
+      results.credentialHasToken = !!credData.access_token;
+      results.credentialExpiresIn = credData.expires_in;
     } else {
-      results.sidecarCredentialError = await credentialRes.text();
+      results.credentialError = await credentialRes.text();
     }
   } catch (e: any) {
-    results.sidecarConnectionError = e.message;
+    results.credentialConnectionError = e.message;
   }
 
-  const sidecarOk = results.sidecarCredentialStatus === 200 && results.sidecarCredentialHasToken;
+  try {
+    const signedUrlRes = await fetch(`${SIDECAR}/object-storage/signed-object-url`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        bucket_name: 'test-bucket',
+        object_name: 'test-object',
+        method: 'GET',
+        expires_at: new Date(Date.now() + 60000).toISOString(),
+      }),
+    });
+    results.signedUrlStatus = signedUrlRes.status;
+    if (!signedUrlRes.ok) {
+      results.signedUrlError = await signedUrlRes.text();
+    }
+  } catch (e: any) {
+    results.signedUrlConnectionError = e.message;
+  }
+
+  const credentialOk = results.credentialStatus === 200 && results.credentialHasToken;
   const storageConfigured = results.privateObjectDir === 'SET';
   
-  res.status(sidecarOk && storageConfigured ? 200 : 500).json({
-    status: sidecarOk && storageConfigured ? 'healthy' : 'unhealthy',
-    sidecarReachable: sidecarOk,
+  res.status(credentialOk && storageConfigured ? 200 : 500).json({
+    status: credentialOk && storageConfigured ? 'healthy' : 'unhealthy',
+    credentialOk,
     storageConfigured,
     ...results
   });
