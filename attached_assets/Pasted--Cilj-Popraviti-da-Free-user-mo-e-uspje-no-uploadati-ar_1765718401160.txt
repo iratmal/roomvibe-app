@@ -1,0 +1,54 @@
+## Cilj
+
+Popraviti da **Free user** može uspješno uploadati artwork (POST) bez greške **“Access denied. No token provided.”** i bez „Failed to create artwork“.
+
+## Repro
+
+1. Login kao obični user (npr. [user@test.app](mailto:user@test.app))
+2. Dashboard → **Add New Artwork** → odaberi sliku + upiši Title/Dimensions/Buy URL
+3. Klik **Upload Artwork**
+4. U Network se vidi POST na `.../api/artist/artworks` bez `Authorization: Bearer …` headera → backend vraća 401/403 + poruku *No token provided*.
+
+## Očekivano
+
+* Svaki zaštićeni API poziv (uklj. multipart/FormData upload) mora slati auth (Bearer token ili cookie session—što god je standard u appu).
+* Upload radi za Free plan (limit i provjere ostaju, ali auth mora biti prisutan).
+
+## Dijagnostika (što provjeriti)
+
+* U devtools → Network → request headers za `POST /api/artist/artworks`: trenutno **nema Authorization headera**.
+* Provjeriti gdje se token čuva (localStorage/sessionStorage/cookie) i je li dostupan nakon login-a.
+
+## Fix (backend + frontend)
+
+### A) Frontend – obavezno slanje tokena i za FormData
+
+1. Naći centralni API client/wrapper (npr. `apiFetch`, `fetchWithAuth`, axios instance).
+2. Osigurati da i upload koristi isti wrapper, npr. `apiClient.post('/api/artist/artworks', formData, { headers… })`.
+3. Dodati `Authorization: Bearer ${token}` u request.
+
+   * **Napomena:** Kod `FormData` ne postavljati ručno `Content-Type` (browser mora dodati boundary). Samo dodati Authorization.
+4. Ako app koristi cookie session umjesto Bearer tokena:
+
+   * `credentials: 'include'` na fetchu
+   * provjeriti da se session cookie stvarno postavlja na login i nije blokiran (SameSite/Secure).
+
+### B) Backend – poruka i fallback
+
+1. Auth middleware mora dosljedno čitati token iz:
+
+   * `Authorization: Bearer …` (primarno)
+   * opcionalno fallback: `cookie` ili `x-access-token` (ako već koristite negdje drugdje)
+2. Ako je token missing, vratiti čisti JSON s razlogom (za debug):
+
+   * `401 { error: 'missing_token' }`
+
+## Acceptance criteria
+
+* Nakon fix-a: upload radi (200/201) i artwork se pojavi u **My Artworks** listi.
+* Network potvrđuje da `POST /api/artist/artworks` ima `Authorization` header (ili valid session cookie).
+* Nema crvenog bannera “Access denied. No token provided.”
+
+## Notes
+
+* Ovo je prioritet prije daljnjeg polish-a UX-a, jer blokira core funkciju Free plana (upload do 3 artworks).
