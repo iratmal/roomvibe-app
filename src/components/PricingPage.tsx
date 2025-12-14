@@ -248,6 +248,14 @@ export function PricingPage() {
             ))}
           </div>
 
+          {/* Feature Comparison Table */}
+          <div className="mt-16">
+            <h2 className="text-2xl font-bold text-[#264C61] text-center mb-8">
+              Compare All Features
+            </h2>
+            <FeatureComparisonTable />
+          </div>
+
           <div className="mt-12 text-center">
             <p className="text-sm text-rv-textMuted">
               All plans include a 14-day money-back guarantee. Cancel anytime.
@@ -396,6 +404,82 @@ function HorizontalPlanCard({ plan, isActive, isLoading, onSelect }: HorizontalP
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+interface FeatureRow {
+  feature: string;
+  free: string | boolean;
+  artist: string | boolean;
+  designer: string | boolean;
+  gallery: string | boolean;
+  allAccess: string | boolean;
+  category?: string;
+}
+
+const FEATURE_ROWS: FeatureRow[] = [
+  { feature: 'Artwork Uploads', free: '3', artist: '50', designer: '100', gallery: 'Unlimited', allAccess: 'Unlimited', category: 'Artworks' },
+  { feature: 'Mockup Rooms', free: '10 basic', artist: '40 standard', designer: '100+ premium', gallery: '100+ premium', allAccess: 'All rooms', category: 'Rooms' },
+  { feature: 'Upload Own Wall Photos', free: true, artist: true, designer: true, gallery: true, allAccess: true },
+  { feature: 'Real-Scale Preview', free: true, artist: true, designer: true, gallery: true, allAccess: true },
+  { feature: 'Frame Styling Controls', free: true, artist: true, designer: true, gallery: true, allAccess: true },
+  { feature: 'Image Downloads', free: 'Preview only', artist: true, designer: true, gallery: true, allAccess: true, category: 'Exports' },
+  { feature: 'PDF Exports', free: false, artist: false, designer: true, gallery: '20/month', allAccess: 'Unlimited' },
+  { feature: 'Widget Embed', free: true, artist: true, designer: true, gallery: true, allAccess: true, category: 'Integration' },
+  { feature: 'Buy Button Integration', free: true, artist: true, designer: true, gallery: true, allAccess: true },
+  { feature: 'Virtual Exhibitions', free: false, artist: true, designer: false, gallery: '3 active', allAccess: 'Unlimited', category: 'Exhibitions' },
+  { feature: 'Public Exhibition Links', free: false, artist: true, designer: false, gallery: true, allAccess: true },
+  { feature: 'Designer Studio Tools', free: false, artist: false, designer: true, gallery: false, allAccess: true, category: 'Pro Tools' },
+  { feature: 'Multi-Art Wall Presentations', free: false, artist: false, designer: true, gallery: true, allAccess: true },
+  { feature: 'Gallery Hub', free: false, artist: false, designer: false, gallery: true, allAccess: true },
+  { feature: 'Connect with Designers', free: false, artist: true, designer: false, gallery: false, allAccess: true, category: 'Network' },
+  { feature: 'Connect with Galleries', free: false, artist: true, designer: false, gallery: false, allAccess: true },
+  { feature: 'Browse Artist Directory', free: false, artist: false, designer: true, gallery: true, allAccess: true },
+  { feature: 'Priority Support', free: false, artist: false, designer: false, gallery: false, allAccess: true, category: 'Support' },
+  { feature: 'Early Access to Features', free: false, artist: false, designer: false, gallery: false, allAccess: true },
+];
+
+function FeatureComparisonTable() {
+  const renderCell = (value: string | boolean) => {
+    if (value === true) {
+      return <CheckIcon className="w-5 h-5 text-green-500 mx-auto" />;
+    }
+    if (value === false) {
+      return <span className="text-gray-300">—</span>;
+    }
+    return <span className="text-sm text-gray-700">{value}</span>;
+  };
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full bg-white rounded-xl border border-gray-200 overflow-hidden" style={{ boxShadow: '0px 4px 12px rgba(0,0,0,0.05)' }}>
+        <thead>
+          <tr className="bg-gray-50 border-b border-gray-200">
+            <th className="text-left py-4 px-4 sm:px-6 font-semibold text-[#264C61] text-sm">Feature</th>
+            <th className="text-center py-4 px-2 sm:px-4 font-semibold text-[#264C61] text-sm">Free</th>
+            <th className="text-center py-4 px-2 sm:px-4 font-semibold text-[#264C61] text-sm">Artist</th>
+            <th className="text-center py-4 px-2 sm:px-4 font-semibold text-[#264C61] text-sm">Designer</th>
+            <th className="text-center py-4 px-2 sm:px-4 font-semibold text-[#264C61] text-sm">Gallery</th>
+            <th className="text-center py-4 px-2 sm:px-4 font-semibold text-sm" style={{ backgroundColor: 'rgba(201, 162, 74, 0.1)', color: '#264C61' }}>All-Access</th>
+          </tr>
+        </thead>
+        <tbody>
+          {FEATURE_ROWS.map((row, index) => (
+            <tr 
+              key={row.feature} 
+              className={`border-b border-gray-100 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}
+            >
+              <td className="py-3 px-4 sm:px-6 text-sm text-gray-700">{row.feature}</td>
+              <td className="py-3 px-2 sm:px-4 text-center">{renderCell(row.free)}</td>
+              <td className="py-3 px-2 sm:px-4 text-center">{renderCell(row.artist)}</td>
+              <td className="py-3 px-2 sm:px-4 text-center">{renderCell(row.designer)}</td>
+              <td className="py-3 px-2 sm:px-4 text-center">{renderCell(row.gallery)}</td>
+              <td className="py-3 px-2 sm:px-4 text-center" style={{ backgroundColor: 'rgba(201, 162, 74, 0.05)' }}>{renderCell(row.allAccess)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
