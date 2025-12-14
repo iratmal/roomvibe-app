@@ -139,6 +139,19 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+app.get('/api/version', (req, res) => {
+  res.json({
+    version: '1.0.0',
+    build: '2025-12-14T13:30:00Z',
+    commit: 'fix-auth-cookie-and-db-schema',
+    features: {
+      cookieAuth: true,
+      bearerAuth: true,
+      objectStorage: true
+    }
+  });
+});
+
 app.get('/api/artwork-image/:id', async (req: any, res) => {
   try {
     const artworkId = parseInt(req.params.id);

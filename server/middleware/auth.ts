@@ -26,7 +26,16 @@ export interface AuthRequest extends Request {
 }
 
 export const authenticateToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
-  const token = req.cookies?.token;
+  // Support both cookie-based auth and Bearer token auth
+  let token = req.cookies?.token;
+  
+  // Fallback to Bearer token from Authorization header
+  if (!token) {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    }
+  }
 
   if (!token) {
     return res.status(401).json({ error: 'Not authenticated. Please sign in.' });
