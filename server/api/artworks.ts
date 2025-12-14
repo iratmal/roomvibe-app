@@ -127,8 +127,19 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
     
+    console.log('[POST /artworks] Request received:', {
+      userId: req.user?.id,
+      email: req.user?.email,
+      effectivePlan,
+      role: req.user?.role,
+      subscription_status: req.user?.subscription_status,
+      subscription_plan: req.user?.subscription_plan,
+      artworkCount: req.user?.artworkCount,
+      planLimits: req.user?.planLimits
+    });
+    
     // Allow all authenticated users to upload artworks (limit enforced by checkArtworkLimit middleware)
-    // Free users can upload 1 artwork, paid users have higher limits
+    // Free users can upload up to 3 artworks, paid users have higher limits
 
     const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, artistId, orientation, styleTags, dominantColors, medium, availability } = req.body;
 
