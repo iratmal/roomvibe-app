@@ -540,6 +540,19 @@ export async function initializeDatabase() {
       END $$;
     `);
 
+    // tags - AI-generated tags for artwork discovery (TEXT array)
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'artworks' AND column_name = 'tags'
+        ) THEN
+          ALTER TABLE artworks ADD COLUMN tags TEXT[] DEFAULT '{}';
+        END IF;
+      END $$;
+    `);
+
     await query(`
       CREATE TABLE IF NOT EXISTS projects (
         id SERIAL PRIMARY KEY,

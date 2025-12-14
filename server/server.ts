@@ -141,9 +141,9 @@ app.get('/api/health', (req, res) => {
 
 app.get('/api/version', (req, res) => {
   res.json({
-    version: '1.0.2',
-    build: '2025-12-14T15:00:00Z',
-    commit: 'debug-auth-logging',
+    version: '1.0.3',
+    build: '2025-12-14T15:40:00Z',
+    commit: 'fix-tags-column-migration',
     features: {
       cookieAuth: true,
       objectStorage: true
