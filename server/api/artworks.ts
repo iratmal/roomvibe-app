@@ -252,6 +252,12 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
 
     let imageUrl = existingArtwork.rows[0].image_url;
     
+    // Check if existing image_url is corrupted (contains API path instead of object path)
+    const isCorrupted = imageUrl && imageUrl.startsWith('/api/artwork-image/');
+    if (isCorrupted) {
+      console.warn(`[Update] Artwork ${artworkId} has corrupted image_url: ${imageUrl}`);
+    }
+    
     if (req.file) {
       // Upload new image to Object Storage
       console.log('[Update] Uploading new image to Object Storage...');
@@ -262,6 +268,9 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
         req.file.mimetype
       );
       console.log('[Update] New image uploaded:', imageUrl);
+    } else if (isCorrupted) {
+      // If no new file and existing is corrupted, keep it but warn
+      console.warn(`[Update] No new image provided for artwork ${artworkId} with corrupted image. Image will remain broken.`);
     }
 
     const currency = priceCurrency || existingArtwork.rows[0].price_currency || 'EUR';

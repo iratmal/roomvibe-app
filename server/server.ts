@@ -177,18 +177,31 @@ app.get('/api/artwork-image/:id', async (req: any, res) => {
 
     const result = await query('SELECT image_url FROM artworks WHERE id = $1', [artworkId]);
 
-    if (result.rows.length === 0 || !result.rows[0].image_url) {
-      return res.status(404).json({ error: 'Image not found' });
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Artwork not found', artworkId });
     }
 
     const imageUrl = result.rows[0].image_url;
+
+    if (!imageUrl) {
+      return res.status(404).json({ error: 'Artwork has no image', artworkId });
+    }
     
     // If image is stored in Object Storage, serve from there
     if (imageUrl.startsWith('/objects/')) {
-      const objectStorageService = new ObjectStorageService();
-      const objectFile = await objectStorageService.getObjectFile(imageUrl);
-      objectStorageService.downloadObject(objectFile, res);
-      return;
+      try {
+        const objectStorageService = new ObjectStorageService();
+        const objectFile = await objectStorageService.getObjectFile(imageUrl);
+        objectStorageService.downloadObject(objectFile, res);
+        return;
+      } catch (storageError) {
+        console.error(`[artwork-image] Object storage error for artwork ${artworkId}:`, storageError);
+        return res.status(404).json({ 
+          error: 'Image file not found in storage', 
+          artworkId,
+          storedPath: imageUrl 
+        });
+      }
     }
 
     // Redirect to the image URL if it's an external URL
@@ -196,8 +209,22 @@ app.get('/api/artwork-image/:id', async (req: any, res) => {
       return res.redirect(imageUrl);
     }
 
+    // Handle corrupted data - image_url contains API path instead of object path
+    if (imageUrl.startsWith('/api/artwork-image/')) {
+      console.error(`[artwork-image] Corrupted image_url for artwork ${artworkId}: ${imageUrl}`);
+      return res.status(404).json({ 
+        error: 'Image reference is corrupted. Please re-upload the artwork image.',
+        artworkId,
+        corruptedPath: imageUrl
+      });
+    }
+
     // Fallback: return 404 for unrecognized formats
-    return res.status(404).json({ error: 'Image not found' });
+    console.error(`[artwork-image] Unrecognized image_url format for artwork ${artworkId}: ${imageUrl}`);
+    return res.status(404).json({ 
+      error: 'Image path format not recognized',
+      artworkId 
+    });
   } catch (error) {
     console.error('Error serving artwork image:', error);
     res.status(500).json({ error: 'Failed to serve image' });
