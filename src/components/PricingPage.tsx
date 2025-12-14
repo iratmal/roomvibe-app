@@ -226,7 +226,7 @@ export function PricingPage() {
           {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-3xl sm:text-4xl font-bold text-[#264C61] tracking-tight mb-4">
-              Visualize Your Art on Any Wall — Choose the Plan That Fits You
+              Visualize Your Art on Any Wall. Choose the Plan That Fits You
             </h1>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Simple, transparent pricing for artists, designers, and galleries. Upgrade or cancel anytime.
