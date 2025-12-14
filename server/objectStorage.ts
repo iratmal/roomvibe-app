@@ -172,19 +172,24 @@ export class ObjectStorageService {
       
       console.log('[ObjectStorage] file.save() SUCCESS', { storedObjectName });
     } catch (err: any) {
-      console.error('[ObjectStorage] file.save() FAILED', {
+      const errMessage = err?.message || err?.response?.data || err?.response || 'Unknown error';
+      const errCode = err?.code || err?.statusCode || err?.response?.status;
+      const errDetails = {
         name: err?.name,
         message: err?.message,
         code: err?.code,
         statusCode: err?.statusCode,
         errors: err?.errors,
-        stack: err?.stack,
         response: err?.response?.data || err?.response,
-      });
-      const error = new Error(`Storage write failed: ${err?.message || 'Unknown error'}`);
-      (error as any).code = err?.code;
+        cause: err?.cause?.message || err?.cause,
+      };
+      console.error('[ObjectStorage] file.save() FAILED', errDetails);
+      console.error('[ObjectStorage] Full error stack:', err?.stack);
+      
+      const error = new Error(`Storage write failed: ${errMessage}`);
+      (error as any).code = errCode;
       (error as any).statusCode = err?.statusCode;
-      (error as any).originalError = err;
+      (error as any).details = errDetails;
       throw error;
     }
 

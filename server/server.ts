@@ -220,6 +220,7 @@ app.get('/api/health/storage/write-test', async (req, res) => {
         message: err?.message,
         code: err?.code,
         statusCode: err?.statusCode,
+        details: err?.details,
       },
     });
   }
