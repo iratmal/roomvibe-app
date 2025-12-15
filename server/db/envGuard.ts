@@ -17,6 +17,7 @@ const STAGING_HOST_PATTERNS = [
   'staging',
   'dev.',
   'localhost',
+  'neon.tech',
 ];
 
 function isProductionHost(url: string): boolean {
