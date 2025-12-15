@@ -21,15 +21,16 @@ router.post('/create-checkout-session', authenticateToken, async (req: any, res)
     const userId = req.user.id;
     const userEmail = req.user.email;
 
-    if (!['user', 'artist', 'designer', 'gallery', 'all-access'].includes(plan)) {
+    const normalizedPlan = plan === 'allaccess' ? 'all-access' : plan;
+    if (!['user', 'artist', 'designer', 'gallery', 'all-access'].includes(normalizedPlan)) {
       return res.status(400).json({ error: 'Invalid plan. Must be user, artist, designer, gallery, or all-access.' });
     }
 
-    if (plan === 'user') {
+    if (normalizedPlan === 'user') {
       return res.status(400).json({ error: 'User plan is free. No checkout required.' });
     }
 
-    const priceId = STRIPE_PRICE_IDS[plan];
+    const priceId = STRIPE_PRICE_IDS[normalizedPlan];
     if (!priceId) {
       return res.status(500).json({ error: 'Price ID not configured for this plan.' });
     }
@@ -52,12 +53,12 @@ router.post('/create-checkout-session', authenticateToken, async (req: any, res)
       cancel_url: `${baseUrl}/#/dashboard?billing=cancel`,
       metadata: {
         userId: userId.toString(),
-        plan: plan,
+        plan: normalizedPlan,
       },
       subscription_data: {
         metadata: {
           userId: userId.toString(),
-          plan: plan,
+          plan: normalizedPlan,
         },
       },
     };
@@ -70,7 +71,7 @@ router.post('/create-checkout-session', authenticateToken, async (req: any, res)
 
     const session = await stripe.checkout.sessions.create(sessionParams);
 
-    console.log(`✅ Checkout session created for user ${userId}, plan: ${plan}`);
+    console.log(`✅ Checkout session created for user ${userId}, plan: ${normalizedPlan}`);
     res.json({ url: session.url });
   } catch (error: any) {
     console.error('Error creating checkout session:', error);
