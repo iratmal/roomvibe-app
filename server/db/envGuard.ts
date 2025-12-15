@@ -6,28 +6,14 @@ export interface DatabaseConfig {
   environment: 'staging' | 'production';
 }
 
-const PRODUCTION_HOST_PATTERNS = [
-  'neon.tech',
-  'prod.neon',
-  'production',
-];
-
-const STAGING_HOST_PATTERNS = [
-  'replit',
-  'staging',
-  'dev.',
-  'localhost',
-  'neon.tech',
-];
-
-function isProductionHost(url: string): boolean {
-  const lowerUrl = url.toLowerCase();
-  return PRODUCTION_HOST_PATTERNS.some(pattern => lowerUrl.includes(pattern));
-}
-
-function isStagingHost(url: string): boolean {
-  const lowerUrl = url.toLowerCase();
-  return STAGING_HOST_PATTERNS.some(pattern => lowerUrl.includes(pattern));
+function extractDatabaseName(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    const dbName = parsed.pathname.split('/')[1];
+    return dbName || null;
+  } catch {
+    return null;
+  }
 }
 
 function maskConnectionString(url: string): string {
@@ -80,12 +66,15 @@ export function validateDatabaseEnvironment(): DatabaseConfig {
       process.exit(1);
     }
     
-    if (isProductionHost(connectionString) && !isStagingHost(connectionString)) {
-      console.error('[DB Guard] FATAL: STAGING environment detected PRODUCTION database host!');
-      console.error(`[DB Guard] URL host: ${maskConnectionString(connectionString)}`);
-      console.error('[DB Guard] Production patterns detected: neon.tech, prod., production');
-      console.error('[DB Guard] Set DATABASE_URL_STAGING to your Replit PostgreSQL or staging database.');
-      process.exit(1);
+    if (productionUrl) {
+      const stagingDbName = extractDatabaseName(connectionString);
+      const productionDbName = extractDatabaseName(productionUrl);
+      if (stagingDbName && productionDbName && stagingDbName === productionDbName) {
+        console.error('[DB Guard] FATAL: STAGING and PRODUCTION have the same database name!');
+        console.error(`[DB Guard] Database name: ${stagingDbName}`);
+        console.error('[DB Guard] Use separate databases for each environment.');
+        process.exit(1);
+      }
     }
     
     console.log(`[DB Guard] ✓ Using STAGING database (host: ${maskConnectionString(connectionString)})`);
@@ -106,12 +95,15 @@ export function validateDatabaseEnvironment(): DatabaseConfig {
       process.exit(1);
     }
     
-    if (isStagingHost(connectionString) && !isProductionHost(connectionString)) {
-      console.error('[DB Guard] FATAL: PRODUCTION environment detected STAGING database host!');
-      console.error(`[DB Guard] URL host: ${maskConnectionString(connectionString)}`);
-      console.error('[DB Guard] Staging patterns detected: replit, staging, dev., localhost');
-      console.error('[DB Guard] Set DATABASE_URL_PRODUCTION to your Neon PostgreSQL or production database.');
-      process.exit(1);
+    if (stagingUrl) {
+      const stagingDbName = extractDatabaseName(stagingUrl);
+      const productionDbName = extractDatabaseName(connectionString);
+      if (stagingDbName && productionDbName && stagingDbName === productionDbName) {
+        console.error('[DB Guard] FATAL: PRODUCTION and STAGING have the same database name!');
+        console.error(`[DB Guard] Database name: ${productionDbName}`);
+        console.error('[DB Guard] Use separate databases for each environment.');
+        process.exit(1);
+      }
     }
     
     console.log(`[DB Guard] ✓ Using PRODUCTION database (host: ${maskConnectionString(connectionString)})`);
