@@ -99,11 +99,11 @@ STRIPE_PRICE_USER = "price_1SZV67IpcKai6mhJnBHgRh0L"
 STRIPE_PRICE_ARTIST = "price_1SZV6qIpcKai6mhJaZRJBhdC"
 STRIPE_PRICE_DESIGNER = "price_1SZV7SIpcKai6mhJIJLIwumX"
 STRIPE_PRICE_GALLERY = "price_1SZV7xIpcKai6mhJxwXRayJv"
-PRIVATE_OBJECT_DIR = "/replit-objstore-<ID_od_CompleteGlaringThing>"
+REPLIT_OBJECT_STORE_BUCKET = "MountainousBrownPup"
 
 [userenv.production]
 APP_ENV = "staging"
 NODE_ENV = "production"
 
 [objectStorage]
-defaultBucketID = "replit-objstore-fbcb0f29-203b-4f7f-9481-3fdbbdfb1289"
+defaultBucketID = "replit-objstore-3c53825c-85ae-483e-9643-6eeda1d213b7"
