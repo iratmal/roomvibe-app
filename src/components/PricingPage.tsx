@@ -225,7 +225,7 @@ export function PricingPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-3xl sm:text-4xl font-bold text-[#264C61] tracking-tight mb-4">
+            <h1 className="text-3xl sm:text-4xl font-bold text-[#264C61] tracking-tight leading-snug mb-4">
               Visualize Your Art on Any Wall.<br className="hidden sm:block" />
               Choose the Plan That Fits You.
             </h1>
