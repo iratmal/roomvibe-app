@@ -128,16 +128,25 @@ app.get('/api/feature-flags', (req, res) => {
 });
 
 app.get('/api/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    message: 'RoomVibe API server running',
+    ready: isServerReady,
+    dbReady: isServerReady
+  });
+});
+
+app.get('/api/health/db', (req, res) => {
   if (!isServerReady) {
     return res.status(503).json({ 
-      status: 'starting', 
-      message: 'Server initializing, please wait',
+      status: 'initializing', 
+      message: 'Database initializing, please wait',
       ready: false
     });
   }
   res.status(200).json({ 
     status: 'ok', 
-    message: 'RoomVibe API server running',
+    message: 'Database ready',
     ready: true
   });
 });
