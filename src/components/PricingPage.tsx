@@ -422,7 +422,7 @@ const FEATURE_ROWS: FeatureRow[] = [
   { feature: 'Real-scale preview', free: true, artist: true, designer: true, gallery: true, allAccess: true },
   { feature: 'Frame styling controls', free: true, artist: true, designer: true, gallery: true, allAccess: true },
   { feature: 'Image downloads', free: true, artist: true, designer: true, gallery: true, allAccess: true },
-  { feature: 'PDF exports', free: false, artist: false, designer: true, gallery: true, allAccess: true },
+  { feature: 'PDF exports', free: false, artist: true, designer: true, gallery: true, allAccess: true },
   { feature: 'Widget embed', free: false, artist: true, designer: true, gallery: true, allAccess: true },
   { feature: 'Buy button integration', free: false, artist: true, designer: true, gallery: true, allAccess: true },
   { feature: 'Virtual exhibitions', free: false, artist: '1 active', designer: false, gallery: '3 active', allAccess: 'Unlimited' },

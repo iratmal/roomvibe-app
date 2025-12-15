@@ -50,8 +50,8 @@ router.post('/pdf/track', authenticateToken, async (req: any, res) => {
     if (!planLimits.pdfExport) {
       return res.status(403).json({
         error: 'PDF export not available',
-        message: 'PDF export is available on Designer plan and above.',
-        suggested_plan: 'designer',
+        message: 'PDF export is available on Artist plan and above.',
+        suggested_plan: 'artist',
         upgrade_url: '/pricing'
       });
     }

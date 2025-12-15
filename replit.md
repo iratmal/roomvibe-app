@@ -16,7 +16,7 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 
 **Technical Implementations & Feature Specifications:**
 - **Authentication & Authorization**: Express.js backend with JWT, HttpOnly cookies, bcrypt, CORS, and PostgreSQL manages user authentication, role-based access control (user, artist, designer, gallery, admin), and entitlements.
-- **Studio Editor**: Features a left panel for scene browsing, a central canvas for artwork visualization, and a right panel for controls (artwork, size, frame selection). Includes AI-suggested rooms, premium room libraries, and tiered access based on subscription plans. Supports image (1200px, 3000px) and PDF exports with plan-based restrictions and watermarking.
+- **Studio Editor**: Features a left panel for scene browsing, a central canvas for artwork visualization, and a right panel for controls (artwork, size, frame selection). Includes AI-suggested rooms, premium room libraries, and tiered access based on subscription plans. Supports image (1200px, 3000px) and PDF exports with plan-based restrictions and watermarking. Artist plan includes PDF export (10/month limit).
 - **Role-Based Dashboards**: Six distinct dashboards with smart routing:
   1. **User Dashboard**: For free/basic users with limited artwork upload
   2. **Artist Dashboard**: For single-role artist users - artwork management and widget embedding

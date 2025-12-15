@@ -49,7 +49,6 @@ const UPGRADE_MATRIX: Record<PlanKey, Partial<Record<FeatureKey, PlanKey>>> = {
   artist: {
     premiumRooms: 'designer',
     highResExport: 'designer',
-    pdfExport: 'designer',
     designerTools: 'designer',
     galleryTools: 'gallery',
     exhibitions: 'gallery',
