@@ -21,8 +21,8 @@ router.post('/create-checkout-session', authenticateToken, async (req: any, res)
     const userId = req.user.id;
     const userEmail = req.user.email;
 
-    if (!['user', 'artist', 'designer', 'gallery'].includes(plan)) {
-      return res.status(400).json({ error: 'Invalid plan. Must be user, artist, designer, or gallery.' });
+    if (!['user', 'artist', 'designer', 'gallery', 'all-access'].includes(plan)) {
+      return res.status(400).json({ error: 'Invalid plan. Must be user, artist, designer, gallery, or all-access.' });
     }
 
     if (plan === 'user') {

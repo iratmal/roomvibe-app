@@ -13,6 +13,7 @@ export const STRIPE_PRICE_IDS: Record<string, string> = {
   artist: process.env.STRIPE_PRICE_ARTIST || 'prod_TWYDkK6OaSaj4C',
   designer: process.env.STRIPE_PRICE_DESIGNER || 'prod_TWYDnd6eV54oMN',
   gallery: process.env.STRIPE_PRICE_GALLERY || 'prod_TWYEqX7PHujFrO',
+  'all-access': process.env.STRIPE_PRICE_ALL_ACCESS || '',
 };
 
 export const PRICE_ID_TO_PLAN: Record<string, string> = Object.entries(STRIPE_PRICE_IDS).reduce(
@@ -32,6 +33,7 @@ export const PLAN_NAMES: Record<string, string> = {
   artist: 'RoomVibe Artist',
   designer: 'RoomVibe Designer',
   gallery: 'RoomVibe Gallery',
+  'all-access': 'RoomVibe All-Access',
 };
 
 export const PLAN_PRICES: Record<string, number> = {
@@ -39,6 +41,7 @@ export const PLAN_PRICES: Record<string, number> = {
   artist: 9,
   designer: 29,
   gallery: 49,
+  'all-access': 79,
 };
 
 export default stripe;
