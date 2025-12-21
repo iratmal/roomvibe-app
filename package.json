@@ -11,11 +11,7 @@
     "start": "NODE_ENV=production tsx server/server.ts",
     "start:old": "node server.js",
     "enrich": "tsx scripts/enrichArtworks.ts",
-staging
-    "staging:clone:irena": "tsx scripts/cloneProdToStaging.ts irena.ratkovicmalbasa@gmail.com"
-
     "staging:clone:irena": "tsx scripts/cloneProdToStaging.ts"
- main
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.37.0",
