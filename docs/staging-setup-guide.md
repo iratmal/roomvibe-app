@@ -202,6 +202,7 @@ The existing DB Guard (`server/db/envGuard.ts`) will:
 
 ---
 
+
 ## I) Clone Production User Data to Staging
 
 Use this script to clone a specific user's data from production to staging for testing.
@@ -233,9 +234,28 @@ In **RoomVibe-staging** → **Secrets** tab (or Tools → Secrets):
 
 In the **RoomVibe-staging** Shell:
 
+## I) One-Time Data Clone: Production → Staging
+
+To copy your production user account and gallery data to staging (so you can log in with the same password and see your exhibitions):
+
+### Prerequisites
+
+In **RoomVibe-staging**, temporarily add these environment variables:
+
+| Key | Value | Purpose |
+|-----|-------|---------|
+| `DATABASE_URL_PRODUCTION` | `<your-production-neon-url>` | Read-only access to production |
+| `ALLOW_PROD_TO_STAGING_CLONE` | `true` | Safety flag to allow clone |
+
+### Run the Clone Command
+
+In the **RoomVibe-staging** shell:
+main
+
 ```bash
 npm run staging:clone:irena
 ```
+
 
 This clones all data for `irena.ratkovicmalbasa@gmail.com`:
 - User account (with password hash for immediate login)
@@ -274,6 +294,48 @@ To clone a different user, run the script directly:
 npx tsx scripts/cloneProdToStaging.ts other.user@example.com
 ```
 
+### What Gets Copied
+
+For the user `irena.ratkovicmalbasa@gmail.com`:
+- ✅ User profile (with same password hash)
+- ✅ Artworks (artist module)
+- ✅ Projects & room images (designer module)
+- ✅ Gallery collections (with 360 scene data)
+- ✅ Gallery artworks
+
+### Safety Protections
+
+The script will **ABORT** if:
+- `STAGING_ENVIRONMENT` is not `true`
+- `ALLOW_PROD_TO_STAGING_CLONE` is not `true`
+- Production and staging DB URLs are the same
+- User email not found in production
+
+### After Clone
+
+1. **Remove** `ALLOW_PROD_TO_STAGING_CLONE` from staging secrets
+2. Optionally remove `DATABASE_URL_PRODUCTION` from staging
+3. Log in to `staging.roomvibe.app` with your production password
+4. Verify your galleries and artworks are visible
+
+### Re-Running the Clone
+
+If you run the clone again:
+- Existing staging data for this user will be **deleted and replaced**
+- Fresh copy from production will be created
+- This is safe and idempotent
+
+### Verification Checklist
+
+After running `npm run staging:clone:irena`:
+
+- [ ] Console shows "CLONE COMPLETE"
+- [ ] Summary shows correct counts (artworks, collections, etc.)
+- [ ] Can log in to staging with production password
+- [ ] Galleries and exhibitions are visible
+- [ ] 360 editor shows artworks on walls
+main
+
 ---
 
 ## Rules Reminder
@@ -281,5 +343,9 @@ npx tsx scripts/cloneProdToStaging.ts other.user@example.com
 - ❌ DO NOT modify production repl `RoomVibe`
 - ❌ DO NOT use production database in staging
 - ❌ DO NOT enable Stripe in staging (keep `STRIPE_ENABLED=false`)
+
 - ❌ DO NOT leave `DATABASE_URL_PRODUCTION` in staging secrets after clone
+
+- ❌ DO NOT leave `ALLOW_PROD_TO_STAGING_CLONE=true` after clone
+main
 - ✅ Keep camera/navigation logic unchanged
