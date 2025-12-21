@@ -1,0 +1,132 @@
+CRITICAL BUG — Artwork image upload & serving is broken (STAGING)
+
+Observed behavior:
+
+Existing artworks load metadata correctly
+
+Image requests fail:
+
+GET /api/artwork-image/:id → 404
+Console: Image failed to load
+
+
+Editing artwork metadata works
+
+Uploading/replacing artwork image fails → “Fail to update artwork”
+
+Root cause (confirmed):
+Artwork image storage and image serving are not aligned.
+The backend cannot find the image file for an existing artwork.
+
+🎯 Expected behavior
+
+Artwork image upload succeeds
+
+Artwork record stores correct image reference
+
+/api/artwork-image/:id reliably returns the image
+
+Editing artwork with or without changing image works
+
+✅ REQUIRED FIX (NO UI CHANGES)
+1️⃣ Audit image upload flow
+
+Identify where artwork images are stored:
+
+local filesystem path OR
+
+cloud storage (S3 / equivalent)
+
+Verify upload middleware:
+
+correct field name (image, file, artworkImage)
+
+correct destination path
+
+write permissions in staging
+
+2️⃣ Audit DB image reference
+
+For an artwork record, confirm:
+
+which field stores image reference (imagePath, imageKey, imageUrl)
+
+that the stored value matches the actual file location
+
+Example (must be consistent):
+
+DB: imagePath = uploads/artworks/10.png
+Server: serves from /uploads/artworks/10.png
+API: /api/artwork-image/10 → resolves to that file
+
+3️⃣ Fix /api/artwork-image/:id
+
+Must:
+
+fetch artwork by ID
+
+resolve image path safely
+
+return image with correct headers
+
+Must return:
+
+200 with image
+
+404 ONLY if image truly does not exist
+
+No silent failures
+
+4️⃣ Fix edit + upload behavior
+
+Editing artwork without changing image must NOT fail
+
+Editing artwork with new image must:
+
+upload new file
+
+replace old reference
+
+delete old file if applicable (optional but recommended)
+
+5️⃣ Improve error handling (MANDATORY)
+
+Replace generic “Fail to update artwork” with:
+
+“Image upload failed: <reason>”
+
+or “Artwork updated, but image missing”
+
+Return proper status codes:
+
+upload error → 400 / 413
+
+missing file → 404
+
+server error → 500
+
+🛑 STOP CONDITIONS
+
+/api/artwork-image/:id returns 200 for existing artworks
+
+Existing artworks display images correctly
+
+Editing artwork metadata works
+
+Uploading/replacing artwork image works
+
+No regression in artwork creation
+
+📦 DELIVERABLE
+
+Agent must report:
+
+Where images are stored
+
+Which DB field references them
+
+What was broken
+
+What was changed
+
+Confirmation with screenshot or log

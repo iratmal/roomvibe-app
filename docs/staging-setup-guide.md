@@ -202,6 +202,38 @@ The existing DB Guard (`server/db/envGuard.ts`) will:
 
 ---
 
+
+## I) Clone Production User Data to Staging
+
+Use this script to clone a specific user's data from production to staging for testing.
+
+### Prerequisites
+
+The script has built-in security guards that will abort if:
+- `STAGING_ENVIRONMENT` is not `true`
+- `ALLOW_PROD_TO_STAGING_CLONE` is not `true`
+- `DATABASE_URL_PRODUCTION` is not set
+- `DATABASE_URL` is not set
+- `DATABASE_URL_PRODUCTION` equals `DATABASE_URL` (exact string match)
+
+### Step 1: Add Temporary Environment Variables
+
+In **RoomVibe-staging** → **Secrets** tab (or Tools → Secrets):
+
+| Key | Value | Notes |
+|-----|-------|-------|
+| `ALLOW_PROD_TO_STAGING_CLONE` | `true` | Temporary - remove after clone |
+| `DATABASE_URL_PRODUCTION` | `<your-production-db-connection-string>` | Temporary - remove after clone |
+
+**Where to find the production connection string:**
+1. Go to your production Repl (RoomVibe)
+2. Open **Tools → Secrets**
+3. Copy the value of `DATABASE_URL`
+
+### Step 2: Run the Clone Script
+
+In the **RoomVibe-staging** Shell:
+
 ## I) One-Time Data Clone: Production → Staging
 
 To copy your production user account and gallery data to staging (so you can log in with the same password and see your exhibitions):
@@ -218,9 +250,48 @@ In **RoomVibe-staging**, temporarily add these environment variables:
 ### Run the Clone Command
 
 In the **RoomVibe-staging** shell:
+main
 
 ```bash
 npm run staging:clone:irena
+```
+
+
+This clones all data for `irena.ratkovicmalbasa@gmail.com`:
+- User account (with password hash for immediate login)
+- Artworks + metadata
+- Designer projects + room images
+- Gallery collections + gallery artworks
+- PDF export history
+
+### Step 3: Cleanup (IMPORTANT!)
+
+After successful clone, **immediately remove** the temporary secrets:
+
+1. Go to **Tools → Secrets** in RoomVibe-staging
+2. **Delete** `ALLOW_PROD_TO_STAGING_CLONE`
+3. **Delete** `DATABASE_URL_PRODUCTION`
+
+This prevents accidental re-runs and keeps production credentials secure.
+
+### What Gets Cloned
+
+| Table | Data Cloned |
+|-------|-------------|
+| `users` | Full user record including password_hash (Stripe IDs excluded) |
+| `artworks` | All artworks where artist_id = user |
+| `projects` | All projects where designer_id = user |
+| `room_images` | All images linked to cloned projects |
+| `gallery_collections` | All collections where gallery_id = user |
+| `gallery_artworks` | All artworks linked to cloned collections |
+| `pdf_exports` | Export history for user |
+
+### Clone Other Users
+
+To clone a different user, run the script directly:
+
+```bash
+npx tsx scripts/cloneProdToStaging.ts other.user@example.com
 ```
 
 ### What Gets Copied
@@ -263,6 +334,7 @@ After running `npm run staging:clone:irena`:
 - [ ] Can log in to staging with production password
 - [ ] Galleries and exhibitions are visible
 - [ ] 360 editor shows artworks on walls
+main
 
 ---
 
@@ -271,5 +343,9 @@ After running `npm run staging:clone:irena`:
 - ❌ DO NOT modify production repl `RoomVibe`
 - ❌ DO NOT use production database in staging
 - ❌ DO NOT enable Stripe in staging (keep `STRIPE_ENABLED=false`)
+
+- ❌ DO NOT leave `DATABASE_URL_PRODUCTION` in staging secrets after clone
+
 - ❌ DO NOT leave `ALLOW_PROD_TO_STAGING_CLONE=true` after clone
+main
 - ✅ Keep camera/navigation logic unchanged

@@ -1,0 +1,171 @@
+# 🧭 TASK — DASHBOARD ARCHITECTURE FIX (ALL‑IN vs ADMIN)
+
+## 🎯 CILJ ZADATKA
+
+Ispraviti i jasno razdvojiti **All‑in Dashboard (multi‑role user)** od **Admin Dashboarda (system)** te uvesti **konzistentnu dashboard hijerarhiju** bez dodavanja novih featurea.
+
+Ovaj task je **čisto UX / IA / routing task**.
+
+---
+
+## 🧠 KLJUČNE DEFINICIJE (ZAKLJUČATI)
+
+### 1️⃣ ALL‑IN DASHBOARD (USER MULTI‑ROLE)
+
+**Što JE:**
+
+* osobni dashboard za korisnika koji ima **više uloga** (Artist + Designer, Artist + Gallery, itd.)
+* nije admin
+* nema system‑level ovlasti
+
+**Što NIJE:**
+
+* nije pregled svih korisnika
+* nije kontrolni centar platforme
+
+---
+
+### 2️⃣ ADMIN DASHBOARD (SYSTEM)
+
+**Što JE:**
+
+* interni sistemski dashboard
+* vidi se **isključivo adminu**
+* nema veze s korisničkim workflowom
+
+**Admin Dashboard NIJE dio FAZE 1 funkcionalno**, ali mora biti:
+
+* jasno razdvojen
+* vidljiv u navigaciji samo adminu
+
+---
+
+## 🧩 KONAČNI POPIS DASHBOARDA (6)
+
+1. User Dashboard (basic user)
+2. Artist Dashboard
+3. Designer Dashboard
+4. Gallery Dashboard
+5. All‑in Dashboard (multi‑role user)
+6. Admin Dashboard (admin only)
+
+---
+
+## 🏠 ALL‑IN DASHBOARD — IMPLEMENTACIJA
+
+### Pravila:
+
+* prikazuje se **samo korisnicima s više od jedne role**
+* nije default za single‑role korisnike
+
+### Prikazuje (SVOJE):
+
+* quick links na:
+
+  * Artist Dashboard (ako postoji)
+  * Designer Dashboard (ako postoji)
+  * Gallery Dashboard (ako postoji)
+* objedinjeni pregled:
+
+  * poruka
+  * aktivnosti
+  * projekata / izložbi (summary)
+* plan / subscription info
+
+---
+
+## 🎨 ROLE DASHBOARDI (ARTIST / DESIGNER / GALLERY)
+
+### Pravila:
+
+* svaki role ima **svoj dashboard**
+* dashboard ≠ tools
+
+### ARTIST DASHBOARD
+
+* visibility toggles (Designers / Galleries)
+* artwork stats
+* messages
+* CTA → Artist Studio
+
+### DESIGNER DASHBOARD
+
+* project boards
+* saved artworks
+* messages
+* CTA → Designer Tools
+
+### GALLERY DASHBOARD
+
+* visible artists
+* contacted artists
+* messages
+* CTA → Gallery Hub
+
+---
+
+## 🧰 TOOLS (OSTAJE KAKO JE)
+
+* Artist Studio
+* Designer Tools
+* Gallery Hub
+
+Tools se **ne smiju otvarati direktno iz All‑in dashboarda bez konteksta**.
+
+---
+
+## 🧭 LEFT SIDEBAR — NOVA STRUKTURA
+
+```
+🏠 All‑in Dashboard   (ako user ima >1 rolu)
+
+👤 User Dashboard    (ako basic user)
+
+ARTIST
+🎨 Artist Dashboard
+🖼️ Artist Studio
+
+DESIGNER
+🧑‍💼 Designer Dashboard
+📐 Designer Tools
+
+GALLERY
+🏛️ Gallery Dashboard
+🖼️ Gallery Hub
+
+ADMIN (admin only)
+🛠️ Admin Dashboard
+```
+
+---
+
+## 🔁 ROUTING PRAVILA
+
+* Login →
+
+  * multi‑role user → All‑in Dashboard
+  * single‑role user → odgovarajući role dashboard
+  * basic user → User Dashboard
+
+---
+
+## 🚫 IZVAN SCOPEA
+
+* permissions refactor
+* billing / stripe
+* feature development
+* analytics
+
+---
+
+## ✅ ACCEPTANCE KRITERIJI
+
+* All‑in Dashboard i Admin Dashboard su jasno razdvojeni
+* Admin Dashboard vidi samo admin
+* Multi‑role user vidi All‑in Dashboard
+* Artist više ne ulazi direktno u tools
+* Navigacija je konzistentna za sve role
+
+---
+
+**STATUS:** ⬜ To Do / ⬜ In Progress / ⬜ Done

@@ -14,10 +14,16 @@ import webhookRoutes from './api/webhook.js';
 import widgetRoutes from './api/widget.js';
 import exportsRoutes from './api/exports.js';
 import exhibition360Routes from './api/exhibition360.js';
+import artistProfileRoutes from './api/artistProfile.js';
+import messagesRoutes from './api/messages.js';
+import designerConnectRoutes from './api/designerConnect.js';
+import galleryConnectRoutes from './api/galleryConnect.js';
 import { initializeDatabase } from './db/init.js';
 import { query } from './db/database.js';
 import { ObjectStorageService, ObjectNotFoundError } from './objectStorage.js';
 import { requireGalleryFeature, requireStripeFeature } from './middleware/featureFlags.js';
+import { authenticateToken } from './middleware/auth.js';
+import { envBool, envBoolDefaultTrue } from './utils/envBool.js';
 
 dotenv.config();
 
@@ -65,9 +71,45 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/artist', artworksRoutes);
+app.use('/api/artist', artistProfileRoutes);
+app.use('/api/messages', messagesRoutes);
 app.use('/api/designer', projectsRoutes);
+app.use('/api/designer', designerConnectRoutes);
 app.use('/api/gallery', galleryRoutes);
+app.use('/api/gallery', galleryConnectRoutes);
 app.use('/api/gallery', exhibition360Routes);
+app.get('/api/billing/subscription', authenticateToken, async (req: any, res) => {
+  try {
+    const userId = req.user.id;
+    const userResult = await query(
+      'SELECT subscription_status, subscription_plan, stripe_customer_id, stripe_subscription_id FROM users WHERE id = $1',
+      [userId]
+    );
+    if (userResult.rows.length === 0) {
+      return res.json({
+        subscription_status: 'free',
+        subscription_plan: 'user',
+        has_stripe_customer: false,
+        has_active_subscription: false,
+      });
+    }
+    const user = userResult.rows[0];
+    res.json({
+      subscription_status: user.subscription_status || 'free',
+      subscription_plan: user.subscription_plan || 'user',
+      has_stripe_customer: !!user.stripe_customer_id,
+      has_active_subscription: !!user.stripe_subscription_id,
+    });
+  } catch (error: any) {
+    console.warn('[subscription] Error fetching, defaulting to free:', error.message);
+    res.json({
+      subscription_status: 'free',
+      subscription_plan: 'user',
+      has_stripe_customer: false,
+      has_active_subscription: false,
+    });
+  }
+});
 app.use('/api/billing', requireStripeFeature, billingRoutes);
 app.use('/api/widget', widgetRoutes);
 app.use('/api/exports', exportsRoutes);
@@ -77,25 +119,149 @@ let isServerReady = false;
 
 app.get('/api/feature-flags', (req, res) => {
   res.json({
-    galleryEnabled: process.env.FEATURE_GALLERY_ENABLED !== 'false',
-    exhibitionPublicEnabled: process.env.FEATURE_EXHIBITION_PUBLIC_ENABLED !== 'false',
-    stripeEnabled: process.env.STRIPE_ENABLED === 'true',
+    galleryEnabled: envBoolDefaultTrue(process.env.FEATURE_GALLERY_ENABLED),
+    exhibitionPublicEnabled: envBoolDefaultTrue(process.env.FEATURE_EXHIBITION_PUBLIC_ENABLED),
+    stripeEnabled: envBool(process.env.STRIPE_ENABLED),
+    paymentsEnabled: envBool(process.env.PAYMENTS_ENABLED),
+    paymentsAvailable: envBool(process.env.STRIPE_ENABLED) && envBool(process.env.PAYMENTS_ENABLED),
   });
 });
 
 app.get('/api/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    message: 'RoomVibe API server running',
+    ready: isServerReady,
+    dbReady: isServerReady
+  });
+});
+
+app.get('/api/health/db', (req, res) => {
   if (!isServerReady) {
     return res.status(503).json({ 
-      status: 'starting', 
-      message: 'Server initializing, please wait',
+      status: 'initializing', 
+      message: 'Database initializing, please wait',
       ready: false
     });
   }
   res.status(200).json({ 
     status: 'ok', 
-    message: 'RoomVibe API server running',
+    message: 'Database ready',
     ready: true
   });
+});
+
+app.get('/api/version', (req, res) => {
+  res.json({
+    version: '1.0.3',
+    build: '2025-12-14T15:40:00Z',
+    commit: 'fix-tags-column-migration',
+    features: {
+      cookieAuth: true,
+      objectStorage: true
+    }
+  });
+});
+
+app.get('/api/health/env', (req, res) => {
+  res.json({
+    appEnv: process.env.APP_ENV || 'development',
+    stripeMode: process.env.STRIPE_MODE || 'test',
+    paymentsEnabled: envBool(process.env.PAYMENTS_ENABLED),
+    stripeEnabled: envBool(process.env.STRIPE_ENABLED),
+    paymentsAvailable: envBool(process.env.STRIPE_ENABLED) && envBool(process.env.PAYMENTS_ENABLED),
+    analyticsEnabled: envBool(process.env.ENABLE_ANALYTICS),
+    gdprEnabled: envBool(process.env.ENABLE_GDPR),
+    storageConfigured: !!process.env.PRIVATE_OBJECT_DIR,
+    privateObjectDir: process.env.PRIVATE_OBJECT_DIR ? process.env.PRIVATE_OBJECT_DIR.substring(0, 50) : null,
+    storageBackend: '@google-cloud/storage',
+    version: '1.0.7-gcs-direct',
+    buildTime: '2025-12-14T23:10:00Z'
+  });
+});
+
+app.get('/api/health/storage', async (req, res) => {
+  const results: Record<string, any> = {
+    version: '1.0.7-gcs-direct',
+    backend: '@google-cloud/storage',
+    replitBucketId: process.env.REPLIT_OBJECT_STORAGE_BUCKET_ID ? 'SET' : 'NOT_SET',
+    privateObjectDir: process.env.PRIVATE_OBJECT_DIR ? 'SET' : 'NOT_SET',
+    privateObjectDirValue: process.env.PRIVATE_OBJECT_DIR?.substring(0, 50) || 'EMPTY',
+    timestamp: new Date().toISOString(),
+    nodeEnv: process.env.NODE_ENV,
+    appEnv: process.env.APP_ENV,
+  };
+
+  // Test actual SDK connection
+  const objectStorage = new ObjectStorageService();
+  const connectionTest = await objectStorage.testConnection();
+  results.connectionTest = connectionTest;
+
+  const SIDECAR = "http://127.0.0.1:1106";
+  try {
+    const credentialRes = await fetch(`${SIDECAR}/credential`, { method: 'GET' });
+    results.credentialStatus = credentialRes.status;
+    if (credentialRes.ok) {
+      const credData = await credentialRes.json();
+      results.credentialHasToken = !!credData.access_token;
+      results.credentialExpiresIn = credData.expires_in;
+    } else {
+      results.credentialError = await credentialRes.text();
+    }
+  } catch (e: any) {
+    results.credentialConnectionError = e.message;
+  }
+
+  const credentialOk = results.credentialStatus === 200 && results.credentialHasToken;
+  const storageConfigured = results.privateObjectDir === 'SET';
+  
+  res.status(credentialOk && storageConfigured ? 200 : 500).json({
+    status: credentialOk && storageConfigured ? 'healthy' : 'unhealthy',
+    credentialOk,
+    storageConfigured,
+    ...results
+  });
+});
+
+app.get('/api/health/storage/write-test', async (req, res) => {
+  console.log('[StorageWriteTest] ====== STARTING WRITE TEST ======');
+  console.log('[StorageWriteTest] PRIVATE_OBJECT_DIR:', process.env.PRIVATE_OBJECT_DIR || 'NOT SET');
+  console.log('[StorageWriteTest] NODE_ENV:', process.env.NODE_ENV);
+  console.log('[StorageWriteTest] APP_ENV:', process.env.APP_ENV);
+  
+  const objectStorage = new ObjectStorageService();
+  try {
+    const storedObjectName = await objectStorage.uploadBuffer(
+      Buffer.from('ping-test-content'),
+      `ping-${Date.now()}.txt`,
+      'text/plain'
+    );
+    console.log('[StorageWriteTest] SUCCESS:', storedObjectName);
+    return res.json({ 
+      ok: true, 
+      storedObjectName, 
+      timestamp: new Date().toISOString(),
+      backend: '@replit/object-storage',
+      version: '1.0.6-storage-diag',
+      privateObjectDir: process.env.PRIVATE_OBJECT_DIR || 'NOT SET'
+    });
+  } catch (err: any) {
+    console.error('[StorageWriteTest] FAILED:', err);
+    return res.status(500).json({
+      ok: false,
+      backend: '@replit/object-storage',
+      version: '1.0.6-storage-diag',
+      privateObjectDir: process.env.PRIVATE_OBJECT_DIR || 'NOT SET',
+      error: {
+        name: err?.name,
+        message: err?.message,
+        code: err?.code,
+        stack: err?.stack?.split('\n').slice(0, 5),
+        statusCode: err?.statusCode,
+        details: err?.details,
+      },
+    });
+  }
 });
 
 app.get('/api/artwork-image/:id', async (req: any, res) => {
@@ -106,30 +272,56 @@ app.get('/api/artwork-image/:id', async (req: any, res) => {
       return res.status(400).json({ error: 'Invalid artwork ID' });
     }
 
-    const result = await query('SELECT image_data FROM artworks WHERE id = $1', [artworkId]);
+    const result = await query('SELECT image_url FROM artworks WHERE id = $1', [artworkId]);
 
-    if (result.rows.length === 0 || !result.rows[0].image_data) {
-      return res.status(404).json({ error: 'Image not found' });
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Artwork not found', artworkId });
     }
 
-    const imageData = result.rows[0].image_data;
-    const matches = imageData.match(/^data:([^;]+);base64,(.+)$/);
+    const imageUrl = result.rows[0].image_url;
+
+    if (!imageUrl) {
+      return res.status(404).json({ error: 'Artwork has no image', artworkId });
+    }
     
-    if (!matches) {
-      return res.status(500).json({ error: 'Invalid image data format' });
+    // If image is stored in Object Storage, serve from there
+    if (imageUrl.startsWith('/objects/')) {
+      try {
+        const objectStorageService = new ObjectStorageService();
+        const objectFile = await objectStorageService.getObjectFile(imageUrl);
+        objectStorageService.downloadObject(objectFile, res);
+        return;
+      } catch (storageError) {
+        console.error(`[artwork-image] Object storage error for artwork ${artworkId}:`, storageError);
+        return res.status(404).json({ 
+          error: 'Image file not found in storage', 
+          artworkId,
+          storedPath: imageUrl 
+        });
+      }
     }
 
-    const mimeType = matches[1];
-    const base64Data = matches[2];
-    const buffer = Buffer.from(base64Data, 'base64');
+    // Redirect to the image URL if it's an external URL
+    if (imageUrl.startsWith('http')) {
+      return res.redirect(imageUrl);
+    }
 
-    res.set({
-      'Content-Type': mimeType,
-      'Content-Length': buffer.length,
-      'Cache-Control': 'public, max-age=31536000'
+    // Handle corrupted data - image_url contains API path instead of object path
+    if (imageUrl.startsWith('/api/artwork-image/')) {
+      console.error(`[artwork-image] Corrupted image_url for artwork ${artworkId}: ${imageUrl}`);
+      return res.status(404).json({ 
+        error: 'Image reference is corrupted. Please re-upload the artwork image.',
+        artworkId,
+        corruptedPath: imageUrl
+      });
+    }
+
+    // Fallback: return 404 for unrecognized formats
+    console.error(`[artwork-image] Unrecognized image_url format for artwork ${artworkId}: ${imageUrl}`);
+    return res.status(404).json({ 
+      error: 'Image path format not recognized',
+      artworkId 
     });
-    
-    res.send(buffer);
   } catch (error) {
     console.error('Error serving artwork image:', error);
     res.status(500).json({ error: 'Failed to serve image' });

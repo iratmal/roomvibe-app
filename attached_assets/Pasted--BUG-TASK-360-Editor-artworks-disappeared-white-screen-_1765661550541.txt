@@ -1,0 +1,89 @@
+🚨 BUG TASK — 360° Editor: artworks disappeared + white screen on upload (STAGING)
+Context
+
+After recent changes to galleries, no artworks load in 360° Editor scenes.
+When trying to upload any image to a wall slot, the editor goes white / crashes and UI disappears or shifts.
+
+Environment: staging.roomvibe.app
+Page: /#/gallery/exhibitions/.../360-editor
+Gallery template: Classic Gallery (dropdown)
+
+✅ Expected behavior
+
+Existing saved scenes should load with their artworks visible on wall slots.
+
+Uploading / assigning an artwork to a wall slot should not crash.
+
+After upload/assign, artwork should render in the slot and remain after refresh.
+
+UI should remain stable (no white screen, no layout break).
+
+🧩 Steps to reproduce (agent should confirm)
+
+Open 360° Editor → Classic Gallery
+
+Select any wall slot (e.g. North Wall - 1)
+
+Try to upload/assign an image
+
+Observe: screen becomes white and editor UI disappears / shifts
+
+Refresh page → still no artworks visible
+
+🔍 Debug checklist (what to investigate)
+
+Console errors on load and on upload
+
+screenshot or copy stack trace
+
+Network calls (upload endpoint, scene load endpoint)
+
+failing request? 4xx/5xx? CORS? payload too big?
+
+Scene data integrity
+
+did recent gallery template changes break the schema?
+
+are slot IDs changed (North Wall - 1 etc.) so mappings don’t match saved data?
+
+Render pipeline / texture loading
+
+upload returns URL but renderer fails to load texture?
+
+null/undefined artwork URL causes crash
+
+State reset / route remount
+
+on upload, does it navigate / rerender whole app and lose left sidebar state?
+
+🛠️ Fix requirements
+
+Add defensive guards in 360 renderer:
+
+if artwork URL missing/invalid → skip rendering instead of crashing
+
+Ensure slot mapping is backward compatible:
+
+if gallery template changed, migrate/normalize existing scene slot IDs
+
+Make upload/assign flow atomic:
+
+update DB → return stable artwork URL → update client state → render
+
+Add error handling UI:
+
+if upload fails → show toast/error, keep editor visible
+
+✅ Acceptance criteria
+
+Can load existing scenes and see artworks again (at least 1 confirmed scene)
+
+Can upload/assign an artwork to any wall slot without white screen/crash
+
+After save + refresh, artwork remains visible
+
+No console errors during normal use (or at least no fatal render crash)
+
+Priority
+
+P0 – blocks virtual exhibitions + gallery templates

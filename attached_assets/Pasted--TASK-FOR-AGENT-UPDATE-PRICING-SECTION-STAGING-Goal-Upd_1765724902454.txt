@@ -1,0 +1,143 @@
+# 🎯 TASK FOR AGENT — UPDATE PRICING SECTION (STAGING)
+
+**Goal:**
+Update the Pricing page on **staging.roomvibe.app** by adding **two pricing tables**:
+
+1. Descriptive pricing plans (human-friendly)
+2. Feature comparison table (checkmarks / crosses)
+
+This update is **content + layout only** (no backend logic changes).
+
+---
+
+## 1️⃣ TABLE ONE — PRICING PLANS (DESCRIPTIVE)
+
+**Section title:**
+**Modular plans for every creative**
+
+**Subtitle:**
+*See instantly how your artwork looks on your own wall — or in styled rooms.*
+
+### Plans content
+
+#### **Free — €0 / month**
+
+**Who it’s for:** Trying RoomVibe for the first time
+
+**What you get:**
+
+* Upload up to **3 artworks**
+* Upload a photo of **your own wall** or use basic rooms
+* See instantly how your artwork looks on a wall
+* Download images for preview and sharing
+
+**CTA:** Get Started Free
+
+---
+
+#### **Artist — €9 / month**
+
+**Who it’s for:** Independent artists & creatives
+
+**What you get:**
+
+* Upload up to **50 artworks**
+* Upload **your own walls** or use realistic interiors
+* See your artwork on real walls
+* Create and share **your own virtual exhibition**
+* Download images for your website & social media
+* Add a Buy button
+* **Get discovered by interior designers and galleries using RoomVibe**
+
+**CTA:** Activate Artist Plan
+
+---
+
+#### **Designer — €29 / month**
+
+**Who it’s for:** Interior designers working with clients
+
+**What you get:**
+
+* Upload up to **100 artworks**
+* Upload **client wall photos** or use premium rooms
+* Create visual concepts and PDF presentations
+* Simple Designer Studio tools included
+* **Find and connect with artists for your interior projects using RoomVibe**
+
+**CTA:** Unlock Designer Tools
+
+---
+
+#### **Gallery — €49 / month**
+
+**Who it’s for:** Galleries, exhibition spaces & artists hosting their own exhibitions
+
+**What you get:**
+
+* Upload **unlimited artworks**
+* Upload real gallery or studio walls
+* Create **virtual exhibitions** (up to 3 active)
+* Share **public exhibition links** with collectors and visitors
+* Export exhibition PDFs
+* **Discover and connect with artists on the RoomVibe platform**
+
+**CTA:** Unlock Exhibition Tools
+
+---
+
+#### **All-Access — €79 / month**
+
+**Who it’s for:** Full-time professionals, studios & power users
+
+**What you get:**
+
+* Unlimited artworks, walls, exhibitions & exports
+* Full Artist, Designer & Gallery tools
+* Priority support
+* Early access to new features
+
+**CTA:** Upgrade to All-Access
+
+---
+
+## 2️⃣ TABLE TWO — FEATURE COMPARISON
+
+**Section title:**
+Feature Comparison
+
+| Feature                       | Free | Artist | Designer |       Gallery      |   All-Access  |
+| ----------------------------- | :--: | :----: | :------: | :----------------: | :-----------: |
+| Artwork upload limit          |   3  |   50   |    100   |      Unlimited     |   Unlimited   |
+| Upload your own wall photos   |   ✓  |    ✓   |     ✓    |          ✓         |       ✓       |
+| Basic rooms (10 rooms)        |   ✓  |    ✓   |     ✓    |          ✓         |       ✓       |
+| Standard rooms (up to 40)     |   —  |    ✓   |     ✓    |          ✓         |       ✓       |
+| Premium rooms (100+)          |   —  |    —   |     ✓    |          ✓         |       ✓       |
+| Instant wall visualization    |   ✓  |    ✓   |     ✓    |          ✓         |       ✓       |
+| Image download (web & social) |   ✓  |    ✓   |     ✓    |          ✓         |       ✓       |
+| PDF export                    |   —  |    —   |     ✓    |   ✓ (20 / month)   | ✓ (Unlimited) |
+| Virtual exhibitions           |   —  |    ✓   |     —    | ✓ (up to 3 active) | ✓ (Unlimited) |
+| Public exhibition share links |   —  |    ✓   |     —    |          ✓         |       ✓       |
+| Designer Studio tools         |   —  |    —   |     ✓    |          —         |       ✓       |
+| Gallery / Exhibition Hub      |   —  |    —   |     —    |          ✓         |       ✓       |
+| Buy button integration        |   ✓  |    ✓   |     ✓    |          ✓         |       ✓       |
+| Priority support              |   —  |    —   |     —    |          —         |       ✓       |
+| Early access to new features  |   —  |    —   |     —    |          —         |       ✓       |
+
+---
+
+## ❌ IMPORTANT NOTES
+
+* **Do NOT include High-Resolution Export** anywhere
+* This is **STAGING ONLY** for visual and UX review
+* No pricing logic, Stripe, or backend changes required
+
+---
+
+## ✅ DONE WHEN
+
+* Both tables are visible on staging
+* Layout is clean on desktop and mobile
+* CTAs are clearly clickable
+
+Once deployed, we will review and fine-tune text if needed.

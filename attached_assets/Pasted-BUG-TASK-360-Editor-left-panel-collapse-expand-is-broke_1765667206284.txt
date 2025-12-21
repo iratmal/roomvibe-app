@@ -1,0 +1,89 @@
+BUG TASK — 360° Editor left panel collapse/expand is broken (sidebar re-open shows glitched layout)
+Problem summary
+
+In 360° Editor, when collapsing the left editor panel, an arrow remains to expand it again.
+But clicking the arrow does not fully restore the panel — instead it opens a broken/glitched narrow panel layout (see screenshot 2).
+
+Where
+
+staging.roomvibe.app
+
+/#/gallery/exhibitions/:id/360-editor
+
+Editor layout: left sidebar (Wall Slots + Save buttons)
+
+✅ Expected behavior
+
+Collapse button hides panel cleanly.
+
+Expand arrow restores panel to its full normal width and layout:
+
+dropdown (gallery template)
+
+wall slots list
+
+selected slot dropdown + preview
+
+Save button(s)
+
+No “half-open” state, no clipped text, no broken scroll.
+
+🔁 Steps to reproduce
+
+Open 360° Editor
+
+Collapse left panel
+
+Click expand arrow
+
+Observe: panel opens in broken narrow state / UI elements clipped (screenshot 2)
+
+🔎 Investigation hints
+
+Check if collapse/expand uses CSS classes (collapsed, w-0, w-[...], translateX, etc.)
+
+Check if there is a third unintended state (e.g. collapsed=true but width still set small)
+
+Possible conflict between:
+
+responsive breakpoints (mobile/tablet layout)
+
+persisted state in localStorage
+
+drag-resize library / inline styles
+
+🛠️ Required fix
+
+Implement single source of truth for sidebar state:
+
+sidebarState: "open" | "closed" (only 2 states)
+
+On expand: force width back to default (e.g. 320–360px) and reset any inline width overrides.
+
+Ensure pointer/click target is correct
+
+Arrow button must call expand handler, not “back” or any other action.
+
+Layout guard
+
+When sidebar is collapsed:
+
+the internal sidebar content should not partially render
+
+When expanded:
+
+render full content + enable scroll normally
+
+QA on desktop
+
+Test in Chrome + Firefox (because you’re using Firefox)
+
+✅ Acceptance criteria
+
+Collapse → expand works reliably every time
+
+Expanded sidebar looks identical to initial load (same width, same components)
+
+No clipped UI / weird vertical text
+
+No console errors

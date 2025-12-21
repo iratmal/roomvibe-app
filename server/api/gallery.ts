@@ -474,6 +474,67 @@ router.put('/artworks/:id', authenticateToken, requireGalleryFeature, async (req
   }
 });
 
+router.post('/artworks/:id/replace-image', authenticateToken, requireGalleryFeature, upload.single('image'), async (req: any, res) => {
+  try {
+    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    
+    if (!['gallery', 'admin'].includes(effectivePlan)) {
+      return res.status(403).json({ error: 'Only galleries and admins can replace artwork images' });
+    }
+
+    const artworkId = req.params.id;
+    console.log('Replacing image for artwork:', artworkId);
+
+    const checkResult = await query(
+      `SELECT a.*, a.image_data, c.gallery_id 
+       FROM gallery_artworks a
+       JOIN gallery_collections c ON a.collection_id = c.id
+       WHERE a.id = $1`,
+      [artworkId]
+    );
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Artwork not found' });
+    }
+
+    const artwork = checkResult.rows[0];
+    const isAdmin = effectivePlan === 'admin';
+    const isOwner = artwork.gallery_id === req.user.id;
+    const hasExistingImage = artwork.image_data && artwork.image_data.length > 100;
+
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ error: 'You can only replace images for artworks in your own collections' });
+    }
+
+    if (hasExistingImage && !isAdmin) {
+      return res.status(403).json({ 
+        error: 'Image replacement not allowed',
+        message: 'Only admins can replace existing images. Owners can only upload images when the current image is missing or broken.'
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'Image file is required' });
+    }
+
+    const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+
+    await query(
+      `UPDATE gallery_artworks SET image_data = $1, image_url = $2 WHERE id = $3`,
+      [base64Image, `/api/gallery-artwork-image/${artworkId}`, artworkId]
+    );
+
+    console.log('Artwork image replaced successfully:', artworkId);
+    res.json({ 
+      message: 'Artwork image replaced successfully',
+      image_url: `/api/gallery-artwork-image/${artworkId}`
+    });
+  } catch (error: any) {
+    console.error('Error replacing artwork image:', error);
+    res.status(500).json({ error: 'Failed to replace artwork image', details: error.message });
+  }
+});
+
 router.delete('/artworks/:id', authenticateToken, requireGalleryFeature, async (req: any, res) => {
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);

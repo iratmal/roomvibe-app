@@ -1,0 +1,165 @@
+# 🧩 TASK 1 — ARTIST CONNECT CORE (FAZA 1)
+
+## 🎯 CILJ ZADATKA
+
+Implementirati **Artist Connect Core** prema zaključanom modelu FAZE 1, gdje je **Artist centralni entitet**, a povezivanje ide samo prema **Designerima i Galerijama** (bez Designer ↔ Gallery veze).
+
+Ovaj task postavlja temelj cijelog RoomVibe Connect sustava.
+
+---
+
+## 🔒 ZAKLJUČANA PRAVILA (NE MIJENJATI)
+
+* Role ≠ Plan (Artist može imati Gallery plan, ali ostaje Artist)
+* Vidljivost je **svjesna odluka**, nije vezana uz plan
+* Artist je centralni hub
+* Dozvoljene veze:
+
+  * Artist ↔ Designer
+  * Artist ↔ Gallery
+* Zabranjeno u FAZI 1:
+
+  * Designer ↔ Gallery
+  * plaćanja
+  * javni marketplace
+  * download originalnih fajlova
+
+---
+
+## 1️⃣ ARTIST PROFILE (v2)
+
+### Implementirati sljedeća polja:
+
+* Display name
+* Location (city + country)
+* Short bio
+* Primary style tags (multi-select)
+* Primary medium
+* Profile image (optional)
+
+### Dodatna (trust) polja:
+
+* Website URL (optional)
+* Instagram URL (optional)
+* Languages (optional)
+
+---
+
+## 2️⃣ VIDLJIVOST (CONNECT TOGGLES)
+
+### Dodati DVA TOGGLEA na Artist profilu:
+
+#### Toggle A: "Visible to Designers"
+
+* Default: OFF
+* OFF → Artist i njegovi radovi se ne prikazuju dizajnerima
+* ON → Artist + radovi ulaze u Designer Art Library
+
+#### Toggle B: "Visible to Galleries"
+
+* Default: OFF
+* OFF → Artist se ne prikazuje galerijama
+* ON → Artist + radovi su vidljivi galerijama
+
+### UX copy (kratko):
+
+* Designers: "When enabled, designers can discover and use your artworks in their projects."
+* Galleries: "When enabled, galleries can contact you about exhibitions and representation."
+
+---
+
+## 3️⃣ ARTWORK UPLOAD — CONNECT-READY METADATA
+
+### Obavezna polja po artworku:
+
+* Title
+* Dimensions (width × height in cm)
+* Orientation (portrait / landscape / square)
+* Style tags (multi-select)
+* Dominant color (1–3 boje)
+* Medium
+
+### Opcionalna polja:
+
+* Price
+* Availability (Available / Sold / On request)
+* Buy URL
+
+### Pravilo kvalitete:
+
+* Ako artwork nema **dimensions + style + dominant color** → status = *Not discoverable*
+* Samo *discoverable* artwork ulazi u Connect
+
+---
+
+## 4️⃣ ARTIST CONNECT DASHBOARD
+
+### Dodati Connect status widget:
+
+* Visible to Designers: ON/OFF
+* Visible to Galleries: ON/OFF
+* Discoverable artworks: X / Y
+* CTA: "Complete artwork details"
+
+---
+
+## 5️⃣ INBOX (ARTIST)
+
+### Implementirati messaging inbox:
+
+* Poruke od Dizajnera
+* Poruke od Galerija
+
+Svaka poruka mora imati:
+
+* Pošiljatelja (Designer / Gallery)
+* Kontekst:
+
+  * artwork (thumbnail)
+  * ili project (naziv)
+* Reply akciju
+
+---
+
+## 6️⃣ NOTIFIKACIJE (MVP)
+
+* In-app indikator za nove poruke
+* Placeholder za email notifikaciju (logika, ne finalni MailerLite)
+
+---
+
+## 7️⃣ PRAZNA STANJA (EMPTY STATES)
+
+Implementirati jasna prazna stanja:
+
+* Artist je visible, ali nema discoverable artworka
+* Artist nema poruka
+
+Svako stanje mora imati:
+
+* objašnjenje
+* CTA (npr. "Add artwork details")
+
+---
+
+## ✅ ACCEPTANCE KRITERIJI
+
+Task je završen kada:
+
+* Artist može uključiti / isključiti vidljivost dizajnerima i galerijama
+* Artist može uploadati artwork i postati discoverable
+* Dizajner vidi samo artiste s Visible to Designers = ON
+* Galerija vidi samo artiste s Visible to Galleries = ON
+* Artist prima i odgovara na poruke dizajnera i galerija
+
+---
+
+## 🚫 IZVAN SCOPEA (NE RADITI)
+
+* Designer Art Library (dolazi u Tasku 2)
+* Gallery Connect UI (dolazi u Tasku 3)
+* Stripe, billing, e-računi
+
+---
+
+**STATUS:** ⬜ To Do / ⬜ In Progress / ⬜ Done

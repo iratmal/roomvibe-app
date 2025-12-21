@@ -1,0 +1,164 @@
+# 🧩 TASK 2 — DESIGNER CONNECT CORE (FAZA 1)
+
+## 🎯 CILJ ZADATKA
+
+Implementirati **Designer Connect Core** prema zaključanom modelu FAZE 1.
+
+Designer je korisnik koji:
+
+* traži umjetnine za projekte
+* koristi Studio za vizualizaciju
+* kontaktira **isključivo Artiste**
+
+Designer **ne vidi Galerije** i **nema Gallery funkcionalnosti** u Fazi 1.
+
+---
+
+## 🔒 ZAKLJUČANA PRAVILA (NE MIJENJATI)
+
+* Designer vidi samo Artiste s `Visible to Designers = ON`
+* Designer **ne vidi Galerije**
+* Designer **ne vidi Gallery izložbe**
+* Designer **ne vidi Project Boards drugih dizajnera**
+* Nema plaćanja i transakcija
+
+---
+
+## 1️⃣ DESIGNER ART LIBRARY
+
+### Implementirati Art Library view za Designere:
+
+Designer vidi listu **Artista i njihovih radova** koji su:
+
+* Visible to Designers = ON
+* imaju *discoverable* artworke
+
+### Prikaz po artworku (card):
+
+* Thumbnail artworka
+* Artist name
+* Artwork title
+* Dimensions
+* Orientation
+* Dominant color (vizualna oznaka)
+
+---
+
+## 2️⃣ FILTERI (CORE)
+
+Implementirati osnovne filtre:
+
+* Style
+* Medium
+* Orientation
+* Dominant color
+* Size range (min / max)
+
+Filtri moraju:
+
+* raditi kombinirano
+* resetirati se jednim klikom
+
+---
+
+## 3️⃣ QUICK PREVIEW (ARTWORK)
+
+Klik na artwork otvara **Quick Preview modal**:
+
+Modal prikazuje:
+
+* veći preview slike
+* osnovne metadata
+* Artist mini-profile
+
+CTA u modalu:
+
+* "Add to Project"
+* "Message Artist"
+
+---
+
+## 4️⃣ DESIGNER PROJECT BOARDS (MVP)
+
+### Projektni koncept:
+
+Designer može:
+
+* kreirati Project Board
+* imenovati projekt (npr. "Client Apartment – Living Room")
+* dodavati više artworka u isti projekt
+
+Project Board sadrži:
+
+* naziv projekta
+* listu artworka
+* timestamp
+
+---
+
+## 5️⃣ STUDIO INTEGRATION (MINIMUM)
+
+Iz Project Boarda:
+
+* designer može otvoriti Studio
+* vizualizirati artwork u prostoru
+
+Nema dijeljenja projekta u Fazi 1.
+
+---
+
+## 6️⃣ MESSAGING (DESIGNER → ARTIST)
+
+Designer može:
+
+* poslati poruku Artistu
+* poruka je vezana uz:
+
+  * konkretan artwork
+  * ili Project Board
+
+Ne postoji:
+
+* messaging s Galerijama
+* masovne poruke
+
+---
+
+## 7️⃣ PRAZNA STANJA
+
+Implementirati empty states:
+
+* nema pronađenih radova (filteri)
+* nema projekata
+* nema poruka
+
+Svako prazno stanje mora imati:
+
+* objašnjenje
+* CTA (npr. "Create your first project")
+
+---
+
+## ✅ ACCEPTANCE KRITERIJI
+
+Task je završen kada:
+
+* Designer vidi samo Artiste s Visible to Designers = ON
+* Filtri rade ispravno
+* Designer može kreirati Project Board
+* Designer može dodati artwork u projekt
+* Designer može poslati poruku Artistu
+* Studio se otvara iz projekta
+
+---
+
+## 🚫 IZVAN SCOPEA (NE RADITI)
+
+* Gallery view
+* Project sharing
+* Billing / Stripe
+* Public project links
+
+---
+
+**STATUS:** ⬜ To Do / ⬜ In Progress / ⬜ Done

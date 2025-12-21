@@ -20,12 +20,13 @@ interface ModuleConfig {
   unlockSubtext: string;
   tooltipText: string;
   group: GroupType;
+  dashboardLink?: string;
 }
 
 const MODULES: ModuleConfig[] = [
   {
     id: 'overview',
-    label: 'Overview',
+    label: 'All-In Dashboard',
     entitlement: null,
     group: 'general',
     icon: (
@@ -44,6 +45,7 @@ const MODULES: ModuleConfig[] = [
     label: 'Artist Studio',
     entitlement: 'artist_access',
     group: 'artist',
+    dashboardLink: '#/dashboard/artist',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -60,6 +62,7 @@ const MODULES: ModuleConfig[] = [
     label: 'Designer Tools',
     entitlement: 'designer_access',
     group: 'designer',
+    dashboardLink: '#/dashboard/designer',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -76,6 +79,7 @@ const MODULES: ModuleConfig[] = [
     label: 'Gallery Hub',
     entitlement: 'gallery_access',
     group: 'gallery',
+    dashboardLink: '#/dashboard/gallery',
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
@@ -91,9 +95,9 @@ const MODULES: ModuleConfig[] = [
 
 const GROUP_TITLES: Record<GroupType, string> = {
   general: '',
-  artist: 'ARTIST TOOLS',
-  designer: 'DESIGNER TOOLS',
-  gallery: 'GALLERY TOOLS',
+  artist: 'ARTIST',
+  designer: 'DESIGNER',
+  gallery: 'GALLERY',
 };
 
 function SectionHeader({ title, collapsed }: { title: string; collapsed: boolean }) {
@@ -197,6 +201,10 @@ export function UnifiedDashboard() {
       setUpgradeModal({ open: true, planType: module.id as 'artist' | 'designer' | 'gallery' });
       return;
     }
+    if (module.dashboardLink && !isLocked) {
+      window.location.hash = module.dashboardLink;
+      return;
+    }
     setActiveModule(module.id);
   };
 
@@ -250,7 +258,7 @@ export function UnifiedDashboard() {
         <aside className={`${sidebarOpen ? 'w-64' : 'w-16'} bg-white border-r border-rv-neutral flex flex-col transition-all duration-300`}>
           <div className="p-4 border-b border-rv-neutral flex items-center justify-between">
             {sidebarOpen && (
-              <span className="text-sm font-semibold text-rv-primary">Dashboard</span>
+              <span className="text-sm font-semibold text-rv-primary">All-In Dashboard</span>
             )}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -402,14 +410,96 @@ export function UnifiedDashboard() {
 }
 
 function OverviewContent() {
-  const { user } = useAuth();
+  const { user, hasEntitlement } = useAuth();
+  
+  const hasArtist = hasEntitlement('artist_access');
+  const hasDesigner = hasEntitlement('designer_access');
+  const hasGallery = hasEntitlement('gallery_access');
+  
+  const roleDashboards = [
+    {
+      id: 'artist',
+      label: 'Artist Dashboard',
+      description: 'Manage your artworks, embed widgets, and view analytics.',
+      href: '#/dashboard/artist',
+      hasAccess: hasArtist,
+      icon: (
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      ),
+      color: 'bg-amber-50 border-amber-200',
+      iconColor: 'text-amber-600',
+    },
+    {
+      id: 'designer',
+      label: 'Designer Dashboard',
+      description: 'Manage client projects, room uploads, and visualizations.',
+      href: '#/dashboard/designer',
+      hasAccess: hasDesigner,
+      icon: (
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+      ),
+      color: 'bg-blue-50 border-blue-200',
+      iconColor: 'text-blue-600',
+    },
+    {
+      id: 'gallery',
+      label: 'Gallery Dashboard',
+      description: 'Curate collections, manage exhibitions, and connect with artists.',
+      href: '#/dashboard/gallery',
+      hasAccess: hasGallery,
+      icon: (
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+        </svg>
+      ),
+      color: 'bg-purple-50 border-purple-200',
+      iconColor: 'text-purple-600',
+    },
+  ];
+
+  const accessibleDashboards = roleDashboards.filter(d => d.hasAccess);
   
   return (
     <div className="p-6 md:p-8 max-w-5xl">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-rv-primary mb-2">Welcome back!</h1>
-        <p className="text-rv-textMuted">{user?.email}</p>
+        <h1 className="text-2xl font-bold text-rv-primary mb-2">All-In Dashboard</h1>
+        <p className="text-rv-textMuted">Welcome back, {user?.email}</p>
       </div>
+
+      {accessibleDashboards.length > 0 && (
+        <div className="mb-8">
+          <h2 className="text-lg font-semibold text-rv-primary mb-4">Your Role Dashboards</h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {accessibleDashboards.map((dashboard) => (
+              <a
+                key={dashboard.id}
+                href={dashboard.href}
+                className={`p-5 rounded-xl border-2 ${dashboard.color} hover:shadow-md transition-all group`}
+              >
+                <div className={`w-12 h-12 rounded-lg bg-white flex items-center justify-center mb-4 ${dashboard.iconColor} shadow-sm`}>
+                  {dashboard.icon}
+                </div>
+                <h3 className="text-lg font-bold text-rv-primary mb-2 group-hover:text-rv-primaryHover transition-colors">
+                  {dashboard.label}
+                </h3>
+                <p className="text-sm text-rv-textMuted leading-relaxed">
+                  {dashboard.description}
+                </p>
+                <div className="mt-4 flex items-center text-sm font-semibold text-rv-primary group-hover:text-rv-primaryHover">
+                  Go to Dashboard
+                  <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
         <div className="p-6 bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral">

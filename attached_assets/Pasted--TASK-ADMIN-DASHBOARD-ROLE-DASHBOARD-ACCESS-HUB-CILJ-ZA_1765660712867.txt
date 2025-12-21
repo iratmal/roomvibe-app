@@ -1,0 +1,117 @@
+# 🛠️ TASK — ADMIN DASHBOARD: ROLE & DASHBOARD ACCESS HUB
+
+## 🎯 CILJ ZADATKA
+
+Omogućiti **Adminu** da s jednog mjesta:
+
+* vidi **SVA korisnička sučelja (dashboards)**
+* može **jednim klikom ući** u svako sučelje
+* testira UX i flow **bez logiranja / odjavljivanja**
+
+Admin Dashboard mora postati **kontrolni HUB za pregled svih dashboarda**, a ne samo sistemske kartice.
+
+---
+
+## ❗ PROBLEM KOJI RJEŠAVAMO
+
+Trenutno:
+
+* Admin vidi samo **Admin Dashboard**
+* Postoji *Role Impersonation (View As)*, ali:
+
+  * nije jasno
+  * nije kompletno
+  * ne prikazuje **All-in Dashboard**
+* Admin **nema vidljiv popis svih dashboarda** koje mora testirati
+
+👉 To blokira UX cleanup i QA.
+
+---
+
+## 🧠 RJEŠENJE — "DASHBOARD ACCESS" SEKCIJA (ADMIN ONLY)
+
+Na vrh **Admin Dashboarda** dodati **novu sekciju**:
+
+### 🔑 "Dashboard Access (Admin)"
+
+Sekcija mora jasno i vizualno prikazati **5 korisničkih dashboarda**.
+
+---
+
+## 🧩 DASHBOARDI KOJI MORAJU BITI VIDLJIVI
+
+Admin mora vidjeti i moći otvoriti:
+
+1. **User Dashboard**
+2. **Artist Dashboard**
+3. **Designer Dashboard**
+4. **Gallery Dashboard**
+5. **All-in Dashboard (Multi-role)**
+
+⚠️ Ovo su **korisnička sučelja**, ne admin sučelja.
+
+---
+
+## 🧱 UI STRUKTURA (PREPORUKA)
+
+### Opcija A — Card layout (preporučeno)
+
+Za svaki dashboard:
+
+* Icon
+* Naziv dashboarda
+* Kratki opis (1 rečenica)
+* CTA gumb:
+
+  * `Open as Admin` ili `View Dashboard`
+
+Primjer:
+
+🎨 **Artist Dashboard**
+*Control center for artists (artworks, visibility, messages)*
+[ View Artist Dashboard ]
+
+---
+
+## 🔁 PONAŠANJE (VAŽNO)
+
+* Klik **NE MIJENJA admin role**
+* Admin ostaje admin
+* Otvara se dashboard u:
+
+  * view-only modu ili
+  * admin-preview modu (bez ograničenja)
+
+Ako je tehnički lakše:
+
+* koristi se postojeći **View As** mehanizam
+* ali UI mora biti **jasan i potpun**
+
+---
+
+## 🚫 ŠTO NE RADITI
+
+* Ne skrivati dashboarde
+* Ne koristiti samo dropdown
+* Ne miješati s Role Managementom
+* Ne uvjetovati s realnim user accountima
+
+---
+
+## ✅ ACCEPTANCE KRITERIJI
+
+* Admin na Admin Dashboardu vidi sekciju "Dashboard Access"
+* Vidljivo je svih **5 dashboarda**
+* Svaki dashboard je dostupan jednim klikom
+* Admin može testirati kompletan UX flow
+* Nema potrebe za logout / login
+
+---
+
+## 📌 NAPOMENA
+
+Ovo je **ključni QA i UX task** prije nego krenemo čistiti pojedinačne dashboarde.
+
+---
+
+**STATUS:** ⬜ To Do / ⬜ In Progress / ⬜ Done

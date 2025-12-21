@@ -184,6 +184,235 @@ export async function initializeDatabase() {
       END $$;
     `);
 
+    // =====================================================
+    // Artist Connect Core - Artist Profile v2 fields
+    // =====================================================
+    
+    // display_name - Artist's public display name
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'display_name'
+        ) THEN
+          ALTER TABLE users ADD COLUMN display_name VARCHAR(255);
+        END IF;
+      END $$;
+    `);
+
+    // location_city - Artist's city
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'location_city'
+        ) THEN
+          ALTER TABLE users ADD COLUMN location_city VARCHAR(100);
+        END IF;
+      END $$;
+    `);
+
+    // location_country - Artist's country
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'location_country'
+        ) THEN
+          ALTER TABLE users ADD COLUMN location_country VARCHAR(100);
+        END IF;
+      END $$;
+    `);
+
+    // bio - Artist's biography
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'bio'
+        ) THEN
+          ALTER TABLE users ADD COLUMN bio TEXT;
+        END IF;
+      END $$;
+    `);
+
+    // primary_style_tags - Multi-select array of style tags (JSONB)
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'primary_style_tags'
+        ) THEN
+          ALTER TABLE users ADD COLUMN primary_style_tags JSONB DEFAULT '[]'::jsonb;
+        END IF;
+      END $$;
+    `);
+
+    // primary_medium - Artist's primary medium
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'primary_medium'
+        ) THEN
+          ALTER TABLE users ADD COLUMN primary_medium VARCHAR(100);
+        END IF;
+      END $$;
+    `);
+
+    // profile_image_url - Artist's profile image
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'profile_image_url'
+        ) THEN
+          ALTER TABLE users ADD COLUMN profile_image_url TEXT;
+        END IF;
+      END $$;
+    `);
+
+    // website_url - Artist's website
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'website_url'
+        ) THEN
+          ALTER TABLE users ADD COLUMN website_url TEXT;
+        END IF;
+      END $$;
+    `);
+
+    // instagram_url - Artist's Instagram
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'instagram_url'
+        ) THEN
+          ALTER TABLE users ADD COLUMN instagram_url TEXT;
+        END IF;
+      END $$;
+    `);
+
+    // languages - Array of languages artist speaks (JSONB)
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'languages'
+        ) THEN
+          ALTER TABLE users ADD COLUMN languages JSONB DEFAULT '[]'::jsonb;
+        END IF;
+      END $$;
+    `);
+
+    // visible_to_designers - Toggle for Designer visibility in Artist Connect
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'visible_to_designers'
+        ) THEN
+          ALTER TABLE users ADD COLUMN visible_to_designers BOOLEAN DEFAULT FALSE;
+        END IF;
+      END $$;
+    `);
+
+    // visible_to_galleries - Toggle for Gallery visibility in Artist Connect
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'visible_to_galleries'
+        ) THEN
+          ALTER TABLE users ADD COLUMN visible_to_galleries BOOLEAN DEFAULT FALSE;
+        END IF;
+      END $$;
+    `);
+
+    // =====================================================
+    // GDPR Consent Fields - Terms of Service & Marketing
+    // =====================================================
+
+    // tos_accepted_at - When Terms of Service was accepted
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'tos_accepted_at'
+        ) THEN
+          ALTER TABLE users ADD COLUMN tos_accepted_at TIMESTAMP;
+        END IF;
+      END $$;
+    `);
+
+    // privacy_accepted_at - When Privacy Policy was accepted
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'privacy_accepted_at'
+        ) THEN
+          ALTER TABLE users ADD COLUMN privacy_accepted_at TIMESTAMP;
+        END IF;
+      END $$;
+    `);
+
+    // tos_version - Version of ToS accepted (e.g., 2025-12-13)
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'tos_version'
+        ) THEN
+          ALTER TABLE users ADD COLUMN tos_version VARCHAR(20);
+        END IF;
+      END $$;
+    `);
+
+    // marketing_opt_in - Whether user opted in to marketing emails
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'marketing_opt_in'
+        ) THEN
+          ALTER TABLE users ADD COLUMN marketing_opt_in BOOLEAN DEFAULT FALSE;
+        END IF;
+      END $$;
+    `);
+
+    // marketing_opt_in_at - When marketing opt-in was given
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'marketing_opt_in_at'
+        ) THEN
+          ALTER TABLE users ADD COLUMN marketing_opt_in_at TIMESTAMP;
+        END IF;
+      END $$;
+    `);
+
     await query(`
       CREATE TABLE IF NOT EXISTS artworks (
         id SERIAL PRIMARY KEY,
@@ -238,6 +467,88 @@ export async function initializeDatabase() {
           WHERE table_name = 'artworks' AND column_name = 'dimension_unit'
         ) THEN
           ALTER TABLE artworks ADD COLUMN dimension_unit VARCHAR(2) DEFAULT 'cm';
+        END IF;
+      END $$;
+    `);
+
+    // =====================================================
+    // Artist Connect Core - Artwork Connect metadata fields
+    // =====================================================
+
+    // orientation - artwork orientation (portrait/landscape/square)
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'artworks' AND column_name = 'orientation'
+        ) THEN
+          ALTER TABLE artworks ADD COLUMN orientation VARCHAR(20);
+        END IF;
+      END $$;
+    `);
+
+    // style_tags - multi-select style tags for the artwork (JSONB array)
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'artworks' AND column_name = 'style_tags'
+        ) THEN
+          ALTER TABLE artworks ADD COLUMN style_tags JSONB DEFAULT '[]'::jsonb;
+        END IF;
+      END $$;
+    `);
+
+    // dominant_colors - 1-3 dominant colors in the artwork (JSONB array)
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'artworks' AND column_name = 'dominant_colors'
+        ) THEN
+          ALTER TABLE artworks ADD COLUMN dominant_colors JSONB DEFAULT '[]'::jsonb;
+        END IF;
+      END $$;
+    `);
+
+    // medium - artwork medium (e.g., oil on canvas, acrylic, etc.)
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'artworks' AND column_name = 'medium'
+        ) THEN
+          ALTER TABLE artworks ADD COLUMN medium VARCHAR(100);
+        END IF;
+      END $$;
+    `);
+
+    // availability - artwork availability status (available/sold/on_request)
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'artworks' AND column_name = 'availability'
+        ) THEN
+          ALTER TABLE artworks ADD COLUMN availability VARCHAR(20) DEFAULT 'available';
+        END IF;
+      END $$;
+    `);
+
+    // tags - AI-generated tags for artwork discovery (TEXT array)
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'artworks' AND column_name = 'tags'
+        ) THEN
+          ALTER TABLE artworks ADD COLUMN tags TEXT[] DEFAULT '{}';
         END IF;
       END $$;
     `);
@@ -304,6 +615,19 @@ export async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_gallery_collections_gallery_id ON gallery_collections(gallery_id);
     `);
 
+    // Add scene_360_data column to gallery_collections if it doesn't exist (for 360 virtual exhibitions)
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'gallery_collections' AND column_name = 'scene_360_data'
+        ) THEN
+          ALTER TABLE gallery_collections ADD COLUMN scene_360_data JSONB;
+        END IF;
+      END $$;
+    `);
+
     await query(`
       CREATE TABLE IF NOT EXISTS gallery_artworks (
         id SERIAL PRIMARY KEY,
@@ -352,6 +676,47 @@ export async function initializeDatabase() {
       END $$;
     `);
 
+    // =====================================================
+    // Artist Connect Core - User profile images table
+    // =====================================================
+    await query(`
+      CREATE TABLE IF NOT EXISTS user_profile_images (
+        user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        image_data TEXT NOT NULL,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    // =====================================================
+    // Artist Connect Core - Messages/Inbox table
+    // =====================================================
+    await query(`
+      CREATE TABLE IF NOT EXISTS messages (
+        id SERIAL PRIMARY KEY,
+        sender_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        recipient_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        sender_role VARCHAR(20) NOT NULL,
+        artwork_id INTEGER REFERENCES artworks(id) ON DELETE SET NULL,
+        project_name VARCHAR(255),
+        subject VARCHAR(255) NOT NULL,
+        body TEXT NOT NULL,
+        is_read BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS idx_messages_recipient_id ON messages(recipient_id);
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS idx_messages_sender_id ON messages(sender_id);
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at DESC);
+    `);
+
     // PDF export tracking table for monthly limits
     await query(`
       CREATE TABLE IF NOT EXISTS pdf_exports (
@@ -364,6 +729,29 @@ export async function initializeDatabase() {
 
     await query(`
       CREATE INDEX IF NOT EXISTS idx_pdf_exports_user_month ON pdf_exports(user_id, export_month);
+    `);
+
+    // =====================================================
+    // Designer Connect Core - Project Artworks table
+    // Links artworks from the art library to designer projects
+    // =====================================================
+    await query(`
+      CREATE TABLE IF NOT EXISTS designer_project_artworks (
+        id SERIAL PRIMARY KEY,
+        project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+        artwork_id INTEGER NOT NULL REFERENCES artworks(id) ON DELETE CASCADE,
+        added_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        notes TEXT,
+        UNIQUE(project_id, artwork_id)
+      );
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS idx_designer_project_artworks_project ON designer_project_artworks(project_id);
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS idx_designer_project_artworks_artwork ON designer_project_artworks(artwork_id);
     `);
 
     console.log('✅ Database schema initialized successfully');

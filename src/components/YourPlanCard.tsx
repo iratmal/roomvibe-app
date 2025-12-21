@@ -19,10 +19,10 @@ interface PlanDisplay {
 
 const PLAN_DISPLAYS: Record<string, PlanDisplay> = {
   user: {
-    badge: 'User',
+    badge: 'Free',
     badgeColor: 'bg-gray-100 text-gray-700',
     description: "You're on the free plan. Perfect for testing RoomVibe with basic features.",
-    bullets: ['10 Basic Mockup Rooms', 'Up to 3 artworks'],
+    bullets: ['Up to 3 artworks', '10 basic mockup rooms', 'Widget embed', 'Buy button integration'],
   },
   artist: {
     badge: 'Artist',
@@ -165,7 +165,7 @@ export function YourPlanCard() {
         </div>
 
         {!isCanceledOrExpired && planDisplay.bullets.length > 0 && (
-          <ul className="mb-6 space-y-2">
+          <ul className="mb-4 space-y-2">
             {planDisplay.bullets.map((bullet, i) => (
               <li key={i} className="flex items-center text-sm text-rv-textMuted">
                 <svg className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -177,6 +177,12 @@ export function YourPlanCard() {
           </ul>
         )}
 
+        {isFree && (
+          <p className="text-sm text-rv-textMuted mb-6">
+            Want more mockup rooms and uploads?
+          </p>
+        )}
+
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
             {error}
@@ -185,20 +191,13 @@ export function YourPlanCard() {
 
         <div className="flex flex-col sm:flex-row gap-3">
           {(isFree || isCanceledOrExpired) ? (
-            <>
-              <a
-                href="#/pricing"
-                className="flex-1 text-center py-2.5 px-4 rounded-rvMd font-semibold text-sm bg-rv-primary text-white hover:bg-rv-primaryHover transition-colors"
-              >
-                {isCanceledOrExpired ? 'Upgrade again' : 'Upgrade plan'}
-              </a>
-              <a
-                href="#/pricing"
-                className="flex-1 text-center py-2.5 px-4 rounded-rvMd font-semibold text-sm border-2 border-rv-neutral text-rv-text hover:border-rv-primary hover:text-rv-primary transition-colors"
-              >
-                View all plans
-              </a>
-            </>
+            <a
+              href="#/pricing"
+              onClick={() => window.scrollTo(0, 0)}
+              className="flex-1 text-center py-2.5 px-4 rounded-rvMd font-semibold text-sm bg-rv-primary text-white hover:bg-rv-primaryHover transition-colors"
+            >
+              {isCanceledOrExpired ? 'Upgrade again' : 'Upgrade plan'}
+            </a>
           ) : isActive ? (
             <>
               <button

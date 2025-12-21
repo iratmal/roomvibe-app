@@ -13,11 +13,16 @@ router.post('/register', async (req: Request, res: Response) => {
   try {
     console.log('📝 Registration attempt:', { email: req.body?.email, role: req.body?.role });
     
-    const { email, password, role = 'user' } = req.body;
+    const { email, password, role = 'user', tosAccepted = false, marketingOptIn = false } = req.body;
 
     if (!email || !password) {
       console.log('❌ Registration failed: Missing email or password');
       return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    if (!tosAccepted) {
+      console.log('❌ Registration failed: Terms not accepted');
+      return res.status(400).json({ error: 'You must accept the Terms of Service to create an account.' });
     }
 
     if (password.length < 6) {
@@ -43,12 +48,14 @@ router.post('/register', async (req: Request, res: Response) => {
 
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
     const confirmationToken = crypto.randomBytes(32).toString('hex');
+    const tosVersion = '2025-12-13';
+    const now = new Date();
 
     const result = await query(
-      `INSERT INTO users (email, password_hash, role, confirmation_token, email_confirmed)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO users (email, password_hash, role, confirmation_token, email_confirmed, tos_accepted_at, privacy_accepted_at, tos_version, marketing_opt_in, marketing_opt_in_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING id, email, role, email_confirmed`,
-      [email.toLowerCase(), passwordHash, role, confirmationToken, true]
+      [email.toLowerCase(), passwordHash, role, confirmationToken, true, now, now, tosVersion, marketingOptIn, marketingOptIn ? now : null]
     );
 
     const user = result.rows[0];
@@ -62,10 +69,12 @@ router.post('/register', async (req: Request, res: Response) => {
       { expiresIn: '7d' }
     );
 
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isSecure = isProduction || !!process.env.REPLIT_DOMAINS;
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: isSecure,
+      sameSite: isSecure ? 'none' : 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
@@ -123,10 +132,12 @@ router.post('/login', async (req: Request, res: Response) => {
       { expiresIn: '7d' }
     );
 
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isSecure = isProduction || !!process.env.REPLIT_DOMAINS;
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: isSecure,
+      sameSite: isSecure ? 'none' : 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 

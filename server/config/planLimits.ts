@@ -86,8 +86,8 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     premiumRoomsAccess: false,
     futureRooms: false,
     highResExport: false,
-    pdfExport: false,
-    pdfMonthlyLimit: 0,
+    pdfExport: true,
+    pdfMonthlyLimit: 10,
     designerTools: false,
     galleryTools: false,
     exhibitions: 0,
@@ -324,8 +324,8 @@ export function getUpgradeMessage(currentPlan: PlanType, feature: string): { mes
       suggestedPlan: 'designer',
     },
     pdfExport: {
-      message: "PDF exports are available on Designer plan and above.",
-      suggestedPlan: 'designer',
+      message: "PDF exports are available on Artist plan and above.",
+      suggestedPlan: 'artist',
     },
     pdfMonthlyLimit: {
       message: "You've reached your monthly PDF export limit. Upgrade to All-Access for unlimited PDF exports.",

@@ -5,15 +5,18 @@ import { ChangePassword } from '../ChangePassword';
 export function AdminDashboard() {
   const { user, logout, setImpersonation } = useAuth();
 
-  const handleImpersonate = (role: 'user' | 'artist' | 'designer' | 'gallery') => {
+  const handleImpersonate = (role: 'user' | 'artist' | 'designer' | 'gallery' | 'allin') => {
     setImpersonation(role);
-    const routes = {
+    const routes: Record<string, string> = {
       user: '#/dashboard',
       artist: '#/dashboard/artist',
       designer: '#/dashboard/designer',
       gallery: '#/dashboard/gallery',
+      allin: '#/dashboard',
     };
-    window.location.hash = routes[role];
+    setTimeout(() => {
+      window.location.hash = routes[role];
+    }, 50);
   };
 
   return (
@@ -44,35 +47,113 @@ export function AdminDashboard() {
           </div>
         </div>
 
-        <div className="mb-10 p-6 bg-rv-primary/5 rounded-rvLg border border-rv-primary/20">
-          <h2 className="text-xl font-bold mb-4 text-rv-primary">🎭 Role Impersonation (View As)</h2>
-          <p className="text-rv-textMuted mb-5 text-sm">
-            Test different dashboard views without logging in/out. Your admin role remains unchanged.
+        <div className="mb-10 p-6 bg-gradient-to-r from-rv-primary/5 to-rv-accent/5 rounded-rvLg border border-rv-primary/20">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-lg bg-rv-primary/10 flex items-center justify-center">
+              <svg className="w-5 h-5 text-rv-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-rv-primary">Dashboard Access (Admin)</h2>
+          </div>
+          <p className="text-rv-textMuted mb-6 text-sm">
+            Quick access to all user dashboards for testing and QA. Your admin role remains unchanged.
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
             <button
               onClick={() => handleImpersonate('user')}
-              className="px-4 py-3 bg-white border-2 border-blue-300 text-blue-700 rounded-rvMd hover:bg-blue-50 font-semibold transition-colors"
+              className="p-5 bg-white rounded-xl border-2 border-blue-200 hover:border-blue-400 hover:shadow-md transition-all text-left group"
             >
-              View as User
+              <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center mb-3 group-hover:bg-blue-200 transition-colors">
+                <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <h3 className="font-bold text-rv-primary mb-1">User Dashboard</h3>
+              <p className="text-xs text-rv-textMuted mb-3 leading-relaxed">Free/basic user experience with limited features</p>
+              <span className="text-sm font-semibold text-blue-600 group-hover:text-blue-700 flex items-center gap-1">
+                View Dashboard
+                <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
             </button>
+
             <button
               onClick={() => handleImpersonate('artist')}
-              className="px-4 py-3 bg-white border-2 border-purple-300 text-purple-700 rounded-rvMd hover:bg-purple-50 font-semibold transition-colors"
+              className="p-5 bg-white rounded-xl border-2 border-amber-200 hover:border-amber-400 hover:shadow-md transition-all text-left group"
             >
-              View as Artist
+              <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center mb-3 group-hover:bg-amber-200 transition-colors">
+                <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h3 className="font-bold text-rv-primary mb-1">Artist Dashboard</h3>
+              <p className="text-xs text-rv-textMuted mb-3 leading-relaxed">Artwork management, widgets, visibility settings</p>
+              <span className="text-sm font-semibold text-amber-600 group-hover:text-amber-700 flex items-center gap-1">
+                View Dashboard
+                <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
             </button>
+
             <button
               onClick={() => handleImpersonate('designer')}
-              className="px-4 py-3 bg-white border-2 border-indigo-300 text-indigo-700 rounded-rvMd hover:bg-indigo-50 font-semibold transition-colors"
+              className="p-5 bg-white rounded-xl border-2 border-indigo-200 hover:border-indigo-400 hover:shadow-md transition-all text-left group"
             >
-              View as Designer
+              <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center mb-3 group-hover:bg-indigo-200 transition-colors">
+                <svg className="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+              </div>
+              <h3 className="font-bold text-rv-primary mb-1">Designer Dashboard</h3>
+              <p className="text-xs text-rv-textMuted mb-3 leading-relaxed">Client projects, room uploads, art library</p>
+              <span className="text-sm font-semibold text-indigo-600 group-hover:text-indigo-700 flex items-center gap-1">
+                View Dashboard
+                <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
             </button>
+
             <button
               onClick={() => handleImpersonate('gallery')}
-              className="px-4 py-3 bg-white border-2 border-green-300 text-green-700 rounded-rvMd hover:bg-green-50 font-semibold transition-colors"
+              className="p-5 bg-white rounded-xl border-2 border-purple-200 hover:border-purple-400 hover:shadow-md transition-all text-left group"
             >
-              View as Gallery
+              <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center mb-3 group-hover:bg-purple-200 transition-colors">
+                <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+                </svg>
+              </div>
+              <h3 className="font-bold text-rv-primary mb-1">Gallery Dashboard</h3>
+              <p className="text-xs text-rv-textMuted mb-3 leading-relaxed">Collections, exhibitions, artist directory</p>
+              <span className="text-sm font-semibold text-purple-600 group-hover:text-purple-700 flex items-center gap-1">
+                View Dashboard
+                <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
+            </button>
+
+            <button
+              onClick={() => handleImpersonate('allin')}
+              className="p-5 bg-white rounded-xl border-2 border-green-200 hover:border-green-400 hover:shadow-md transition-all text-left group"
+            >
+              <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center mb-3 group-hover:bg-green-200 transition-colors">
+                <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+              </div>
+              <h3 className="font-bold text-rv-primary mb-1">All-In Dashboard</h3>
+              <p className="text-xs text-rv-textMuted mb-3 leading-relaxed">Multi-role user hub with quick links to all roles</p>
+              <span className="text-sm font-semibold text-green-600 group-hover:text-green-700 flex items-center gap-1">
+                View Dashboard
+                <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </span>
             </button>
           </div>
         </div>

@@ -74,6 +74,41 @@ export function Gallery360Editor({
   const [infoPanelOpen, setInfoPanelOpen] = useState(false);
   const [focusTarget, setFocusTarget] = useState<ArtworkFocusTarget | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
+  
+  // Track unsaved changes
+  const [lastSavedAssignments, setLastSavedAssignments] = useState<SlotAssignment[]>([]);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
+  
+  // Calculate if there are unsaved changes by comparing current vs last saved assignments
+  const hasUnsavedChanges = useCallback(() => {
+    // Fresh scene with no saved state yet - check if any artwork is assigned
+    if (lastSavedAssignments.length === 0) {
+      return slotAssignments.some(sa => sa.artworkId !== null && sa.artworkId !== undefined);
+    }
+    
+    // Compare each slot between current and saved state
+    const allSlotIds = new Set([
+      ...slotAssignments.map(sa => sa.slotId),
+      ...lastSavedAssignments.map(sa => sa.slotId)
+    ]);
+    
+    for (const slotId of allSlotIds) {
+      const current = slotAssignments.find(sa => sa.slotId === slotId);
+      const saved = lastSavedAssignments.find(sa => sa.slotId === slotId);
+      
+      const currentArtworkId = current?.artworkId ?? null;
+      const savedArtworkId = saved?.artworkId ?? null;
+      
+      // If artwork IDs differ (including null vs string), there's a change
+      if (currentArtworkId !== savedArtworkId) {
+        return true;
+      }
+    }
+    
+    return false;
+  }, [slotAssignments, lastSavedAssignments]);
 
   useEffect(() => {
     // Wait for both initialAssignments AND availableArtworks to be loaded
@@ -118,8 +153,24 @@ export function Gallery360Editor({
       });
       
       loadAssignments(hydratedAssignments);
+      // Track initial state as "saved" to detect changes
+      setLastSavedAssignments(hydratedAssignments);
     }
   }, [initialAssignments, loadAssignments, selectedPresetId, presetId, availableArtworks]);
+
+  // Browser navigation guard - warn user about unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges()) {
+        e.preventDefault();
+        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        return e.returnValue;
+      }
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   useEffect(() => {
     if (selectedPresetId !== previousPresetId) {
@@ -195,13 +246,42 @@ export function Gallery360Editor({
     setSaveSuccess(false);
     try {
       await onSave(selectedPresetId, slotAssignments);
+      // Update saved state to current assignments
+      setLastSavedAssignments([...slotAssignments]);
       setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
+      // Show toast notification
+      setToastMessage('All changes saved.');
+      setShowToast(true);
+      setTimeout(() => {
+        setSaveSuccess(false);
+        setShowToast(false);
+      }, 3000);
     } catch (err) {
       console.error('Failed to save 360 scene:', err);
+      setToastMessage('Failed to save. Please try again.');
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
     } finally {
       setSaving(false);
     }
+  };
+
+  // Handle back button with unsaved changes check
+  const handleBack = useCallback(() => {
+    if (hasUnsavedChanges()) {
+      setShowLeaveConfirm(true);
+    } else if (onBack) {
+      onBack();
+    }
+  }, [hasUnsavedChanges, onBack]);
+
+  const confirmLeave = () => {
+    setShowLeaveConfirm(false);
+    if (onBack) onBack();
+  };
+
+  const cancelLeave = () => {
+    setShowLeaveConfirm(false);
   };
 
   const selectedSlot = preset.slots.find(s => s.id === selectedSlotId);
@@ -250,11 +330,16 @@ export function Gallery360Editor({
 
   return (
     <div ref={containerRef} className={`flex h-full ${className}`}>
-      <div className={`${panelCollapsed ? 'w-12' : 'w-80'} bg-white border-r border-gray-200 flex flex-col overflow-hidden transition-all duration-300`}>
+      <div 
+        className={`bg-white border-r border-gray-200 flex flex-col transition-[width] duration-300 ease-out ${
+          panelCollapsed ? 'w-12' : 'w-80'
+        }`}
+        style={{ minWidth: panelCollapsed ? '48px' : '320px', maxWidth: panelCollapsed ? '48px' : '320px' }}
+      >
         {panelCollapsed ? (
           <button
             onClick={() => setPanelCollapsed(false)}
-            className="w-full h-full flex items-center justify-center hover:bg-gray-100 transition-colors"
+            className="w-12 h-full flex items-center justify-center hover:bg-gray-100 transition-colors flex-shrink-0"
             title="Expand panel"
           >
             <svg className="w-5 h-5 text-[#264C61]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -262,12 +347,12 @@ export function Gallery360Editor({
             </svg>
           </button>
         ) : (
-          <>
+          <div className="flex flex-col h-full w-80 overflow-hidden">
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
             {onBack && (
               <button 
-                onClick={onBack}
+                onClick={handleBack}
                 className="text-[#264C61] hover:text-[#1D3A4A] flex items-center gap-1"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -378,16 +463,28 @@ export function Gallery360Editor({
           </div>
         )}
 
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-gray-200 space-y-2">
+          {hasUnsavedChanges() && (
+            <div className="flex items-center gap-2 text-amber-600 text-sm mb-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span>Unsaved changes</span>
+            </div>
+          )}
           <button
             onClick={handleSave}
-            disabled={saving}
-            className="w-full py-2 px-4 bg-[#264C61] text-white rounded-lg hover:bg-[#1D3A4A] disabled:opacity-50 transition-colors"
+            disabled={saving || !hasUnsavedChanges()}
+            className={`w-full py-2.5 px-4 rounded-lg font-medium transition-colors ${
+              hasUnsavedChanges() 
+                ? 'bg-[#C9A24A] text-white hover:bg-[#B8913A]' 
+                : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+            } disabled:opacity-50`}
           >
-            {saving ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save Scene'}
+            {saving ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save All Changes'}
           </button>
         </div>
-          </>
+          </div>
         )}
       </div>
 
@@ -433,6 +530,61 @@ export function Gallery360Editor({
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
       />
+
+      {/* Toast notification */}
+      {showToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-fade-in">
+          <div className={`px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 ${
+            toastMessage.includes('Failed') 
+              ? 'bg-red-600 text-white' 
+              : 'bg-[#264C61] text-white'
+          }`}>
+            {toastMessage.includes('Failed') ? (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            )}
+            <span className="font-medium">{toastMessage}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Leave confirmation modal */}
+      {showLeaveConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+                <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Unsaved Changes</h3>
+            </div>
+            <p className="text-gray-600 mb-6">
+              You have unsaved changes that will be lost if you leave. Are you sure you want to leave without saving?
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={cancelLeave}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+              >
+                Stay & Edit
+              </button>
+              <button
+                onClick={confirmLeave}
+                className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors font-medium"
+              >
+                Leave Without Saving
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

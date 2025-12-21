@@ -33,13 +33,13 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, role: string) => Promise<any>;
+  register: (email: string, password: string, role: string, tosAccepted?: boolean, marketingOptIn?: boolean) => Promise<any>;
   logout: () => void;
   loading: boolean;
   error: string | null;
   clearError: () => void;
   impersonatedRole: string | null;
-  setImpersonation: (role: 'user' | 'artist' | 'designer' | 'gallery' | null) => void;
+  setImpersonation: (role: 'user' | 'artist' | 'designer' | 'gallery' | 'allin' | null) => void;
   clearImpersonation: () => void;
   effectiveRole: string;
   hasEntitlement: (entitlement: 'artist_access' | 'designer_access' | 'gallery_access') => boolean;
@@ -140,14 +140,14 @@ export function AuthProvider({ children }: { children: React.ReactNode}) {
     }
   };
 
-  const register = async (email: string, password: string, role: string): Promise<any> => {
+  const register = async (email: string, password: string, role: string, tosAccepted: boolean = false, marketingOptIn: boolean = false): Promise<any> => {
     setError(null);
     setLoading(true);
     try {
       const response = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, role }),
+        body: JSON.stringify({ email, password, role, tosAccepted, marketingOptIn }),
         credentials: 'include',
       });
 
@@ -200,7 +200,7 @@ export function AuthProvider({ children }: { children: React.ReactNode}) {
 
   const clearError = () => setError(null);
 
-  const setImpersonation = (role: 'user' | 'artist' | 'designer' | 'gallery' | null) => {
+  const setImpersonation = (role: 'user' | 'artist' | 'designer' | 'gallery' | 'allin' | null) => {
     if (user?.role !== 'admin') {
       console.warn('Only admin users can impersonate other roles');
       return;

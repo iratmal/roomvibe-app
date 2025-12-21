@@ -1,0 +1,145 @@
+# 🧩 TASK 3 — GALLERY CONNECT CORE (FAZA 1)
+
+## 🎯 CILJ ZADATKA
+
+Implementirati **Gallery Connect Core** prema zaključanom modelu FAZE 1.
+
+Galerija je korisnik koji:
+
+* traži **umjetnike i umjetnine** za izložbe i suradnje
+* kontaktira **isključivo Artiste**
+* koristi virtualne galerije kao **publisher / curator** (ne kao prodavatelj)
+
+Galerija **ne vidi Dizajnere** i **ne vidi Designer Project Boards**.
+
+---
+
+## 🔒 ZAKLJUČANA PRAVILA (NE MIJENJATI)
+
+* Galerija vidi samo Artiste s `Visible to Galleries = ON`
+* Galerija **ne vidi Dizajnere**
+* Galerija **ne vidi Designer Project Boards**
+* Galerija **ne vidi dizajnerske projekte ni interijere**
+* Nema plaćanja i transakcija u FAZI 1
+
+---
+
+## 1️⃣ GALLERY ARTIST DIRECTORY
+
+### Implementirati Gallery view za pregled Artista:
+
+Galerija vidi listu Artista koji su:
+
+* `Visible to Galleries = ON`
+* imaju barem jedan *discoverable* artwork
+
+### Artist card (Gallery view):
+
+* Artist name
+* Location
+* Primary style tags
+* Number of available artworks
+
+---
+
+## 2️⃣ ARTIST DETAIL VIEW (GALLERY)
+
+Klik na Artist card otvara detaljni prikaz:
+
+### Prikaz sadržaja:
+
+* Artist profile (bio, location, styles)
+* Grid artworka
+* Metadata po artworku:
+
+  * title
+  * dimensions
+  * medium
+  * availability
+
+### CTA:
+
+* "Contact Artist"
+
+---
+
+## 3️⃣ FILTERI (GALLERY CORE)
+
+Implementirati osnovne filtre za galerije:
+
+* Style
+* Medium
+* Availability
+* Size range
+* Location (country / city)
+
+Filtri:
+
+* mogu se kombinirati
+* imaju reset opciju
+
+---
+
+## 4️⃣ MESSAGING (GALLERY → ARTIST)
+
+Galerija može:
+
+* poslati poruku Artistu
+* poruka mora biti vezana uz:
+
+  * konkretan artwork
+  * ili opći upit (npr. exhibition proposal)
+
+Ne postoji:
+
+* messaging s Dizajnerima
+* masovno slanje poruka
+
+---
+
+## 5️⃣ GALLERY DASHBOARD (CONNECT STATUS)
+
+Implementirati osnovni Gallery dashboard widget:
+
+* Number of visible artists
+* Saved / contacted artists (optional MVP)
+
+---
+
+## 6️⃣ PRAZNA STANJA
+
+Implementirati empty states:
+
+* nema vidljivih artista
+* filteri ne vraćaju rezultate
+* nema poruka
+
+Svako stanje mora imati:
+
+* kratko objašnjenje
+* CTA (npr. "Adjust filters")
+
+---
+
+## ✅ ACCEPTANCE KRITERIJI
+
+Task je završen kada:
+
+* Galerija vidi samo Artiste s Visible to Galleries = ON
+* Galerija može filtrirati Artiste
+* Galerija može otvoriti Artist detail
+* Galerija može poslati poruku Artistu
+* Galerija ne vidi Dizajnere ni njihove projekte
+
+---
+
+## 🚫 IZVAN SCOPEA (NE RADITI)
+
+* Virtual exhibition builder (dolazi kasnije)
+* Public gallery pages
+* Billing / Stripe
+* Designer Connect funkcije
+
+---
+
+**STATUS:** ⬜ To Do / ⬜ In Progress / ⬜ Done

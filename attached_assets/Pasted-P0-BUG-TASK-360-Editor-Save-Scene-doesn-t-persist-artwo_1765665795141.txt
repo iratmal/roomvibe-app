@@ -1,0 +1,123 @@
+P0 BUG TASK — 360° Editor: “Save Scene” doesn’t persist artwork assignments (Classic Gallery)
+Problem summary
+
+In 360° Editor (Classic Gallery):
+I assign artworks to wall slots, click Save Scene, but when I reopen the same exhibition/editor, all wall slots are empty again (no artworks loaded), and each slot shows -- Select Artwork --.
+
+Environment: staging.roomvibe.app
+Page: /#/gallery/exhibitions/:id/360-editor
+Template: Classic Gallery
+
+✅ Expected
+
+After assigning artworks to wall slots and clicking Save Scene:
+
+the saved scene must persist in DB
+
+reopening the editor should restore all assignments exactly
+
+switching viewpoints should keep the same assigned artworks
+
+🔁 Steps to reproduce
+
+Open 360° Editor → Classic Gallery
+
+Select artworks for several wall slots (North Wall 1…5 etc.)
+
+Click Save Scene
+
+Exit editor / refresh / reopen editor
+
+Observe: assignments are gone → dropdown shows -- Select Artwork -- and scene is empty
+
+🔎 Investigation checklist (agent)
+A) Confirm save request
+
+On Save Scene click:
+
+check Network request fired?
+
+response status 200?
+
+payload includes slot->artwork mapping?
+
+DB record created/updated?
+
+B) Confirm load request
+
+On editor open:
+
+is there a GET call fetching saved scene config?
+
+does response contain mapping?
+
+is client ignoring it / failing to map it?
+
+C) Slot ID mismatch (likely)
+
+Recent gallery changes may have changed slot identifiers.
+Example symptoms:
+
+saved keys: northWall1, north_wall_1, North Wall - 1, wallSlots[0]
+
+current UI expects different keys → render shows empty even though DB has data
+
+👉 Need stable canonical slot keys per template and a migration/normalization layer.
+
+D) Save scope issue
+
+Are we saving to the wrong exhibition ID / wrong scene ID?
+
+Is “Save Scene” only saving camera position but not artworks?
+
+Does it save locally (state) but not backend?
+
+🛠️ Required fix
+
+Persist mapping properly
+
+Ensure Save Scene sends full payload:
+
+templateId
+
+sceneId / exhibitionId
+
+camera view (optional)
+
+assignments: { slotKey: artworkId }
+
+Canonical slot keys
+
+Define stable slot keys for Classic Gallery:
+
+NORTH_1 … NORTH_5, EAST_1 …, WEST_1 … (whatever you choose)
+
+UI displays labels (“North Wall - 1”) but data uses canonical keys.
+
+Normalize on load
+
+When loading old saved scenes:
+
+map legacy keys → canonical keys
+
+so previously saved scenes still work (backward compatibility)
+
+After save, immediately re-fetch
+
+Optional but recommended:
+
+After successful save, re-fetch saved scene and re-render (QA confidence)
+
+✅ Acceptance criteria
+
+Assign artworks to 5+ slots → Save Scene → refresh → assignments still visible
+
+Reopen editor later → assignments restored
+
+No console errors
+
+Works consistently for Classic Gallery
+
+Priority
+
+P0 – blocks virtual exhibitions entirely

@@ -1,0 +1,103 @@
+🚨 P0 BUG TASK — Missing artwork images in staging + no way to re-upload (Gallery/Collections)
+Problem summary
+
+After moving to staging, multiple artworks show missing thumbnails / blank image areas inside Gallery collection view (see screenshot 1).
+When opening Edit Artwork, the form states “Image cannot be changed” and provides no re-upload option, so missing images cannot be fixed (see screenshot 2).
+
+Where
+
+Gallery collection view: /#/dashboard/gallery/collection/:id
+
+Edit artwork view: /#/dashboard/gallery/artwork/:id/edit
+
+Mode: “Gallery (Admin Impersonation)” banner is visible (but issue exists regardless)
+
+✅ Expected
+
+All artworks should load thumbnails reliably in staging (if files exist).
+
+If an artwork image is missing/broken, there must be a safe way to re-upload/replace the image.
+
+Edit screen must not trap user with “cannot be changed” when image is missing.
+
+🔁 Repro steps
+
+Open Gallery collection → observe some artwork cards have no image/thumbnail
+
+Click Edit on a missing-image artwork
+
+Edit page shows placeholder image area + message “Image cannot be changed…”
+
+No upload button exists → user cannot fix the missing image
+
+🔎 Root cause investigation (agent)
+A) Why images are missing in staging
+
+Check for each broken artwork:
+
+DB record has imageUrl / storageKey / fileId?
+
+Does the URL return 404/403?
+
+Is staging using a different storage bucket/path than prod?
+
+Were asset files copied to staging storage or only DB cloned?
+
+B) Why edit forbids image replacement
+
+Current UI/logic prevents changing artwork image (policy), but we need an exception path for broken images.
+
+🛠️ Required fix (must implement)
+1) Add “Replace image” capability (controlled)
+
+On Edit Artwork page:
+
+If artwork image is missing/broken (e.g. imageUrl null OR HEAD/GET fails OR “no thumbnail”), show:
+
+[Upload / Replace Image] button
+
+If image exists and loads, keep current rule (“image cannot be changed”) unless admin.
+
+Role rules (Phase 1)
+
+Allowed to replace image:
+
+✅ Admin
+
+✅ Artwork owner (artist/gallery user) only if image is missing/broken
+
+Optional: Admin can always replace.
+
+2) Backfill / migration utility for staging
+
+Create an Admin-only repair tool (can be minimal):
+
+“Scan artworks with missing imageUrl / broken URL”
+
+list them with IDs + title
+
+allow re-upload one-by-one OR set placeholder
+
+(Minimum acceptable: manual re-upload per artwork via Edit page is enough — but we must unblock.)
+
+3) Thumbnail rendering must fail gracefully
+
+In collection grid:
+
+If thumbnail fails to load:
+
+show placeholder + “Image missing” badge
+
+do not break layout
+
+✅ Acceptance criteria
+
+In Gallery collection, missing thumbnails show a placeholder (no empty broken UI).
+
+For an artwork with missing image, Edit page shows an Upload/Replace Image control.
+
+After re-upload, thumbnail appears in collection and persists after refresh.
+
+No white-screen crashes during upload.
+
+Works in staging.

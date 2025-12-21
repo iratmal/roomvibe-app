@@ -25,7 +25,7 @@ export function Footer() {
               className="h-12 sm:h-16 w-auto mb-2 sm:mb-4 brightness-0 invert"
             />
             <p className="text-white/80 text-xs sm:text-sm mb-2 sm:mb-3">
-              Visualize Art in Your Space.
+              See Art in Your Space.
             </p>
             <p className="text-white/60 text-xs sm:text-sm">
               © 2025 RoomVibe

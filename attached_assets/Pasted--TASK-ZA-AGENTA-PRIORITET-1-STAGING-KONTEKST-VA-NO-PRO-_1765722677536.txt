@@ -1,0 +1,163 @@
+# 🎯 TASK ZA AGENTA – PRIORITET 1 (STAGING)
+
+## KONTEKST (VAŽNO PROČITATI)
+
+Na **staging.roomvibe.app** upload artworka i dalje vraća **500 error (POST /api/artist/artworks)**.
+Deployment JE potvrđen:
+
+* `/api/version` pokazuje **commit: cookie-only-auth**
+* Verzija je aktualna (redeploy preko Replit Deployments je napravljen)
+* User se odlogirao i ponovo ulogirao
+* Cookie banner / GDPR trenutno NIJE fokus ovog taska
+
+Problem NIJE frontend UI, nego backend/auth/DB flow.
+
+---
+
+## ❌ TRENUTNI SIMPTOMI
+
+* POST `/api/artist/artworks` → **500**
+* Token **ne dolazi do backend-a** ili backend ga ne čita kako treba
+* Upload slike se fizički pokuša, ali DB insert pada
+
+---
+
+## ✅ CILJ ZADATKA
+
+Omogućiti da:
+
+* Free user (cookie-only auth)
+* Može uploadati artwork
+* Bez Bearer tokena
+* Bez 500 greške
+
+---
+
+## 🔍 ŠTO TOČNO TREBAŠ NAPRAVITI (KORAK PO KORAK)
+
+### 1️⃣ AUTH – COOKIE VALIDACIJA
+
+Provjeri **auth middleware**:
+
+* Mora čitati ISKLJUČIVO:
+
+```js
+req.cookies.token
+```
+
+* Mora se izvršiti **PRIJE** `/api/artist/artworks`
+* Ako cookie ne postoji → vrati **401** (ne 500)
+
+Dodaj privremeni log:
+
+```js
+console.log("AUTH COOKIE:", req.cookies);
+```
+
+---
+
+### 2️⃣ FRONTEND – CREDENTIALS (OBAVEZNO)
+
+Provjeri da upload request koristi credentials:
+
+```js
+fetch('/api/artist/artworks', {
+  method: 'POST',
+  credentials: 'include',
+  body: formData
+})
+```
+
+ILI (axios):
+
+```js
+axios.post('/api/artist/artworks', formData, {
+  withCredentials: true
+})
+```
+
+➡️ Bez ovoga cookie NIKAD neće doći do backend-a.
+
+---
+
+### 3️⃣ DATABASE – SCHEMA PROVJERA (KRITIČNO)
+
+U staging bazi provjeri tablicu **artworks**:
+
+* Da li STVARNO postoje stupci koje backend koristi?
+* Posebno provjeri:
+
+  * `image_url`
+  * `width`
+  * `height`
+  * `price`
+  * `currency`
+
+Ako backend pokušava insert u stupac koji ne postoji → to je izvor **500 errora**.
+
+➡️ Ako schema ne odgovara:
+
+* Napravi **migration za staging**
+* NE mijenjaj produkciju
+
+---
+
+### 4️⃣ ERROR HANDLING (OBAVEZNO)
+
+U `/api/artist/artworks`:
+
+* Hvataj greške eksplicitno
+* Logiraj **točnu DB grešku**
+
+Primjer:
+
+```js
+catch (err) {
+  console.error('ARTWORK CREATE ERROR:', err);
+  return res.status(500).json({
+    error: 'Artwork creation failed',
+    details: err.message
+  });
+}
+```
+
+➡️ Trenutno frontend vidi samo "Failed to create artwork" – to NIJE dovoljno.
+
+---
+
+### 5️⃣ VALIDACIJA NAKON FIXA
+
+Nakon što popraviš:
+
+1. **Redeploy preko Replit → Deployments (Autoscale)**
+2. Provjeri:
+
+   * `/api/version`
+3. Log out / log in
+4. Upload artwork
+5. Provjeri:
+
+   * DB insert
+   * Studio prikazuje USER-ove artworke (ne seed slike)
+
+---
+
+## 🚫 ŠTO NE RADITI
+
+* ❌ Ne dirati Stripe
+* ❌ Ne dirati GDPR banner
+* ❌ Ne uvoditi Bearer fallback
+* ❌ Ne deployati na live dok staging ne radi
+
+---
+
+## ✅ DEFINICIJA GOTOVOG
+
+* Upload artworka radi
+* POST `/api/artist/artworks` vraća 200
+* Artwork se vidi u dashboardu i studiju
+* Nema 500 errora
+
+---
+
+Ako zapneš: pošalji **točan DB error log**, ne opis.

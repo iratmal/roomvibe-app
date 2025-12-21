@@ -1,0 +1,248 @@
+# RoomVibe Pricing Page – DESIGN BRIEF (Horizontal Layout)
+
+**Purpose:**
+Redesign the Pricing page to be extremely clear, calm, and understandable for non-technical users (including older artists). The goal is clarity first, premium second, and conversion third.
+
+This redesign **replaces the current pricing tables**.
+
+---
+
+## 1. GENERAL DESIGN PRINCIPLES (VERY IMPORTANT)
+
+* Target user: *non-technical artists*, including older users (60–70+ years)
+* Language: **simple, plain English**
+* No dense text blocks
+* Strong visual hierarchy
+* Easy vertical scanning
+* No visual clutter
+
+Avoid:
+
+* grey dashes (—)
+* overly long paragraphs
+* technical terminology
+
+---
+
+## 2. COLOR SYSTEM (STRICT – NO DEVIATION)
+
+Use **only official RoomVibe colors** for feature indicators:
+
+### Primary (YES / INCLUDED)
+
+* **Navy Blue:** `#0B1F2A`
+* Used as **filled square background**
+* **White checkmark** inside (`#FFFFFF`)
+
+### Not Included (NO)
+
+* **Gold:** `#C9A24D`
+* Used as **gold X icon**
+* No filled background
+
+❗ Do NOT use green or red icons
+❗ Do NOT use grey dashes
+
+---
+
+## 3. TABLE STRUCTURE OVERVIEW
+
+The Pricing page must contain **TWO HORIZONTAL TABLES**:
+
+1. **Plans Overview (What you get)**
+2. **Feature Comparison (Detailed)**
+
+Both tables must be horizontal and aligned.
+
+---
+
+## 4. TABLE 1 — PLANS OVERVIEW (HORIZONTAL)
+
+### Layout
+
+**Rows = Plans**
+**Columns = Content**
+
+Each plan is a full-width horizontal block.
+
+---
+
+### Required Columns
+
+**Column 1: Plan Name + Price**
+
+* Plan name (Free / Artist / Designer / Gallery / All-Access)
+* Price clearly visible
+
+**Column 2: Who it’s for**
+
+* One short sentence
+
+**Column 3: What you get (key benefits)**
+
+* 4–6 short bullet points
+* Bullets must be scannable
+
+**Column 4: CTA Button**
+
+* One primary button per plan
+
+---
+
+### Exact Copy – TABLE 1
+
+#### FREE — €0 / month
+
+**Who it’s for:** People trying RoomVibe for the first time.
+
+**What you get:**
+
+* Upload up to 3 artworks
+* Up to 10 basic mockup rooms
+* Upload your own wall or use basic rooms
+* See instantly how your artwork looks on a real wall
+* Download images for preview and sharing
+
+Button: **Get Started Free**
+
+---
+
+#### ARTIST — €9 / month
+
+**Who it’s for:** Independent artists who want to present, share, and sell their art online.
+
+**What you get:**
+
+* Upload up to 50 artworks
+* Up to 40 standard mockup rooms
+* Upload your own wall photos or use realistic interiors
+* See your artwork instantly on real walls
+* Create and share **1 active virtual exhibition**
+* Download images for website & social media
+* Add a Buy button to sell your artwork
+
+⭐ Highlight line (below bullets):
+**Get discovered by interior designers and galleries using RoomVibe.**
+
+Button: **Activate Artist Plan**
+
+---
+
+#### DESIGNER — €29 / month
+
+**Who it’s for:** Interior designers presenting visual concepts to clients.
+
+**What you get:**
+
+* Upload up to 100 artworks
+* Access to 100+ premium mockup rooms
+* Upload client wall photos or use premium rooms
+* Create visual concepts and PDF presentations
+* Unlimited previews while designing
+
+⭐ Highlight line:
+**Find and connect with artists for your interior projects using RoomVibe.**
+
+Button: **Unlock Designer Tools**
+
+---
+
+#### GALLERY — €49 / month
+
+**Who it’s for:** Galleries, exhibition spaces, and artists hosting their own virtual exhibitions.
+
+**What you get:**
+
+* Upload unlimited artworks
+* Upload real gallery or studio walls
+* Create virtual exhibitions (up to 3 active)
+* Share public exhibition links with visitors and collectors
+* Export exhibition PDFs
+
+⭐ Highlight line:
+**Discover and work with artists through the RoomVibe platform.**
+
+Button: **Unlock Exhibition Tools**
+
+---
+
+#### ALL-ACCESS — €79 / month (RECOMMENDED)
+
+**Who it’s for:** Full-time art professionals, studios, galleries, and power users.
+
+**What you get:**
+
+* Unlimited artworks, walls, exhibitions, and exports
+* Full Artist + Designer + Gallery tools
+* Priority support
+* Early access to new features
+
+Button: **Upgrade to All-Access**
+
+---
+
+## 5. TABLE 2 — FEATURE COMPARISON (HORIZONTAL)
+
+### Layout
+
+**Rows = Features**
+**Columns = Plans**
+
+Feature name on the left, plans on the right.
+
+---
+
+### Icon Rules (MANDATORY)
+
+* ✔️ = navy square `#0B1F2A` with white check
+* ❌ = gold X `#C9A24D`
+* NO grey dashes
+
+---
+
+### Required Feature Rows
+
+* Artwork uploads
+* Mockup rooms
+* Upload own wall photos
+* Real-scale preview
+* Frame styling controls
+* Image downloads
+* PDF exports
+* Virtual exhibitions
+* Public exhibition links
+* Designer Studio tools
+* Multi-art wall presentations
+* Gallery Hub
+* Connect with designers
+* Connect with galleries
+* Browse artist directory
+* Priority support
+* Early access to features
+
+---
+
+### Special Rules
+
+* **Artist – Virtual Exhibitions:** ✔️ up to **1 active**
+* **Gallery – Virtual Exhibitions:** ✔️ up to **3 active**
+* **All-Access:** ✔️ Unlimited
+
+---
+
+## 6. FINAL NOTES
+
+* Replace old pricing layout entirely
+* Do NOT mix vertical and horizontal tables
+* Spacing must be generous
+* Typography must remain calm and readable
+
+This design must feel:
+✔ clear
+✔ calm
+✔ premium
+✔ non-technical
+
+---
+
+**Status:** Ready for implementation on STAGING

@@ -3,8 +3,13 @@ import { useAuth } from '../../context/AuthContext';
 import { ImpersonationBanner } from '../ImpersonationBanner';
 import { SiteHeader } from '../SiteHeader';
 import { ShareEmbedModal } from '../360/ShareEmbedModal';
+import { GalleryArtistDirectory } from './GalleryArtistDirectory';
+import { GalleryArtistDetail } from './GalleryArtistDetail';
+import { GallerySentMessages } from './GallerySentMessages';
 
 const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
+
+type DashboardTab = 'gallery-hub' | 'artist-directory' | 'sent-messages';
 
 interface Collection {
   id: number;
@@ -173,6 +178,12 @@ export function GalleryDashboard() {
   });
   const [artworkImage, setArtworkImage] = useState<File | null>(null);
 
+  // Gallery Connect state
+  const [activeTab, setActiveTab] = useState<DashboardTab>('gallery-hub');
+  const [selectedArtistId, setSelectedArtistId] = useState<number | null>(null);
+  const [connectStats, setConnectStats] = useState({ visibleArtists: 0, contactedArtists: 0 });
+  const [showContactModal, setShowContactModal] = useState<{ artist: any; artwork?: any } | null>(null);
+
   const publishedCount = collections.filter(c => c.status === 'published').length;
 
   useEffect(() => {
@@ -182,6 +193,7 @@ export function GalleryDashboard() {
   useEffect(() => {
     fetchCollections();
     fetchArtworks();
+    fetchConnectStats();
     
     const handleHashChange = () => {
       fetchCollections();
@@ -243,6 +255,28 @@ export function GalleryDashboard() {
     } catch (err: any) {
       console.error('Error fetching artworks:', err);
     }
+  };
+
+  const fetchConnectStats = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/gallery/stats`, {
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setConnectStats({
+          visibleArtists: data.visibleArtists || 0,
+          contactedArtists: data.contactedArtists || 0
+        });
+      }
+    } catch (err: any) {
+      console.error('Error fetching connect stats:', err);
+    }
+  };
+
+  const handleContactArtist = (artist: any, artwork?: any) => {
+    setShowContactModal({ artist, artwork });
   };
 
   const handleArtworkInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -471,7 +505,7 @@ export function GalleryDashboard() {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16">
         {/* Header Section */}
-        <div className="flex justify-between items-start mb-12 pb-8 border-b border-slate-200">
+        <div className="flex justify-between items-start mb-8 pb-8 border-b border-slate-200">
           <div>
             <h1 className="text-4xl md:text-5xl font-semibold mb-2 text-[#264C61] tracking-tight" style={{ fontFamily: 'Inter, sans-serif' }}>
               Gallery Dashboard
@@ -482,18 +516,121 @@ export function GalleryDashboard() {
           </div>
         </div>
 
-        {error && (
+        {/* Connect Status Widget */}
+        <div className="mb-8 p-6 bg-gradient-to-r from-[#264C61] to-[#1D3A4A] rounded-2xl text-white">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-semibold mb-1">Gallery Connect</h3>
+              <p className="text-white/70 text-sm">Discover and connect with artists for your exhibitions</p>
+            </div>
+            <div className="flex items-center gap-6">
+              <div className="text-center">
+                <p className="text-2xl font-bold">{connectStats.visibleArtists}</p>
+                <p className="text-xs text-white/70">Available Artists</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-bold">{connectStats.contactedArtists}</p>
+                <p className="text-xs text-white/70">Contacted</p>
+              </div>
+              <button
+                onClick={() => setActiveTab('artist-directory')}
+                className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors"
+              >
+                Browse Artists
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Tabs Navigation */}
+        <div className="mb-8 border-b border-slate-200">
+          <nav className="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs">
+            <button
+              onClick={() => { setActiveTab('gallery-hub'); setSelectedArtistId(null); setError(''); setSuccess(''); }}
+              className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'gallery-hub'
+                  ? 'border-[#264C61] text-[#264C61]'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                Gallery Hub
+              </span>
+            </button>
+            <button
+              onClick={() => { setActiveTab('artist-directory'); setSelectedArtistId(null); setError(''); setSuccess(''); }}
+              className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'artist-directory'
+                  ? 'border-[#264C61] text-[#264C61]'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                Artist Directory
+                {connectStats.visibleArtists > 0 && (
+                  <span className="ml-1 px-2 py-0.5 bg-[#264C61]/10 text-[#264C61] text-xs rounded-full">
+                    {connectStats.visibleArtists}
+                  </span>
+                )}
+              </span>
+            </button>
+            <button
+              onClick={() => { setActiveTab('sent-messages'); setSelectedArtistId(null); setError(''); setSuccess(''); }}
+              className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                activeTab === 'sent-messages'
+                  ? 'border-[#264C61] text-[#264C61]'
+                  : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                Sent Messages
+              </span>
+            </button>
+          </nav>
+        </div>
+
+        {/* Tab Content: Artist Directory */}
+        {activeTab === 'artist-directory' && !selectedArtistId && (
+          <GalleryArtistDirectory onArtistSelect={(id) => setSelectedArtistId(id)} />
+        )}
+
+        {activeTab === 'artist-directory' && selectedArtistId && (
+          <GalleryArtistDetail 
+            artistId={selectedArtistId} 
+            onBack={() => setSelectedArtistId(null)}
+            onContactArtist={handleContactArtist}
+          />
+        )}
+
+        {/* Tab Content: Sent Messages */}
+        {activeTab === 'sent-messages' && (
+          <GallerySentMessages />
+        )}
+
+        {/* Tab Content: Gallery Hub */}
+        {activeTab === 'gallery-hub' && error && (
           <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-xl">
             <p className="text-red-700 font-semibold">{error}</p>
           </div>
         )}
 
-        {success && (
+        {activeTab === 'gallery-hub' && success && (
           <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-xl">
             <p className="text-green-700 font-semibold">{success}</p>
           </div>
         )}
 
+        {activeTab === 'gallery-hub' && (
+        <>
         {/* Gallery Hub Section */}
         <div className="mb-12 p-8 bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100">
           <h2 className="text-2xl font-semibold mb-2 text-[#264C61]" style={{ fontFamily: 'Inter, sans-serif' }}>
@@ -1128,7 +1265,51 @@ export function GalleryDashboard() {
 
           <ChangePasswordGallery />
         </div>
+        </>
+        )}
       </div>
+
+      {/* Contact Artist Modal */}
+      {showContactModal && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowContactModal(null)}
+        >
+          <div 
+            className="bg-white rounded-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 border-b border-slate-100">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-[#264C61]">Contact Artist</h3>
+                <button
+                  onClick={() => setShowContactModal(null)}
+                  className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="mb-6">
+                <p className="text-sm text-slate-500 mb-1">Contacting</p>
+                <p className="font-medium text-slate-800">{showContactModal.artist?.name}</p>
+                {showContactModal.artwork && (
+                  <p className="text-sm text-[#D8B46A] mt-1">Re: {showContactModal.artwork.title}</p>
+                )}
+              </div>
+              <div className="p-4 bg-slate-50 rounded-xl text-center">
+                <p className="text-slate-600 mb-2">Contact feature coming soon!</p>
+                <p className="text-sm text-slate-500">
+                  You will be able to send inquiries directly to artists about exhibitions and collaborations.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Edit Collection Modal */}
       {editingCollection && (

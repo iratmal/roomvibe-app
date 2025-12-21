@@ -1,0 +1,114 @@
+# Prioritet
+
+**Prvo pošalji agentu ovaj task (copy‑paste).** Screenshot linija možeš poslati nakon deploya ako i dalje treba dodatni uvid.
+
+---
+
+# TASK (samo za Artwork upload) — želim hard proof gdje puca
+
+## Cilj
+
+1. U staging deploymentu dobiti **točan error iz Object Storage `file.save()`** (code/message/statusCode).
+2. Imati **endpoint koji testira realni write** u bucket (bez UI), da odmah znamo je li problem permission/bucket/path.
+
+> Ne dirati dizajn, ne micati staging promjene. Fokus isključivo upload + storage.
+
+---
+
+## A) `server/objectStorage.ts` — full error dump oko `file.save()`
+
+U metodi koja radi upload (vidim `uploadBuffer(...)`) omotaj `await file.save(...)` ovako:
+
+```ts
+console.log("[ObjectStorage] Using PRIVATE_OBJECT_DIR:", privateDirRaw);
+console.log("[ObjectStorage] Parsed bucket/prefix:", { bucketName, prefix, storedObjectName });
+
+try {
+  console.log("[ObjectStorage] Calling file.save()...", {
+    storedObjectName,
+    contentType,
+    size: buffer.length,
+  });
+
+  await file.save(buffer, {
+    resumable: false,
+    metadata: { contentType },
+  });
+
+  console.log("[ObjectStorage] file.save() SUCCESS", { storedObjectName });
+} catch (err: any) {
+  console.error("[ObjectStorage] file.save() FAILED", {
+    name: err?.name,
+    message: err?.message,
+    code: err?.code,
+    statusCode: err?.statusCode,
+    errors: err?.errors,
+    stack: err?.stack,
+    response: err?.response?.data || err?.response,
+  });
+  throw err;
+}
+```
+
+**Bitno:** u API response za upload nemoj vraćati `"Error code undefined"`. Vrati `err.message` + `err.code/statusCode` ako postoji.
+
+---
+
+## B) Dodaj dijagnostički endpoint: realni write test
+
+Dodaj novi endpoint (u file gdje su health endpointi, npr. `server/api/health.ts` ili gdje već imate `/api/health/env` i `/api/health/storage`):
+
+**GET `/api/health/storage/write-test`**
+
+Što radi:
+
+1. Napravi mali buffer: `Buffer.from("ping")`
+2. Pozovi isti upload mehanizam koji koristi artwork upload (npr. `uploadBuffer(ping, "ping.txt", "text/plain")`)
+3. Vrati JSON:
+
+   * success: `{ ok: true, storedObjectName, timestamp }`
+   * failure: `{ ok: false, error: { message, code, statusCode, name } }`
+
+Primjer skeleton:
+
+```ts
+app.get("/api/health/storage/write-test", async (req, res) => {
+  try {
+    const storedObjectName = await objectStorage.uploadBuffer(
+      Buffer.from("ping"),
+      `ping-${Date.now()}.txt`,
+      "text/plain"
+    );
+    return res.json({ ok: true, storedObjectName, timestamp: new Date().toISOString() });
+  } catch (err: any) {
+    return res.status(500).json({
+      ok: false,
+      error: {
+        name: err?.name,
+        message: err?.message,
+        code: err?.code,
+        statusCode: err?.statusCode,
+      },
+    });
+  }
+});
+```
+
+---
+
+## C) Deploy + provjera (minimalno)
+
+1. **Publish/Deploy** staging.
+2. Otvori u browseru:
+
+   * `https://staging.roomvibe.app/api/health/storage/write-test`
+3. Ako vrati error, copy/paste JSON ili screenshot.
+4. Nakon toga testiraj UI: upload artwork s malim JPG (npr. 200–500KB) i javi koji error sada vraća.
+
+---
+
+## Acceptance Criteria
+
+* `/api/health/storage/write-test` vrati `ok:true` u staging.
+* Artwork create (POST `/api/artist/artworks`) vrati 201 i slika se može dohvatiti (GET `/api/artwork-image/:id` 200).
+* Ako faila: log mora sadržavati **točan error iz `file.save()`** (ne “undefined”).

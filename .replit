@@ -5,7 +5,7 @@ modules = ["nodejs-20", "postgresql-16"]
 
 [agent]
 expertMode = true
-integrations = ["javascript_object_storage:1.0.0", "javascript_anthropic:1.0.0"]
+integrations = ["javascript_object_storage:1.0.0", "javascript_anthropic:1.0.0", "javascript_database:1.0.0"]
 
 [workflows]
 runButton = "Project"
@@ -73,9 +73,9 @@ packages = ["unzip", "jq", "imagemagick"]
 [userenv.development]
 JWT_SECRET = "dev-secret-key-change-in-production-please"
 FEATURE_GALLERY_ENABLED = "true"
-STRIPE_ENABLED = "false"
+STRIPE_ENABLED = "true"
 VITE_FEATURE_GALLERY_ENABLED = "true"
-VITE_STRIPE_ENABLED = "false"
+VITE_STRIPE_ENABLED = "true"
 FEATURE_EXHIBITION_PUBLIC_ENABLED = "true"
 VITE_FEATURE_EXHIBITION_PUBLIC_ENABLED = "true"
 STAGING_ENVIRONMENT = "true"
@@ -84,6 +84,14 @@ VITE_STAGING_ENVIRONMENT = "true"
 VITE_DEBUG_GALLERY360 = "false"
 VITE_DEBUG_FORCE_BASIC = "true"
 VITE_DEBUG_USE_LAMBERT = "false"
+APP_ENV = "staging"
+STRIPE_MODE = "test"
+PAYMENTS_ENABLED = "true"
+ENABLE_ANALYTICS = "false"
+ENABLE_GDPR = "false"
+COOKIE_SECURE = "true"
+COOKIE_SAMESITE = "none"
+VITE_PAYMENTS_ENABLED = "true"
 
 [userenv.shared]
 VITE_GA4_MEASUREMENT_ID = "G-F4PMGBJX09"
@@ -91,3 +99,10 @@ STRIPE_PRICE_USER = "price_1SZV67IpcKai6mhJnBHgRh0L"
 STRIPE_PRICE_ARTIST = "price_1SZV6qIpcKai6mhJaZRJBhdC"
 STRIPE_PRICE_DESIGNER = "price_1SZV7SIpcKai6mhJIJLIwumX"
 STRIPE_PRICE_GALLERY = "price_1SZV7xIpcKai6mhJxwXRayJv"
+
+[userenv.production]
+APP_ENV = "staging"
+NODE_ENV = "production"
+
+[objectStorage]
+defaultBucketID = "replit-objstore-fbcb0f29-203b-4f7f-9481-3fdbbdfb1289"

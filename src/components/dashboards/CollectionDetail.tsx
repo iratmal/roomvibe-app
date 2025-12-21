@@ -48,6 +48,7 @@ export default function CollectionDetail() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
+  const [failedImageIds, setFailedImageIds] = useState<Set<number>>(new Set());
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadPreview, setUploadPreview] = useState<string | null>(null);
@@ -706,12 +707,24 @@ export default function CollectionDetail() {
                   key={artwork.id}
                   className="bg-white border border-slate-100 rounded-2xl hover:shadow-lg hover:shadow-slate-200/50 transition-all group overflow-hidden"
                 >
-                  <div className="aspect-[4/3] bg-slate-100 overflow-hidden">
-                    <img
-                      src={artwork.image_url}
-                      alt={artwork.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
+                  <div className="aspect-[4/3] bg-slate-100 overflow-hidden relative">
+                    {artwork.image_url && !failedImageIds.has(artwork.id) ? (
+                      <img
+                        src={artwork.image_url}
+                        alt={artwork.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={() => {
+                          setFailedImageIds(prev => new Set(prev).add(artwork.id));
+                        }}
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-100">
+                        <svg className="w-12 h-12 text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded font-medium">Image missing</span>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="p-5">
