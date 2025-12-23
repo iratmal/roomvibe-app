@@ -56,6 +56,12 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 - **Feature Locking**: Comprehensive access control enforced on both frontend and backend based on subscription plans and defined limits.
 - **Hybrid Upgrade Flow**: Linear upgrade recommendations with the flexibility to select any plan from the pricing page.
 - **Deployment**: Configured for Autoscale with `npm run build` and `npm start` using an Express server.
+- **Environment Detection**: Host-based override system ensures correct environment identification:
+  - `app.roomvibe.app` → `appEnv: "production"` (regardless of STAGING_ENVIRONMENT setting)
+  - `staging.roomvibe.app` → `appEnv: "staging"`
+  - Fallback to `STAGING_ENVIRONMENT` env var for local/dev environments
+  - Implemented in `server/utils/envDetection.ts` and `server/db/envGuard.ts`
+- **Staging Workflow**: Mandatory staging-first deployment (see `docs/release-workflow.md`, `docs/staging-setup-guide.md`, `docs/smoke-tests.md`)
 
 ## External Dependencies
 - **React**: UI library.

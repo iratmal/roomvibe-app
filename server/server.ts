@@ -24,6 +24,7 @@ import { ObjectStorageService, ObjectNotFoundError } from './objectStorage.js';
 import { requireGalleryFeature, requireStripeFeature } from './middleware/featureFlags.js';
 import { authenticateToken } from './middleware/auth.js';
 import { envBool, envBoolDefaultTrue } from './utils/envBool.js';
+import { getAppEnv, getRequestHost, isProdHost, isStagingHost } from './utils/envDetection.js';
 
 dotenv.config();
 
@@ -153,19 +154,26 @@ app.get('/api/health/db', (req, res) => {
 
 app.get('/api/version', (req, res) => {
   res.json({
-    version: '1.0.3',
-    build: '2025-12-14T15:40:00Z',
-    commit: 'fix-tags-column-migration',
+    version: '1.0.8',
+    build: '2025-12-23T10:00:00Z',
+    commit: 'host-based-env-detection',
     features: {
       cookieAuth: true,
-      objectStorage: true
+      objectStorage: true,
+      hostBasedEnvDetection: true
     }
   });
 });
 
 app.get('/api/health/env', (req, res) => {
+  const appEnv = getAppEnv(req);
+  const host = getRequestHost(req);
+  
   res.json({
-    appEnv: process.env.APP_ENV || 'development',
+    appEnv,
+    hostDetected: host,
+    isProdHost: isProdHost(host),
+    isStagingHost: isStagingHost(host),
     stripeMode: process.env.STRIPE_MODE || 'test',
     paymentsEnabled: envBool(process.env.PAYMENTS_ENABLED),
     stripeEnabled: envBool(process.env.STRIPE_ENABLED),
@@ -175,8 +183,8 @@ app.get('/api/health/env', (req, res) => {
     storageConfigured: !!process.env.PRIVATE_OBJECT_DIR,
     privateObjectDir: process.env.PRIVATE_OBJECT_DIR ? process.env.PRIVATE_OBJECT_DIR.substring(0, 50) : null,
     storageBackend: '@google-cloud/storage',
-    version: '1.0.7-gcs-direct',
-    buildTime: '2025-12-14T23:10:00Z'
+    version: '1.0.8-host-detection',
+    buildTime: '2025-12-23T10:00:00Z'
   });
 });
 
