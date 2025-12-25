@@ -148,11 +148,16 @@ app.get('/api/feature-flags', (req, res) => {
 });
 
 app.get('/api/health', (req, res) => {
+  const storageConfig = getStorageConfig();
+  const storageConfigured = isStorageConfigured();
+  
   res.status(200).json({ 
     status: 'ok', 
     message: 'RoomVibe API server running',
     ready: isServerReady,
-    dbReady: isServerReady
+    dbReady: isServerReady,
+    storageConfigured,
+    storageBackend: storageConfig.backend
   });
 });
 
@@ -369,8 +374,29 @@ app.get('/api/artwork-image/:id', async (req: any, res) => {
     const { image_url: imageUrl, storage_key: storageKey } = result.rows[0];
     console.log(`[artwork-image] Artwork ${artworkId}: storage_key=${storageKey}, image_url=${imageUrl}`);
 
+    // Check if storage_key exists (required for proper image retrieval)
+    if (!storageKey || storageKey.trim() === '') {
+      // Check if there's a legacy image_url we can try to use
+      if (imageUrl && imageUrl.startsWith('/objects/')) {
+        console.log(`[artwork-image] Artwork ${artworkId} missing storage_key, attempting legacy image_url fallback`);
+        // Fall through to legacy handling below
+      } else if (imageUrl && imageUrl.startsWith('http')) {
+        // External URL - redirect directly
+        return res.redirect(imageUrl);
+      } else {
+        // No valid image reference
+        console.warn(`[artwork-image] Artwork ${artworkId} missing storage_key, no valid fallback`);
+        return res.status(404).json({ 
+          error: 'storage_key missing',
+          message: 'Image data is missing. Please re-upload the artwork image.',
+          artworkId,
+          requiresReupload: true
+        });
+      }
+    }
+
     // Prefer storage_key if available (direct object key)
-    if (storageKey) {
+    if (storageKey && storageKey.trim() !== '') {
       // Check if storage is configured before attempting to fetch
       if (!storageReady) {
         console.error(`[artwork-image] Storage not configured, cannot serve artwork ${artworkId}`);

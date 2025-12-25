@@ -49,13 +49,13 @@ router.get('/artworks', authenticateToken, async (req: any, res) => {
     let queryParams;
 
     if (effectivePlan === 'admin') {
-      queryText = `SELECT a.id, a.artist_id, a.title, a.image_url, a.width, a.height, a.dimension_unit, a.price_amount, a.price_currency, a.buy_url, a.tags, a.orientation, a.style_tags, a.dominant_colors, a.medium, a.availability, a.created_at, a.updated_at, u.email as artist_email
+      queryText = `SELECT a.id, a.artist_id, a.title, a.image_url, a.storage_key, a.width, a.height, a.dimension_unit, a.price_amount, a.price_currency, a.buy_url, a.tags, a.orientation, a.style_tags, a.dominant_colors, a.medium, a.availability, a.created_at, a.updated_at, u.email as artist_email
                    FROM artworks a
                    LEFT JOIN users u ON a.artist_id = u.id
                    ORDER BY a.created_at DESC`;
       queryParams = [];
     } else {
-      queryText = `SELECT id, artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, created_at, updated_at
+      queryText = `SELECT id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, created_at, updated_at
                    FROM artworks 
                    WHERE artist_id = $1 
                    ORDER BY created_at DESC`;
@@ -67,7 +67,13 @@ router.get('/artworks', authenticateToken, async (req: any, res) => {
     const artworks = result?.rows || [];
     
     // Normalize image_url to API endpoint format for frontend compatibility
+    // Also add requiresReupload flag for artworks missing storage_key
     artworks.forEach((a: any) => {
+      // Check if artwork needs re-upload (missing storage_key)
+      const hasValidStorageKey = a.storage_key && a.storage_key.trim() !== '';
+      const hasValidImageUrl = a.image_url && (a.image_url.startsWith('/objects/') || a.image_url.startsWith('http'));
+      a.requiresReupload = !hasValidStorageKey && !hasValidImageUrl;
+      
       if (a.image_url && a.image_url.startsWith('/objects/')) {
         a.image_url = `/api/artwork-image/${a.id}`;
       }
@@ -97,7 +103,7 @@ router.get('/mine', authenticateToken, async (req: any, res) => {
     console.log('[/mine] Fetching artworks for logged-in user:', req.user.id);
     
     const result = await query(
-      `SELECT id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, created_at
+      `SELECT id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, created_at
        FROM artworks 
        WHERE artist_id = $1 
        ORDER BY created_at DESC`,
@@ -111,6 +117,11 @@ router.get('/mine', authenticateToken, async (req: any, res) => {
       const imageUrl = row.image_url && row.image_url.startsWith('/objects/')
         ? `/api/artwork-image/${row.id}`
         : row.image_url;
+      
+      // Check if artwork needs re-upload (missing storage_key)
+      const hasValidStorageKey = row.storage_key && row.storage_key.trim() !== '';
+      const hasValidImageUrl = row.image_url && (row.image_url.startsWith('/objects/') || row.image_url.startsWith('http'));
+      const requiresReupload = !hasValidStorageKey && !hasValidImageUrl;
       
       return {
         id: `db-${row.id}`,
@@ -127,7 +138,8 @@ router.get('/mine', authenticateToken, async (req: any, res) => {
         styleTags: row.style_tags || [],
         dominantColors: row.dominant_colors || [],
         medium: row.medium || null,
-        availability: row.availability || 'available'
+        availability: row.availability || 'available',
+        requiresReupload
       };
     });
     
@@ -136,6 +148,57 @@ router.get('/mine', authenticateToken, async (req: any, res) => {
   } catch (error: any) {
     console.error('[/mine] Error fetching user artworks:', error);
     res.status(500).json({ error: 'Failed to fetch artworks' });
+  }
+});
+
+// Admin/dev endpoint: List artworks with missing or invalid storage_key
+router.get('/artworks/storage-audit', authenticateToken, async (req: any, res) => {
+  try {
+    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    
+    // Only admins can access this endpoint
+    if (effectivePlan !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    // Find artworks with missing storage_key
+    const missingStorageKey = await query(`
+      SELECT id, title, artist_id, image_url, storage_key, created_at
+      FROM artworks
+      WHERE storage_key IS NULL OR storage_key = ''
+      ORDER BY created_at DESC
+    `);
+
+    // Find artworks with corrupted/invalid image_url (legacy issues)
+    const invalidImageUrl = await query(`
+      SELECT id, title, artist_id, image_url, storage_key, created_at
+      FROM artworks
+      WHERE image_url LIKE '/api/artwork-image/%'
+         OR (image_url IS NOT NULL AND image_url NOT LIKE '/objects/%' AND image_url NOT LIKE 'http%')
+      ORDER BY created_at DESC
+    `);
+
+    // Find artworks with storage_key that might not exist in storage
+    const withStorageKey = await query(`
+      SELECT id, title, artist_id, image_url, storage_key, created_at
+      FROM artworks
+      WHERE storage_key IS NOT NULL AND storage_key != ''
+      ORDER BY created_at DESC
+    `);
+
+    res.json({
+      summary: {
+        total_missing_storage_key: missingStorageKey.rows.length,
+        total_invalid_image_url: invalidImageUrl.rows.length,
+        total_with_storage_key: withStorageKey.rows.length
+      },
+      missing_storage_key: missingStorageKey.rows,
+      invalid_image_url: invalidImageUrl.rows,
+      with_storage_key: withStorageKey.rows
+    });
+  } catch (error: any) {
+    console.error('[storage-audit] Error:', error);
+    res.status(500).json({ error: 'Failed to audit storage keys' });
   }
 });
 

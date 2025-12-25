@@ -34,6 +34,7 @@ interface Artwork {
   created_at: string;
   updated_at: string;
   artist_email?: string;
+  requiresReupload?: boolean;
 }
 
 const STYLE_TAG_OPTIONS = [
@@ -730,8 +731,23 @@ export function ArtistDashboard() {
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {artworks.map((artwork) => (
-                <div key={artwork.id} className="bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral overflow-hidden">
+                <div key={artwork.id} className={`bg-white rounded-rvLg shadow-rvSoft border overflow-hidden ${artwork.requiresReupload ? 'border-amber-400 border-2' : 'border-rv-neutral'}`}>
                   <div className="aspect-square bg-rv-surface relative">
+                    {artwork.requiresReupload && (
+                      <div className="absolute inset-0 bg-amber-50/90 flex flex-col items-center justify-center z-10 p-4">
+                        <svg className="w-12 h-12 text-amber-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <p className="text-amber-800 font-semibold text-center text-sm mb-2">Image Missing</p>
+                        <p className="text-amber-700 text-xs text-center mb-3">Please re-upload this artwork's image</p>
+                        <button
+                          onClick={() => handleEdit(artwork)}
+                          className="px-4 py-2 bg-amber-500 text-white rounded-rvMd hover:bg-amber-600 transition-colors text-sm font-semibold"
+                        >
+                          Re-upload Image
+                        </button>
+                      </div>
+                    )}
                     <img
                       src={artwork.image_url.startsWith('http') ? artwork.image_url : `${API_URL}${artwork.image_url}`}
                       alt={artwork.title}
