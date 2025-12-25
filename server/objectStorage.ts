@@ -352,4 +352,45 @@ export class ObjectStorageService {
     console.log('[ObjectStorage] uploadBuffer END - returning:', resultPath);
     return resultPath;
   }
+
+  async deleteObject(storageKey: string): Promise<void> {
+    console.log('[ObjectStorage] ====== DELETE START ======');
+    console.log('[ObjectStorage] backend:', getStorageBackend());
+    console.log('[ObjectStorage] Key:', storageKey);
+    
+    if (!storageKey || storageKey.trim() === '') {
+      throw new Error('Invalid storage key: empty or undefined');
+    }
+    
+    try {
+      const client = await getReplitClient();
+      if (USE_REPLIT_NATIVE && client) {
+        console.log('[ObjectStorage] Using Replit native delete...');
+        const { ok, error } = await client.delete(storageKey);
+        
+        if (!ok) {
+          console.error('[ObjectStorage] Replit delete failed:', error);
+          throw new Error(`Replit storage delete failed: ${error?.message || 'Unknown error'}`);
+        }
+        
+        console.log('[ObjectStorage] Replit delete SUCCESS:', storageKey);
+      } else {
+        const bucketName = getGcsBucketName();
+        console.log('[ObjectStorage] Using GCS delete for bucket:', bucketName);
+        
+        const bucket = objectStorageClient.bucket(bucketName);
+        const file = bucket.file(storageKey);
+        
+        console.log('[ObjectStorage] Starting GCS delete...');
+        await file.delete();
+        
+        console.log('[ObjectStorage] GCS delete SUCCESS:', storageKey);
+      }
+    } catch (err: any) {
+      console.error('[ObjectStorage] Delete EXCEPTION:', err.message);
+      throw new Error(`Storage delete failed: ${err.message}`);
+    }
+    
+    console.log('[ObjectStorage] deleteObject END - deleted:', storageKey);
+  }
 }

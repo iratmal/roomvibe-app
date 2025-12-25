@@ -358,21 +358,29 @@ app.get('/api/artwork-image/:id', async (req: any, res) => {
     const artworkId = parseInt(req.params.id);
     const storageConfig = getStorageConfig();
     const storageReady = isStorageConfigured();
+    const dbHost = process.env.DATABASE_URL?.split('@')[1]?.split('/')[0] || 'unknown';
     
-    console.log(`[artwork-image] Request for artwork ${artworkId}, backend=${storageConfig.backend}, configured=${storageReady}`);
+    console.log(`[artwork-image] Request for artwork ${artworkId}, backend=${storageConfig.backend}, configured=${storageReady}, db=${dbHost}`);
     
     if (isNaN(artworkId)) {
       return res.status(400).json({ error: 'Invalid artwork ID' });
     }
 
-    const result = await query('SELECT image_url, storage_key FROM artworks WHERE id = $1', [artworkId]);
+    let result = await query('SELECT id, image_url, storage_key, title, artist_id FROM artworks WHERE id = $1', [artworkId]);
+    console.log(`[artwork-image] DB lookup for id=${artworkId} → ${result.rows.length > 0 ? 'FOUND' : 'NOT FOUND'}`);
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Artwork not found', artworkId });
+      console.warn(`[artwork-image] Artwork ${artworkId} not found in DB (host=${dbHost})`);
+      return res.status(404).json({ 
+        error: 'Artwork not found', 
+        artworkId,
+        dbHost,
+        hint: 'This artwork ID does not exist in the database. It may have been deleted or never created.'
+      });
     }
 
-    const { image_url: imageUrl, storage_key: storageKey } = result.rows[0];
-    console.log(`[artwork-image] Artwork ${artworkId}: storage_key=${storageKey}, image_url=${imageUrl}`);
+    const { image_url: imageUrl, storage_key: storageKey, title, artist_id } = result.rows[0];
+    console.log(`[artwork-image] Artwork ${artworkId} (title="${title}", artist_id=${artist_id}): storage_key=${storageKey || 'NULL'}, image_url=${imageUrl || 'NULL'}`);
 
     // Check if storage_key exists (required for proper image retrieval)
     if (!storageKey || storageKey.trim() === '') {

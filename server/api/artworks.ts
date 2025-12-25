@@ -202,6 +202,74 @@ router.get('/artworks/storage-audit', authenticateToken, async (req: any, res) =
   }
 });
 
+router.get('/artworks/debug/:id', authenticateToken, async (req: any, res) => {
+  try {
+    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
+    
+    if (effectivePlan !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const artworkId = parseInt(req.params.id);
+    if (isNaN(artworkId)) {
+      return res.status(400).json({ error: 'Invalid artwork ID' });
+    }
+
+    const dbHost = process.env.DATABASE_URL?.split('@')[1]?.split('/')[0] || 'unknown';
+    
+    const result = await query(`
+      SELECT a.*, u.email as artist_email, u.first_name, u.last_name
+      FROM artworks a
+      LEFT JOIN users u ON a.artist_id = u.id
+      WHERE a.id = $1
+    `, [artworkId]);
+
+    if (result.rows.length === 0) {
+      return res.json({
+        found: false,
+        artworkId,
+        dbHost,
+        message: 'Artwork not found in database'
+      });
+    }
+
+    const artwork = result.rows[0];
+    const expectedStorageKey = artwork.storage_key || null;
+    const legacyStorageKey = artwork.image_url?.startsWith('/objects/') 
+      ? artwork.image_url.replace('/objects/', '')
+      : null;
+
+    res.json({
+      found: true,
+      artworkId,
+      dbHost,
+      artwork: {
+        id: artwork.id,
+        title: artwork.title,
+        artist_id: artwork.artist_id,
+        artist_email: artwork.artist_email,
+        storage_key: artwork.storage_key,
+        image_url: artwork.image_url,
+        created_at: artwork.created_at,
+        updated_at: artwork.updated_at
+      },
+      storage_analysis: {
+        has_storage_key: !!artwork.storage_key,
+        expected_storage_key: expectedStorageKey,
+        legacy_storage_key: legacyStorageKey,
+        image_url_type: artwork.image_url?.startsWith('/objects/') ? 'object_storage'
+          : artwork.image_url?.startsWith('http') ? 'external_url'
+          : artwork.image_url?.startsWith('/api/') ? 'corrupted_api_path'
+          : 'unknown',
+        needs_reupload: !artwork.storage_key || artwork.storage_key.trim() === ''
+      }
+    });
+  } catch (error: any) {
+    console.error('[debug-artwork] Error:', error);
+    res.status(500).json({ error: 'Failed to debug artwork', details: error.message });
+  }
+});
+
 router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('image'), async (req: any, res) => {
   console.log('[UPLOAD] ========== POST /api/artist/artworks ==========');
   console.log('[UPLOAD] Content-Type:', req.headers['content-type']);
@@ -251,14 +319,25 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
     // Upload image to Object Storage
     console.log('[Upload] Uploading image to Object Storage...');
     const objectStorage = new ObjectStorageService();
-    const imageUrl = await objectStorage.uploadBuffer(
-      req.file.buffer,
-      req.file.originalname,
-      req.file.mimetype
-    );
-    // Extract storage_key from imageUrl (strip /objects/ prefix)
-    const storageKey = imageUrl.startsWith('/objects/') ? imageUrl.replace('/objects/', '') : imageUrl;
-    console.log('[Upload] Image uploaded to Object Storage:', { imageUrl, storageKey });
+    let imageUrl: string;
+    let storageKey: string;
+    
+    try {
+      imageUrl = await objectStorage.uploadBuffer(
+        req.file.buffer,
+        req.file.originalname,
+        req.file.mimetype
+      );
+      // Extract storage_key from imageUrl (strip /objects/ prefix)
+      storageKey = imageUrl.startsWith('/objects/') ? imageUrl.replace('/objects/', '') : imageUrl;
+      console.log('[Upload] Image uploaded to Object Storage:', { imageUrl, storageKey });
+    } catch (uploadError: any) {
+      console.error('[Upload] Storage upload failed:', uploadError.message);
+      return res.status(503).json({ 
+        error: 'Image upload failed. Storage service unavailable.',
+        details: process.env.APP_ENV === 'staging' ? uploadError.message : undefined
+      });
+    }
 
     // Generate AI tags from image (non-blocking, with fallback to empty array)
     let tags: string[] = [];
@@ -278,41 +357,55 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
     const artworkMedium = medium || null;
     const artworkAvailability = availability || 'available';
 
-    console.log('Inserting artwork into database...');
-    const result = await query(
-      `INSERT INTO artworks (artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, CURRENT_TIMESTAMP)
-       RETURNING id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, created_at, updated_at`,
-      [targetArtistId, title, imageUrl, storageKey, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, tags, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability]
-    );
+    console.log('[Upload] Inserting artwork into database...');
+    let result;
+    try {
+      result = await query(
+        `INSERT INTO artworks (artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, CURRENT_TIMESTAMP)
+         RETURNING id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, created_at, updated_at`,
+        [targetArtistId, title, imageUrl, storageKey, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, tags, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability]
+      );
+    } catch (dbError: any) {
+      console.error('[Upload] DB insert failed, cleaning up storage:', dbError.message);
+      // Cleanup orphaned storage file
+      try {
+        await objectStorage.deleteObject(storageKey);
+        console.log('[Upload] Orphaned storage file cleaned up:', storageKey);
+      } catch (cleanupError: any) {
+        console.warn('[Upload] Failed to cleanup orphaned storage file:', cleanupError.message);
+      }
+      
+      let errorMessage = 'Failed to save artwork';
+      if (dbError.code === '23505') {
+        errorMessage = 'Duplicate artwork detected.';
+      } else if (dbError.code?.startsWith('23')) {
+        errorMessage = 'Database constraint error. Please check your input.';
+      }
+      
+      return res.status(500).json({ 
+        error: errorMessage, 
+        details: process.env.APP_ENV === 'staging' ? dbError.message : undefined,
+        code: dbError.code 
+      });
+    }
 
     const artworkId = result.rows[0].id;
     // Return the API endpoint URL for frontend compatibility (actual path is stored in DB)
     result.rows[0].image_url = `/api/artwork-image/${artworkId}`;
-    console.log('Artwork created successfully:', artworkId);
+    console.log('[Upload] Artwork created successfully:', artworkId);
     res.status(201).json({ artwork: result.rows[0], message: 'Artwork created successfully' });
   } catch (error: any) {
-    console.error('Error creating artwork:', error);
-    console.error('Error details:', {
+    console.error('[Upload] Unexpected error:', error);
+    console.error('[Upload] Error details:', {
       message: error.message,
       code: error.code,
       detail: error.detail,
       stack: error.stack
     });
     
-    let errorMessage = 'Failed to create artwork';
-    if (error.message?.includes('PRIVATE_OBJECT_DIR')) {
-      errorMessage = 'Storage not configured. Please contact support.';
-    } else if (error.message?.includes('storage') || error.message?.includes('bucket')) {
-      errorMessage = 'Image upload failed. Storage service unavailable.';
-    } else if (error.code === '23505') {
-      errorMessage = 'Duplicate artwork detected.';
-    } else if (error.code?.startsWith('23')) {
-      errorMessage = 'Database constraint error. Please check your input.';
-    }
-    
     res.status(500).json({ 
-      error: errorMessage, 
+      error: 'Failed to create artwork', 
       details: process.env.APP_ENV === 'staging' ? error.message : undefined,
       code: error.code 
     });
