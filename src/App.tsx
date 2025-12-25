@@ -1137,7 +1137,7 @@ function Studio() {
     return getTopSuggestedRooms(art?.tags, roomsFilteredByPlan, 3, art?.title, art?.id);
   }, [art?.id, art?.tags, art?.title, roomsFilteredByPlan, art]);
 
-  const [frameStyle, setFrameStyle] = useState<string>("none");
+  const [frameStyle, setFrameStyle] = useState<string>("slim-black");
   
   const [offsetX, setOffsetX] = useState<number>(0);
   const [offsetY, setOffsetY] = useState<number>(0);
@@ -2714,34 +2714,6 @@ function Studio() {
                 </p>
               </div>
               
-              {/* High-Resolution Download Button (3000px - Designer+) */}
-              <div className="space-y-1">
-                <button
-                  onClick={() => exportToImage(true)}
-                  disabled={isExporting}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white rounded-lg text-sm font-medium text-[#264C61] transition-all disabled:opacity-50 hover:bg-[rgba(38,76,97,0.06)]"
-                  style={{ border: '1.5px solid #D8B46A' }}
-                >
-                  {isExporting && exportType === 'image' ? (
-                    <svg className="w-[18px] h-[18px] animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                  ) : !hasHighResExport ? (
-                    <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                  ) : (
-                    <svg className="w-[18px] h-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                    </svg>
-                  )}
-                  High-Resolution Download
-                </button>
-                <p className="text-xs text-[#666] text-center">
-                  (3000 px · no watermark · Designer feature)
-                </p>
-              </div>
               
               {/* PDF Export - Styled Button */}
               <div className="space-y-1">
@@ -2772,27 +2744,6 @@ function Studio() {
                 </p>
               </div>
               
-              {/* Upgrade CTA for Free Users */}
-              {isFreePlan && (
-                <button
-                  onClick={() => showUpgradeFor('watermarkRemoval')}
-                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-[#264C61] transition-all hover:bg-[rgba(38,76,97,0.06)]"
-                  style={{ border: '1.5px solid #D8B46A' }}
-                >
-                  Unlock High-Resolution Export → Upgrade
-                </button>
-              )}
-              
-              {/* Upgrade hint for Basic (Artist) users about High-Res */}
-              {isArtistPlan && !hasHighResExport && (
-                <button
-                  onClick={() => showUpgradeFor('highResExport')}
-                  className="w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-[#264C61] transition-all hover:bg-[rgba(38,76,97,0.06)]"
-                  style={{ border: '1.5px solid #D8B46A' }}
-                >
-                  Unlock High-Resolution → Upgrade to Designer
-                </button>
-              )}
               
               {/* View & Buy Button - properly spaced below upgrade CTA */}
               {art && (
