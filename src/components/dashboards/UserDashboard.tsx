@@ -367,7 +367,7 @@ export function UserDashboard() {
           <div>
             <h1 className="text-3xl font-bold mb-2 text-rv-primary">User Dashboard</h1>
             <p className="text-rv-textMuted">Welcome back, {user?.email}!</p>
-            <p className="text-rv-textMuted text-sm mt-1">Upload up to 3 artworks and instantly visualize them in our mockup rooms.</p>
+            <p className="text-rv-textMuted text-sm mt-1">Upload up to 10 artworks and instantly visualize them in our mockup rooms.</p>
           </div>
           <div className="flex items-center gap-3">
             <a
@@ -397,19 +397,19 @@ export function UserDashboard() {
 
         {/* Usage indicator */}
         {maxArtworks !== -1 && (
-          <div className={`mb-6 p-4 rounded-rvMd border ${isAtLimit ? 'bg-amber-50 border-amber-200' : 'bg-rv-primary/5 border-rv-primary/20'}`}>
+          <div className={`mb-6 p-4 rounded-rvMd border ${isAtLimit ? 'bg-amber-50 border-amber-200' : artworks.length >= 3 ? 'bg-blue-50 border-blue-200' : 'bg-rv-primary/5 border-rv-primary/20'}`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isAtLimit ? 'bg-amber-100' : 'bg-rv-primary/10'}`}>
-                  <svg className={`w-5 h-5 ${isAtLimit ? 'text-amber-600' : 'text-rv-primary'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isAtLimit ? 'bg-amber-100' : artworks.length >= 3 ? 'bg-blue-100' : 'bg-rv-primary/10'}`}>
+                  <svg className={`w-5 h-5 ${isAtLimit ? 'text-amber-600' : artworks.length >= 3 ? 'text-blue-600' : 'text-rv-primary'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </div>
                 <div>
-                  <p className={`font-semibold ${isAtLimit ? 'text-amber-700' : 'text-rv-primary'}`}>
-                    {isAtLimit ? 'Artwork Limit Reached' : 'Artwork Usage'}
+                  <p className={`font-semibold ${isAtLimit ? 'text-amber-700' : artworks.length >= 3 ? 'text-blue-700' : 'text-rv-primary'}`}>
+                    {isAtLimit ? 'Free Plan Limit Reached' : artworks.length >= 3 ? 'Clean Uploads Used' : 'Artwork Usage'}
                   </p>
-                  <p className={`text-sm ${isAtLimit ? 'text-amber-600' : 'text-rv-primary/80'}`}>
+                  <p className={`text-sm ${isAtLimit ? 'text-amber-600' : artworks.length >= 3 ? 'text-blue-600' : 'text-rv-primary/80'}`}>
                     {artworks.length}/{maxArtworks} artwork{maxArtworks !== 1 ? 's' : ''} uploaded (Free plan)
                   </p>
                 </div>
@@ -423,9 +423,13 @@ export function UserDashboard() {
                 </button>
               )}
             </div>
-            {isAtLimit && (
+            {isAtLimit ? (
               <p className="mt-2 text-sm text-amber-600">
-                You've reached your 3 artwork limit. Upgrade to Artist plan to upload up to 50 artworks.
+                Free plan limit reached (10 artworks). Upgrade to Artist to upload more and remove branding.
+              </p>
+            ) : artworks.length >= 3 && (
+              <p className="mt-2 text-sm text-blue-600">
+                You've used your 3 clean uploads. You can add up to {7 - Math.max(artworks.length - 3, 0)} more artworks with RoomVibe branding.
               </p>
             )}
           </div>
@@ -582,10 +586,27 @@ export function UserDashboard() {
           </form>
         </div>
 
+        {/* Usage Meter for Free Users */}
+        <div className="mb-6 p-4 bg-rv-surface rounded-rvLg border border-rv-neutral">
+          <div className="flex flex-wrap items-center gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-semibold">Clean</span>
+              <span className="text-rv-text font-medium">{Math.min(artworks.length, 3)} / 3</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 bg-rv-primary/10 text-rv-primary rounded text-xs font-semibold">RoomVibe Powered</span>
+              <span className="text-rv-text font-medium">{Math.max(artworks.length - 3, 0)} / 7</span>
+            </div>
+            <div className="text-rv-textMuted">
+              Total: <span className="font-semibold text-rv-text">{artworks.length} / 10</span>
+            </div>
+          </div>
+        </div>
+
         {/* My Artworks Grid */}
         <div className="mb-10">
           <h2 className="text-2xl font-bold mb-6 text-rv-primary">
-            My Artworks <span className="text-base font-normal text-rv-textMuted">(Free plan – up to 3 artworks)</span>
+            My Artworks <span className="text-base font-normal text-rv-textMuted">(Free plan – up to 10 artworks)</span>
           </h2>
           
           {artworks.length === 0 ? (
@@ -594,9 +615,15 @@ export function UserDashboard() {
             </div>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {artworks.map((artwork) => (
+              {[...artworks].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()).map((artwork, index) => {
+                const isClean = index < 3;
+                return (
                 <div key={artwork.id} className="bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral overflow-hidden">
                   <div className="aspect-square bg-rv-surface relative">
+                    {/* Clean/Branded label */}
+                    <div className={`absolute top-2 left-2 z-10 px-2 py-0.5 rounded text-xs font-semibold ${isClean ? 'bg-green-100 text-green-700' : 'bg-rv-primary/10 text-rv-primary'}`}>
+                      {isClean ? 'Clean' : 'RoomVibe Powered'}
+                    </div>
                     <img
                       src={artwork.image_url.startsWith('http') ? artwork.image_url : `${API_URL}${artwork.image_url}`}
                       alt={artwork.title}
@@ -681,7 +708,7 @@ export function UserDashboard() {
                     )}
                   </div>
                 </div>
-              ))}
+              );})}
             </div>
           )}
         </div>

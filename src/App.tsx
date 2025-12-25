@@ -1129,6 +1129,38 @@ function Studio() {
   const effectiveArtId = isFreePlan ? placeholderArtId : artId;
   const art = artworksState.find((a) => a.id === effectiveArtId);
   
+  // Determine if current artwork is in "branded" slots (4-10) for Free users
+  // This applies when viewing artworks from the artworksState collection
+  // Sort by created_at ascending to determine slot position
+  const isBrandedArtwork = useMemo(() => {
+    // Only apply branding for Free users viewing their own artworks
+    if (!isFreePlan || !art) return false;
+    
+    // For artworks loaded from API (have created_at field), check slot position
+    if ((art as any).created_at) {
+      // Get all artworks with created_at (user's artworks from DB)
+      const artworksWithCreatedAt = artworksState.filter((a: any) => a.created_at);
+      
+      if (artworksWithCreatedAt.length === 0) return false;
+      
+      // Sort by created_at ascending (oldest first = slot 1)
+      const sortedArtworks = [...artworksWithCreatedAt].sort((a: any, b: any) => 
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      );
+      
+      // Find the current artwork's index in sorted list
+      const artworkIndex = sortedArtworks.findIndex((a: any) => 
+        String(a.id) === String(art.id)
+      );
+      
+      // If artwork is in slots 4-10 (index >= 3), it's branded
+      return artworkIndex >= 3;
+    }
+    
+    // Demo/local artworks (no created_at) are never branded
+    return false;
+  }, [isFreePlan, art, artworksState]);
+  
   // AI Suggested Rooms - get top 3 rooms based on artwork tags, title keywords, or ID-based variation
   // useMemo ensures recalculation when artwork or filtered rooms change
   // Guard: return empty array if art is undefined (paid users with no artworks)
@@ -1770,30 +1802,42 @@ function Studio() {
         ctx.drawImage(artImage, frameX, frameY, scaledArtworkWidth, scaledArtworkHeight);
       }
       
-      // Add watermark for FREE users only (on regular download)
-      if (!highRes && isFreePlan) {
+      // Add branding watermark for branded artworks (slots 4-10) for Free users
+      if (isBrandedArtwork) {
         ctx.save();
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-        ctx.font = `bold ${Math.round(18 * scaleFactor)}px Inter, sans-serif`;
+        ctx.font = `bold ${Math.round(14 * scaleFactor)}px Inter, sans-serif`;
         ctx.textAlign = 'right';
         ctx.textBaseline = 'bottom';
         
-        const watermarkText = 'RoomVibe – Upgrade for High-Res';
-        const padding = 20 * scaleFactor;
+        const watermarkText = 'Visualized with RoomVibe';
+        const padding = 12 * scaleFactor;
         const textMetrics = ctx.measureText(watermarkText);
         
-        // Background for watermark
-        ctx.fillStyle = 'rgba(40, 53, 147, 0.9)';
-        ctx.fillRect(
-          outputWidth - textMetrics.width - padding * 2,
-          outputHeight - 40 * scaleFactor,
-          textMetrics.width + padding * 2,
-          40 * scaleFactor
-        );
+        // Semi-transparent background pill
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        const pillWidth = textMetrics.width + padding * 2;
+        const pillHeight = 28 * scaleFactor;
+        const pillX = outputWidth - pillWidth - 12 * scaleFactor;
+        const pillY = outputHeight - pillHeight - 12 * scaleFactor;
+        const pillRadius = 14 * scaleFactor;
+        
+        // Draw rounded rectangle
+        ctx.beginPath();
+        ctx.moveTo(pillX + pillRadius, pillY);
+        ctx.lineTo(pillX + pillWidth - pillRadius, pillY);
+        ctx.quadraticCurveTo(pillX + pillWidth, pillY, pillX + pillWidth, pillY + pillRadius);
+        ctx.lineTo(pillX + pillWidth, pillY + pillHeight - pillRadius);
+        ctx.quadraticCurveTo(pillX + pillWidth, pillY + pillHeight, pillX + pillWidth - pillRadius, pillY + pillHeight);
+        ctx.lineTo(pillX + pillRadius, pillY + pillHeight);
+        ctx.quadraticCurveTo(pillX, pillY + pillHeight, pillX, pillY + pillHeight - pillRadius);
+        ctx.lineTo(pillX, pillY + pillRadius);
+        ctx.quadraticCurveTo(pillX, pillY, pillX + pillRadius, pillY);
+        ctx.closePath();
+        ctx.fill();
         
         // Watermark text
-        ctx.fillStyle = '#fff';
-        ctx.fillText(watermarkText, outputWidth - padding, outputHeight - 12 * scaleFactor);
+        ctx.fillStyle = '#264C61';
+        ctx.fillText(watermarkText, pillX + pillWidth - padding, pillY + pillHeight - 8 * scaleFactor);
         ctx.restore();
       }
       
@@ -2544,6 +2588,22 @@ function Studio() {
                     </>
                   )}
                 </div>
+                )}
+                
+                {/* RoomVibe branding badge for Free users with branded artworks (slots 4-10) */}
+                {isBrandedArtwork && (
+                  <a
+                    href="https://roomvibe.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="absolute bottom-3 right-3 z-20 flex items-center gap-1.5 px-2.5 py-1 bg-white/90 backdrop-blur-sm rounded-full shadow-md text-xs font-medium text-rv-primary hover:bg-white transition-colors"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Visualized with RoomVibe
+                  </a>
                 )}
               </div>
             </div>
