@@ -23,15 +23,42 @@ export const objectStorageClient = new Storage({
   projectId: "",
 });
 
-// Extract bucket name from PRIVATE_OBJECT_DIR (format: /bucket-name or bucket-name)
+// Extract bucket name from environment variables
+// Priority: REPLIT_OBJECT_STORAGE_BUCKET_ID (auto-provided by Replit) > PRIVATE_OBJECT_DIR (legacy)
 function getBucketName(): string {
+  // First try the Replit-provided bucket ID (auto-set when Object Storage is attached)
+  const replitBucketId = process.env.REPLIT_OBJECT_STORAGE_BUCKET_ID;
+  if (replitBucketId && replitBucketId.trim()) {
+    return replitBucketId.trim();
+  }
+  
+  // Fallback to PRIVATE_OBJECT_DIR (legacy, may be deployment-specific)
   const dir = process.env.PRIVATE_OBJECT_DIR || "";
   const cleaned = dir.replace(/^\/+/, "").split("/")[0];
-  if (!cleaned) {
-    throw new Error("PRIVATE_OBJECT_DIR not set or invalid");
+  if (cleaned) {
+    return cleaned;
   }
-  return cleaned;
+  
+  throw new Error("No Object Storage bucket configured. Set REPLIT_OBJECT_STORAGE_BUCKET_ID or PRIVATE_OBJECT_DIR.");
 }
+
+// Log storage configuration on module load
+const logStorageConfig = () => {
+  const replitBucket = process.env.REPLIT_OBJECT_STORAGE_BUCKET_ID || 'NOT_SET';
+  const privateDir = process.env.PRIVATE_OBJECT_DIR || 'NOT_SET';
+  const nodeEnv = process.env.NODE_ENV || 'development';
+  
+  let resolvedBucket = 'NONE';
+  try {
+    resolvedBucket = getBucketName();
+  } catch (e) {
+    resolvedBucket = 'ERROR';
+  }
+  
+  console.log(`[Storage] backend=@google-cloud/storage privateDir=${privateDir.substring(0, 40)} replitBucket=${replitBucket.substring(0, 40)} resolved=${resolvedBucket.substring(0, 40)} env=${nodeEnv}`);
+};
+
+logStorageConfig();
 
 export class ObjectNotFoundError extends Error {
   constructor() {

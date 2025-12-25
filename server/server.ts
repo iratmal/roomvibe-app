@@ -208,15 +208,22 @@ app.get('/api/health/env', (req, res) => {
 });
 
 app.get('/api/health/storage', async (req, res) => {
+  const replitBucket = process.env.REPLIT_OBJECT_STORAGE_BUCKET_ID || '';
+  const privateDir = process.env.PRIVATE_OBJECT_DIR || '';
+  const resolvedBucket = replitBucket || privateDir.replace(/^\/+/, "").split("/")[0] || 'NONE';
+  
   const results: Record<string, any> = {
-    version: '1.0.7-gcs-direct',
+    version: '1.0.9-bucket-fallback',
     backend: '@google-cloud/storage',
-    replitBucketId: process.env.REPLIT_OBJECT_STORAGE_BUCKET_ID ? 'SET' : 'NOT_SET',
-    privateObjectDir: process.env.PRIVATE_OBJECT_DIR ? 'SET' : 'NOT_SET',
-    privateObjectDirValue: process.env.PRIVATE_OBJECT_DIR?.substring(0, 50) || 'EMPTY',
+    replitBucketId: replitBucket ? 'SET' : 'NOT_SET',
+    replitBucketIdValue: replitBucket ? replitBucket.substring(0, 50) : 'EMPTY',
+    privateObjectDir: privateDir ? 'SET' : 'NOT_SET',
+    privateObjectDirValue: privateDir ? privateDir.substring(0, 50) : 'EMPTY',
+    resolvedBucket: resolvedBucket.substring(0, 50),
+    bucketSource: replitBucket ? 'REPLIT_OBJECT_STORAGE_BUCKET_ID' : (privateDir ? 'PRIVATE_OBJECT_DIR' : 'NONE'),
     timestamp: new Date().toISOString(),
     nodeEnv: process.env.NODE_ENV,
-    appEnv: process.env.APP_ENV,
+    appEnv: getAppEnv(req),
   };
 
   // Test actual SDK connection
@@ -240,12 +247,14 @@ app.get('/api/health/storage', async (req, res) => {
   }
 
   const credentialOk = results.credentialStatus === 200 && results.credentialHasToken;
-  const storageConfigured = results.privateObjectDir === 'SET';
+  const storageConfigured = resolvedBucket !== 'NONE';
+  const connectionOk = connectionTest.ok === true;
   
-  res.status(credentialOk && storageConfigured ? 200 : 500).json({
-    status: credentialOk && storageConfigured ? 'healthy' : 'unhealthy',
+  res.status(credentialOk && storageConfigured && connectionOk ? 200 : 500).json({
+    status: credentialOk && storageConfigured && connectionOk ? 'healthy' : 'unhealthy',
     credentialOk,
     storageConfigured,
+    connectionOk,
     ...results
   });
 });
