@@ -21,14 +21,20 @@ const PLAN_DISPLAYS: Record<string, PlanDisplay> = {
   user: {
     badge: 'Free',
     badgeColor: 'bg-gray-100 text-gray-700',
-    description: "You're on the free plan. Perfect for testing RoomVibe with basic features.",
-    bullets: ['Up to 3 artworks', '10 basic mockup rooms', 'Widget embed', 'Buy button integration'],
+    description: 'For people trying RoomVibe for the first time.',
+    bullets: [
+      'Upload up to 3 artworks',
+      'Preview artworks in mockup rooms',
+      'Embed Studio widget on your website',
+      'Buy button integration',
+      'Add up to 7 additional artworks with RoomVibe branding',
+    ],
   },
   artist: {
     badge: 'Artist',
     badgeColor: 'bg-rv-primary/10 text-rv-primary',
-    description: 'For artists who want professional mockups and high-quality exports.',
-    bullets: ['Up to 50 artworks', 'Premium mockup rooms'],
+    description: 'For artists who want professional mockups and exports.',
+    bullets: ['Up to 50 artworks', 'Premium mockup rooms', 'PDF export (10/month)'],
   },
   designer: {
     badge: 'Designer',
@@ -190,13 +196,21 @@ export function YourPlanCard() {
         )}
 
         <div className="flex flex-col sm:flex-row gap-3">
-          {(isFree || isCanceledOrExpired) ? (
+          {isFree ? (
             <a
               href="#/pricing"
               onClick={() => window.scrollTo(0, 0)}
               className="flex-1 text-center py-2.5 px-4 rounded-rvMd font-semibold text-sm bg-rv-primary text-white hover:bg-rv-primaryHover transition-colors"
             >
-              {isCanceledOrExpired ? 'Upgrade again' : 'Upgrade plan'}
+              View all plans
+            </a>
+          ) : isCanceledOrExpired ? (
+            <a
+              href="#/pricing"
+              onClick={() => window.scrollTo(0, 0)}
+              className="flex-1 text-center py-2.5 px-4 rounded-rvMd font-semibold text-sm bg-rv-primary text-white hover:bg-rv-primaryHover transition-colors"
+            >
+              Upgrade again
             </a>
           ) : isActive ? (
             <>
