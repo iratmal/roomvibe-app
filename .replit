@@ -105,4 +105,4 @@ APP_ENV = "staging"
 NODE_ENV = "production"
 
 [objectStorage]
-defaultBucketID = "replit-objstore-fbcb0f29-203b-4f7f-9481-3fdbbdfb1289"
+defaultBucketID = "replit-objstore-eccb0d8c-0651-436f-beb0-6e166d88c4e6"
