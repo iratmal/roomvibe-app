@@ -20,7 +20,7 @@ import designerConnectRoutes from './api/designerConnect.js';
 import galleryConnectRoutes from './api/galleryConnect.js';
 import { initializeDatabase } from './db/init.js';
 import { query } from './db/database.js';
-import { ObjectStorageService, ObjectNotFoundError } from './objectStorage.js';
+import { ObjectStorageService, ObjectNotFoundError, getStorageConfig, getStorageBackend } from './objectStorage.js';
 import { requireGalleryFeature, requireStripeFeature } from './middleware/featureFlags.js';
 import { authenticateToken } from './middleware/auth.js';
 import { envBool, envBoolDefaultTrue } from './utils/envBool.js';
@@ -187,6 +187,7 @@ app.get('/api/version', (req, res) => {
 app.get('/api/health/env', (req, res) => {
   const appEnv = getAppEnv(req);
   const host = getRequestHost(req);
+  const storageConfig = getStorageConfig();
   
   res.json({
     appEnv,
@@ -199,28 +200,25 @@ app.get('/api/health/env', (req, res) => {
     paymentsAvailable: envBool(process.env.STRIPE_ENABLED) && envBool(process.env.PAYMENTS_ENABLED),
     analyticsEnabled: envBool(process.env.ENABLE_ANALYTICS),
     gdprEnabled: envBool(process.env.ENABLE_GDPR),
-    storageConfigured: !!process.env.PRIVATE_OBJECT_DIR,
-    privateObjectDir: process.env.PRIVATE_OBJECT_DIR ? process.env.PRIVATE_OBJECT_DIR.substring(0, 50) : null,
-    storageBackend: '@google-cloud/storage',
-    version: '1.0.8-host-detection',
-    buildTime: '2025-12-23T10:00:00Z'
+    storageConfigured: storageConfig.replitBucketId === 'SET' || storageConfig.privateObjectDir === 'SET',
+    storageBackend: storageConfig.backend,
+    storageSource: storageConfig.resolvedSource,
+    version: '1.0.10-dual-backend',
+    buildTime: '2025-12-25T20:00:00Z'
   });
 });
 
 app.get('/api/health/storage', async (req, res) => {
-  const replitBucket = process.env.REPLIT_OBJECT_STORAGE_BUCKET_ID || '';
-  const privateDir = process.env.PRIVATE_OBJECT_DIR || '';
-  const resolvedBucket = replitBucket || privateDir.replace(/^\/+/, "").split("/")[0] || 'NONE';
+  const storageConfig = getStorageConfig();
   
   const results: Record<string, any> = {
-    version: '1.0.9-bucket-fallback',
-    backend: '@google-cloud/storage',
-    replitBucketId: replitBucket ? 'SET' : 'NOT_SET',
-    replitBucketIdValue: replitBucket ? replitBucket.substring(0, 50) : 'EMPTY',
-    privateObjectDir: privateDir ? 'SET' : 'NOT_SET',
-    privateObjectDirValue: privateDir ? privateDir.substring(0, 50) : 'EMPTY',
-    resolvedBucket: resolvedBucket.substring(0, 50),
-    bucketSource: replitBucket ? 'REPLIT_OBJECT_STORAGE_BUCKET_ID' : (privateDir ? 'PRIVATE_OBJECT_DIR' : 'NONE'),
+    version: '1.0.10-dual-backend',
+    backend: storageConfig.backend,
+    replitBucketId: storageConfig.replitBucketId,
+    replitBucketIdValue: storageConfig.replitBucketIdValue,
+    privateObjectDir: storageConfig.privateObjectDir,
+    privateObjectDirValue: storageConfig.privateObjectDirValue,
+    bucketSource: storageConfig.resolvedSource,
     timestamp: new Date().toISOString(),
     nodeEnv: process.env.NODE_ENV,
     appEnv: getAppEnv(req),
@@ -247,11 +245,16 @@ app.get('/api/health/storage', async (req, res) => {
   }
 
   const credentialOk = results.credentialStatus === 200 && results.credentialHasToken;
-  const storageConfigured = resolvedBucket !== 'NONE';
+  const storageConfigured = storageConfig.replitBucketId === 'SET' || storageConfig.privateObjectDir === 'SET';
   const connectionOk = connectionTest.ok === true;
   
-  res.status(credentialOk && storageConfigured && connectionOk ? 200 : 500).json({
-    status: credentialOk && storageConfigured && connectionOk ? 'healthy' : 'unhealthy',
+  // For replit-object-storage, sidecar credentials are not needed
+  const isHealthy = storageConfig.backend === 'replit-object-storage' 
+    ? (storageConfigured && connectionOk)
+    : (credentialOk && storageConfigured && connectionOk);
+  
+  res.status(isHealthy ? 200 : 500).json({
+    status: isHealthy ? 'healthy' : 'unhealthy',
     credentialOk,
     storageConfigured,
     connectionOk,
@@ -260,10 +263,10 @@ app.get('/api/health/storage', async (req, res) => {
 });
 
 app.get('/api/health/storage/write-test', async (req, res) => {
+  const storageConfig = getStorageConfig();
   console.log('[StorageWriteTest] ====== STARTING WRITE TEST ======');
-  console.log('[StorageWriteTest] PRIVATE_OBJECT_DIR:', process.env.PRIVATE_OBJECT_DIR || 'NOT SET');
-  console.log('[StorageWriteTest] NODE_ENV:', process.env.NODE_ENV);
-  console.log('[StorageWriteTest] APP_ENV:', process.env.APP_ENV);
+  console.log('[StorageWriteTest] backend:', storageConfig.backend);
+  console.log('[StorageWriteTest] source:', storageConfig.resolvedSource);
   
   const objectStorage = new ObjectStorageService();
   try {
@@ -277,9 +280,9 @@ app.get('/api/health/storage/write-test', async (req, res) => {
       ok: true, 
       storedObjectName, 
       timestamp: new Date().toISOString(),
-      backend: '@replit/object-storage',
-      version: '1.0.6-storage-diag',
-      privateObjectDir: process.env.PRIVATE_OBJECT_DIR || 'NOT SET'
+      backend: storageConfig.backend,
+      version: '1.0.10-dual-backend',
+      source: storageConfig.resolvedSource
     });
   } catch (err: any) {
     console.error('[StorageWriteTest] FAILED:', err);

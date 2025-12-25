@@ -4,7 +4,30 @@ import { randomUUID } from "crypto";
 
 const REPLIT_SIDECAR_ENDPOINT = "http://127.0.0.1:1106";
 
-// GCS client with Replit sidecar credentials (from blueprint)
+// Detect which backend to use
+// Priority: REPLIT_OBJECT_STORAGE_BUCKET_ID (native Replit) > PRIVATE_OBJECT_DIR (GCS fallback)
+const USE_REPLIT_NATIVE = !!process.env.REPLIT_OBJECT_STORAGE_BUCKET_ID;
+
+// Native Replit Object Storage client (zero config, auto-connects)
+let replitClient: any = null;
+
+// Lazy initialization of Replit client
+async function getReplitClient(): Promise<any> {
+  if (!USE_REPLIT_NATIVE) return null;
+  if (replitClient) return replitClient;
+  
+  try {
+    // Dynamic import for ESM compatibility
+    const { Client } = await import("@replit/object-storage");
+    replitClient = new Client();
+    return replitClient;
+  } catch (err) {
+    console.error('[ObjectStorage] Failed to load @replit/object-storage:', err);
+    return null;
+  }
+}
+
+// GCS client with Replit sidecar credentials (fallback for staging/dev)
 export const objectStorageClient = new Storage({
   credentials: {
     audience: "replit",
@@ -23,39 +46,40 @@ export const objectStorageClient = new Storage({
   projectId: "",
 });
 
-// Extract bucket name from environment variables
-// Priority: REPLIT_OBJECT_STORAGE_BUCKET_ID (auto-provided by Replit) > PRIVATE_OBJECT_DIR (legacy)
-function getBucketName(): string {
-  // First try the Replit-provided bucket ID (auto-set when Object Storage is attached)
-  const replitBucketId = process.env.REPLIT_OBJECT_STORAGE_BUCKET_ID;
-  if (replitBucketId && replitBucketId.trim()) {
-    return replitBucketId.trim();
-  }
-  
-  // Fallback to PRIVATE_OBJECT_DIR (legacy, may be deployment-specific)
+// Get bucket name for GCS fallback
+function getGcsBucketName(): string {
   const dir = process.env.PRIVATE_OBJECT_DIR || "";
   const cleaned = dir.replace(/^\/+/, "").split("/")[0];
-  if (cleaned) {
-    return cleaned;
+  if (!cleaned) {
+    throw new Error("PRIVATE_OBJECT_DIR not set for GCS fallback");
   }
+  return cleaned;
+}
+
+// Export backend info for health checks
+export function getStorageBackend(): string {
+  return USE_REPLIT_NATIVE ? "replit-object-storage" : "@google-cloud/storage";
+}
+
+export function getStorageConfig() {
+  const replitBucket = process.env.REPLIT_OBJECT_STORAGE_BUCKET_ID || 'NOT_SET';
+  const privateDir = process.env.PRIVATE_OBJECT_DIR || 'NOT_SET';
+  const backend = getStorageBackend();
   
-  throw new Error("No Object Storage bucket configured. Set REPLIT_OBJECT_STORAGE_BUCKET_ID or PRIVATE_OBJECT_DIR.");
+  return {
+    backend,
+    replitBucketId: replitBucket !== 'NOT_SET' ? 'SET' : 'NOT_SET',
+    replitBucketIdValue: replitBucket.substring(0, 50),
+    privateObjectDir: privateDir !== 'NOT_SET' ? 'SET' : 'NOT_SET',
+    privateObjectDirValue: privateDir.substring(0, 50),
+    resolvedSource: USE_REPLIT_NATIVE ? 'REPLIT_OBJECT_STORAGE_BUCKET_ID' : 'PRIVATE_OBJECT_DIR',
+  };
 }
 
 // Log storage configuration on module load
 const logStorageConfig = () => {
-  const replitBucket = process.env.REPLIT_OBJECT_STORAGE_BUCKET_ID || 'NOT_SET';
-  const privateDir = process.env.PRIVATE_OBJECT_DIR || 'NOT_SET';
-  const nodeEnv = process.env.NODE_ENV || 'development';
-  
-  let resolvedBucket = 'NONE';
-  try {
-    resolvedBucket = getBucketName();
-  } catch (e) {
-    resolvedBucket = 'ERROR';
-  }
-  
-  console.log(`[Storage] backend=@google-cloud/storage privateDir=${privateDir.substring(0, 40)} replitBucket=${replitBucket.substring(0, 40)} resolved=${resolvedBucket.substring(0, 40)} env=${nodeEnv}`);
+  const config = getStorageConfig();
+  console.log(`[Storage] backend=${config.backend} source=${config.resolvedSource} replitBucket=${config.replitBucketIdValue.substring(0, 30)} privateDir=${config.privateObjectDirValue.substring(0, 30)}`);
 };
 
 logStorageConfig();
@@ -71,7 +95,7 @@ export class ObjectNotFoundError extends Error {
 export class ObjectStorageService {
   constructor() {}
 
-  async getObjectFile(objectPath: string): Promise<{ file: File; objectName: string }> {
+  async getObjectFile(objectPath: string): Promise<{ file: File | null; objectName: string }> {
     if (!objectPath.startsWith("/objects/")) {
       throw new ObjectNotFoundError();
     }
@@ -82,11 +106,23 @@ export class ObjectStorageService {
     }
 
     const entityId = pathParts.slice(1).join("/");
-    const bucketName = getBucketName();
+    
+    const client = await getReplitClient();
+    if (USE_REPLIT_NATIVE && client) {
+      // For Replit native, we just return the object name
+      const { ok } = await client.exists(entityId);
+      if (!ok) {
+        throw new ObjectNotFoundError();
+      }
+      return { file: null, objectName: entityId };
+    }
+    
+    // GCS fallback
+    const bucketName = getGcsBucketName();
     const bucket = objectStorageClient.bucket(bucketName);
     const file = bucket.file(entityId);
     
-    console.log('[ObjectStorage] getObjectFile:', { bucketName, entityId });
+    console.log('[ObjectStorage] getObjectFile (GCS):', { bucketName, entityId });
     const [exists] = await file.exists();
     
     if (!exists) {
@@ -96,21 +132,58 @@ export class ObjectStorageService {
     return { file, objectName: entityId };
   }
 
-  async downloadObject(objectInfo: { file?: File; objectName: string }, res: Response, cacheTtlSec: number = 3600) {
+  async downloadObject(objectInfo: { file?: File | null; objectName: string }, res: Response, cacheTtlSec: number = 3600) {
     try {
+      const client = await getReplitClient();
+      if (USE_REPLIT_NATIVE && client) {
+        // Use Replit native SDK
+        console.log('[ObjectStorage] downloadObject (Replit):', objectInfo.objectName);
+        
+        const { ok, value: stream, error } = await client.downloadAsStream(objectInfo.objectName);
+        
+        if (!ok || !stream) {
+          console.error('[ObjectStorage] Replit download error:', error);
+          if (!res.headersSent) {
+            res.status(404).json({ error: "File not found" });
+          }
+          return;
+        }
+        
+        // Determine content type from extension
+        const ext = objectInfo.objectName.split('.').pop()?.toLowerCase() || '';
+        const contentTypes: Record<string, string> = {
+          'jpg': 'image/jpeg',
+          'jpeg': 'image/jpeg',
+          'png': 'image/png',
+          'gif': 'image/gif',
+          'webp': 'image/webp',
+          'svg': 'image/svg+xml',
+          'pdf': 'application/pdf',
+          'txt': 'text/plain',
+        };
+        const contentType = contentTypes[ext] || 'application/octet-stream';
+        
+        res.set({
+          "Content-Type": contentType,
+          "Cache-Control": `public, max-age=${cacheTtlSec}`,
+        });
+
+        stream.pipe(res);
+        return;
+      }
+      
+      // GCS fallback
       let file = objectInfo.file;
       if (!file) {
-        const bucketName = getBucketName();
+        const bucketName = getGcsBucketName();
         const bucket = objectStorageClient.bucket(bucketName);
         file = bucket.file(objectInfo.objectName);
       }
 
-      console.log('[ObjectStorage] downloadObject:', objectInfo.objectName);
+      console.log('[ObjectStorage] downloadObject (GCS):', objectInfo.objectName);
       
-      // Get file metadata
       const [metadata] = await file.getMetadata();
       
-      // Determine content type
       const ext = objectInfo.objectName.split('.').pop()?.toLowerCase() || '';
       const contentTypes: Record<string, string> = {
         'jpg': 'image/jpeg',
@@ -133,7 +206,7 @@ export class ObjectStorageService {
       const stream = file.createReadStream();
 
       stream.on("error", (err) => {
-        console.error("[ObjectStorage] Stream error:", err);
+        console.error("[ObjectStorage] GCS stream error:", err);
         if (!res.headersSent) {
           res.status(500).json({ error: "Error streaming file" });
         }
@@ -150,30 +223,62 @@ export class ObjectStorageService {
 
   async testConnection(): Promise<{ ok: boolean; error?: any; bucketInfo?: any }> {
     console.log('[ObjectStorage] ====== CONNECTION TEST ======');
-    console.log('[ObjectStorage] Backend: @google-cloud/storage with sidecar');
+    console.log('[ObjectStorage] Backend:', getStorageBackend());
+    console.log('[ObjectStorage] REPLIT_OBJECT_STORAGE_BUCKET_ID:', process.env.REPLIT_OBJECT_STORAGE_BUCKET_ID ? 'SET' : 'NOT SET');
     console.log('[ObjectStorage] PRIVATE_OBJECT_DIR:', process.env.PRIVATE_OBJECT_DIR || 'NOT SET');
     
     try {
-      const bucketName = getBucketName();
-      console.log('[ObjectStorage] Testing bucket:', bucketName);
+      const client = await getReplitClient();
+      if (USE_REPLIT_NATIVE && client) {
+        // Test Replit native connection
+        const { ok, value, error } = await client.list();
+        
+        if (!ok) {
+          console.error('[ObjectStorage] Replit connection test failed:', error);
+          return { 
+            ok: false, 
+            error: { 
+              message: error?.message || 'List failed',
+              backend: 'replit-object-storage'
+            } 
+          };
+        }
+        
+        console.log('[ObjectStorage] Replit connection OK, objects:', value?.length || 0);
+        return { 
+          ok: true, 
+          bucketInfo: { 
+            backend: 'replit-object-storage',
+            objectCount: value?.length || 0 
+          } 
+        };
+      }
+      
+      // GCS fallback test
+      const bucketName = getGcsBucketName();
+      console.log('[ObjectStorage] Testing GCS bucket:', bucketName);
       
       const bucket = objectStorageClient.bucket(bucketName);
       const [files] = await bucket.getFiles({ maxResults: 1 });
       
-      console.log('[ObjectStorage] Connection OK, sample files:', files.length);
-      return { ok: true, bucketInfo: { bucket: bucketName, sampleCount: files.length } };
+      console.log('[ObjectStorage] GCS connection OK, sample files:', files.length);
+      return { 
+        ok: true, 
+        bucketInfo: { 
+          backend: '@google-cloud/storage',
+          bucket: bucketName, 
+          sampleCount: files.length 
+        } 
+      };
     } catch (err: any) {
       console.error('[ObjectStorage] Connection test exception:', err.message);
-      console.error('[ObjectStorage] Error code:', err.code);
-      console.error('[ObjectStorage] Error status:', err.response?.status);
-      console.error('[ObjectStorage] Error data:', JSON.stringify(err.response?.data || err.errors || {}, null, 2));
       return { 
         ok: false, 
         error: { 
           message: err.message, 
           code: err.code,
           status: err.response?.status,
-          errors: err.errors
+          backend: getStorageBackend()
         } 
       };
     }
@@ -181,13 +286,9 @@ export class ObjectStorageService {
 
   async uploadBuffer(buffer: Buffer, filename: string, contentType: string): Promise<string> {
     console.log('[ObjectStorage] ====== UPLOAD START ======');
-    console.log('[ObjectStorage] backend=@google-cloud/storage with sidecar');
-    console.log('[ObjectStorage] PRIVATE_OBJECT_DIR:', process.env.PRIVATE_OBJECT_DIR || 'NOT SET');
-    console.log('[ObjectStorage] NODE_ENV:', process.env.NODE_ENV);
-    console.log('[ObjectStorage] APP_ENV:', process.env.APP_ENV);
+    console.log('[ObjectStorage] backend:', getStorageBackend());
     console.log('[ObjectStorage] File:', { filename, contentType, bufferSize: buffer.length });
     
-    // Validate buffer
     if (!buffer || buffer.length === 0) {
       throw new Error('Invalid buffer: empty or undefined');
     }
@@ -199,28 +300,36 @@ export class ObjectStorageService {
     console.log('[ObjectStorage] Target objectName:', objectName);
     
     try {
-      const bucketName = getBucketName();
-      console.log('[ObjectStorage] Using bucket:', bucketName);
-      
-      const bucket = objectStorageClient.bucket(bucketName);
-      const file = bucket.file(objectName);
-      
-      // Direct upload using GCS save method
-      console.log('[ObjectStorage] Starting direct upload...');
-      await file.save(buffer, {
-        contentType: contentType,
-        resumable: false,
-      });
-      
-      console.log('[ObjectStorage] Upload SUCCESS:', objectName);
+      const client = await getReplitClient();
+      if (USE_REPLIT_NATIVE && client) {
+        // Use Replit native SDK
+        console.log('[ObjectStorage] Using Replit native upload...');
+        const { ok, error } = await client.uploadFromBytes(objectName, buffer);
+        
+        if (!ok) {
+          console.error('[ObjectStorage] Replit upload failed:', error);
+          throw new Error(`Replit storage write failed: ${error?.message || 'Unknown error'}`);
+        }
+        
+        console.log('[ObjectStorage] Replit upload SUCCESS:', objectName);
+      } else {
+        // GCS fallback
+        const bucketName = getGcsBucketName();
+        console.log('[ObjectStorage] Using GCS bucket:', bucketName);
+        
+        const bucket = objectStorageClient.bucket(bucketName);
+        const file = bucket.file(objectName);
+        
+        console.log('[ObjectStorage] Starting GCS upload...');
+        await file.save(buffer, {
+          contentType: contentType,
+          resumable: false,
+        });
+        
+        console.log('[ObjectStorage] GCS upload SUCCESS:', objectName);
+      }
     } catch (err: any) {
       console.error('[ObjectStorage] Upload EXCEPTION:', err.message);
-      console.error('[ObjectStorage] Full error:', {
-        message: err.message,
-        code: err.code,
-        errors: err.errors,
-        response: err.response?.data
-      });
       throw new Error(`Storage write failed: ${err.message}`);
     }
 
