@@ -109,9 +109,17 @@ export class ObjectStorageService {
     
     const client = await getReplitClient();
     if (USE_REPLIT_NATIVE && client) {
-      // For Replit native, we just return the object name
-      const { ok } = await client.exists(entityId);
-      if (!ok) {
+      // For Replit native, check if object exists
+      // exists() returns { ok: boolean, value: boolean } where value indicates existence
+      const existsResult = await client.exists(entityId);
+      console.log('[ObjectStorage] getObjectFile (Replit):', { entityId, existsResult });
+      
+      if (!existsResult.ok) {
+        console.error('[ObjectStorage] exists() call failed:', existsResult.error);
+        throw new ObjectNotFoundError();
+      }
+      if (!existsResult.value) {
+        console.error('[ObjectStorage] Object does not exist:', entityId);
         throw new ObjectNotFoundError();
       }
       return { file: null, objectName: entityId };
