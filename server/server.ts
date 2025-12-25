@@ -40,6 +40,23 @@ const PORT = parseInt(
   10
 );
 
+// Canonical domain redirect middleware (301 permanent)
+// Redirects roomvibe.app and www.roomvibe.app to app.roomvibe.app
+const CANONICAL_HOST = 'app.roomvibe.app';
+const REDIRECT_HOSTS = ['roomvibe.app', 'www.roomvibe.app'];
+
+app.use((req, res, next) => {
+  const host = (req.headers['x-forwarded-host'] || req.headers.host || '').toString().toLowerCase().split(':')[0];
+  
+  if (REDIRECT_HOSTS.includes(host)) {
+    const redirectUrl = `https://${CANONICAL_HOST}${req.originalUrl}`;
+    console.log(`[Redirect] 301: ${host}${req.originalUrl} → ${redirectUrl}`);
+    return res.redirect(301, redirectUrl);
+  }
+  
+  next();
+});
+
 // Get Replit domain for CORS
 const replitDomain = process.env.REPLIT_DOMAINS?.split(',')[0];
 const allowedOrigins = process.env.NODE_ENV === 'production'
@@ -47,6 +64,8 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
       process.env.FRONTEND_URL,
       'https://app.roomvibe.app',
       'https://staging.roomvibe.app',
+      'https://roomvibe.app',
+      'https://www.roomvibe.app',
       replitDomain ? `https://${replitDomain}` : null,
     ].filter(Boolean) as string[]
   : ['http://localhost:5000', 'http://127.0.0.1:5000'];

@@ -1,0 +1,100 @@
+# 🎯 TASK ZA REPLIT AGENTA — LIVE / PRODUCTION ONLY
+
+**Cilj:**
+Osigurati da se **roomvibe.app** i **[www.roomvibe.app](http://www.roomvibe.app)** uvijek ispravno i trajno (301) redirektaju na **[https://app.roomvibe.app](https://app.roomvibe.app)**, bez loopova i bez oslanjanja na Namecheap redirect.
+
+---
+
+## 🔴 VAŽNO — OPSEG TASKA
+
+* ❗ OVO SE RADI ISKLJUČIVO NA **PRODUCTION / LIVE**
+* ❌ NE raditi ništa u stagingu
+* ❌ Ne dirati Namecheap (DNS je već očišćen)
+
+---
+
+## 1️⃣ Replit — Production Deployment
+
+**Projekt:** RoomVibe
+
+Agent treba:
+
+* Otvoriti **Replit → Deployments → Production**
+* Dodati sljedeće **Custom Domains**:
+
+  * `roomvibe.app`
+  * `www.roomvibe.app`
+
+➡️ Oba moraju pokazivati na **isti production deployment** koji trenutno služi `app.roomvibe.app`
+
+---
+
+## 2️⃣ Server-side redirect (Express middleware)
+
+U **production server kodu** dodati redirect guard:
+
+### Pravilo
+
+* Ako request dolazi na:
+
+  * `roomvibe.app`
+  * `www.roomvibe.app`
+* onda napraviti **301 redirect** na:
+
+  * `https://app.roomvibe.app`
+* sačuvati:
+
+  * path (`/studio`, `/api/health`, itd.)
+  * query string
+
+### Obavezno
+
+* ❌ Ne smije napraviti redirect loop
+* ✅ Ako je `host === app.roomvibe.app` → **ne radi ništa**
+
+### Pseudologika (za razumijevanje)
+
+```
+if host !== 'app.roomvibe.app':
+  redirect 301 to https://app.roomvibe.app + originalPath + query
+```
+
+Agent neka implementira čisto i sigurno, uzimajući u obzir `X-Forwarded-Host` ako je potrebno.
+
+---
+
+## 3️⃣ Testiranje (obavezno potvrditi)
+
+Nakon deploya, agent mora potvrditi da sljedeće radi:
+
+* ✅ [https://roomvibe.app](https://roomvibe.app) → [https://app.roomvibe.app](https://app.roomvibe.app)
+* ✅ [https://www.roomvibe.app](https://www.roomvibe.app) → [https://app.roomvibe.app](https://app.roomvibe.app)
+* ✅ [https://roomvibe.app/api/health/env](https://roomvibe.app/api/health/env) → redirect → app.roomvibe.app/api/health/env
+
+Bez errora, bez loopa.
+
+---
+
+## 4️⃣ Ne dirati
+
+* ❌ Staging deployment
+* ❌ staging.roomvibe.app
+* ❌ Namecheap redirecte (već su uklonjeni)
+
+---
+
+## 5️⃣ Definicija gotovosti (DONE)
+
+Task je gotov kad:
+
+* Root domena radi bez obzira kako se upiše
+* SEO-friendly 301 redirect je aktivan
+* `app.roomvibe.app` ostaje jedini kanonski URL
+
+---
+
+✳️ Ako Replit ima internu opciju za redirect bez koda — može se koristiti, **ali server-side redirect mora ostati fallback**.
+
+---
+
+📌 **Ovo je infra task — nema veze sa UI-em, planovima ili stagingom.**
