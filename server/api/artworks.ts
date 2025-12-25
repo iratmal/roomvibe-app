@@ -257,11 +257,6 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
 router.put('/artworks/:id', authenticateToken, upload.single('image'), async (req: any, res) => {
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
-    
-    if (!['artist', 'designer', 'gallery', 'admin'].includes(effectivePlan)) {
-      return res.status(403).json({ error: 'Only artists and admins can update artworks' });
-    }
-
     const artworkId = parseInt(req.params.id);
     const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, orientation, styleTags, dominantColors, medium, availability } = req.body;
 
@@ -273,7 +268,7 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
     }
 
     if (existingArtwork.rows.length === 0) {
-      return res.status(404).json({ error: 'Artwork not found or you do not have permission to edit it' });
+      return res.status(404).json({ error: 'Artwork not found or you can only edit your own artworks' });
     }
 
     let imageUrl = existingArtwork.rows[0].image_url;
@@ -333,11 +328,6 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
 router.delete('/artworks/:id', authenticateToken, async (req: any, res) => {
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
-    
-    if (!['artist', 'designer', 'gallery', 'admin'].includes(effectivePlan)) {
-      return res.status(403).json({ error: 'Only artists and admins can delete artworks' });
-    }
-
     const artworkId = parseInt(req.params.id);
 
     let result;
@@ -348,7 +338,7 @@ router.delete('/artworks/:id', authenticateToken, async (req: any, res) => {
     }
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Artwork not found or you do not have permission to delete it' });
+      return res.status(404).json({ error: 'Artwork not found or you can only delete your own artworks' });
     }
 
     res.json({ message: 'Artwork deleted successfully' });

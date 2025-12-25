@@ -1,0 +1,131 @@
+✅ TASK ZA AGENTA: Fix upload prikaza slika + dopusti user edit svojih artworkova
+Kontekst (što se događa na LIVE)
+
+Upload artworka prođe (broj se poveća npr. 1/10, 2/10), ali slika se NE prikaže u “My Artworks” kartici (prazan thumbnail).
+
+Kad user klikne Edit, dobije poruku: “Only artists and admins can update artworks”
+➡️ To je pogrešno: user mora moći editirati svoje own artworkove (do 10 u free planu).
+
+Storage health je OK (api/health/storage pokazuje connectionOk true), znači nije više problem “storage not configured” nego problem u URL-u/serviranju slika ili UI renderu.
+
+A) FIX: Slike se ne prikazuju nakon uploada
+Cilj
+
+Nakon upload-a, u listi “My Artworks” se mora prikazati thumbnail/slika odmah (ili nakon refresh-a), bez praznog placeholdera.
+
+Koraci za debugging (agent)
+
+Provjeri DB zapis artworka nakon create:
+
+postoji li imageKey, imageUrl, objectKey, storagePath ili slično?
+
+da li je imageKey uopće spremljen ili ostane null/empty?
+
+Provjeri API response nakon create artwork:
+
+vraća li frontendu polje za sliku (imageUrl ili imageSignedUrl)?
+
+Ako frontend očekuje imageUrl, a backend vraća imageKey (ili obrnuto) -> UI neće prikazati ništa.
+
+Provjeri kako se slika servira
+
+koristi li se:
+
+direktni public URL (GCS/public) ili
+
+signed URL ili
+
+naš endpoint tipa /api/artworks/:id/image?
+
+Ako je signed URL potreban, mora se generirati na “list artworks” endpointu ili kroz poseban endpoint.
+
+Provjeri browser Network (u kodu ili logovima):
+
+da li se uopće pokušava loadati slika?
+
+ako da: koji je URL i koji status (200/403/404)?
+
+Ako je 403/404 → problem je u generiranju URL-a ili pathu.
+
+Očekivani fix (što implementirati)
+
+Standardizirati da artwork uvijek ima:
+
+imageKey (trajni key u storage-u)
+
+i u API-u vraćati imageUrl koji je validan za prikaz (najčešće signed URL).
+
+U GET /api/artworks (ili gdje se lista) dodati generiranje imageUrl (signed) za svaki artwork koji ima imageKey.
+
+Acceptance criteria
+
+Upload 2 slike → obje se odmah prikažu u “My Artworks” (thumbnail nije prazan).
+
+Refresh stranice → i dalje se prikazuju.
+
+Nema 403/404 u konzoli za img request.
+
+B) FIX: User ne može editirati svoje artworkove
+Cilj
+
+User (free plan) smije editirati samo svoje artworkove (naslov, dimenzije, cijena, buy URL, i opcionalno zamjena slike).
+
+Trenutno
+
+Backend blokira update jer dozvoljava samo role artist ili admin.
+
+Implementacija (agent)
+
+U update endpointu (vjerojatno PUT /api/artworks/:id) promijeniti auth logiku:
+
+Pravila:
+
+admin može sve
+
+artist može svoje (ili sve – ovisno o staroj logici)
+
+user može samo svoje artworkove (owner check)
+
+Pseudo:
+
+Dohvati artwork iz DB
+
+Ako req.user.role === 'admin' → allow
+
+Else if artwork.userId === req.user.id → allow (bez obzira role user/artist)
+
+Else → forbid
+
+I poruka greške neka bude jasna: “You can only edit your own artworks”.
+
+Acceptance criteria
+
+Logged-in user može otvoriti Edit i spremiti promjene na svom artworku bez greške.
+
+User ne može editirati tuđi artwork.
+
+C) BONUS (ako treba, ali ne komplicirati)
+
+Ako je problem samo UI:
+
+provjeri komponentu koja rendera thumbnail (npr. src/components/dashboards/...):
+
+da li koristi krivo polje (artwork.imageUrl vs artwork.image)?
+
+fallback na placeholder ne smije biti uvijek aktivan.
+
+Gdje vjerojatno leži kod
+
+server/api/artworks.ts (create/update/list)
+
+server/services/objectStorage.ts (uploadBuffer, signed url)
+
+server/middleware/auth*.ts (role checks)
+
+src/components/dashboards/* (render kartica / edit forma)
+
+Deliverable
+
+PR/commit: “Fix artwork image display + allow users to edit own artworks”
+
+Kratke bilješke: što je bio root cause (npr. “list endpoint nije vraćao imageUrl / UI čitao krivo polje / update route imala preusku role provjeru”).
