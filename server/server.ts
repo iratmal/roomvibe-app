@@ -19,7 +19,7 @@ import messagesRoutes from './api/messages.js';
 import designerConnectRoutes from './api/designerConnect.js';
 import galleryConnectRoutes from './api/galleryConnect.js';
 import { initializeDatabase } from './db/init.js';
-import { query } from './db/database.js';
+import { query, getDbIdentity } from './db/database.js';
 import { ObjectStorageService, ObjectNotFoundError, getStorageConfig, getStorageBackend, isStorageConfigured } from './objectStorage.js';
 import { requireGalleryFeature, requireStripeFeature } from './middleware/featureFlags.js';
 import { authenticateToken } from './middleware/auth.js';
@@ -150,12 +150,17 @@ app.get('/api/feature-flags', (req, res) => {
 app.get('/api/health', (req, res) => {
   const storageConfig = getStorageConfig();
   const storageConfigured = isStorageConfigured();
+  const dbIdentity = getDbIdentity();
   
   res.status(200).json({ 
     status: 'ok', 
     message: 'RoomVibe API server running',
     ready: isServerReady,
     dbReady: isServerReady,
+    dbHost: dbIdentity.host,
+    dbName: dbIdentity.name,
+    dbEnv: dbIdentity.environment,
+    dbUrlHash: dbIdentity.urlHash,
     storageConfigured,
     storageBackend: storageConfig.backend
   });
@@ -193,12 +198,17 @@ app.get('/api/health/env', (req, res) => {
   const appEnv = getAppEnv(req);
   const host = getRequestHost(req);
   const storageConfig = getStorageConfig();
+  const dbIdentity = getDbIdentity();
   
   res.json({
     appEnv,
     hostDetected: host,
     isProdHost: isProdHost(host),
     isStagingHost: isStagingHost(host),
+    dbHost: dbIdentity.host,
+    dbName: dbIdentity.name,
+    dbEnv: dbIdentity.environment,
+    dbUrlHash: dbIdentity.urlHash,
     stripeMode: process.env.STRIPE_MODE || 'test',
     paymentsEnabled: envBool(process.env.PAYMENTS_ENABLED),
     stripeEnabled: envBool(process.env.STRIPE_ENABLED),
@@ -208,22 +218,27 @@ app.get('/api/health/env', (req, res) => {
     storageConfigured: storageConfig.replitBucketId === 'SET' || storageConfig.privateObjectDir === 'SET',
     storageBackend: storageConfig.backend,
     storageSource: storageConfig.resolvedSource,
-    version: '1.0.10-dual-backend',
-    buildTime: '2025-12-25T20:00:00Z'
+    version: '1.0.11-db-identity',
+    buildTime: '2025-12-25T22:45:00Z'
   });
 });
 
 app.get('/api/health/storage', async (req, res) => {
   const storageConfig = getStorageConfig();
+  const dbIdentity = getDbIdentity();
   
   const results: Record<string, any> = {
-    version: '1.0.10-dual-backend',
+    version: '1.0.11-db-identity',
     backend: storageConfig.backend,
     replitBucketId: storageConfig.replitBucketId,
     replitBucketIdValue: storageConfig.replitBucketIdValue,
     privateObjectDir: storageConfig.privateObjectDir,
     privateObjectDirValue: storageConfig.privateObjectDirValue,
     bucketSource: storageConfig.resolvedSource,
+    dbHost: dbIdentity.host,
+    dbName: dbIdentity.name,
+    dbEnv: dbIdentity.environment,
+    dbUrlHash: dbIdentity.urlHash,
     timestamp: new Date().toISOString(),
     nodeEnv: process.env.NODE_ENV,
     appEnv: getAppEnv(req),
@@ -358,23 +373,25 @@ app.get('/api/artwork-image/:id', async (req: any, res) => {
     const artworkId = parseInt(req.params.id);
     const storageConfig = getStorageConfig();
     const storageReady = isStorageConfigured();
-    const dbHost = process.env.DATABASE_URL?.split('@')[1]?.split('/')[0] || 'unknown';
+    const dbIdentity = getDbIdentity();
     
-    console.log(`[artwork-image] Request for artwork ${artworkId}, backend=${storageConfig.backend}, configured=${storageReady}, db=${dbHost}`);
+    console.log(`[artwork-image] Request for artwork ${artworkId}, backend=${storageConfig.backend}, configured=${storageReady}, dbHost=${dbIdentity.host}, dbName=${dbIdentity.name}, dbEnv=${dbIdentity.environment}`);
     
     if (isNaN(artworkId)) {
       return res.status(400).json({ error: 'Invalid artwork ID' });
     }
 
     let result = await query('SELECT id, image_url, storage_key, title, artist_id FROM artworks WHERE id = $1', [artworkId]);
-    console.log(`[artwork-image] DB lookup for id=${artworkId} → ${result.rows.length > 0 ? 'FOUND' : 'NOT FOUND'}`);
+    console.log(`[artwork-image] DB lookup for id=${artworkId} → ${result.rows.length > 0 ? 'FOUND' : 'NOT FOUND'} (dbHost=${dbIdentity.host})`);
 
     if (result.rows.length === 0) {
-      console.warn(`[artwork-image] Artwork ${artworkId} not found in DB (host=${dbHost})`);
+      console.warn(`[artwork-image] Artwork ${artworkId} not found in DB (host=${dbIdentity.host}, db=${dbIdentity.name}, env=${dbIdentity.environment})`);
       return res.status(404).json({ 
         error: 'Artwork not found', 
         artworkId,
-        dbHost,
+        dbHost: dbIdentity.host,
+        dbName: dbIdentity.name,
+        dbEnv: dbIdentity.environment,
         hint: 'This artwork ID does not exist in the database. It may have been deleted or never created.'
       });
     }

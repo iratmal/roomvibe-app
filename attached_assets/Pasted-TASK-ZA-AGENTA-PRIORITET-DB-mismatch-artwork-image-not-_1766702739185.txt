@@ -1,0 +1,106 @@
+TASK ZA AGENTA (PRIORITET: DB mismatch + artwork-image not found)
+
+Context:
+U live-u /api/artworks vraća listu, ali /api/artwork-image/:id vraća "Artwork not found" + hint da ID ne postoji u DB. To znači da različiti endpointi čitaju različit DB kontekst / pool / env / fallback. Storage je OK (health/storage/list pokazuje objekte), ali image route gleda krivu bazu ili krivi DB init.
+
+Goal
+
+Osigurati da SVI API endpointi koriste isti DB pool i isti DATABASE_URL (nema fallback-a na drugi DB).
+
+/api/artwork-image/:id mora vraćati sliku za postojeći artwork ID iz /api/artworks.
+
+Dodati dijagnostiku: u logovima i u JSON error-u mora pisati dbHost + dbName i mora biti isti za oba endpointa.
+
+Steps (Implementacija)
+A) Centraliziraj DB konekciju (single source of truth)
+
+Napravi/koristi jedan db.ts (ili postojeći) koji:
+
+inicijalizira pool jednom
+
+exporta db ili pool
+
+Zabraniti da bilo koji route radi:
+
+vlastiti new Pool(...)
+
+vlastiti connect(...)
+
+vlastito čitanje env varijabli za DB
+
+Acceptance: pretragom repo-a nema više duplih new Pool osim u db.ts.
+
+B) Uskladi DB host/name logging na oba endpointa
+
+U oba endpointa:
+
+/api/artworks
+
+/api/artwork-image/:id
+
+dodaj log linije:
+
+dbHost, dbName, appEnv, nodeEnv
+
+I to iz istog DB poola.
+
+Acceptance: u production logovima, za oba endpointa, dbHost i dbName su identični.
+
+C) Fix: /api/artwork-image/:id mora čitati artwork iz istog DB-a kao /api/artworks
+
+U /api/artwork-image/:id:
+
+SELECT * FROM artworks WHERE id=$1 preko centralnog db
+
+ako ne postoji → vrati 404, ali uz dijagnostiku:
+
+requestedId, dbHost, dbName, appEnv, nodeEnv
+
+ako postoji → koristi storage_key (ne image_url) i fetchaj iz storage backenda
+
+Acceptance: za artwork koji se vidi u UI (/api/artworks), GET /api/artwork-image/<id> ne vraća “not found”.
+
+D) Storage key consistency
+
+Ako artwork ima:
+
+storage_key → koristi to
+
+nema storage_key ali ima legacy image_url → probaj mapirati (ako moguće) ili vrati jasnu poruku “missing storage_key, reupload needed”.
+
+Acceptance: nove slike rade preko storage_key, a legacy jasno signalizira problem.
+
+E) Dodaj “DB identity guard” u health endpoint
+
+U /api/health/env ili /api/health/storage dodaj:
+
+dbHost
+
+dbName
+
+dbUrlHash (npr. sha256 trunc) da možemo usporediti bez leak-a
+
+Acceptance: health endpoint pokazuje identitet baze.
+
+Repro test (agent mora proći)
+
+Otvori https://app.roomvibe.app/api/artworks
+
+uzmi prvi id
+
+otvori https://app.roomvibe.app/api/artwork-image/<id>
+➡️ mora vratiti image (ili barem 200 + binary)
+
+U logovima mora pisati isti dbHost/dbName za oba requesta.
+
+Deliverable
+
+PR/commit koji:
+
+uklanja sve duple DB inicijalizacije
+
+garantira single DB pool
+
+ispravlja /api/artwork-image/:id da čita iz istog DB konteksta
+
+dodaje dijagnostičke logove i health polja
