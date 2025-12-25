@@ -359,32 +359,59 @@ app.get('/api/artwork-image/:id', async (req: any, res) => {
       return res.status(400).json({ error: 'Invalid artwork ID' });
     }
 
-    const result = await query('SELECT image_url FROM artworks WHERE id = $1', [artworkId]);
+    const result = await query('SELECT image_url, storage_key FROM artworks WHERE id = $1', [artworkId]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Artwork not found', artworkId });
     }
 
-    const imageUrl = result.rows[0].image_url;
-    console.log(`[artwork-image] Artwork ${artworkId} has image_url: ${imageUrl}`);
+    const { image_url: imageUrl, storage_key: storageKey } = result.rows[0];
+    console.log(`[artwork-image] Artwork ${artworkId}: storage_key=${storageKey}, image_url=${imageUrl}`);
 
+    // Prefer storage_key if available (direct object key)
+    if (storageKey) {
+      console.log(`[artwork-image] Using storage_key: ${storageKey}`);
+      try {
+        const objectStorageService = new ObjectStorageService();
+        // Reconstruct the /objects/ path for getObjectFile
+        const objectPath = `/objects/${storageKey}`;
+        const objectFile = await objectStorageService.getObjectFile(objectPath);
+        console.log(`[artwork-image] Object found via storage_key, streaming: ${objectFile.objectName}`);
+        objectStorageService.downloadObject(objectFile, res);
+        return;
+      } catch (storageError: any) {
+        console.error(`[artwork-image] Storage error for artwork ${artworkId} (via storage_key):`, {
+          error: storageError?.message || storageError,
+          storageKey,
+          backend: storageConfig.backend
+        });
+        return res.status(404).json({ 
+          error: 'Image file not found in storage', 
+          artworkId,
+          storageKey,
+          backend: storageConfig.backend
+        });
+      }
+    }
+    
+    // Fallback: try to use image_url if storage_key is missing
     if (!imageUrl) {
-      return res.status(404).json({ error: 'Artwork has no image', artworkId });
+      return res.status(404).json({ error: 'Artwork has no image (missing storage_key and image_url)', artworkId });
     }
     
     // If image is stored in Object Storage, serve from there
     if (imageUrl.startsWith('/objects/')) {
       const objectKey = imageUrl.replace('/objects/', '');
-      console.log(`[artwork-image] Fetching from storage: key=${objectKey}, backend=${storageConfig.backend}`);
+      console.log(`[artwork-image] Fallback to image_url: key=${objectKey}, backend=${storageConfig.backend}`);
       
       try {
         const objectStorageService = new ObjectStorageService();
         const objectFile = await objectStorageService.getObjectFile(imageUrl);
-        console.log(`[artwork-image] Object found, streaming: ${objectFile.objectName}`);
+        console.log(`[artwork-image] Object found via image_url, streaming: ${objectFile.objectName}`);
         objectStorageService.downloadObject(objectFile, res);
         return;
       } catch (storageError: any) {
-        console.error(`[artwork-image] Storage error for artwork ${artworkId}:`, {
+        console.error(`[artwork-image] Storage error for artwork ${artworkId} (via image_url):`, {
           error: storageError?.message || storageError,
           imageUrl,
           objectKey,

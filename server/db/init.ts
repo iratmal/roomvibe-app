@@ -471,6 +471,26 @@ export async function initializeDatabase() {
       END $$;
     `);
 
+    // storage_key - exact object key in storage (e.g., artworks/uuid.jpg)
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'artworks' AND column_name = 'storage_key'
+        ) THEN
+          ALTER TABLE artworks ADD COLUMN storage_key TEXT;
+        END IF;
+      END $$;
+    `);
+
+    // Migrate existing artworks: extract storage_key from valid image_url paths
+    await query(`
+      UPDATE artworks 
+      SET storage_key = REPLACE(image_url, '/objects/', '')
+      WHERE image_url LIKE '/objects/%' AND storage_key IS NULL;
+    `);
+
     // =====================================================
     // Artist Connect Core - Artwork Connect metadata fields
     // =====================================================

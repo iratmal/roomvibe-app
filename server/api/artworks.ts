@@ -193,7 +193,9 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
       req.file.originalname,
       req.file.mimetype
     );
-    console.log('[Upload] Image uploaded to Object Storage:', imageUrl);
+    // Extract storage_key from imageUrl (strip /objects/ prefix)
+    const storageKey = imageUrl.startsWith('/objects/') ? imageUrl.replace('/objects/', '') : imageUrl;
+    console.log('[Upload] Image uploaded to Object Storage:', { imageUrl, storageKey });
 
     // Generate AI tags from image (non-blocking, with fallback to empty array)
     let tags: string[] = [];
@@ -215,10 +217,10 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
 
     console.log('Inserting artwork into database...');
     const result = await query(
-      `INSERT INTO artworks (artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, CURRENT_TIMESTAMP)
-       RETURNING id, artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, created_at, updated_at`,
-      [targetArtistId, title, imageUrl, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, tags, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability]
+      `INSERT INTO artworks (artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, CURRENT_TIMESTAMP)
+       RETURNING id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, created_at, updated_at`,
+      [targetArtistId, title, imageUrl, storageKey, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, tags, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability]
     );
 
     const artworkId = result.rows[0].id;
@@ -272,6 +274,7 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
     }
 
     let imageUrl = existingArtwork.rows[0].image_url;
+    let storageKey = existingArtwork.rows[0].storage_key;
     
     // Check if existing image_url is corrupted (contains API path instead of object path)
     const isCorrupted = imageUrl && imageUrl.startsWith('/api/artwork-image/');
@@ -288,7 +291,9 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
         req.file.originalname,
         req.file.mimetype
       );
-      console.log('[Update] New image uploaded:', imageUrl);
+      // Extract storage_key from imageUrl
+      storageKey = imageUrl.startsWith('/objects/') ? imageUrl.replace('/objects/', '') : imageUrl;
+      console.log('[Update] New image uploaded:', { imageUrl, storageKey });
     } else if (isCorrupted) {
       // If no new file and existing is corrupted, keep it but warn
       console.warn(`[Update] No new image provided for artwork ${artworkId} with corrupted image. Image will remain broken.`);
@@ -310,10 +315,10 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
 
     const result = await query(
       `UPDATE artworks 
-       SET title = $1, image_url = $2, width = $3, height = $4, dimension_unit = $5, price_amount = $6, price_currency = $7, buy_url = $8, orientation = $9, style_tags = $10, dominant_colors = $11, medium = $12, availability = $13, updated_at = CURRENT_TIMESTAMP
-       WHERE id = $14
-       RETURNING id, artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, orientation, style_tags, dominant_colors, medium, availability, created_at, updated_at`,
-      [title, imageUrl, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability, artworkId]
+       SET title = $1, image_url = $2, storage_key = $3, width = $4, height = $5, dimension_unit = $6, price_amount = $7, price_currency = $8, buy_url = $9, orientation = $10, style_tags = $11, dominant_colors = $12, medium = $13, availability = $14, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $15
+       RETURNING id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, orientation, style_tags, dominant_colors, medium, availability, created_at, updated_at`,
+      [title, imageUrl, storageKey, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability, artworkId]
     );
 
     // Return the API endpoint URL for frontend compatibility (actual path is stored in DB)
