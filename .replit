@@ -101,8 +101,9 @@ STRIPE_PRICE_DESIGNER = "price_1SZV7SIpcKai6mhJIJLIwumX"
 STRIPE_PRICE_GALLERY = "price_1SZV7xIpcKai6mhJxwXRayJv"
 
 [userenv.production]
-APP_ENV = "staging"
+APP_ENV = "production"
 NODE_ENV = "production"
+STAGING_ENVIRONMENT = "false"
 
 [objectStorage]
 defaultBucketID = "replit-objstore-3c53825c-85ae-483e-9643-6eeda1d213b7"
