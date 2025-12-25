@@ -262,6 +262,51 @@ app.get('/api/health/storage', async (req, res) => {
   });
 });
 
+app.get('/api/health/storage/list', async (req, res) => {
+  const storageConfig = getStorageConfig();
+  console.log('[StorageList] Listing objects in storage...');
+  
+  try {
+    if (storageConfig.backend === 'replit-object-storage') {
+      const { Client } = await import('@replit/object-storage');
+      const client = new Client();
+      const { ok, value: objects, error } = await client.list();
+      
+      if (!ok) {
+        return res.json({ 
+          ok: false, 
+          backend: storageConfig.backend,
+          error: error?.message || 'List failed'
+        });
+      }
+      
+      const artworkObjects = (objects || [])
+        .filter((obj: any) => obj.name?.startsWith('artworks/'))
+        .slice(0, 20);
+      
+      return res.json({
+        ok: true,
+        backend: storageConfig.backend,
+        totalObjects: objects?.length || 0,
+        artworkObjects: artworkObjects.map((obj: any) => obj.name),
+        sampleAll: (objects || []).slice(0, 10).map((obj: any) => obj.name)
+      });
+    } else {
+      return res.json({
+        ok: false,
+        backend: storageConfig.backend,
+        message: 'List only supported for replit-object-storage'
+      });
+    }
+  } catch (err: any) {
+    console.error('[StorageList] Error:', err);
+    return res.status(500).json({
+      ok: false,
+      error: err.message
+    });
+  }
+});
+
 app.get('/api/health/storage/write-test', async (req, res) => {
   const storageConfig = getStorageConfig();
   console.log('[StorageWriteTest] ====== STARTING WRITE TEST ======');
@@ -306,6 +351,9 @@ app.get('/api/health/storage/write-test', async (req, res) => {
 app.get('/api/artwork-image/:id', async (req: any, res) => {
   try {
     const artworkId = parseInt(req.params.id);
+    const storageConfig = getStorageConfig();
+    
+    console.log(`[artwork-image] Request for artwork ${artworkId}, backend=${storageConfig.backend}`);
     
     if (isNaN(artworkId)) {
       return res.status(400).json({ error: 'Invalid artwork ID' });
@@ -318,6 +366,7 @@ app.get('/api/artwork-image/:id', async (req: any, res) => {
     }
 
     const imageUrl = result.rows[0].image_url;
+    console.log(`[artwork-image] Artwork ${artworkId} has image_url: ${imageUrl}`);
 
     if (!imageUrl) {
       return res.status(404).json({ error: 'Artwork has no image', artworkId });
@@ -325,17 +374,27 @@ app.get('/api/artwork-image/:id', async (req: any, res) => {
     
     // If image is stored in Object Storage, serve from there
     if (imageUrl.startsWith('/objects/')) {
+      const objectKey = imageUrl.replace('/objects/', '');
+      console.log(`[artwork-image] Fetching from storage: key=${objectKey}, backend=${storageConfig.backend}`);
+      
       try {
         const objectStorageService = new ObjectStorageService();
         const objectFile = await objectStorageService.getObjectFile(imageUrl);
+        console.log(`[artwork-image] Object found, streaming: ${objectFile.objectName}`);
         objectStorageService.downloadObject(objectFile, res);
         return;
-      } catch (storageError) {
-        console.error(`[artwork-image] Object storage error for artwork ${artworkId}:`, storageError);
+      } catch (storageError: any) {
+        console.error(`[artwork-image] Storage error for artwork ${artworkId}:`, {
+          error: storageError?.message || storageError,
+          imageUrl,
+          objectKey,
+          backend: storageConfig.backend
+        });
         return res.status(404).json({ 
           error: 'Image file not found in storage', 
           artworkId,
-          storedPath: imageUrl 
+          storedPath: imageUrl,
+          backend: storageConfig.backend
         });
       }
     }
