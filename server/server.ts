@@ -20,7 +20,7 @@ import designerConnectRoutes from './api/designerConnect.js';
 import galleryConnectRoutes from './api/galleryConnect.js';
 import { initializeDatabase } from './db/init.js';
 import { query } from './db/database.js';
-import { ObjectStorageService, ObjectNotFoundError, getStorageConfig, getStorageBackend } from './objectStorage.js';
+import { ObjectStorageService, ObjectNotFoundError, getStorageConfig, getStorageBackend, isStorageConfigured } from './objectStorage.js';
 import { requireGalleryFeature, requireStripeFeature } from './middleware/featureFlags.js';
 import { authenticateToken } from './middleware/auth.js';
 import { envBool, envBoolDefaultTrue } from './utils/envBool.js';
@@ -352,8 +352,9 @@ app.get('/api/artwork-image/:id', async (req: any, res) => {
   try {
     const artworkId = parseInt(req.params.id);
     const storageConfig = getStorageConfig();
+    const storageReady = isStorageConfigured();
     
-    console.log(`[artwork-image] Request for artwork ${artworkId}, backend=${storageConfig.backend}`);
+    console.log(`[artwork-image] Request for artwork ${artworkId}, backend=${storageConfig.backend}, configured=${storageReady}`);
     
     if (isNaN(artworkId)) {
       return res.status(400).json({ error: 'Invalid artwork ID' });
@@ -370,6 +371,16 @@ app.get('/api/artwork-image/:id', async (req: any, res) => {
 
     // Prefer storage_key if available (direct object key)
     if (storageKey) {
+      // Check if storage is configured before attempting to fetch
+      if (!storageReady) {
+        console.error(`[artwork-image] Storage not configured, cannot serve artwork ${artworkId}`);
+        return res.status(503).json({ 
+          error: 'Image storage is not configured. Please set up object storage.',
+          artworkId,
+          storageKey
+        });
+      }
+      
       console.log(`[artwork-image] Using storage_key: ${storageKey}`);
       try {
         const objectStorageService = new ObjectStorageService();
@@ -401,6 +412,16 @@ app.get('/api/artwork-image/:id', async (req: any, res) => {
     
     // If image is stored in Object Storage, serve from there
     if (imageUrl.startsWith('/objects/')) {
+      // Check if storage is configured before attempting to fetch
+      if (!storageReady) {
+        console.error(`[artwork-image] Storage not configured, cannot serve artwork ${artworkId}`);
+        return res.status(503).json({ 
+          error: 'Image storage is not configured. Please set up object storage.',
+          artworkId,
+          imageUrl
+        });
+      }
+      
       const objectKey = imageUrl.replace('/objects/', '');
       console.log(`[artwork-image] Fallback to image_url: key=${objectKey}, backend=${storageConfig.backend}`);
       

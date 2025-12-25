@@ -7,6 +7,8 @@ const REPLIT_SIDECAR_ENDPOINT = "http://127.0.0.1:1106";
 // Detect which backend to use
 // Priority: REPLIT_OBJECT_STORAGE_BUCKET_ID (native Replit) > PRIVATE_OBJECT_DIR (GCS fallback)
 const USE_REPLIT_NATIVE = !!process.env.REPLIT_OBJECT_STORAGE_BUCKET_ID;
+const HAS_GCS_CONFIG = !!process.env.PRIVATE_OBJECT_DIR;
+const STORAGE_CONFIGURED = USE_REPLIT_NATIVE || HAS_GCS_CONFIG;
 
 // Native Replit Object Storage client (zero config, auto-connects)
 let replitClient: any = null;
@@ -51,9 +53,14 @@ function getGcsBucketName(): string {
   const dir = process.env.PRIVATE_OBJECT_DIR || "";
   const cleaned = dir.replace(/^\/+/, "").split("/")[0];
   if (!cleaned) {
-    throw new Error("PRIVATE_OBJECT_DIR not set for GCS fallback");
+    throw new Error("Storage not configured. Neither REPLIT_OBJECT_STORAGE_BUCKET_ID nor PRIVATE_OBJECT_DIR is set.");
   }
   return cleaned;
+}
+
+// Check if storage is configured
+export function isStorageConfigured(): boolean {
+  return STORAGE_CONFIGURED;
 }
 
 // Export backend info for health checks
