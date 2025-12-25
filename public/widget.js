@@ -772,6 +772,25 @@
       '    width: 40px;',
       '    height: 40px;',
       '  }',
+      '}',
+      '.rv-branding-footer {',
+      '  display: flex;',
+      '  align-items: center;',
+      '  justify-content: center;',
+      '  gap: 6px;',
+      '  padding: 10px 16px;',
+      '  background: #f8fafc;',
+      '  border-top: 1px solid ' + ROOMVIBE_COLORS.softGrey + ';',
+      '  font-size: 12px;',
+      '  color: #6b7280;',
+      '}',
+      '.rv-branding-footer a {',
+      '  color: ' + ROOMVIBE_COLORS.primary + ';',
+      '  text-decoration: none;',
+      '  font-weight: 500;',
+      '}',
+      '.rv-branding-footer a:hover {',
+      '  text-decoration: underline;',
       '}'
     ].join('\n');
     document.head.appendChild(style);
@@ -1436,6 +1455,12 @@
       ),
       '    </div>',
       '  </div>',
+      (config.isFreePlan ? 
+        '  <div class="rv-branding-footer">' +
+        '    Powered by <a href="https://roomvibe.app" target="_blank" rel="noopener noreferrer">RoomVibe</a> — preview art on real walls.' +
+        '  </div>'
+        : ''
+      ),
       '</div>'
     ].join('');
 
