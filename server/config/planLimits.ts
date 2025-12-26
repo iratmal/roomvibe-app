@@ -242,15 +242,28 @@ export interface UserSubscriptionInfo {
 export function getEffectivePlan(user: UserSubscriptionInfo): PlanType {
   if (user.is_admin) return 'admin';
 
+  // Check entitlements FIRST - entitlements take priority over Stripe subscription
+  const hasArtist = user.artist_access || false;
+  const hasDesigner = user.designer_access || false;
+  const hasGallery = user.gallery_access || false;
+  const entitlementCount = [hasArtist, hasDesigner, hasGallery].filter(Boolean).length;
+
+  // Multi-entitlement = allaccess
+  if (entitlementCount >= 2) {
+    return 'allaccess';
+  }
+
+  // Single entitlement = that role
+  if (hasDesigner) return 'designer';
+  if (hasGallery) return 'gallery';
+  if (hasArtist) return 'artist';
+
+  // No entitlements - fall back to Stripe subscription
   const status = user.subscription_status || 'free';
   const plan = (user.subscription_plan || 'user') as PlanType;
 
   if (status !== 'active' && status !== 'free') {
     return 'user';
-  }
-
-  if (user.artist_access && user.designer_access && user.gallery_access) {
-    return 'allaccess';
   }
 
   if (!['user', 'artist', 'designer', 'gallery', 'allaccess'].includes(plan)) {
