@@ -78,20 +78,38 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
       }
     }
     
-    let effectivePlan = targetUser.subscription_plan || 'user';
-    const status = targetUser.subscription_status || 'free';
-    
-    if (targetUser.is_admin) {
-      effectivePlan = 'admin';
-    } else if (status !== 'active' && status !== 'free') {
-      effectivePlan = 'user';
-    }
-    
     const entitlements: UserEntitlements = {
       artist_access: targetUser.is_admin ? true : (targetUser.artist_access || false),
       designer_access: targetUser.is_admin ? true : (targetUser.designer_access || false),
       gallery_access: targetUser.is_admin ? true : (targetUser.gallery_access || false),
     };
+    
+    // Derive effectivePlan from entitlements FIRST, then fall back to Stripe
+    let effectivePlan: string;
+    if (targetUser.is_admin) {
+      effectivePlan = 'admin';
+    } else {
+      // Check entitlements first
+      const entitlementCount = [entitlements.artist_access, entitlements.designer_access, entitlements.gallery_access].filter(Boolean).length;
+      
+      if (entitlementCount >= 2) {
+        effectivePlan = 'allaccess';
+      } else if (entitlements.designer_access) {
+        effectivePlan = 'designer';
+      } else if (entitlements.gallery_access) {
+        effectivePlan = 'gallery';
+      } else if (entitlements.artist_access) {
+        effectivePlan = 'artist';
+      } else {
+        // No entitlements - fall back to Stripe subscription
+        const status = targetUser.subscription_status || 'free';
+        if (status !== 'active' && status !== 'free') {
+          effectivePlan = 'user';
+        } else {
+          effectivePlan = targetUser.subscription_plan || 'user';
+        }
+      }
+    }
     
     req.user = {
       id: targetUser.id,
