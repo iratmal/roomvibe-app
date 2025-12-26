@@ -418,8 +418,10 @@ app.get('/api/debug/storage-download', async (req, res) => {
           step: 'download_failed',
           storageKey,
           backend: storageConfig.backend,
-          downloadOk: downloadResult.ok,
-          downloadError: downloadResult.error?.message
+          downloadOk: downloadResult.ok ?? null,
+          downloadHasValue: !!downloadResult.value,
+          downloadError: downloadResult.error?.message ?? null,
+          downloadErrorFull: downloadResult.error ? JSON.stringify(downloadResult.error) : null
         });
       }
       
