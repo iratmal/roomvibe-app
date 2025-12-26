@@ -749,11 +749,11 @@ export function ArtistDashboard() {
                       </div>
                     )}
                     <img
-                      src={artwork.image_url.startsWith('http') ? artwork.image_url : `${API_URL}${artwork.image_url}`}
+                      src={`${API_URL}/api/artwork-image/${artwork.id}`}
                       alt={artwork.title}
                       className="w-full h-full object-contain"
                       onError={(e) => {
-                        console.warn('Image failed to load:', artwork.image_url);
+                        console.warn('Image failed to load for artwork:', artwork.id);
                         (e.target as HTMLImageElement).style.display = 'none';
                       }}
                     />
@@ -934,7 +934,7 @@ export function ArtistDashboard() {
               <div className="bg-rv-surface p-4 rounded-rvMd border border-rv-neutral mb-4">
                 <div className="aspect-square max-h-48 mx-auto mb-3 bg-white rounded-rvMd overflow-hidden">
                   <img
-                    src={showWidgetModal.image_url.startsWith('http') ? showWidgetModal.image_url : `${API_URL}${showWidgetModal.image_url}`}
+                    src={`${API_URL}/api/artwork-image/${showWidgetModal.id}`}
                     alt={showWidgetModal.title}
                     className="w-full h-full object-contain"
                   />

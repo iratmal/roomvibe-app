@@ -625,11 +625,11 @@ export function UserDashboard() {
                       {isClean ? 'Clean' : 'RoomVibe Powered'}
                     </div>
                     <img
-                      src={artwork.image_url.startsWith('http') ? artwork.image_url : `${API_URL}${artwork.image_url}`}
+                      src={`${API_URL}/api/artwork-image/${artwork.id}`}
                       alt={artwork.title}
                       className="w-full h-full object-contain"
                       onError={(e) => {
-                        console.warn('Image failed to load:', artwork.image_url);
+                        console.warn('Image failed to load for artwork:', artwork.id);
                         (e.target as HTMLImageElement).style.display = 'none';
                       }}
                     />

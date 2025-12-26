@@ -809,7 +809,7 @@ export function GalleryDashboard() {
                 >
                   <div className="aspect-square bg-slate-100 relative">
                     <img
-                      src={artwork.image_url}
+                      src={`/api/artwork-image/${artwork.id}`}
                       alt={artwork.title}
                       className="w-full h-full object-cover"
                     />
