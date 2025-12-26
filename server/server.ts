@@ -774,7 +774,11 @@ if (process.env.NODE_ENV === 'production') {
     etag: true
   }));
 
-  app.use((req, res) => {
+  // SPA catch-all - MUST exclude /api and /objects routes
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api/') || req.path.startsWith('/objects/')) {
+      return next(); // Let API routes fall through to 404
+    }
     res.sendFile(path.join(__dirname, '../dist', 'index.html'));
   });
 }
