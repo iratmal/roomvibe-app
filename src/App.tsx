@@ -315,7 +315,7 @@ function DashboardRouter() {
 }
 
 function UserDashboardRouter() {
-  const { user, loading, impersonatedRole, setImpersonation } = useAuth();
+  const { user, loading, impersonatedRole, setImpersonation, hasEntitlement } = useAuth();
 
   useEffect(() => {
     // Auto-set impersonation for admin visiting /dashboard/user
@@ -338,6 +338,33 @@ function UserDashboardRouter() {
   if (!user) {
     window.location.hash = '#/login';
     return null;
+  }
+
+  const isAdmin = user.role === 'admin' || user.isAdmin;
+  
+  // Non-admin users with entitlements should be redirected to their proper dashboard
+  if (!isAdmin && !impersonatedRole) {
+    const hasArtist = hasEntitlement('artist_access');
+    const hasDesigner = hasEntitlement('designer_access');
+    const hasGallery = hasEntitlement('gallery_access');
+    const roleCount = [hasArtist, hasDesigner, hasGallery].filter(Boolean).length;
+    
+    if (roleCount >= 2) {
+      window.location.hash = '#/dashboard';
+      return null;
+    }
+    if (hasArtist) {
+      window.location.hash = '#/dashboard/artist';
+      return null;
+    }
+    if (hasDesigner) {
+      window.location.hash = '#/dashboard/designer';
+      return null;
+    }
+    if (hasGallery) {
+      window.location.hash = '#/dashboard/gallery';
+      return null;
+    }
   }
 
   return <UserDashboard />;
