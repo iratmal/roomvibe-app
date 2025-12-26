@@ -2,9 +2,10 @@ import React from 'react';
 import { useAuth, useViewer } from '../context/AuthContext';
 
 export function ImpersonationBanner() {
-  const { user, impersonatedRole, stopImpersonation, isImpersonating, viewer } = useAuth();
+  const { impersonatedRole, stopImpersonation, isImpersonating, viewer, impersonatedUserId } = useAuth();
 
-  if ((!impersonatedRole && !isImpersonating) || user?.role !== 'admin') {
+  // Show banner if we're in any form of impersonation mode
+  if (!impersonatedRole && !isImpersonating && !impersonatedUserId) {
     return null;
   }
 

@@ -259,7 +259,9 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res: Response) => 
           projects: projectCount,
           wallPhotos: wallPhotoCount,
         }
-      }
+      },
+      isImpersonating: req.isImpersonating || false,
+      realUser: req.realUser ? { id: req.realUser.id, email: req.realUser.email } : null,
     });
   } catch (error) {
     console.error('Get user error:', error);

@@ -85,6 +85,8 @@ export function AuthProvider({ children }: { children: React.ReactNode}) {
     const stored = sessionStorage.getItem('impersonatedUserId');
     return stored ? parseInt(stored, 10) : null;
   });
+  const [backendImpersonating, setBackendImpersonating] = useState(false);
+  const [realAdminUser, setRealAdminUser] = useState<{ id: number; email: string } | null>(null);
 
   useEffect(() => {
     fetchCurrentUser();
@@ -109,7 +111,31 @@ export function AuthProvider({ children }: { children: React.ReactNode}) {
           setUser(data.user);
           setToken('authenticated');
           
-          if (data.user?.role !== 'admin') {
+          // Handle backend impersonation state
+          if (data.isImpersonating && data.realUser) {
+            setBackendImpersonating(true);
+            setRealAdminUser(data.realUser);
+            // Build viewer from the impersonated user data
+            setViewer({
+              id: data.user.id,
+              email: data.user.email,
+              role: data.user.role,
+              isAdmin: data.user.isAdmin,
+              emailConfirmed: data.user.emailConfirmed,
+              subscriptionStatus: data.user.subscriptionStatus,
+              subscriptionPlan: data.user.subscriptionPlan,
+              effectivePlan: data.user.effectivePlan,
+              planLimits: data.user.planLimits,
+              entitlements: data.user.entitlements,
+              onboardingCompleted: data.user.onboardingCompleted,
+              usage: data.user.usage,
+            });
+            sessionStorage.setItem('impersonatedUserId', String(data.user.id));
+            setImpersonatedUserId(data.user.id);
+          } else {
+            // Clear ALL impersonation state when backend says not impersonating
+            setBackendImpersonating(false);
+            setRealAdminUser(null);
             sessionStorage.removeItem('impersonatedRole');
             sessionStorage.removeItem('impersonatedUserId');
             setImpersonatedRole(null);
@@ -255,6 +281,8 @@ export function AuthProvider({ children }: { children: React.ReactNode}) {
     setImpersonatedRole(null);
     setImpersonatedUserId(null);
     setViewer(null);
+    setBackendImpersonating(false);
+    setRealAdminUser(null);
   };
 
   const loadViewerById = useCallback(async (userId: number): Promise<ViewerData | null> => {
@@ -327,6 +355,8 @@ export function AuthProvider({ children }: { children: React.ReactNode}) {
       console.error('Error stopping impersonation:', err);
     }
     clearImpersonation();
+    // Refetch user to update state from backend (now returns admin, not impersonated user)
+    await fetchCurrentUser();
     window.location.hash = '#/dashboard';
   };
 
@@ -375,7 +405,8 @@ export function AuthProvider({ children }: { children: React.ReactNode}) {
     }
   };
 
-  const isImpersonating = !!(user?.role === 'admin' && impersonatedUserId && viewer);
+  // isImpersonating is true if backend says we're impersonating, or if we have frontend impersonation state
+  const isImpersonating = backendImpersonating || !!(impersonatedRole || (impersonatedUserId && viewer));
 
   return (
     <AuthContext.Provider value={{ 

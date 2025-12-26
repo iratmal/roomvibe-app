@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { YourPlanCard } from '../YourPlanCard';
 import { ChangePassword } from '../ChangePassword';
 import { SiteHeader } from '../SiteHeader';
+import { ImpersonationBanner } from '../ImpersonationBanner';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -247,6 +248,7 @@ export function UnifiedDashboard() {
 
   return (
     <div className="min-h-screen bg-rv-surface flex flex-col">
+      <ImpersonationBanner />
       <SiteHeader showPlanBadge={true} />
       <UpgradeModal 
         isOpen={upgradeModal.open} 
