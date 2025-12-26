@@ -119,11 +119,11 @@ router.post('/login', async (req: Request, res: Response) => {
 
     const effectiveRole = user.is_admin ? 'admin' : user.role;
 
-    // Build entitlements object - admins get all access
+    // Build entitlements object - admins get all access, role grants access, DB columns add more
     const entitlements = {
-      artist_access: user.is_admin ? true : (user.artist_access || false),
-      designer_access: user.is_admin ? true : (user.designer_access || false),
-      gallery_access: user.is_admin ? true : (user.gallery_access || false),
+      artist_access: user.is_admin ? true : (user.artist_access || user.role === 'artist'),
+      designer_access: user.is_admin ? true : (user.designer_access || user.role === 'designer'),
+      gallery_access: user.is_admin ? true : (user.gallery_access || user.role === 'gallery'),
     };
 
     const token = jwt.sign(
@@ -194,6 +194,11 @@ router.post('/logout', (req: Request, res: Response) => {
 });
 
 router.get('/me', authenticateToken, async (req: AuthRequest, res: Response) => {
+  // Prevent caching of auth state
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'Not authenticated' });
@@ -215,11 +220,11 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res: Response) => 
     const effectivePlan = getEffectivePlan(user);
     const planLimits = getPlanLimits(user);
 
-    // Build entitlements object - admins get all access
+    // Build entitlements object - admins get all access, role grants access, DB columns add more
     const entitlements = {
-      artist_access: user.is_admin ? true : (user.artist_access || false),
-      designer_access: user.is_admin ? true : (user.designer_access || false),
-      gallery_access: user.is_admin ? true : (user.gallery_access || false),
+      artist_access: user.is_admin ? true : (user.artist_access || user.role === 'artist'),
+      designer_access: user.is_admin ? true : (user.designer_access || user.role === 'designer'),
+      gallery_access: user.is_admin ? true : (user.gallery_access || user.role === 'gallery'),
     };
 
     const artworkCountResult = await query(

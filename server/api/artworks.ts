@@ -25,6 +25,11 @@ const upload = multer({
 });
 
 router.get('/artworks', authenticateToken, async (req: any, res) => {
+  // Prevent caching of dynamic artwork list
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  
   try {
     // Safeguard: ensure user is authenticated with valid ID
     if (!req.user || !req.user.id) {
