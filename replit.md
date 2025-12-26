@@ -24,13 +24,13 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
   4. **Gallery Dashboard**: For single-role gallery users - collections, exhibitions, and artist curation
   5. **All-In Dashboard**: For multi-role users (2+ entitlements) - consolidated view with quick links to role dashboards
   6. **Admin Dashboard**: System administration, visible only to admins (based on user.role/isAdmin, not impersonation)
-- **Admin Impersonation System**: Admins can view dashboards exactly as real users see them:
-  - Backend cookie-based impersonation (HttpOnly, 2-hour TTL) switches req.user context for all API calls
-  - POST /api/admin/impersonate/start sets cookie, POST /api/admin/impersonate/stop clears it
-  - /api/auth/me returns isImpersonating and realUser fields during impersonation
-  - Admin routes remain accessible via req.realUser.is_admin check
-  - ONE dashboard implementation per role, used by both real users and admin impersonation (no duplicates)
-  - ImpersonationBanner shows on all dashboards when impersonating, with "Return to Admin" button
+- **Admin Plan Preview System**: Admins can preview dashboards as different subscription plans:
+  - Admin Dashboard shows 5 plan preview cards (User, Artist, Designer, Gallery, All-In)
+  - Uses frontend-only setImpersonation(role) with synthetic viewer data (correct plan limits/entitlements)
+  - No backend cookie needed for plan previews - purely client-side simulation
+  - ImpersonationBanner differentiates between plan preview (clearImpersonation) and backend user impersonation (stopImpersonation)
+  - "Return to Admin Mode" always works - navigates back to Admin Dashboard
+  - ONE dashboard implementation per role, used by both real users and admin preview (no duplicates)
 - **Designer Connect (FAZA 1)**: Designer Dashboard features a tabbed interface with four sections:
   - Art Library: Browse artworks from artists who have enabled "Visible to Designers", with filters for style, medium, orientation, color, and dimensions
   - My Projects: Create and manage client visualization projects
