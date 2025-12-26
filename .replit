@@ -99,6 +99,7 @@ STRIPE_PRICE_USER = "price_1SZV67IpcKai6mhJnBHgRh0L"
 STRIPE_PRICE_ARTIST = "price_1SZV6qIpcKai6mhJaZRJBhdC"
 STRIPE_PRICE_DESIGNER = "price_1SZV7SIpcKai6mhJIJLIwumX"
 STRIPE_PRICE_GALLERY = "price_1SZV7xIpcKai6mhJxwXRayJv"
+PRIVATE_OBJECT_DIR = "/JuvenileColossalAdministrators"
 
 [userenv.production]
 APP_ENV = "production"
