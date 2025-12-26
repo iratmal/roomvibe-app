@@ -183,13 +183,14 @@ app.get('/api/health/db', (req, res) => {
 
 app.get('/api/version', (req, res) => {
   res.json({
-    version: '1.0.8',
-    build: '2025-12-23T10:00:00Z',
-    commit: 'host-based-env-detection',
+    version: '1.0.12',
+    build: '2025-12-26T11:10:00Z',
+    commit: 'remove-availability-guard-image-endpoint',
     features: {
       cookieAuth: true,
       objectStorage: true,
-      hostBasedEnvDetection: true
+      hostBasedEnvDetection: true,
+      imageEndpointNoGuard: true
     }
   });
 });
@@ -218,8 +219,8 @@ app.get('/api/health/env', (req, res) => {
     storageConfigured: storageConfig.replitBucketId === 'SET' || storageConfig.privateObjectDir === 'SET',
     storageBackend: storageConfig.backend,
     storageSource: storageConfig.resolvedSource,
-    version: '1.0.11-db-identity',
-    buildTime: '2025-12-25T22:45:00Z'
+    version: '1.0.12-availability-guard-removed',
+    buildTime: '2025-12-26T11:10:00Z'
   });
 });
 
