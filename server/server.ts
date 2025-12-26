@@ -381,22 +381,25 @@ app.get('/api/artwork-image/:id', async (req: any, res) => {
       return res.status(400).json({ error: 'Invalid artwork ID' });
     }
 
-    let result = await query('SELECT id, image_url, storage_key, title, artist_id FROM artworks WHERE id = $1', [artworkId]);
+    let result = await query('SELECT id, image_url, storage_key, title, artist_id, availability FROM artworks WHERE id = $1', [artworkId]);
     console.log(`[artwork-image] DB lookup for id=${artworkId} → ${result.rows.length > 0 ? 'FOUND' : 'NOT FOUND'} (dbHost=${dbIdentity.host})`);
 
     if (result.rows.length === 0) {
       console.warn(`[artwork-image] Artwork ${artworkId} not found in DB (host=${dbIdentity.host}, db=${dbIdentity.name}, env=${dbIdentity.environment})`);
       return res.status(404).json({ 
         error: 'Artwork not found', 
-        artworkId,
-        dbHost: dbIdentity.host,
-        dbName: dbIdentity.name,
-        dbEnv: dbIdentity.environment,
-        hint: 'This artwork ID does not exist in the database. It may have been deleted or never created.'
+        artworkId
       });
     }
 
-    const { image_url: imageUrl, storage_key: storageKey, title, artist_id } = result.rows[0];
+    const { image_url: imageUrl, storage_key: storageKey, title, artist_id, availability } = result.rows[0];
+    
+    // Block access to draft/private artworks (prevent enumeration via sequential IDs)
+    // Allow: 'available', 'sold', null/undefined (legacy data)
+    if (availability === 'draft' || availability === 'private') {
+      console.warn(`[artwork-image] Artwork ${artworkId} is ${availability}, blocking access`);
+      return res.status(404).json({ error: 'Artwork not found', artworkId });
+    }
     console.log(`[artwork-image] Artwork ${artworkId} (title="${title}", artist_id=${artist_id}): storage_key=${storageKey || 'NULL'}, image_url=${imageUrl || 'NULL'}`);
 
     // Check if storage_key exists (required for proper image retrieval)
