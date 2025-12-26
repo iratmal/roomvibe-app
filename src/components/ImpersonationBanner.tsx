@@ -1,24 +1,36 @@
 import React from 'react';
-import { useAuth, useViewer } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 export function ImpersonationBanner() {
-  const { impersonatedRole, stopImpersonation, isImpersonating, viewer, impersonatedUserId } = useAuth();
+  const { 
+    impersonatedRole, 
+    clearImpersonation, 
+    stopImpersonation,
+    viewer, 
+    impersonatedUserId 
+  } = useAuth();
 
-  // Show banner if we're in any form of impersonation mode
-  if (!impersonatedRole && !isImpersonating && !impersonatedUserId) {
+  if (!impersonatedRole && !impersonatedUserId) {
     return null;
   }
 
-  const handleReturnToAdmin = () => {
-    stopImpersonation();
+  const isBackendImpersonation = !!impersonatedUserId;
+
+  const handleReturnToAdmin = async () => {
+    if (isBackendImpersonation) {
+      await stopImpersonation();
+    } else {
+      clearImpersonation();
+      window.location.hash = '#/dashboard';
+    }
   };
 
   const roleLabels: Record<string, string> = {
-    user: 'Free User',
+    user: 'User (Free)',
     artist: 'Artist',
     designer: 'Designer',
     gallery: 'Gallery',
-    allin: 'All-Access',
+    allin: 'All-In',
     allaccess: 'All-Access',
   };
 
@@ -42,13 +54,17 @@ export function ImpersonationBanner() {
           <span className="text-2xl">🎭</span>
           <div>
             <p className="font-bold text-sm">
-              Viewing as: <span className="font-extrabold">{roleName}</span>
-              {viewer && (
+              {isBackendImpersonation ? 'Viewing as: ' : 'Preview Mode: '}
+              <span className="font-extrabold">{roleName} Dashboard</span>
+              {viewer && isBackendImpersonation && (
                 <span className="font-normal ml-2">({viewer.email})</span>
               )}
             </p>
             <p className="text-xs opacity-75 font-medium">
-              Admin impersonation mode. Changes here affect the real user's data.
+              {isBackendImpersonation 
+                ? 'Admin impersonation mode. Changes here affect the real user\'s data.'
+                : `Viewing dashboard as ${roleName.toLowerCase()} plan. Your admin role remains unchanged.`
+              }
             </p>
           </div>
         </div>
@@ -56,7 +72,7 @@ export function ImpersonationBanner() {
           onClick={handleReturnToAdmin}
           className="px-4 py-2.5 bg-white border-2 border-current rounded-lg font-semibold text-sm hover:opacity-80 transition-opacity shadow-sm"
         >
-          Return to Admin
+          Return to Admin Mode
         </button>
       </div>
     </div>

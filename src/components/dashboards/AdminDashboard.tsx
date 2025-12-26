@@ -1,92 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ChangePassword } from '../ChangePassword';
 
-const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
-
-interface SearchUser {
-  id: number;
-  email: string;
-  effectivePlan: string;
-  subscriptionPlan: string;
-  subscriptionStatus: string;
-  createdAt: string;
-}
-
-interface FixtureUser {
-  plan: string;
-  email: string;
-  exists: boolean;
-  user: { id: number; email: string; effectivePlan: string } | null;
-}
-
 export function AdminDashboard() {
-  const { user, logout, startImpersonation, setImpersonation } = useAuth();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<SearchUser[]>([]);
-  const [fixtures, setFixtures] = useState<FixtureUser[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [loadingFixtures, setLoadingFixtures] = useState(true);
+  const { user, logout, setImpersonation } = useAuth();
 
-  useEffect(() => {
-    fetchFixtureUsers();
-  }, []);
-
-  const fetchFixtureUsers = async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/admin/impersonate/fixture-users`, {
-        credentials: 'include',
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setFixtures(data.fixtures || []);
-      }
-    } catch (err) {
-      console.error('Error fetching fixture users:', err);
-    } finally {
-      setLoadingFixtures(false);
-    }
-  };
-
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
-    
-    setSearching(true);
-    try {
-      const response = await fetch(`${API_URL}/api/admin/impersonate/search?q=${encodeURIComponent(searchQuery)}`, {
-        credentials: 'include',
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setSearchResults(data.users || []);
-      }
-    } catch (err) {
-      console.error('Error searching users:', err);
-    } finally {
-      setSearching(false);
-    }
-  };
-
-  const handleImpersonateUser = async (userId: number, plan: string) => {
-    await startImpersonation(userId);
-    const routes: Record<string, string> = {
-      user: '#/dashboard',
-      artist: '#/dashboard/artist',
-      designer: '#/dashboard/designer',
-      gallery: '#/dashboard/gallery',
-      allaccess: '#/dashboard',
-    };
-    setTimeout(() => {
-      window.location.hash = routes[plan] || '#/dashboard';
-    }, 100);
-  };
-
-  const handleImpersonateFixture = async (fixture: FixtureUser) => {
-    if (!fixture.exists || !fixture.user) return;
-    await handleImpersonateUser(fixture.user.id, fixture.user.effectivePlan);
-  };
-
-  const handleLegacyImpersonate = (role: 'user' | 'artist' | 'designer' | 'gallery' | 'allin') => {
+  const handlePreviewPlan = (role: 'user' | 'artist' | 'designer' | 'gallery' | 'allin') => {
     setImpersonation(role);
     const routes: Record<string, string> = {
       user: '#/dashboard',
@@ -100,23 +19,68 @@ export function AdminDashboard() {
     }, 50);
   };
 
-  const planColors: Record<string, string> = {
-    user: 'bg-blue-100 text-blue-800',
-    free: 'bg-blue-100 text-blue-800',
-    artist: 'bg-amber-100 text-amber-800',
-    designer: 'bg-indigo-100 text-indigo-800',
-    gallery: 'bg-purple-100 text-purple-800',
-    allaccess: 'bg-green-100 text-green-800',
-  };
-
-  const planLabels: Record<string, string> = {
-    user: 'Free',
-    free: 'Free',
-    artist: 'Artist',
-    designer: 'Designer',
-    gallery: 'Gallery',
-    allaccess: 'All-Access',
-  };
+  const planCards = [
+    {
+      role: 'user' as const,
+      title: 'User Dashboard',
+      description: 'Free/basic user experience with limited features',
+      icon: (
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+      ),
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
+    },
+    {
+      role: 'artist' as const,
+      title: 'Artist Dashboard',
+      description: 'Artwork management, widgets, visibility settings',
+      icon: (
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      ),
+      color: 'text-amber-600',
+      bgColor: 'bg-amber-50',
+    },
+    {
+      role: 'designer' as const,
+      title: 'Designer Dashboard',
+      description: 'Client projects, room uploads, art library',
+      icon: (
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42" />
+        </svg>
+      ),
+      color: 'text-indigo-600',
+      bgColor: 'bg-indigo-50',
+    },
+    {
+      role: 'gallery' as const,
+      title: 'Gallery Dashboard',
+      description: 'Collections, exhibitions, artist directory',
+      icon: (
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3H21m-3.75 3H21" />
+        </svg>
+      ),
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-50',
+    },
+    {
+      role: 'allin' as const,
+      title: 'All-In Dashboard',
+      description: 'Multi-role user hub with quick links to all roles',
+      icon: (
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+        </svg>
+      ),
+      color: 'text-green-600',
+      bgColor: 'bg-green-50',
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-white">
@@ -153,103 +117,34 @@ export function AdminDashboard() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-rv-primary">Impersonate User</h2>
+            <h2 className="text-xl font-bold text-rv-primary">Dashboard Access (Admin)</h2>
           </div>
           <p className="text-rv-textMuted mb-6 text-sm">
-            View dashboards exactly as real users see them. Search for a specific user or use test fixtures.
+            Quick access to all user dashboards for testing and QA. Your admin role remains unchanged.
           </p>
           
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-rv-text mb-2">Search by Email</label>
-            <div className="flex gap-3">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="Enter user email..."
-                className="flex-1 px-4 py-2.5 border border-rv-neutral rounded-lg focus:outline-none focus:ring-2 focus:ring-rv-primary/30 focus:border-rv-primary"
-              />
-              <button
-                onClick={handleSearch}
-                disabled={searching}
-                className="px-5 py-2.5 bg-rv-primary text-white rounded-lg font-semibold text-sm hover:bg-rv-primaryHover transition-colors disabled:opacity-50"
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {planCards.map((card) => (
+              <div
+                key={card.role}
+                className="p-5 bg-white rounded-lg border-2 border-rv-neutral hover:border-rv-primary hover:shadow-md transition-all"
               >
-                {searching ? 'Searching...' : 'Search'}
-              </button>
-            </div>
-          </div>
-
-          {searchResults.length > 0 && (
-            <div className="mb-6">
-              <h3 className="text-sm font-semibold text-rv-text mb-3">Search Results</h3>
-              <div className="bg-white rounded-lg border border-rv-neutral divide-y divide-rv-neutral">
-                {searchResults.map((u) => (
-                  <div key={u.id} className="flex items-center justify-between p-3 hover:bg-rv-surface/50">
-                    <div className="flex items-center gap-3">
-                      <span className={`px-2 py-1 text-xs font-semibold rounded ${planColors[u.effectivePlan] || 'bg-gray-100 text-gray-800'}`}>
-                        {planLabels[u.effectivePlan] || u.effectivePlan}
-                      </span>
-                      <span className="text-sm text-rv-text">{u.email}</span>
-                    </div>
-                    <button
-                      onClick={() => handleImpersonateUser(u.id, u.effectivePlan)}
-                      className="px-3 py-1.5 text-xs font-semibold text-rv-primary hover:bg-rv-primary/10 rounded transition-colors"
-                    >
-                      View Dashboard →
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div>
-            <h3 className="text-sm font-semibold text-rv-text mb-3">Quick Access - Test Fixtures</h3>
-            {loadingFixtures ? (
-              <p className="text-sm text-rv-textMuted">Loading fixtures...</p>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
-                {fixtures.map((fixture) => (
-                  <button
-                    key={fixture.plan}
-                    onClick={() => handleImpersonateFixture(fixture)}
-                    disabled={!fixture.exists}
-                    className={`p-4 rounded-lg border-2 text-left transition-all ${
-                      fixture.exists 
-                        ? 'bg-white border-rv-neutral hover:border-rv-primary hover:shadow-sm cursor-pointer' 
-                        : 'bg-gray-50 border-gray-200 cursor-not-allowed opacity-50'
-                    }`}
-                  >
-                    <span className={`inline-block px-2 py-1 text-xs font-semibold rounded mb-2 ${planColors[fixture.plan] || 'bg-gray-100 text-gray-800'}`}>
-                      {planLabels[fixture.plan] || fixture.plan}
-                    </span>
-                    <p className="text-xs text-rv-textMuted truncate">{fixture.email}</p>
-                    {!fixture.exists && (
-                      <p className="text-xs text-red-500 mt-1">Not found</p>
-                    )}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="mt-6 pt-6 border-t border-rv-neutral/50">
-            <h3 className="text-sm font-semibold text-rv-text mb-3">Legacy Quick Switch (Role-Based)</h3>
-            <p className="text-xs text-rv-textMuted mb-3">
-              Preview dashboard UI without real user data. For accurate testing, use user search above.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {['user', 'artist', 'designer', 'gallery', 'allin'].map((role) => (
+                <div className={`w-10 h-10 ${card.bgColor} rounded-lg flex items-center justify-center mb-3 ${card.color}`}>
+                  {card.icon}
+                </div>
+                <h3 className="font-bold text-rv-text mb-1">{card.title}</h3>
+                <p className="text-xs text-rv-textMuted mb-4 leading-relaxed">{card.description}</p>
                 <button
-                  key={role}
-                  onClick={() => handleLegacyImpersonate(role as any)}
-                  className="px-3 py-1.5 text-xs font-medium border border-rv-neutral rounded hover:bg-rv-surface transition-colors"
+                  onClick={() => handlePreviewPlan(card.role)}
+                  className="text-rv-primary text-sm font-semibold hover:underline flex items-center gap-1"
                 >
-                  {role === 'allin' ? 'All-In' : role.charAt(0).toUpperCase() + role.slice(1)}
+                  View Dashboard
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
                 </button>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
 

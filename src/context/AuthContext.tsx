@@ -270,6 +270,39 @@ export function AuthProvider({ children }: { children: React.ReactNode}) {
     if (role) {
       sessionStorage.setItem('impersonatedRole', role);
       setImpersonatedRole(role);
+      
+      const planLimitsMap: Record<string, any> = {
+        user: { maxArtworks: 10, maxWallPhotos: 1, maxProjects: 1, maxMockupRooms: 10, maxPremiumRooms: 0, roomTier: 'basic10', rooms: 'standard', premiumRoomsAccess: false, futureRooms: false, highResExport: false, pdfExport: false, pdfMonthlyLimit: 0, designerTools: false, galleryTools: false, exhibitions: 0, clientFolders: false, galleryDashboard: false, multiArtistCollections: false, customBranding: false, pdfProposals: false, publicGalleryPages: false, prioritySupport: false, earlyAccess: false },
+        artist: { maxArtworks: 50, maxWallPhotos: 100, maxProjects: 100, maxMockupRooms: 40, maxPremiumRooms: 0, roomTier: 'standard40', rooms: 'standard', premiumRoomsAccess: false, futureRooms: false, highResExport: false, pdfExport: true, pdfMonthlyLimit: 10, designerTools: false, galleryTools: false, exhibitions: 0, clientFolders: false, galleryDashboard: false, multiArtistCollections: false, customBranding: false, pdfProposals: false, publicGalleryPages: false, prioritySupport: false, earlyAccess: false },
+        designer: { maxArtworks: 100, maxWallPhotos: -1, maxProjects: -1, maxMockupRooms: -1, maxPremiumRooms: -1, roomTier: 'all', rooms: 'all', premiumRoomsAccess: true, futureRooms: false, highResExport: true, pdfExport: true, pdfMonthlyLimit: -1, designerTools: true, galleryTools: false, exhibitions: 0, clientFolders: true, galleryDashboard: false, multiArtistCollections: false, customBranding: true, pdfProposals: true, publicGalleryPages: false, prioritySupport: false, earlyAccess: false },
+        gallery: { maxArtworks: -1, maxWallPhotos: -1, maxProjects: -1, maxMockupRooms: -1, maxPremiumRooms: -1, roomTier: 'all', rooms: 'all', premiumRoomsAccess: true, futureRooms: false, highResExport: true, pdfExport: true, pdfMonthlyLimit: 20, designerTools: false, galleryTools: true, exhibitions: 3, clientFolders: true, galleryDashboard: true, multiArtistCollections: true, customBranding: true, pdfProposals: true, publicGalleryPages: true, prioritySupport: false, earlyAccess: false },
+        allin: { maxArtworks: -1, maxWallPhotos: -1, maxProjects: -1, maxMockupRooms: -1, maxPremiumRooms: -1, roomTier: 'all', rooms: 'all', premiumRoomsAccess: true, futureRooms: true, highResExport: true, pdfExport: true, pdfMonthlyLimit: -1, designerTools: true, galleryTools: true, exhibitions: -1, clientFolders: true, galleryDashboard: true, multiArtistCollections: true, customBranding: true, pdfProposals: true, publicGalleryPages: true, prioritySupport: true, earlyAccess: true },
+      };
+      
+      const entitlementsMap: Record<string, any> = {
+        user: { artist_access: false, designer_access: false, gallery_access: false },
+        artist: { artist_access: true, designer_access: false, gallery_access: false },
+        designer: { artist_access: false, designer_access: true, gallery_access: false },
+        gallery: { artist_access: false, designer_access: false, gallery_access: true },
+        allin: { artist_access: true, designer_access: true, gallery_access: true },
+      };
+      
+      const effectivePlan = role === 'allin' ? 'allaccess' : role;
+      const syntheticViewer: ViewerData = {
+        id: -1,
+        email: `preview-${role}@admin.local`,
+        role: role === 'allin' ? 'user' : role,
+        isAdmin: false,
+        emailConfirmed: true,
+        subscriptionStatus: role === 'user' ? 'free' : 'active',
+        subscriptionPlan: effectivePlan,
+        effectivePlan: effectivePlan as any,
+        planLimits: planLimitsMap[role],
+        entitlements: entitlementsMap[role],
+        onboardingCompleted: true,
+        usage: { artworks: 0, projects: 0, wallPhotos: 0 },
+      };
+      setViewer(syntheticViewer);
     } else {
       clearImpersonation();
     }
