@@ -282,16 +282,7 @@ function DashboardRouter() {
     return <AdminDashboard />;
   }
 
-  // Free users redirect to /dashboard/user for routing consistency
-  const effectivePlan = user?.effectivePlan || 'user';
-  const isFreePlan = effectivePlan === 'user' || effectivePlan === 'free';
-  
-  if (isFreePlan) {
-    window.location.hash = '#/dashboard/user';
-    return null;
-  }
-
-  // Count how many role entitlements the user has
+  // Check entitlements FIRST - entitlements take priority over subscription plan
   const hasArtist = hasEntitlement('artist_access');
   const hasDesigner = hasEntitlement('designer_access');
   const hasGallery = hasEntitlement('gallery_access');
@@ -304,13 +295,23 @@ function DashboardRouter() {
 
   // Single-role users → their specific role dashboard
   if (roleCount === 1) {
-    if (hasArtist) return <ArtistDashboard />;
-    if (hasDesigner) return <DesignerDashboard />;
-    if (hasGallery) return <GalleryDashboard />;
+    if (hasArtist) {
+      window.location.hash = '#/dashboard/artist';
+      return null;
+    }
+    if (hasDesigner) {
+      window.location.hash = '#/dashboard/designer';
+      return null;
+    }
+    if (hasGallery) {
+      window.location.hash = '#/dashboard/gallery';
+      return null;
+    }
   }
 
-  // Fallback for paid users without specific entitlements (shouldn't happen normally)
-  return <UserDashboard />;
+  // Users with no entitlements → User Dashboard
+  window.location.hash = '#/dashboard/user';
+  return null;
 }
 
 function UserDashboardRouter() {
