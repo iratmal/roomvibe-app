@@ -1,0 +1,164 @@
+# TASK — Dashboard parity (Admin impersonation = real user views)
+
+## Goal (must-have)
+
+Admin “View Dashboard” (impersonation) must render **the exact same UI** as the real logged-in user for:
+
+* Free User
+* Artist
+* Designer
+* Gallery
+* All-Access
+
+**This is non-negotiable:** You must be able to verify real user state from **one Admin account** without logging into each role account.
+
+**Definition of parity:**
+
+* Same route/component tree
+* Same data source (`viewer` = the impersonated user)
+* Same feature gating & copy (limits, badges, plan blocks)
+* Only allowed difference: an impersonation banner + “Return to Admin Mode” button
+
+---
+
+## Problem to fix
+
+Currently, when Admin clicks **User/Artist/Designer/Gallery/All-In Dashboard**:
+
+* Banner says “You are viewing as: X (Admin Impersonation)” ✅
+* BUT the UI is sometimes computed from **admin session/defaults/wrong role**, so the preview does **NOT** match what that user sees when they log in normally ❌
+
+Examples of wrong behavior:
+
+* Admin “User Dashboard” view shows **Artist** pill/badge or Artist copy/limits
+* “Your Plan” section differs between real user login vs admin impersonation
+
+**This must be eliminated for ALL 5 plans.**
+
+---
+
+## Required design (single source of truth)
+
+### A) Viewer context must be the impersonated user (NOT admin)
+
+When impersonating, all dashboard components must read from a single `viewer` object representing the TARGET user.
+
+**Hard rule:** If Admin is impersonating User #123, then `viewer` must be User #123 everywhere (frontend + backend). Admin is only the operator.
+
+`viewer` MUST include:
+
+* `viewer.id`
+* `viewer.email`
+* `viewer.effectivePlan` (Free/Artist/Designer/Gallery/All-Access)
+* `viewer.subscriptionStatus`
+* `viewer.entitlements/planLimits` (maxArtworks, maxWallPhotos, maxProjects, maxMockupRooms, roomTier, rooms, premiumRoomsAccess, futureRooms, highResExport, pdfExport, pdfMonthly)
+
+**UI gating rule:** UI decisions are driven ONLY by `viewer.effectivePlan + viewer.entitlements`.
+
+* `role` can exist, but must NOT override what UI shows.
+* Admin role must NEVER leak into the impersonated UI.
+
+### B) Impersonation is a mode, not a separate dashboard
+
+Impersonation must:
+
+* Use the **exact same routes/components** as real dashboards (no admin variants)
+* Only add:
+
+  * an impersonation banner (top)
+  * “Return to Admin Mode” action
+
+**Explicitly forbidden:** duplicating dashboards, e.g.
+
+* `/dashboard/user-admin`, `/dashboard/artist-admin`, etc.
+* conditional rendering that switches to “admin version” of role dashboards
+
+---
+
+## Implementation steps
+
+### 1) Backend: add/confirm impersonation support in session/context
+
+* Add a secure way for admin to set impersonation target (e.g. `impersonateUserId`) via server session OR header.
+* Only allow impersonation when requester is admin.
+* Ensure all “get current user / me” style endpoints return **viewer = impersonated user** when impersonation is active.
+
+**Endpoints to verify:**
+
+* `GET /api/me` (or equivalent)
+* Any dashboard bootstrap endpoints returning plan/limits
+
+### 2) Frontend: unify dashboard data source
+
+* Create/ensure a single hook/store: `useViewer()` that provides the `viewer` object.
+* All dashboard components must read badge/plan blocks/limits from `viewer`, not from `authUser`/`sessionUser`/defaults.
+* In Admin impersonation mode, `useViewer()` must resolve to impersonated user.
+
+### 3) Fix all plan labels and plan blocks
+
+Ensure these are always derived from `viewer.effectivePlan`:
+
+* Header pill (Free/Artist/Designer/Gallery/All‑Access)
+* “Your Plan” block (status, features list)
+* Upload limits and any copy like “Upload up to X artworks”
+
+### 4) Prevent admin role leakage
+
+* Admin role must not change feature gating/plan gating UI.
+* Admin can still access admin-only screens, but once impersonating, the role dashboards must behave exactly like real user.
+
+---
+
+## Acceptance criteria (mandatory)
+
+Create 5 test accounts (or use existing ones):
+
+* Free user
+* Artist
+* Designer
+* Gallery
+* All-Access
+
+For EACH plan/account:
+
+### A) Real login snapshot
+
+1. Login normally as that account.
+2. Capture/verify:
+
+   * Plan pill/badge in header
+   * “Your Plan” block (Status, features list)
+   * Limits copy (e.g., upload up to X artworks)
+   * Role-specific sections (Designer tools, Gallery tools, etc.)
+   * Widget embed/public link section behavior
+
+### B) Admin impersonation snapshot
+
+1. Login as Admin.
+2. Click the corresponding dashboard card (User/Artist/Designer/Gallery/All-In).
+3. Verify it matches **pixel-for-pixel** with Real login snapshot (except impersonation banner).
+
+✅ Pass condition:
+
+* 0 mismatches across all five plans
+* No scenario where Admin preview shows a different plan badge/copy/limits than real login
+
+---
+
+## Non‑goals (do not do now)
+
+* Do not redesign UI.
+* Do not change pricing.
+* Do not build new Stripe flows in this task.
+
+---
+
+## Deliverables
+
+* Commit/PR implementing parity across all 5 dashboards
+* Short dev note (in PR description):
+
+  * which endpoint provides `viewer`
+  * how impersonation is represented (session/header)
+  * where the frontend reads `viewer` (`useViewer()`)
+* Checklist: 5 plans x (real login vs admin impersonation) = PASS/FAIL (must be all PASS)

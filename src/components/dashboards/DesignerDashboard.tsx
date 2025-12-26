@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth, useViewer } from '../../context/AuthContext';
 import { ImpersonationBanner } from '../ImpersonationBanner';
 import { SiteHeader } from '../SiteHeader';
 import { PLAN_LIMITS } from '../../config/planLimits';
@@ -36,6 +36,7 @@ interface Artwork {
 
 export function DesignerDashboard() {
   const { user } = useAuth();
+  const { effectivePlan: viewerPlan, planLimits: viewerPlanLimits } = useViewer();
   const [activeTab, setActiveTab] = useState<DashboardTab>('projects');
   const [projects, setProjects] = useState<Project[]>([]);
   const [artworks, setArtworks] = useState<Artwork[]>([]);
@@ -46,8 +47,10 @@ export function DesignerDashboard() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
   const [showArtworkDeleteConfirm, setShowArtworkDeleteConfirm] = useState<number | null>(null);
 
-  const effectivePlan = user?.effectivePlan || 'designer';
-  const planLimits = PLAN_LIMITS[effectivePlan as keyof typeof PLAN_LIMITS] || PLAN_LIMITS.designer;
+  const effectivePlan = viewerPlan || 'designer';
+  const planLimits = viewerPlanLimits && Object.keys(viewerPlanLimits).length > 0 
+    ? viewerPlanLimits 
+    : PLAN_LIMITS[effectivePlan as keyof typeof PLAN_LIMITS] || PLAN_LIMITS.designer;
   const maxArtworks = planLimits.maxArtworks;
   const isAtArtworkLimit = maxArtworks !== -1 && artworks.length >= maxArtworks;
 

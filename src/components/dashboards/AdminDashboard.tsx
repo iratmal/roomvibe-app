@@ -1,11 +1,92 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ChangePassword } from '../ChangePassword';
 
-export function AdminDashboard() {
-  const { user, logout, setImpersonation } = useAuth();
+const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
 
-  const handleImpersonate = (role: 'user' | 'artist' | 'designer' | 'gallery' | 'allin') => {
+interface SearchUser {
+  id: number;
+  email: string;
+  effectivePlan: string;
+  subscriptionPlan: string;
+  subscriptionStatus: string;
+  createdAt: string;
+}
+
+interface FixtureUser {
+  plan: string;
+  email: string;
+  exists: boolean;
+  user: { id: number; email: string; effectivePlan: string } | null;
+}
+
+export function AdminDashboard() {
+  const { user, logout, startImpersonation, setImpersonation } = useAuth();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchUser[]>([]);
+  const [fixtures, setFixtures] = useState<FixtureUser[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [loadingFixtures, setLoadingFixtures] = useState(true);
+
+  useEffect(() => {
+    fetchFixtureUsers();
+  }, []);
+
+  const fetchFixtureUsers = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/admin/impersonate/fixture-users`, {
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setFixtures(data.fixtures || []);
+      }
+    } catch (err) {
+      console.error('Error fetching fixture users:', err);
+    } finally {
+      setLoadingFixtures(false);
+    }
+  };
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return;
+    
+    setSearching(true);
+    try {
+      const response = await fetch(`${API_URL}/api/admin/impersonate/search?q=${encodeURIComponent(searchQuery)}`, {
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setSearchResults(data.users || []);
+      }
+    } catch (err) {
+      console.error('Error searching users:', err);
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const handleImpersonateUser = async (userId: number, plan: string) => {
+    await startImpersonation(userId);
+    const routes: Record<string, string> = {
+      user: '#/dashboard',
+      artist: '#/dashboard/artist',
+      designer: '#/dashboard/designer',
+      gallery: '#/dashboard/gallery',
+      allaccess: '#/dashboard',
+    };
+    setTimeout(() => {
+      window.location.hash = routes[plan] || '#/dashboard';
+    }, 100);
+  };
+
+  const handleImpersonateFixture = async (fixture: FixtureUser) => {
+    if (!fixture.exists || !fixture.user) return;
+    await handleImpersonateUser(fixture.user.id, fixture.user.effectivePlan);
+  };
+
+  const handleLegacyImpersonate = (role: 'user' | 'artist' | 'designer' | 'gallery' | 'allin') => {
     setImpersonation(role);
     const routes: Record<string, string> = {
       user: '#/dashboard',
@@ -17,6 +98,24 @@ export function AdminDashboard() {
     setTimeout(() => {
       window.location.hash = routes[role];
     }, 50);
+  };
+
+  const planColors: Record<string, string> = {
+    user: 'bg-blue-100 text-blue-800',
+    free: 'bg-blue-100 text-blue-800',
+    artist: 'bg-amber-100 text-amber-800',
+    designer: 'bg-indigo-100 text-indigo-800',
+    gallery: 'bg-purple-100 text-purple-800',
+    allaccess: 'bg-green-100 text-green-800',
+  };
+
+  const planLabels: Record<string, string> = {
+    user: 'Free',
+    free: 'Free',
+    artist: 'Artist',
+    designer: 'Designer',
+    gallery: 'Gallery',
+    allaccess: 'All-Access',
   };
 
   return (
@@ -48,113 +147,109 @@ export function AdminDashboard() {
         </div>
 
         <div className="mb-10 p-6 bg-gradient-to-r from-rv-primary/5 to-rv-accent/5 rounded-rvLg border border-rv-primary/20">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-lg bg-rv-primary/10 flex items-center justify-center">
               <svg className="w-5 h-5 text-rv-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
               </svg>
             </div>
-            <h2 className="text-xl font-bold text-rv-primary">Dashboard Access (Admin)</h2>
+            <h2 className="text-xl font-bold text-rv-primary">Impersonate User</h2>
           </div>
           <p className="text-rv-textMuted mb-6 text-sm">
-            Quick access to all user dashboards for testing and QA. Your admin role remains unchanged.
+            View dashboards exactly as real users see them. Search for a specific user or use test fixtures.
           </p>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-            <button
-              onClick={() => handleImpersonate('user')}
-              className="p-5 bg-white rounded-xl border-2 border-blue-200 hover:border-blue-400 hover:shadow-md transition-all text-left group"
-            >
-              <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center mb-3 group-hover:bg-blue-200 transition-colors">
-                <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </div>
-              <h3 className="font-bold text-rv-primary mb-1">User Dashboard</h3>
-              <p className="text-xs text-rv-textMuted mb-3 leading-relaxed">Free/basic user experience with limited features</p>
-              <span className="text-sm font-semibold text-blue-600 group-hover:text-blue-700 flex items-center gap-1">
-                View Dashboard
-                <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </span>
-            </button>
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-rv-text mb-2">Search by Email</label>
+            <div className="flex gap-3">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                placeholder="Enter user email..."
+                className="flex-1 px-4 py-2.5 border border-rv-neutral rounded-lg focus:outline-none focus:ring-2 focus:ring-rv-primary/30 focus:border-rv-primary"
+              />
+              <button
+                onClick={handleSearch}
+                disabled={searching}
+                className="px-5 py-2.5 bg-rv-primary text-white rounded-lg font-semibold text-sm hover:bg-rv-primaryHover transition-colors disabled:opacity-50"
+              >
+                {searching ? 'Searching...' : 'Search'}
+              </button>
+            </div>
+          </div>
 
-            <button
-              onClick={() => handleImpersonate('artist')}
-              className="p-5 bg-white rounded-xl border-2 border-amber-200 hover:border-amber-400 hover:shadow-md transition-all text-left group"
-            >
-              <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center mb-3 group-hover:bg-amber-200 transition-colors">
-                <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
+          {searchResults.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-rv-text mb-3">Search Results</h3>
+              <div className="bg-white rounded-lg border border-rv-neutral divide-y divide-rv-neutral">
+                {searchResults.map((u) => (
+                  <div key={u.id} className="flex items-center justify-between p-3 hover:bg-rv-surface/50">
+                    <div className="flex items-center gap-3">
+                      <span className={`px-2 py-1 text-xs font-semibold rounded ${planColors[u.effectivePlan] || 'bg-gray-100 text-gray-800'}`}>
+                        {planLabels[u.effectivePlan] || u.effectivePlan}
+                      </span>
+                      <span className="text-sm text-rv-text">{u.email}</span>
+                    </div>
+                    <button
+                      onClick={() => handleImpersonateUser(u.id, u.effectivePlan)}
+                      className="px-3 py-1.5 text-xs font-semibold text-rv-primary hover:bg-rv-primary/10 rounded transition-colors"
+                    >
+                      View Dashboard →
+                    </button>
+                  </div>
+                ))}
               </div>
-              <h3 className="font-bold text-rv-primary mb-1">Artist Dashboard</h3>
-              <p className="text-xs text-rv-textMuted mb-3 leading-relaxed">Artwork management, widgets, visibility settings</p>
-              <span className="text-sm font-semibold text-amber-600 group-hover:text-amber-700 flex items-center gap-1">
-                View Dashboard
-                <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </span>
-            </button>
+            </div>
+          )}
 
-            <button
-              onClick={() => handleImpersonate('designer')}
-              className="p-5 bg-white rounded-xl border-2 border-indigo-200 hover:border-indigo-400 hover:shadow-md transition-all text-left group"
-            >
-              <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center mb-3 group-hover:bg-indigo-200 transition-colors">
-                <svg className="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
+          <div>
+            <h3 className="text-sm font-semibold text-rv-text mb-3">Quick Access - Test Fixtures</h3>
+            {loadingFixtures ? (
+              <p className="text-sm text-rv-textMuted">Loading fixtures...</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+                {fixtures.map((fixture) => (
+                  <button
+                    key={fixture.plan}
+                    onClick={() => handleImpersonateFixture(fixture)}
+                    disabled={!fixture.exists}
+                    className={`p-4 rounded-lg border-2 text-left transition-all ${
+                      fixture.exists 
+                        ? 'bg-white border-rv-neutral hover:border-rv-primary hover:shadow-sm cursor-pointer' 
+                        : 'bg-gray-50 border-gray-200 cursor-not-allowed opacity-50'
+                    }`}
+                  >
+                    <span className={`inline-block px-2 py-1 text-xs font-semibold rounded mb-2 ${planColors[fixture.plan] || 'bg-gray-100 text-gray-800'}`}>
+                      {planLabels[fixture.plan] || fixture.plan}
+                    </span>
+                    <p className="text-xs text-rv-textMuted truncate">{fixture.email}</p>
+                    {!fixture.exists && (
+                      <p className="text-xs text-red-500 mt-1">Not found</p>
+                    )}
+                  </button>
+                ))}
               </div>
-              <h3 className="font-bold text-rv-primary mb-1">Designer Dashboard</h3>
-              <p className="text-xs text-rv-textMuted mb-3 leading-relaxed">Client projects, room uploads, art library</p>
-              <span className="text-sm font-semibold text-indigo-600 group-hover:text-indigo-700 flex items-center gap-1">
-                View Dashboard
-                <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </span>
-            </button>
+            )}
+          </div>
 
-            <button
-              onClick={() => handleImpersonate('gallery')}
-              className="p-5 bg-white rounded-xl border-2 border-purple-200 hover:border-purple-400 hover:shadow-md transition-all text-left group"
-            >
-              <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center mb-3 group-hover:bg-purple-200 transition-colors">
-                <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-                </svg>
-              </div>
-              <h3 className="font-bold text-rv-primary mb-1">Gallery Dashboard</h3>
-              <p className="text-xs text-rv-textMuted mb-3 leading-relaxed">Collections, exhibitions, artist directory</p>
-              <span className="text-sm font-semibold text-purple-600 group-hover:text-purple-700 flex items-center gap-1">
-                View Dashboard
-                <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </span>
-            </button>
-
-            <button
-              onClick={() => handleImpersonate('allin')}
-              className="p-5 bg-white rounded-xl border-2 border-green-200 hover:border-green-400 hover:shadow-md transition-all text-left group"
-            >
-              <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center mb-3 group-hover:bg-green-200 transition-colors">
-                <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                </svg>
-              </div>
-              <h3 className="font-bold text-rv-primary mb-1">All-In Dashboard</h3>
-              <p className="text-xs text-rv-textMuted mb-3 leading-relaxed">Multi-role user hub with quick links to all roles</p>
-              <span className="text-sm font-semibold text-green-600 group-hover:text-green-700 flex items-center gap-1">
-                View Dashboard
-                <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </span>
-            </button>
+          <div className="mt-6 pt-6 border-t border-rv-neutral/50">
+            <h3 className="text-sm font-semibold text-rv-text mb-3">Legacy Quick Switch (Role-Based)</h3>
+            <p className="text-xs text-rv-textMuted mb-3">
+              Preview dashboard UI without real user data. For accurate testing, use user search above.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {['user', 'artist', 'designer', 'gallery', 'allin'].map((role) => (
+                <button
+                  key={role}
+                  onClick={() => handleLegacyImpersonate(role as any)}
+                  className="px-3 py-1.5 text-xs font-medium border border-rv-neutral rounded hover:bg-rv-surface transition-colors"
+                >
+                  {role === 'allin' ? 'All-In' : role.charAt(0).toUpperCase() + role.slice(1)}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -252,11 +347,11 @@ export function AdminDashboard() {
 
         <div className="mt-10 grid gap-6 md:grid-cols-2">
           <div className="p-6 bg-red-50 rounded-rvLg border border-red-200">
-            <h3 className="text-lg font-bold mb-3 text-red-700">⚠️ Administrator Account</h3>
+            <h3 className="text-lg font-bold mb-3 text-red-700">Administrator Account</h3>
             <div className="space-y-2 text-sm">
               <p><span className="font-semibold text-rv-text">Email:</span> <span className="text-rv-textMuted">{user?.email}</span></p>
               <p><span className="font-semibold text-rv-text">Role:</span> <span className="text-rv-textMuted">Admin (Full Access)</span></p>
-              <p><span className="font-semibold text-rv-text">Status:</span> {user?.emailConfirmed ? <span className="text-green-600 font-semibold">✓ Verified</span> : <span className="text-amber-600 font-semibold">⚠ Pending</span>}</p>
+              <p><span className="font-semibold text-rv-text">Status:</span> {user?.emailConfirmed ? <span className="text-green-600 font-semibold">Verified</span> : <span className="text-amber-600 font-semibold">Pending</span>}</p>
               <p className="text-xs text-red-600 mt-3 font-medium">
                 You have full administrative privileges. Use carefully.
               </p>

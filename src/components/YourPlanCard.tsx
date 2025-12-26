@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth, useViewer } from '../context/AuthContext';
 
 const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
 
@@ -66,7 +66,8 @@ const PLAN_DISPLAYS: Record<string, PlanDisplay> = {
 };
 
 export function YourPlanCard() {
-  const { user } = useAuth();
+  const { user, isImpersonating } = useAuth();
+  const { viewer, effectivePlan } = useViewer();
   const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -123,8 +124,12 @@ export function YourPlanCard() {
     );
   }
 
-  const plan = subscription?.subscription_plan || user?.role || 'user';
-  const status = subscription?.subscription_status || 'free';
+  const plan = isImpersonating && viewer 
+    ? viewer.effectivePlan 
+    : (subscription?.subscription_plan || user?.subscriptionPlan || 'user');
+  const status = isImpersonating && viewer 
+    ? viewer.subscriptionStatus 
+    : (subscription?.subscription_status || 'free');
   const planDisplay = PLAN_DISPLAYS[plan] || PLAN_DISPLAYS.user;
 
   const isFree = plan === 'user' && status === 'free';

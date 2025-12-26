@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth, useViewer } from '../../context/AuthContext';
 import { ImpersonationBanner } from '../ImpersonationBanner';
 import { SiteHeader } from '../SiteHeader';
 import { ShareEmbedModal } from '../360/ShareEmbedModal';
@@ -149,6 +149,7 @@ function ChangePasswordGallery() {
 
 export function GalleryDashboard() {
   const { user } = useAuth();
+  const { effectivePlan: viewerPlan, planLimits: viewerPlanLimits, viewer } = useViewer();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [loading, setLoading] = useState(false);

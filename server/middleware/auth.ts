@@ -23,21 +23,21 @@ export interface AuthRequest extends Request {
     isActiveSubscriber?: boolean;
     entitlements: UserEntitlements;
   };
+  realUser?: {
+    id: number;
+    email: string;
+    is_admin: boolean;
+  };
+  isImpersonating?: boolean;
 }
 
 export const authenticateToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
-  // Cookie-only authentication - DEBUG logging
-  console.log('[Auth] Cookies received:', JSON.stringify(req.cookies || {}));
-  console.log('[Auth] Request:', req.method, req.path);
-  
   const token = req.cookies?.token;
 
   if (!token) {
     console.warn('[Auth] No token cookie found for request:', req.method, req.path);
     return res.status(401).json({ error: 'Not authenticated. Please sign in.' });
   }
-  
-  console.log('[Auth] Token found, length:', token.length);
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as {
@@ -55,35 +55,56 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
       return res.status(401).json({ error: 'User not found.' });
     }
     
-    const user = result.rows[0];
+    const realUser = result.rows[0];
     
-    let effectivePlan = user.subscription_plan || 'user';
-    const status = user.subscription_status || 'free';
+    const impersonatedUserId = req.cookies?.impersonatedUserId;
+    let targetUser = realUser;
+    let isImpersonating = false;
+
+    if (realUser.is_admin && impersonatedUserId) {
+      const targetResult = await query(
+        'SELECT id, email, role, is_admin, subscription_status, subscription_plan, artist_access, designer_access, gallery_access FROM users WHERE id = $1',
+        [parseInt(impersonatedUserId, 10)]
+      );
+      
+      if (targetResult.rows.length > 0 && !targetResult.rows[0].is_admin) {
+        targetUser = targetResult.rows[0];
+        isImpersonating = true;
+        req.realUser = {
+          id: realUser.id,
+          email: realUser.email,
+          is_admin: realUser.is_admin,
+        };
+      }
+    }
     
-    if (user.is_admin) {
+    let effectivePlan = targetUser.subscription_plan || 'user';
+    const status = targetUser.subscription_status || 'free';
+    
+    if (targetUser.is_admin) {
       effectivePlan = 'admin';
     } else if (status !== 'active' && status !== 'free') {
       effectivePlan = 'user';
     }
     
-    // Build entitlements object - admins get all access
     const entitlements: UserEntitlements = {
-      artist_access: user.is_admin ? true : (user.artist_access || false),
-      designer_access: user.is_admin ? true : (user.designer_access || false),
-      gallery_access: user.is_admin ? true : (user.gallery_access || false),
+      artist_access: targetUser.is_admin ? true : (targetUser.artist_access || false),
+      designer_access: targetUser.is_admin ? true : (targetUser.designer_access || false),
+      gallery_access: targetUser.is_admin ? true : (targetUser.gallery_access || false),
     };
     
     req.user = {
-      id: user.id,
-      email: user.email,
-      role: user.is_admin ? 'admin' : user.role,
-      is_admin: user.is_admin || false,
-      subscription_status: user.subscription_status || 'free',
-      subscription_plan: user.subscription_plan || 'user',
+      id: targetUser.id,
+      email: targetUser.email,
+      role: targetUser.is_admin ? 'admin' : targetUser.role,
+      is_admin: isImpersonating ? false : (targetUser.is_admin || false),
+      subscription_status: targetUser.subscription_status || 'free',
+      subscription_plan: targetUser.subscription_plan || 'user',
       effectivePlan,
       isActiveSubscriber: status === 'active' || status === 'free',
       entitlements,
     };
+    req.isImpersonating = isImpersonating;
     
     next();
   } catch (error) {

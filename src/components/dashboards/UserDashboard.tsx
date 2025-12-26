@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth, useViewer } from '../../context/AuthContext';
 import { ChangePassword } from '../ChangePassword';
 import { ImpersonationBanner } from '../ImpersonationBanner';
 import { YourPlanCard } from '../YourPlanCard';
@@ -40,6 +40,7 @@ function formatPrice(priceAmount: number | string | null | undefined, currency: 
 
 export function UserDashboard() {
   const { user, logout } = useAuth();
+  const { viewer, effectivePlan: viewerPlan, planLimits: viewerPlanLimits } = useViewer();
   
   const handleSessionExpired = () => {
     logout();
@@ -53,8 +54,10 @@ export function UserDashboard() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   
-  const effectivePlan = user?.effectivePlan || 'user';
-  const planLimits = PLAN_LIMITS[effectivePlan as keyof typeof PLAN_LIMITS] || PLAN_LIMITS.user;
+  const effectivePlan = viewerPlan || 'user';
+  const planLimits = viewerPlanLimits && Object.keys(viewerPlanLimits).length > 0 
+    ? viewerPlanLimits 
+    : PLAN_LIMITS[effectivePlan as keyof typeof PLAN_LIMITS] || PLAN_LIMITS.user;
   const maxArtworks = planLimits.maxArtworks;
   const isAtLimit = maxArtworks !== -1 && artworks.length >= maxArtworks;
 

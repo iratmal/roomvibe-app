@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth, useViewer } from '../../context/AuthContext';
 import { ChangePassword } from '../ChangePassword';
 import { ImpersonationBanner } from '../ImpersonationBanner';
 import { YourPlanCard } from '../YourPlanCard';
@@ -70,6 +70,7 @@ function formatPrice(priceAmount: number | string | null | undefined, currency: 
 
 export function ArtistDashboard() {
   const { user, logout } = useAuth();
+  const { effectivePlan: viewerPlan, planLimits: viewerPlanLimits } = useViewer();
   const [activeTab, setActiveTab] = useState<DashboardTab>('artworks');
   const [unreadCount, setUnreadCount] = useState(0);
   const [artworks, setArtworks] = useState<Artwork[]>([]);
@@ -82,10 +83,11 @@ export function ArtistDashboard() {
   const [copySuccess, setCopySuccess] = useState('');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   
-  // Calculate plan info for usage display
-  const effectivePlan = user?.effectivePlan || 'user';
+  const effectivePlan = viewerPlan || 'user';
   const isFreePlan = effectivePlan === 'user' || effectivePlan === 'free';
-  const planLimits = PLAN_LIMITS[effectivePlan as keyof typeof PLAN_LIMITS] || PLAN_LIMITS.user;
+  const planLimits = viewerPlanLimits && Object.keys(viewerPlanLimits).length > 0 
+    ? viewerPlanLimits 
+    : PLAN_LIMITS[effectivePlan as keyof typeof PLAN_LIMITS] || PLAN_LIMITS.user;
   const maxArtworks = planLimits.maxArtworks;
   const isAtLimit = maxArtworks !== -1 && artworks.length >= maxArtworks;
 
