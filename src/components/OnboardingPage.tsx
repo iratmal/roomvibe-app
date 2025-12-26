@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 interface OnboardingPageProps {
@@ -79,20 +79,7 @@ function CheckIcon({ className = "w-5 h-5" }: { className?: string }) {
 export function OnboardingPage({ onComplete }: OnboardingPageProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isCompleting, setIsCompleting] = useState(false);
-  const [goToStudio, setGoToStudio] = useState(false);
-  const { completeOnboarding, hasEntitlement, user } = useAuth();
-
-  // Watch for onboardingCompleted to become true, then navigate
-  useEffect(() => {
-    if (isCompleting && user?.onboardingCompleted) {
-      setIsCompleting(false);
-      if (goToStudio) {
-        window.location.hash = '#/studio';
-      } else {
-        onComplete();
-      }
-    }
-  }, [isCompleting, user?.onboardingCompleted, goToStudio, onComplete]);
+  const { completeOnboarding, hasEntitlement } = useAuth();
 
   const handleNext = () => {
     if (currentStep < 2) {
@@ -101,21 +88,43 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
   };
 
   const handleSkip = async () => {
+    if (isCompleting) return;
     setIsCompleting(true);
-    setGoToStudio(false);
-    await completeOnboarding();
+    try {
+      await completeOnboarding();
+      // Small delay to ensure state is processed
+      await new Promise(resolve => setTimeout(resolve, 100));
+      onComplete();
+    } catch (err) {
+      console.error('Failed to complete onboarding:', err);
+      setIsCompleting(false);
+    }
   };
 
   const handleFinish = async () => {
+    if (isCompleting) return;
     setIsCompleting(true);
-    setGoToStudio(false);
-    await completeOnboarding();
+    try {
+      await completeOnboarding();
+      await new Promise(resolve => setTimeout(resolve, 100));
+      onComplete();
+    } catch (err) {
+      console.error('Failed to complete onboarding:', err);
+      setIsCompleting(false);
+    }
   };
 
   const handleGoToStudio = async () => {
+    if (isCompleting) return;
     setIsCompleting(true);
-    setGoToStudio(true);
-    await completeOnboarding();
+    try {
+      await completeOnboarding();
+      await new Promise(resolve => setTimeout(resolve, 100));
+      window.location.hash = '#/studio';
+    } catch (err) {
+      console.error('Failed to complete onboarding:', err);
+      setIsCompleting(false);
+    }
   };
 
   const hasLockedModules = !hasEntitlement('artist_access') || !hasEntitlement('designer_access') || !hasEntitlement('gallery_access');
