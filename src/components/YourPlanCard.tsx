@@ -124,12 +124,16 @@ export function YourPlanCard() {
     );
   }
 
-  const plan = isImpersonating && viewer 
-    ? viewer.effectivePlan 
-    : (subscription?.subscription_plan || user?.subscriptionPlan || 'user');
+  // Use effectivePlan from useViewer (which derives from entitlements)
+  const plan = effectivePlan || 'user';
+  
+  // For status, check subscription first, but treat entitlement-based plans as "active"
+  const hasEntitlementBasedPlan = plan !== 'user' && plan !== 'free';
   const status = isImpersonating && viewer 
     ? viewer.subscriptionStatus 
-    : (subscription?.subscription_status || 'free');
+    : hasEntitlementBasedPlan 
+      ? 'active' 
+      : (subscription?.subscription_status || 'free');
   const planDisplay = PLAN_DISPLAYS[plan] || PLAN_DISPLAYS.user;
 
   const isFree = plan === 'user' && status === 'free';
