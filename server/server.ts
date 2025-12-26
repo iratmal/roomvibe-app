@@ -369,6 +369,86 @@ app.get('/api/health/storage/write-test', async (req, res) => {
   }
 });
 
+// Debug endpoint to test downloading a specific storage key
+app.get('/api/debug/storage-download', async (req, res) => {
+  const storageKey = req.query.key as string;
+  if (!storageKey) {
+    return res.status(400).json({ error: 'Missing key query parameter' });
+  }
+  const storageConfig = getStorageConfig();
+  
+  console.log(`[DebugStorage] Testing download of: ${storageKey}`);
+  
+  try {
+    if (storageConfig.backend === 'replit-object-storage') {
+      const { Client } = await import('@replit/object-storage');
+      const client = new Client();
+      
+      // First check if it exists
+      const existsResult = await client.exists(storageKey);
+      console.log(`[DebugStorage] exists() result:`, existsResult);
+      
+      if (!existsResult.ok) {
+        return res.json({
+          ok: false,
+          step: 'exists_check_failed',
+          storageKey,
+          backend: storageConfig.backend,
+          existsResult: { ok: existsResult.ok, error: existsResult.error?.message }
+        });
+      }
+      
+      if (!existsResult.value) {
+        return res.json({
+          ok: false,
+          step: 'object_not_found',
+          storageKey,
+          backend: storageConfig.backend,
+          existsValue: existsResult.value
+        });
+      }
+      
+      // Try to download
+      const downloadResult = await client.downloadAsStream(storageKey);
+      console.log(`[DebugStorage] downloadAsStream() result:`, { ok: downloadResult.ok, hasValue: !!downloadResult.value, error: downloadResult.error });
+      
+      if (!downloadResult.ok || !downloadResult.value) {
+        return res.json({
+          ok: false,
+          step: 'download_failed',
+          storageKey,
+          backend: storageConfig.backend,
+          downloadOk: downloadResult.ok,
+          downloadError: downloadResult.error?.message
+        });
+      }
+      
+      // Success - return metadata only
+      return res.json({
+        ok: true,
+        storageKey,
+        backend: storageConfig.backend,
+        message: 'Download would succeed, stream ready'
+      });
+    } else {
+      return res.json({
+        ok: false,
+        message: 'Debug only supports replit-object-storage',
+        backend: storageConfig.backend
+      });
+    }
+  } catch (err: any) {
+    console.error(`[DebugStorage] Error:`, err);
+    return res.status(500).json({
+      ok: false,
+      step: 'exception',
+      storageKey,
+      error: err.message,
+      stack: err.stack?.split('\n').slice(0, 3)
+    });
+  }
+});
+
 app.get('/api/artwork-image/:id', async (req: any, res) => {
   try {
     const artworkId = parseInt(req.params.id);
