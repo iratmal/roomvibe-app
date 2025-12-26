@@ -494,6 +494,30 @@ export function useViewer() {
     };
   }
 
+  // Derive effectivePlan from entitlements (priority) or Stripe subscription
+  const deriveEffectivePlan = (): PlanType => {
+    if (!user) return 'user';
+    
+    const entitlements = user.entitlements || { artist_access: false, designer_access: false, gallery_access: false };
+    const hasArtist = entitlements.artist_access || false;
+    const hasDesigner = entitlements.designer_access || false;
+    const hasGallery = entitlements.gallery_access || false;
+    const roleCount = [hasArtist, hasDesigner, hasGallery].filter(Boolean).length;
+    
+    // Multi-entitlement = allaccess
+    if (roleCount >= 2) return 'allaccess';
+    
+    // Single entitlement = that role
+    if (hasArtist) return 'artist';
+    if (hasDesigner) return 'designer';
+    if (hasGallery) return 'gallery';
+    
+    // No entitlements = fall back to Stripe subscription or 'user'
+    return (user.effectivePlan || 'user') as PlanType;
+  };
+
+  const derivedPlan = deriveEffectivePlan();
+
   return {
     viewer: user ? {
       id: user.id,
@@ -503,14 +527,14 @@ export function useViewer() {
       emailConfirmed: user.emailConfirmed,
       subscriptionStatus: user.subscriptionStatus || 'free',
       subscriptionPlan: user.subscriptionPlan || 'user',
-      effectivePlan: user.effectivePlan || 'user' as PlanType,
+      effectivePlan: derivedPlan,
       planLimits: user.planLimits || {} as PlanLimits,
       entitlements: user.entitlements || { artist_access: false, designer_access: false, gallery_access: false },
       onboardingCompleted: user.onboardingCompleted || false,
       usage: user.usage || { artworks: 0, projects: 0, wallPhotos: 0 },
     } as ViewerData : null,
     isImpersonating: false,
-    effectivePlan: user?.effectivePlan || 'user' as PlanType,
+    effectivePlan: derivedPlan,
     planLimits: user?.planLimits || {} as PlanLimits,
     entitlements: user?.entitlements || { artist_access: false, designer_access: false, gallery_access: false },
     usage: user?.usage || { artworks: 0, projects: 0, wallPhotos: 0 },
