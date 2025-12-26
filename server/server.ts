@@ -775,7 +775,7 @@ if (process.env.NODE_ENV === 'production') {
   }));
 
   // SPA catch-all - MUST exclude /api and /objects routes
-  app.get('*', (req, res, next) => {
+  app.use((req, res, next) => {
     if (req.path.startsWith('/api/') || req.path.startsWith('/objects/')) {
       return next(); // Let API routes fall through to 404
     }
