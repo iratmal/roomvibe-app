@@ -43,7 +43,14 @@ router.get('/artworks', authenticateToken, async (req: any, res) => {
     
     // Allow all authenticated users to view their own artworks (for usage tracking)
     // Even free users need to see their artworks to understand their upload limit
-    console.log('Fetching artworks for user:', { userId: req.user.id, effectivePlan });
+    // DEBUG: Log full user context to diagnose ownership issues
+    console.log('[GET /artworks] User context:', { 
+      userId: req.user.id, 
+      email: req.user.email,
+      role: req.user.role,
+      effectivePlan,
+      entitlements: req.user.entitlements
+    });
 
     let queryText;
     let queryParams;
