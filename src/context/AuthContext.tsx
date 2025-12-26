@@ -431,15 +431,9 @@ export function AuthProvider({ children }: { children: React.ReactNode}) {
       });
 
       if (response.ok) {
-        // Update state and wait for React to process it
-        await new Promise<void>((resolve) => {
-          setUser(prevUser => {
-            const updated = prevUser ? { ...prevUser, onboardingCompleted: true } : null;
-            // Use setTimeout to ensure state update is flushed
-            setTimeout(resolve, 50);
-            return updated;
-          });
-        });
+        // Re-fetch user from server to get updated onboardingCompleted flag
+        // This ensures DashboardRouter sees the correct state
+        await fetchCurrentUser();
       }
     } catch (err) {
       console.error('Failed to complete onboarding:', err);
