@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth, useViewer } from '../../context/AuthContext';
 import { YourPlanCard } from '../YourPlanCard';
 import { ChangePassword } from '../ChangePassword';
 import { SiteHeader } from '../SiteHeader';
@@ -188,13 +188,16 @@ function UpgradeModal({
 }
 
 export function UnifiedDashboard() {
-  const { user, hasEntitlement } = useAuth();
+  const { user, hasEntitlement, impersonatedRole } = useAuth();
+  const { viewer, effectivePlan: viewerPlan } = useViewer();
   const [activeModule, setActiveModule] = useState<ModuleType>('overview');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [upgradeModal, setUpgradeModal] = useState<{ open: boolean; planType: 'artist' | 'designer' | 'gallery' }>({ open: false, planType: 'artist' });
   const [hoveredModule, setHoveredModule] = useState<ModuleType | null>(null);
 
-  const isAdmin = user?.isAdmin || user?.role === 'admin';
+  const isRealAdmin = user?.isAdmin || user?.role === 'admin';
+  const isInPreviewMode = !!impersonatedRole;
+  const isAdmin = isRealAdmin && !isInPreviewMode;
 
   const handleModuleClick = (module: ModuleConfig) => {
     const isLocked = module.entitlement && !hasEntitlement(module.entitlement) && !isAdmin;
