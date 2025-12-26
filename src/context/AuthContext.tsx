@@ -431,7 +431,15 @@ export function AuthProvider({ children }: { children: React.ReactNode}) {
       });
 
       if (response.ok) {
-        setUser(prevUser => prevUser ? { ...prevUser, onboardingCompleted: true } : null);
+        // Update state and wait for React to process it
+        await new Promise<void>((resolve) => {
+          setUser(prevUser => {
+            const updated = prevUser ? { ...prevUser, onboardingCompleted: true } : null;
+            // Use setTimeout to ensure state update is flushed
+            setTimeout(resolve, 50);
+            return updated;
+          });
+        });
       }
     } catch (err) {
       console.error('Failed to complete onboarding:', err);
