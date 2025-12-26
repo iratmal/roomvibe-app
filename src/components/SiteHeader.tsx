@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth, useViewer } from '../context/AuthContext';
 import { isStagingEnvironment } from '../utils/featureFlags';
 
 function MenuIcon({ className }: { className?: string }) {
@@ -40,9 +40,12 @@ interface SiteHeaderProps {
 
 export function SiteHeader({ showPlanBadge = false }: SiteHeaderProps) {
   const [open, setOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout, impersonatedRole } = useAuth();
+  const { viewer, effectivePlan: viewerPlan } = useViewer();
   
-  const effectivePlan = user?.effectivePlan || user?.role || 'free';
+  const effectivePlan = impersonatedRole 
+    ? (impersonatedRole === 'allin' ? 'all-access' : impersonatedRole)
+    : (viewer?.effectivePlan || viewerPlan || user?.effectivePlan || user?.role || 'free');
   const planName = getPlanDisplayName(effectivePlan);
   const badgeColor = getPlanBadgeColor(effectivePlan);
 

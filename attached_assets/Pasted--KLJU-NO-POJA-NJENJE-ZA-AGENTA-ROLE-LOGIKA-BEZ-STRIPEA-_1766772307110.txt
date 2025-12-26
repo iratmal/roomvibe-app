@@ -1,0 +1,109 @@
+🔴 KLJUČNO POJAŠNJENJE ZA AGENTA (ROLE LOGIKA BEZ STRIPEA)
+Kontekst
+
+U ovom trenutku Stripe još nije aktivan i nema plaćanja, ali aplikacija mora ispravno znati:
+
+tko je User
+
+tko je Artist
+
+tko je Designer
+
+tko je Gallery
+
+tko je All-Access
+
+i prema tome mora prikazivati točno sučelje.
+
+✅ JEDINI IZVORI ISTINE ZA ODABIR ROLE (dok Stripe ne postoji)
+
+⚠️ Stripe status NE SMIJE utjecati na to koje se sučelje prikazuje.
+
+Role korisnika se JEDNOZNAČNO određuje ISKLJUČIVO kroz ova dva mehanizma:
+
+1️⃣ CREATE ACCOUNT – Account Type dropdown (PRIMARY SOURCE)
+
+Prilikom kreiranja accounta, korisnik bira u dropdownu:
+
+User (Free)
+
+Artist
+
+Designer
+
+Gallery
+
+All-Access
+
+👉 Ovaj izbor:
+
+definira role
+
+definira KOJI DASHBOARD se mora prikazati
+
+vrijedi bez obzira na to postoji li Stripe ili ne
+
+⛔ NEMA fallbacka na “free” samo zato što nije plaćeno
+
+2️⃣ PRICING PAGE – Upgrade buttons (SECONDARY SOURCE)
+
+Ako već postojeći korisnik klikne:
+
+“Upgrade to Artist”
+
+“Upgrade to Designer”
+
+“Upgrade to Gallery”
+
+“Upgrade to All-Access”
+
+👉 tada se:
+
+role mora odmah promijeniti
+
+sučelje se mora promijeniti odmah
+
+Stripe checkout će doći kasnije (nije dio ovog taska)
+
+❌ ŠTO SE NE SMIJE RADITI
+
+❌ Ne određivati role prema Stripe statusu
+
+❌ Ne fallbackati sve na “User” jer nema plaćanja
+
+❌ Ne koristiti admin preview drugačiju logiku od realnog usera
+
+❌ Ne imati “privremena” sučelja za role
+
+✅ JEDINSTVENA LOGIKA (OVO JE SRCE PROBLEMA)
+
+Role → Dashboard mapping mora biti JEDAN JEDINI, CENTRALNI IZVOR ISTINE
+
+Primjer (konceptualno):
+
+role === 'user'       → UserDashboard
+role === 'artist'     → ArtistDashboard
+role === 'designer'   → DesignerDashboard
+role === 'gallery'    → GalleryDashboard
+role === 'all_access' → AllInDashboard
+
+
+➡️ I TA ISTA LOGIKA MORA SE KORISTITI:
+
+u normalnom loginu
+
+u admin dashboard previewu
+
+u admin “View Dashboard” karticama
+
+svugdje
+
+🧠 ZAŠTO OVO POJAŠNJENJE POSTOJI (da agent shvati kontekst)
+
+Trenutno nema Stripea
+
+Ali UX i arhitektura moraju biti ispravni sada
+
+Stripe će se samo “nadograditi” kasnije
+
+Ako se role logika sada zapetlja → Stripe integracija će biti pakao

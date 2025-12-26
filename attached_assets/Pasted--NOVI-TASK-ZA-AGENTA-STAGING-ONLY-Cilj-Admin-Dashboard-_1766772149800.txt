@@ -1,0 +1,139 @@
+# 🎯 NOVI TASK ZA AGENTA (STAGING ONLY)
+
+## Cilj
+
+Admin Dashboard mora služiti kao **točan, realan preview aplikacije po planovima** (User / Artist / Designer / Gallery / All‑Access).
+
+👉 **Sve što se vidi u Admin Dashboard previewu mora biti IDENTIČNO onome što vidi korisnik kad se stvarno ulogira u svoj account.**
+
+Ne smije postojati razlika između:
+
+* Admin → klik na User / Artist / Designer / Gallery / All‑Access
+* Stvarni login korisnika s tim planom
+
+Admin preview ≠ fake UI ≠ legacy UI
+Admin preview = **stvarno stanje aplikacije**.
+
+---
+
+## Scope (VAŽNO)
+
+* ❗ **Ovo je NOVI task** – nije nastavak starog
+* ❗ **NE dirati niti ponovno uvoditi “Search user by email / impersonation”** (to je već riješeno)
+* ❗ Radimo **isključivo na STAGINGU**
+
+---
+
+## Problem koji treba riješiti
+
+Trenutno postoji više verzija dashboarda:
+
+* Jedna verzija se prikazuje u Admin Dashboard previewu
+* Druga (stara) verzija se prikazuje kod stvarnog logina korisnika
+
+➡️ To je neprihvatljivo za QA i razvoj.
+
+---
+
+## Što treba napraviti (konkretno)
+
+### 1️⃣ Jedinstveni izvor istine (OBAVEZNO)
+
+Za svaki plan mora postojati **JEDAN dashboard layout i logika**:
+
+* User
+* Artist
+* Designer
+* Gallery
+* All‑Access
+
+Te komponente moraju biti korištene:
+
+* ✅ u Admin Dashboard previewu
+* ✅ u stvarnom loginu korisnika
+
+❌ Zabranjeno je imati:
+
+* admin-only verziju
+* user-only verziju
+* legacy fallback verziju
+
+### 2️⃣ Source of truth = Admin preview dashboardi
+
+> Dashboardi koje trenutno vidimo u **Admin Dashboard (kartice User / Artist / …)** su **referentni i točni**.
+
+➡️ **Njih treba koristiti kao jedini izvor istine**.
+
+Svi stvarni user dashboardi moraju:
+
+* koristiti iste komponente
+* koristiti istu logiku
+* koristiti iste feature flagove
+
+### 3️⃣ Fix: krivi plan / krivi badge
+
+Primjer bugova koji se moraju riješiti:
+
+* User account prikazuje “Artist” badge
+* User vidi Artist UI
+* Plan i UI nisu sinkronizirani
+
+➡️ UI se mora renderirati **isključivo po planu**, ne po tome tko je admin.
+
+### 4️⃣ Navigacija u Admin previewu (HITNO)
+
+Kad admin klikne:
+
+* User / Artist / Designer / Gallery / All‑Access
+
+Mora vrijediti:
+
+* ✅ Radi "Back to Admin"
+* ✅ Radi "Dashboard"
+* ✅ Radi navigacija
+
+Trenutno:
+
+* gumbi ne rade
+* admin se “zagubi” u preview modu
+
+➡️ Ovo se mora popraviti.
+
+### 5️⃣ Login flow (samo UI logika, plaćanje kasnije)
+
+Ako se korisnik registrira kao:
+
+* Artist
+* Designer
+* Gallery
+
+➡️ odmah mora vidjeti **ispravan dashboard tog plana**, identičan admin previewu.
+
+Napomena:
+
+* Stripe / plaćanje **NE rješavamo u ovom tasku**
+* Fokus je isključivo na **UI i dashboard logici**
+
+---
+
+## Definicija gotovog (DoD)
+
+Task je gotov kada:
+
+* Admin klik na User = isto što i stvarni User login
+* Admin klik na Artist = isto što i stvarni Artist login
+* Isto vrijedi za Designer / Gallery / All‑Access
+* Nema razlika u UI‑u, sekcijama, copyju, badgevima
+* Navigacija u Admin previewu radi bez bugova
+
+---
+
+## TL;DR za agenta
+
+> **Admin Dashboard je alat za realni QA, ne simulacija.**
+> Mora pokazivati stvarno stanje aplikacije po planovima.
+> Jedan plan = jedan dashboard = jedan izvor istine.
+
+---
+
+Ako nešto nije jasno – pitaj prije implementacije.
