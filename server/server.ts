@@ -432,12 +432,11 @@ app.get('/api/artwork-image/:id', async (req: any, res) => {
         });
       }
       
-      console.log(`[artwork-image] Using storage_key: ${storageKey}`);
+      console.log(`[artwork-image] Using storage_key directly: ${storageKey}`);
       try {
         const objectStorageService = new ObjectStorageService();
-        // Reconstruct the /objects/ path for getObjectFile
-        const objectPath = `/objects/${storageKey}`;
-        const objectFile = await objectStorageService.getObjectFile(objectPath);
+        // Use storage_key directly - no path reconstruction
+        const objectFile = await objectStorageService.getObjectByStorageKey(storageKey);
         console.log(`[artwork-image] Object found via storage_key, streaming: ${objectFile.objectName}`);
         objectStorageService.downloadObject(objectFile, res);
         return;

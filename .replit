@@ -106,4 +106,4 @@ NODE_ENV = "production"
 STAGING_ENVIRONMENT = "false"
 
 [objectStorage]
-defaultBucketID = "replit-objstore-3c53825c-85ae-483e-9643-6eeda1d213b7"
+defaultBucketID = "replit-objstore-eccb0d8c-0651-436f-beb0-6e166d88c4e6"

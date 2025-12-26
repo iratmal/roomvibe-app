@@ -102,6 +102,42 @@ export class ObjectNotFoundError extends Error {
 export class ObjectStorageService {
   constructor() {}
 
+  async getObjectByStorageKey(storageKey: string): Promise<{ file: File | null; objectName: string }> {
+    if (!storageKey || storageKey.trim() === '') {
+      throw new ObjectNotFoundError();
+    }
+    
+    const client = await getReplitClient();
+    if (USE_REPLIT_NATIVE && client) {
+      const existsResult = await client.exists(storageKey);
+      console.log('[ObjectStorage] getObjectByStorageKey (Replit):', { storageKey, existsResult });
+      
+      if (!existsResult.ok) {
+        console.error('[ObjectStorage] exists() call failed:', existsResult.error);
+        throw new ObjectNotFoundError();
+      }
+      if (!existsResult.value) {
+        console.error('[ObjectStorage] Object does not exist:', storageKey);
+        throw new ObjectNotFoundError();
+      }
+      return { file: null, objectName: storageKey };
+    }
+    
+    // GCS fallback
+    const bucketName = getGcsBucketName();
+    const bucket = objectStorageClient.bucket(bucketName);
+    const file = bucket.file(storageKey);
+    
+    console.log('[ObjectStorage] getObjectByStorageKey (GCS):', { bucketName, storageKey });
+    const [exists] = await file.exists();
+    
+    if (!exists) {
+      throw new ObjectNotFoundError();
+    }
+    
+    return { file, objectName: storageKey };
+  }
+
   async getObjectFile(objectPath: string): Promise<{ file: File | null; objectName: string }> {
     if (!objectPath.startsWith("/objects/")) {
       throw new ObjectNotFoundError();
