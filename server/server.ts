@@ -394,13 +394,10 @@ app.get('/api/artwork-image/:id', async (req: any, res) => {
 
     const { image_url: imageUrl, storage_key: storageKey, title, artist_id, availability } = result.rows[0];
     
-    // Block access to draft/private artworks (prevent enumeration via sequential IDs)
-    // Allow: 'available', 'sold', null/undefined (legacy data)
-    if (availability === 'draft' || availability === 'private') {
-      console.warn(`[artwork-image] Artwork ${artworkId} is ${availability}, blocking access`);
-      return res.status(404).json({ error: 'Artwork not found', artworkId });
-    }
-    console.log(`[artwork-image] Artwork ${artworkId} (title="${title}", artist_id=${artist_id}): storage_key=${storageKey || 'NULL'}, image_url=${imageUrl || 'NULL'}`);
+    // NOTE: No availability guard here - image endpoint serves ALL artworks regardless of status
+    // Visibility rules belong to listing endpoints, not binary image delivery
+    // Dashboard users need to see their own draft/private artwork images
+    console.log(`[artwork-image] Artwork ${artworkId} (title="${title}", artist_id=${artist_id}, availability=${availability}): storage_key=${storageKey || 'NULL'}, image_url=${imageUrl || 'NULL'}`);
 
     // Check if storage_key exists (required for proper image retrieval)
     if (!storageKey || storageKey.trim() === '') {
