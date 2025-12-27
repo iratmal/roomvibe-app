@@ -1,0 +1,97 @@
+Fix artwork edit permissions for User (Free) dashboard
+Goal
+
+User (Free) mora moći editirati svoje vlastite artworske bez greške “Only artists and admins can update artworks”.
+
+Ako neki user ipak nema pravo (tuđi artwork, ili plan limit), UI mora to spriječiti i dati normalnu poruku.
+
+Current behavior (bug)
+
+Na #/dashboard/user:
+
+otvorim “Edit Artwork”
+
+dobijem error banner:
+“Only artists and admins can update artworks”
+
+iako je to moj artwork i user plan ima upload/manage artworske.
+
+Root cause (most likely)
+
+Backend route za update artwork ima role check tipa:
+
+if (!isArtist && !isAdmin) return 403;
+
+
+umjesto ispravnog:
+
+vlasnik artworka smije update
+
+admin smije update
+
+role artist nije jedini uvjet
+
+Required fix (backend first)
+1) Update artwork endpoint permission rule
+
+Na endpointu (npr. PUT /api/artworks/:id ili PATCH):
+
+Dozvoli update ako:
+
+req.user.isAdmin === true ILI
+
+artwork.userId === req.user.id (owner)
+
+❌ Ne koristiti “artist-only” role check za owner update.
+
+2) Enforce ownership (security)
+
+Ako user pokušava update tuđeg artworka:
+
+vrati 403 (to je ok)
+
+poruka: “You can only edit your own artworks.”
+
+3) Plan rules (ako postoje)
+
+Ako user plan ne smije editirati neke fieldove (npr. buyUrl / price):
+
+backend neka odbije s 403 + jasna poruka
+
+ali default: user smije editirati title, dims, buyUrl, price (prema MVP logici)
+
+Required fix (frontend UX)
+4) Ne prikazivati edit form ako user nema pravo
+
+U listi artworka prikazati “Edit” samo za artworske koji pripadaju useru
+
+Ako je backend vratio 403:
+
+prikazati friendly poruku
+
+disable/close edit modal
+
+ne prikazivati generički “Only artists…”
+
+5) Replace error copy
+
+Zamijeniti tekst:
+
+from: “Only artists and admins can update artworks”
+
+to: “You can edit your own artworks. If this is your artwork and you still see this message, please refresh and try again.”
+(ili kraće: “You can only edit your own artworks.”)
+
+Acceptance criteria
+
+Free user može otvoriti Edit i kliknuti “Update Artwork” → 200 OK
+
+Promjene se spreme i vide nakon refresh
+
+User ne može editirati tuđi artwork (403 + jasna poruka)
+
+Nema više poruke “Only artists and admins…”
+
+Priority
+
+HIGH — jer ovo je core funkcionalnost user plana.

@@ -256,24 +256,20 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
 
 router.put('/artworks/:id', authenticateToken, upload.single('image'), async (req: any, res) => {
   try {
-    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
-    
-    if (!['artist', 'designer', 'gallery', 'admin'].includes(effectivePlan)) {
-      return res.status(403).json({ error: 'Only artists and admins can update artworks' });
-    }
-
+    const isAdmin = req.user.role === 'admin' || req.user.isAdmin;
     const artworkId = parseInt(req.params.id);
     const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, orientation, styleTags, dominantColors, medium, availability } = req.body;
 
+    // Admin can edit any artwork, regular users can only edit their own
     let existingArtwork;
-    if (effectivePlan === 'admin') {
+    if (isAdmin) {
       existingArtwork = await query('SELECT * FROM artworks WHERE id = $1', [artworkId]);
     } else {
       existingArtwork = await query('SELECT * FROM artworks WHERE id = $1 AND artist_id = $2', [artworkId, req.user.id]);
     }
 
     if (existingArtwork.rows.length === 0) {
-      return res.status(404).json({ error: 'Artwork not found or you do not have permission to edit it' });
+      return res.status(403).json({ error: 'You can only edit your own artworks.' });
     }
 
     let imageUrl = existingArtwork.rows[0].image_url;
@@ -332,23 +328,19 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
 
 router.delete('/artworks/:id', authenticateToken, async (req: any, res) => {
   try {
-    const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
-    
-    if (!['artist', 'designer', 'gallery', 'admin'].includes(effectivePlan)) {
-      return res.status(403).json({ error: 'Only artists and admins can delete artworks' });
-    }
-
+    const isAdmin = req.user.role === 'admin' || req.user.isAdmin;
     const artworkId = parseInt(req.params.id);
 
+    // Admin can delete any artwork, regular users can only delete their own
     let result;
-    if (effectivePlan === 'admin') {
+    if (isAdmin) {
       result = await query('DELETE FROM artworks WHERE id = $1 RETURNING id', [artworkId]);
     } else {
       result = await query('DELETE FROM artworks WHERE id = $1 AND artist_id = $2 RETURNING id', [artworkId, req.user.id]);
     }
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Artwork not found or you do not have permission to delete it' });
+      return res.status(403).json({ error: 'You can only delete your own artworks.' });
     }
 
     res.json({ message: 'Artwork deleted successfully' });
