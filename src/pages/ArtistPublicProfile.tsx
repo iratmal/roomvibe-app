@@ -53,6 +53,45 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
   const [sendingMessage, setSendingMessage] = useState(false);
   const [messageSent, setMessageSent] = useState(false);
 
+  // Role-based access control
+  const isDesigner = user?.entitlements?.designer_access || false;
+  const isGallery = user?.entitlements?.gallery_access || false;
+  const isAdmin = user?.isAdmin || false;
+  const isArtist = user?.entitlements?.artist_access || false;
+  const isAuthorizedViewer = isDesigner || isGallery || isAdmin;
+  
+  // Check if current viewer has access based on artist's visibility settings
+  const getViewerAccess = () => {
+    if (!profile) return { hasAccess: false, reason: '' };
+    if (isAdmin) return { hasAccess: true, reason: '' };
+    
+    const visibleToDesigners = profile.visibleToDesigners;
+    const visibleToGalleries = profile.visibleToGalleries;
+    
+    // Designer trying to view
+    if (isDesigner && !visibleToDesigners && !visibleToGalleries) {
+      return { hasAccess: false, reason: 'This artist profile is not available.' };
+    }
+    if (isDesigner && !visibleToDesigners) {
+      return { hasAccess: false, reason: 'This artist is not available to designers.' };
+    }
+    if (isDesigner) return { hasAccess: true, reason: '' };
+    
+    // Gallery trying to view
+    if (isGallery && !visibleToGalleries && !visibleToDesigners) {
+      return { hasAccess: false, reason: 'This artist profile is not available.' };
+    }
+    if (isGallery && !visibleToGalleries) {
+      return { hasAccess: false, reason: 'This artist is not available to galleries.' };
+    }
+    if (isGallery) return { hasAccess: true, reason: '' };
+    
+    // Anonymous or Artist role - can view artworks but not contact
+    return { hasAccess: true, reason: '' };
+  };
+  
+  const viewerAccess = getViewerAccess();
+
   useEffect(() => {
     fetchProfile();
   }, [slug]);
@@ -152,6 +191,30 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
     );
   }
 
+  // Gate entire profile for authorized viewers who don't have access (role mismatch)
+  // E.g., designer viewing gallery-only profile or gallery viewing designer-only profile
+  if (isAuthorizedViewer && !viewerAccess.hasAccess && viewerAccess.reason) {
+    return (
+      <div className="min-h-screen bg-rv-surface flex flex-col items-center justify-center p-4">
+        <div className="w-16 h-16 mb-4 rounded-full bg-amber-100 flex items-center justify-center">
+          <svg className="w-8 h-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <h1 className="text-2xl font-bold text-rv-text mb-2">Profile Not Available</h1>
+        <p className="text-rv-textMuted text-center max-w-md">
+          {viewerAccess.reason}
+        </p>
+        <a 
+          href="#/"
+          className="mt-6 px-6 py-3 bg-rv-primary text-white rounded-rvMd font-semibold hover:bg-rv-primaryHover transition-colors"
+        >
+          Back to Home
+        </a>
+      </div>
+    );
+  }
+
   const location = [profile.locationCity, profile.locationCountry].filter(Boolean).join(', ');
 
   return (
@@ -228,84 +291,100 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                 </div>
               )}
 
-              <div className="flex flex-wrap gap-3 mb-6">
-                {profile.websiteUrl && (
-                  <a
-                    href={profile.websiteUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 rounded-full bg-rv-surface hover:bg-rv-neutral transition-colors"
-                    title="Website"
-                  >
-                    <svg className="w-5 h-5 text-rv-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                    </svg>
-                  </a>
-                )}
-                {profile.instagramUrl && (
-                  <a
-                    href={profile.instagramUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 rounded-full bg-rv-surface hover:bg-rv-neutral transition-colors"
-                    title="Instagram"
-                  >
-                    <svg className="w-5 h-5 text-rv-text" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                    </svg>
-                  </a>
-                )}
-                {profile.facebookUrl && (
-                  <a
-                    href={profile.facebookUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 rounded-full bg-rv-surface hover:bg-rv-neutral transition-colors"
-                    title="Facebook"
-                  >
-                    <svg className="w-5 h-5 text-rv-text" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                    </svg>
-                  </a>
-                )}
-                {profile.tiktokUrl && (
-                  <a
-                    href={profile.tiktokUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 rounded-full bg-rv-surface hover:bg-rv-neutral transition-colors"
-                    title="TikTok"
-                  >
-                    <svg className="w-5 h-5 text-rv-text" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z"/>
-                    </svg>
-                  </a>
-                )}
-              </div>
+              {/* Social Links - Only visible to Designer/Gallery/Admin */}
+              {isAuthorizedViewer && (profile.websiteUrl || profile.instagramUrl || profile.facebookUrl || profile.tiktokUrl) && (
+                <div className="flex flex-wrap gap-3 mb-6">
+                  {profile.websiteUrl && (
+                    <a
+                      href={profile.websiteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-full bg-rv-surface hover:bg-rv-neutral transition-colors"
+                      title="Website"
+                    >
+                      <svg className="w-5 h-5 text-rv-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                      </svg>
+                    </a>
+                  )}
+                  {profile.instagramUrl && (
+                    <a
+                      href={profile.instagramUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-full bg-rv-surface hover:bg-rv-neutral transition-colors"
+                      title="Instagram"
+                    >
+                      <svg className="w-5 h-5 text-rv-text" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                      </svg>
+                    </a>
+                  )}
+                  {profile.facebookUrl && (
+                    <a
+                      href={profile.facebookUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-full bg-rv-surface hover:bg-rv-neutral transition-colors"
+                      title="Facebook"
+                    >
+                      <svg className="w-5 h-5 text-rv-text" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                      </svg>
+                    </a>
+                  )}
+                  {profile.tiktokUrl && (
+                    <a
+                      href={profile.tiktokUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-full bg-rv-surface hover:bg-rv-neutral transition-colors"
+                      title="TikTok"
+                    >
+                      <svg className="w-5 h-5 text-rv-text" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z"/>
+                      </svg>
+                    </a>
+                  )}
+                </div>
+              )}
 
+              {/* CTA Buttons Section */}
               <div className="flex flex-wrap gap-3">
-                <button
-                  onClick={() => {
-                    if (user) {
-                      setShowContactModal(true);
-                    } else {
-                      sessionStorage.setItem('redirectAfterLogin', `#/artist/${slug}`);
-                      window.location.hash = '#/login';
-                    }
-                  }}
-                  className="px-6 py-3 bg-rv-primary text-white rounded-rvMd font-semibold hover:bg-rv-primaryHover transition-colors shadow-rvSoft"
-                >
-                  Contact Artist
-                </button>
+                {/* Primary CTA: Contact Artist - Only for authorized viewers */}
+                {isAuthorizedViewer && (
+                  <button
+                    onClick={() => setShowContactModal(true)}
+                    className="px-6 py-3 bg-rv-primary text-white rounded-rvMd font-semibold hover:bg-rv-primaryHover transition-colors shadow-rvSoft"
+                  >
+                    Contact Artist
+                  </button>
+                )}
+                {/* Secondary CTA: View Artworks - styled based on whether Contact is shown */}
                 {artworks.length > 0 && (
                   <button
                     onClick={scrollToArtworks}
-                    className="px-6 py-3 border-2 border-rv-primary text-rv-primary rounded-rvMd font-semibold hover:bg-rv-primary/5 transition-colors"
+                    className={`px-6 py-3 ${isAuthorizedViewer ? 'border-2 border-rv-primary text-rv-primary hover:bg-rv-primary/5' : 'bg-rv-primary text-white hover:bg-rv-primaryHover'} rounded-rvMd font-semibold transition-colors`}
                   >
                     View Artworks
                   </button>
                 )}
               </div>
+
+              {/* Restricted Access Message for unauthorized viewers (Anonymous/Artist role) */}
+              {!isAuthorizedViewer && (
+                <p className="mt-4 text-sm text-rv-textMuted italic">
+                  Log in as a Designer or Gallery to contact this artist.
+                </p>
+              )}
+
+              {/* Policy text for authorized viewers */}
+              {isAuthorizedViewer && (
+                <p className="mt-4 text-xs text-rv-textMuted">
+                  <strong>Preferred contact:</strong> Use RoomVibe messaging to contact this artist.
+                  External links are provided by the artist for reference and convenience.
+                </p>
+              )}
             </div>
           </div>
         </div>

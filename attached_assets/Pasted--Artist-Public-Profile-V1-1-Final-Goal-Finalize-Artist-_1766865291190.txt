@@ -1,0 +1,120 @@
+# Artist Public Profile – V1.1 (Final)
+
+## Goal
+
+Finalize Artist Public Profile by adding controlled social/website links, clear access rules, and a short policy statement. This is a **delta task** on top of the already implemented public profile page.
+
+---
+
+## 1. Social & Website Links on Public Profile
+
+### Fields to support
+
+* Website URL
+* Instagram
+* Facebook
+* TikTok
+
+### Rendering rules
+
+* Show **only if the field is filled** by the artist
+* Display as **icon + link** row near the top of the profile (under tags / visibility pills)
+* All links must:
+
+  * Open in new tab
+  * Use `target="_blank" rel="noopener noreferrer"`
+
+---
+
+## 2. Access & Visibility Rules (CRITICAL)
+
+### Viewer role logic
+
+**If viewer is logged in as:**
+
+* **Designer / Gallery / Admin**
+
+  * Show:
+
+    * `Contact Artist` button (RoomVibe internal message)
+    * Social & website links
+
+* **Anonymous visitor OR Artist role**
+
+  * Hide:
+
+    * `Contact Artist`
+    * Social & website links
+  * Show helper text:
+
+    > "Log in as a Designer or Gallery to contact this artist."
+
+---
+
+## 3. Artist Visibility Settings Enforcement
+
+### Based on artist settings:
+
+* ❌ Not visible to Designers AND not visible to Galleries
+
+  * Return **404** or show message:
+
+    > "This artist profile is not public."
+
+* ✅ Visible to Designers ONLY
+
+  * Designer → full access
+  * Gallery → show "Not available"
+
+* ✅ Visible to Galleries ONLY
+
+  * Gallery → full access
+  * Designer → show "Not available"
+
+* ✅ Visible to both
+
+  * Both roles see full profile
+
+---
+
+## 4. CTA Priority (UX)
+
+1. **Primary CTA:** `Contact Artist` (RoomVibe message)
+2. **Secondary CTA:** `View Artworks`
+3. **Tertiary:** External links (icons)
+
+RoomVibe must remain the preferred communication channel.
+
+---
+
+## 5. Policy Text (DISPLAY ON PUBLIC PROFILE)
+
+Place this short policy text near the contact area (small, subtle text):
+
+> **Preferred contact:** Use RoomVibe messaging to contact this artist.
+> External links are provided by the artist for reference and convenience.
+
+---
+
+## 6. Acceptance Criteria
+
+* Links appear only when filled
+* Links are hidden for unauthorized viewers
+* Visibility rules strictly enforced
+* No regressions on existing public profile layout
+* Clean UX, no warning errors
+
+---
+
+## Notes
+
+This completes **Artist Public Profile V1**.
+Next steps after this task:
+
+* Designer browse & search experience
+* Gallery browse & shortlisting
+* Analytics & profile views
+
+---
+
+✅ This task is FINAL for V1 Public Profile.
