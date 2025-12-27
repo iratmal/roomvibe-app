@@ -246,8 +246,11 @@ function DashboardRouter() {
   // Check if user is admin using actual user properties
   const isAdmin = user.role === 'admin' || user.isAdmin;
 
-  // Redirect first-time users to onboarding (skip for admins)
-  if (!user.onboardingCompleted && !isAdmin) {
+  // Check if user explicitly skipped onboarding this session
+  const hasSkippedOnboarding = sessionStorage.getItem('rv_skip_onboarding') === '1';
+
+  // Redirect first-time users to onboarding (skip for admins and users who skipped)
+  if (!user.onboardingCompleted && !isAdmin && !hasSkippedOnboarding) {
     window.location.hash = '#/onboarding';
     return null;
   }

@@ -95,6 +95,8 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
     if (isCompleting) return;
     setIsCompleting(true);
     setError(null);
+    // Set session flag BEFORE API call to prevent redirect loop
+    sessionStorage.setItem('rv_skip_onboarding', '1');
     try {
       console.log('[Onboarding] Calling completeOnboarding...');
       await completeOnboarding();
@@ -102,7 +104,7 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
     } catch (err) {
       console.warn('[Onboarding] Onboarding completion failed, continuing anyway:', err);
     } finally {
-      onComplete();
+      window.location.hash = '#/dashboard';
     }
   };
 
@@ -111,6 +113,8 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
     if (isCompleting) return;
     setIsCompleting(true);
     setError(null);
+    // Set session flag BEFORE API call to prevent redirect loop
+    sessionStorage.setItem('rv_skip_onboarding', '1');
     try {
       console.log('[Onboarding] Calling completeOnboarding...');
       await completeOnboarding();
@@ -118,7 +122,7 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
     } catch (err) {
       console.warn('[Onboarding] Onboarding completion failed, continuing anyway:', err);
     } finally {
-      onComplete();
+      window.location.hash = '#/dashboard';
     }
   };
 
@@ -127,6 +131,8 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
     if (isCompleting) return;
     setIsCompleting(true);
     setError(null);
+    // Set session flag BEFORE API call to prevent redirect loop
+    sessionStorage.setItem('rv_skip_onboarding', '1');
     try {
       console.log('[Onboarding] Calling completeOnboarding...');
       await completeOnboarding();
