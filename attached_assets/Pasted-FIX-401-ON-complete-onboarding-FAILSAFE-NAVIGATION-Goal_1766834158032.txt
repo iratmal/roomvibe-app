@@ -1,0 +1,87 @@
+FIX 401 ON /complete-onboarding + FAILSAFE NAVIGATION
+Goal
+
+Ukloniti 401 na POST /api/complete-onboarding (ili koji je endpoint).
+
+Napraviti failsafe: korisnik mora moći ući u Dashboard čak i ako API faila.
+
+Problem (current)
+
+Klik na Skip / Go to Dashboard poziva completeOnboarding()
+
+API vraća 401 Unauthorized
+
+UI pokaže grešku i korisnik ostaje na onboarding pageu
+
+Root cause hypotheses (provjeri redom)
+
+A) Cookie/session nije poslan jer fetch/axios nema credentials:
+
+fetch(..., { credentials: 'include' })
+
+axios(..., { withCredentials: true })
+
+B) API client koristi krivi base URL / proxy path
+
+npr. fetch("api/complete-onboarding") umjesto fetch("/api/complete-onboarding")
+
+C) Backend auth middleware odbija request
+
+route je iza requireAuth, ali session nije prepoznat (cookie config, domain, samesite)
+
+Scope (SAMO ovo)
+1) Frontend: osiguraj da request nosi session cookie
+
+U AuthContext.tsx (ili apiClientu):
+
+ako koristiš fetch, dodaj credentials: 'include'
+
+ako koristiš axios, osiguraj withCredentials: true
+
+provjeri da endpoint ima leading slash: "/api/complete-onboarding"
+
+2) Backend: potvrdi da endpoint radi sa session auth
+
+U server route za POST /api/complete-onboarding:
+
+logiraj req.user / session identifikator
+
+provjeri koji middleware štiti rutu
+
+ako koristi cookie auth, potvrdi da cookie stiže (u request headers)
+
+3) Failsafe UX (bitno!)
+
+Ako completeOnboarding faila:
+
+NE SMIJE blokirati navigaciju
+
+napravi ovo ponašanje:
+
+pokušaj API
+
+ako faila → prikaži warning (“Couldn’t save onboarding status, continuing…”)
+
+i svejedno navigiraj na Dashboard
+
+Ovo nam rješava “user stuck” čak i dok debugiramo backend.
+
+Debug checklist (Agent mora priložiti)
+
+U browser Network tabu za POST /api/complete-onboarding:
+
+Status: trenutno 401
+
+Request headers: da li postoji Cookie: ...?
+
+Response: što backend vraća (message)
+
+Ako nema Cookie headera → 100% je credentials/withCredentials.
+
+Stop condition
+
+POST /api/complete-onboarding vraća 200 dok je user logiran
+
+Skip i Go to Dashboard uvijek vode na dashboard (bez blokiranja)
+
+Agent navede koje je točno bilo: A / B / C i koji fileovi su promijenjeni
