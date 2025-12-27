@@ -57,6 +57,13 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
   - Thin dark frames around artworks for professional presentation
   - Street-View style navigation with pulsing floor hotspots and smooth camera transitions
   - Camera constraints with configurable polar angle limits
+- **Public Artist Profiles**: Artists can share their portfolio via public profile pages (`#/artist/:slug`):
+  - URL-friendly slug auto-generated from display name with collision handling
+  - Profile displays artist bio, location, medium, style tags, social links (website, Instagram, Facebook, TikTok)
+  - Artworks grid with View in Room and View & Buy actions
+  - Contact modal integrated with inbox system (requires login)
+  - Visibility controlled by "Visible to Designers/Galleries" settings
+  - Database fields: slug, facebook_url, tiktok_url added to users table
 - **Onboarding Flow**: A 3-screen introductory wizard for first-time users, guiding them through the application's modules and features.
 - **Artwork Management**: Includes artwork upload, editing, and automated enrichment from Shopify.
 - **Real-Scale Rendering**: Achieves accurate artwork sizing using physical dimensions and standardized room wall heights.

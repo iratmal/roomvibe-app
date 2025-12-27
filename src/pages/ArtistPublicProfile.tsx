@@ -307,7 +307,7 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                 <div key={artwork.id} className="bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral overflow-hidden group">
                   <div className="aspect-square bg-rv-surface relative overflow-hidden">
                     <img
-                      src={artwork.imageUrl}
+                      src={artwork.imageUrl.startsWith('/api/') ? `${API_URL}${artwork.imageUrl}` : artwork.imageUrl}
                       alt={artwork.title}
                       className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                     />

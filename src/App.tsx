@@ -231,7 +231,8 @@ function OnboardingRouter() {
 
 function ArtistPublicProfileRouter() {
   const hash = window.location.hash;
-  const slug = hash.replace('#/artist/', '').split('?')[0];
+  const [pathPart] = hash.replace('#/artist/', '').split('?');
+  const slug = decodeURIComponent(pathPart);
 
   useEffect(() => {
     window.scrollTo(0, 0);
