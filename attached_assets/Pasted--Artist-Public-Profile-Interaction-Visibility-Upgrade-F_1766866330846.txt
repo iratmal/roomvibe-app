@@ -1,0 +1,120 @@
+# 🎨 Artist Public Profile – Interaction & Visibility Upgrade (FINAL TASK)
+
+## 🎯 Goal
+
+Finalize the **Artist Public Profile** so it is fully shareable, open, and valuable for artists — allowing anyone to discover, view artworks, and contact the artist **without login barriers**.
+
+This task **closes the Artist Dashboard phase** for now.
+
+---
+
+## 1️⃣ Remove Contact Restriction (Critical)
+
+❌ Remove the text:
+
+> "Log in as a Designer or Gallery to contact this artist."
+
+This restriction must be completely removed from the **Artist Public Profile**.
+
+---
+
+## 2️⃣ Add Public Contact CTA
+
+➕ Add a **Contact Artist** button next to **View Artworks** on the public profile header.
+
+### Behavior:
+
+* Visible to **everyone** (anonymous visitors, designers, galleries, external visitors)
+* No login required
+* Opens a **Contact Artist form** (modal or inline)
+
+### Contact Form Fields:
+
+* Name
+* Email
+* Message
+
+### Submission:
+
+* Sends message to the artist’s email
+* (Optional / future-proof) Also stores message in RoomVibe inbox
+
+---
+
+## 3️⃣ Display Artist Links on Public Profile
+
+On the Artist Public Profile, display **all links entered in the artist dashboard**.
+
+### Supported links (V1):
+
+* 🌐 Website
+* 📷 Instagram
+* 📘 Facebook
+* 🎵 TikTok
+
+### Rules:
+
+* Show only links that are filled in
+* Display as clean icons or labeled links
+* Open links in a new tab
+
+> If the artist entered a link, it is considered intentional and allowed.
+
+---
+
+## 4️⃣ Add Likes to Artworks (Public)
+
+➕ Add a **Like (❤️)** feature under each artwork on the public artist profile.
+
+### Requirements:
+
+* Likes are public
+* No login required
+* Show total like count per artwork
+
+### Notes:
+
+* Basic protection is sufficient (cookie / IP-based)
+* No user profiles or advanced social logic needed
+
+---
+
+## 5️⃣ Explicitly Excluded (Future Phase)
+
+❌ Do NOT implement comments yet
+
+* Comments are planned for a later phase
+* This task is **Likes only**
+
+---
+
+## 6️⃣ Product Philosophy (Important Context)
+
+RoomVibe **must not block or gate artist visibility**.
+
+The Artist Public Profile is:
+
+* A shareable mini website
+* A portfolio page
+* A discovery and contact hub
+
+Artists should be free to:
+
+* Share their profile link anywhere
+* Be contacted by anyone
+* Benefit from maximum exposure
+
+---
+
+## ✅ Completion Criteria
+
+This task is complete when:
+
+* Anyone can contact an artist without logging in
+* Artist links are visible on the public profile
+* Artworks can receive likes publicly
+* No role-based or login-based contact restrictions remain
+
+---
+
+🚀 After this task, **Artist Dashboard & Public Profile are considered complete for Phase 1**.

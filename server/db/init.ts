@@ -600,6 +600,34 @@ export async function initializeDatabase() {
       END $$;
     `);
 
+    // like_count - public like count for artworks
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'artworks' AND column_name = 'like_count'
+        ) THEN
+          ALTER TABLE artworks ADD COLUMN like_count INTEGER DEFAULT 0;
+        END IF;
+      END $$;
+    `);
+
+    // artwork_like_tokens - track who has liked which artwork (cookie-based)
+    await query(`
+      CREATE TABLE IF NOT EXISTS artwork_like_tokens (
+        id SERIAL PRIMARY KEY,
+        artwork_id INTEGER NOT NULL REFERENCES artworks(id) ON DELETE CASCADE,
+        client_token_hash VARCHAR(64) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(artwork_id, client_token_hash)
+      );
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS idx_artwork_like_tokens_artwork_id ON artwork_like_tokens(artwork_id);
+    `);
+
     await query(`
       CREATE TABLE IF NOT EXISTS projects (
         id SERIAL PRIMARY KEY,
@@ -762,6 +790,50 @@ export async function initializeDatabase() {
 
     await query(`
       CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at DESC);
+    `);
+
+    // Allow nullable sender_id for public contact messages
+    await query(`
+      ALTER TABLE messages ALTER COLUMN sender_id DROP NOT NULL;
+    `).catch(() => {}); // Ignore if already nullable
+
+    // Add source column to messages for tracking origin
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'messages' AND column_name = 'source'
+        ) THEN
+          ALTER TABLE messages ADD COLUMN source VARCHAR(50) DEFAULT 'internal';
+        END IF;
+      END $$;
+    `);
+
+    // Add sender_name for public contact messages
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'messages' AND column_name = 'sender_name'
+        ) THEN
+          ALTER TABLE messages ADD COLUMN sender_name VARCHAR(255);
+        END IF;
+      END $$;
+    `);
+
+    // Add sender_email for public contact messages
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'messages' AND column_name = 'sender_email'
+        ) THEN
+          ALTER TABLE messages ADD COLUMN sender_email VARCHAR(255);
+        END IF;
+      END $$;
     `);
 
     // PDF export tracking table for monthly limits

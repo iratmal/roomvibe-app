@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
 
 const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
 
@@ -18,6 +17,7 @@ interface ArtistProfile {
   languages: string[];
   visibleToDesigners: boolean;
   visibleToGalleries: boolean;
+  email: string;
 }
 
 interface Artwork {
@@ -33,6 +33,7 @@ interface Artwork {
   medium: string;
   styleTags: string[];
   availability: string;
+  likeCount: number;
 }
 
 interface ArtistPublicProfileProps {
@@ -42,59 +43,47 @@ interface ArtistPublicProfileProps {
 }
 
 export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: ArtistPublicProfileProps) {
-  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [profile, setProfile] = useState<ArtistProfile | null>(null);
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [artistId, setArtistId] = useState<number | null>(null);
   const [showContactModal, setShowContactModal] = useState(false);
+  
+  // Public contact form state
+  const [contactName, setContactName] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
   const [contactMessage, setContactMessage] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
   const [messageSent, setMessageSent] = useState(false);
-
-  // Role-based access control
-  const isDesigner = user?.entitlements?.designer_access || false;
-  const isGallery = user?.entitlements?.gallery_access || false;
-  const isAdmin = user?.isAdmin || false;
-  const isArtist = user?.entitlements?.artist_access || false;
-  const isAuthorizedViewer = isDesigner || isGallery || isAdmin;
+  const [messageError, setMessageError] = useState<string | null>(null);
   
-  // Check if current viewer has access based on artist's visibility settings
-  const getViewerAccess = () => {
-    if (!profile) return { hasAccess: false, reason: '' };
-    if (isAdmin) return { hasAccess: true, reason: '' };
-    
-    const visibleToDesigners = profile.visibleToDesigners;
-    const visibleToGalleries = profile.visibleToGalleries;
-    
-    // Designer trying to view
-    if (isDesigner && !visibleToDesigners && !visibleToGalleries) {
-      return { hasAccess: false, reason: 'This artist profile is not available.' };
-    }
-    if (isDesigner && !visibleToDesigners) {
-      return { hasAccess: false, reason: 'This artist is not available to designers.' };
-    }
-    if (isDesigner) return { hasAccess: true, reason: '' };
-    
-    // Gallery trying to view
-    if (isGallery && !visibleToGalleries && !visibleToDesigners) {
-      return { hasAccess: false, reason: 'This artist profile is not available.' };
-    }
-    if (isGallery && !visibleToGalleries) {
-      return { hasAccess: false, reason: 'This artist is not available to galleries.' };
-    }
-    if (isGallery) return { hasAccess: true, reason: '' };
-    
-    // Anonymous or Artist role - can view artworks but not contact
-    return { hasAccess: true, reason: '' };
-  };
-  
-  const viewerAccess = getViewerAccess();
+  // Likes state - track which artworks user has liked (cookie-based)
+  const [likedArtworks, setLikedArtworks] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     fetchProfile();
+    loadLikedArtworks();
   }, [slug]);
+
+  const loadLikedArtworks = () => {
+    try {
+      const liked = localStorage.getItem('likedArtworks');
+      if (liked) {
+        setLikedArtworks(new Set(JSON.parse(liked)));
+      }
+    } catch (e) {
+      console.error('Error loading liked artworks:', e);
+    }
+  };
+
+  const saveLikedArtworks = (likes: Set<number>) => {
+    try {
+      localStorage.setItem('likedArtworks', JSON.stringify([...likes]));
+    } catch (e) {
+      console.error('Error saving liked artworks:', e);
+    }
+  };
 
   const fetchProfile = async () => {
     try {
@@ -114,7 +103,7 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
 
       const data = await response.json();
       setProfile(data.profile);
-      setArtworks(data.artworks);
+      setArtworks(data.artworks.map((a: any) => ({ ...a, likeCount: a.likeCount || 0 })));
       setArtistId(data.artistId);
     } catch (err) {
       console.error('Error fetching artist profile:', err);
@@ -124,36 +113,85 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
     }
   };
 
-  const handleSendMessage = async () => {
-    if (!user || !artistId || !contactMessage.trim()) return;
+  const handleSendPublicMessage = async () => {
+    if (!artistId || !contactName.trim() || !contactEmail.trim() || !contactMessage.trim()) {
+      setMessageError('Please fill in all fields');
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(contactEmail)) {
+      setMessageError('Please enter a valid email address');
+      return;
+    }
 
     setSendingMessage(true);
+    setMessageError(null);
+    
     try {
-      const response = await fetch(`${API_URL}/api/messages`, {
+      const response = await fetch(`${API_URL}/api/public/contact-artist`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
-          recipientId: artistId,
-          subject: `Inquiry from ${user.email}`,
-          body: contactMessage,
-          senderRole: user.entitlements?.gallery_access ? 'gallery' : 
-                      user.entitlements?.designer_access ? 'designer' : 'user'
+          artistId,
+          senderName: contactName,
+          senderEmail: contactEmail,
+          message: contactMessage
         })
       });
 
       if (response.ok) {
         setMessageSent(true);
+        setContactName('');
+        setContactEmail('');
         setContactMessage('');
         setTimeout(() => {
           setShowContactModal(false);
           setMessageSent(false);
-        }, 2000);
+        }, 3000);
+      } else {
+        const data = await response.json();
+        setMessageError(data.error || 'Failed to send message');
       }
     } catch (err) {
       console.error('Error sending message:', err);
+      setMessageError('Failed to send message. Please try again.');
     } finally {
       setSendingMessage(false);
+    }
+  };
+
+  const handleLikeArtwork = async (artworkId: number) => {
+    const isLiked = likedArtworks.has(artworkId);
+    
+    try {
+      const response = await fetch(`${API_URL}/api/public/artwork/${artworkId}/like`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ unlike: isLiked })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Update local like state
+        const newLikes = new Set(likedArtworks);
+        if (isLiked) {
+          newLikes.delete(artworkId);
+        } else {
+          newLikes.add(artworkId);
+        }
+        setLikedArtworks(newLikes);
+        saveLikedArtworks(newLikes);
+        
+        // Update artwork like count
+        setArtworks(prev => prev.map(a => 
+          a.id === artworkId ? { ...a, likeCount: data.likeCount } : a
+        ));
+      }
+    } catch (err) {
+      console.error('Error liking artwork:', err);
     }
   };
 
@@ -180,30 +218,6 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
         <h1 className="text-2xl font-bold text-rv-text mb-2">Profile Not Available</h1>
         <p className="text-rv-textMuted text-center max-w-md">
           {error || 'This artist profile is private or does not exist.'}
-        </p>
-        <a 
-          href="#/"
-          className="mt-6 px-6 py-3 bg-rv-primary text-white rounded-rvMd font-semibold hover:bg-rv-primaryHover transition-colors"
-        >
-          Back to Home
-        </a>
-      </div>
-    );
-  }
-
-  // Gate entire profile for authorized viewers who don't have access (role mismatch)
-  // E.g., designer viewing gallery-only profile or gallery viewing designer-only profile
-  if (isAuthorizedViewer && !viewerAccess.hasAccess && viewerAccess.reason) {
-    return (
-      <div className="min-h-screen bg-rv-surface flex flex-col items-center justify-center p-4">
-        <div className="w-16 h-16 mb-4 rounded-full bg-amber-100 flex items-center justify-center">
-          <svg className="w-8 h-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
-        </div>
-        <h1 className="text-2xl font-bold text-rv-text mb-2">Profile Not Available</h1>
-        <p className="text-rv-textMuted text-center max-w-md">
-          {viewerAccess.reason}
         </p>
         <a 
           href="#/"
@@ -270,29 +284,8 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                 </div>
               )}
 
-              {(profile.visibleToDesigners || profile.visibleToGalleries) && (
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {profile.visibleToDesigners && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium border border-blue-200">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                      Visible to Designers
-                    </span>
-                  )}
-                  {profile.visibleToGalleries && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-sm font-medium border border-purple-200">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                      </svg>
-                      Visible to Galleries
-                    </span>
-                  )}
-                </div>
-              )}
-
-              {/* Social Links - Only visible to Designer/Gallery/Admin */}
-              {isAuthorizedViewer && (profile.websiteUrl || profile.instagramUrl || profile.facebookUrl || profile.tiktokUrl) && (
+              {/* Social Links - Visible to everyone */}
+              {(profile.websiteUrl || profile.instagramUrl || profile.facebookUrl || profile.tiktokUrl) && (
                 <div className="flex flex-wrap gap-3 mb-6">
                   {profile.websiteUrl && (
                     <a
@@ -349,42 +342,23 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                 </div>
               )}
 
-              {/* CTA Buttons Section */}
+              {/* CTA Buttons - Contact Artist visible to everyone */}
               <div className="flex flex-wrap gap-3">
-                {/* Primary CTA: Contact Artist - Only for authorized viewers */}
-                {isAuthorizedViewer && (
-                  <button
-                    onClick={() => setShowContactModal(true)}
-                    className="px-6 py-3 bg-rv-primary text-white rounded-rvMd font-semibold hover:bg-rv-primaryHover transition-colors shadow-rvSoft"
-                  >
-                    Contact Artist
-                  </button>
-                )}
-                {/* Secondary CTA: View Artworks - styled based on whether Contact is shown */}
+                <button
+                  onClick={() => setShowContactModal(true)}
+                  className="px-6 py-3 bg-rv-primary text-white rounded-rvMd font-semibold hover:bg-rv-primaryHover transition-colors shadow-rvSoft"
+                >
+                  Contact Artist
+                </button>
                 {artworks.length > 0 && (
                   <button
                     onClick={scrollToArtworks}
-                    className={`px-6 py-3 ${isAuthorizedViewer ? 'border-2 border-rv-primary text-rv-primary hover:bg-rv-primary/5' : 'bg-rv-primary text-white hover:bg-rv-primaryHover'} rounded-rvMd font-semibold transition-colors`}
+                    className="px-6 py-3 border-2 border-rv-primary text-rv-primary rounded-rvMd font-semibold hover:bg-rv-primary/5 transition-colors"
                   >
                     View Artworks
                   </button>
                 )}
               </div>
-
-              {/* Restricted Access Message for unauthorized viewers (Anonymous/Artist role) */}
-              {!isAuthorizedViewer && (
-                <p className="mt-4 text-sm text-rv-textMuted italic">
-                  Log in as a Designer or Gallery to contact this artist.
-                </p>
-              )}
-
-              {/* Policy text for authorized viewers */}
-              {isAuthorizedViewer && (
-                <p className="mt-4 text-xs text-rv-textMuted">
-                  <strong>Preferred contact:</strong> Use RoomVibe messaging to contact this artist.
-                  External links are provided by the artist for reference and convenience.
-                </p>
-              )}
             </div>
           </div>
         </div>
@@ -431,6 +405,29 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                         {artwork.priceCurrency} {artwork.priceAmount.toLocaleString()}
                       </p>
                     )}
+                    
+                    {/* Like button */}
+                    <div className="flex items-center justify-between mb-3">
+                      <button
+                        onClick={() => handleLikeArtwork(artwork.id)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-colors ${
+                          likedArtworks.has(artwork.id)
+                            ? 'bg-red-50 text-red-500'
+                            : 'bg-rv-surface text-rv-textMuted hover:bg-red-50 hover:text-red-500'
+                        }`}
+                      >
+                        <svg 
+                          className="w-5 h-5" 
+                          fill={likedArtworks.has(artwork.id) ? 'currentColor' : 'none'} 
+                          viewBox="0 0 24 24" 
+                          stroke="currentColor"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                        <span className="text-sm font-medium">{artwork.likeCount}</span>
+                      </button>
+                    </div>
+                    
                     <div className="flex gap-2">
                       {onViewInRoom && (
                         <button
@@ -487,13 +484,17 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
         </section>
       )}
 
+      {/* Public Contact Modal */}
       {showContactModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-rvLg shadow-rvElevated max-w-lg w-full p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-bold text-rv-text">Contact {profile.displayName}</h3>
               <button
-                onClick={() => setShowContactModal(false)}
+                onClick={() => {
+                  setShowContactModal(false);
+                  setMessageError(null);
+                }}
                 className="p-2 hover:bg-rv-surface rounded-full transition-colors"
               >
                 <svg className="w-5 h-5 text-rv-textMuted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -510,26 +511,61 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                   </svg>
                 </div>
                 <h4 className="text-lg font-bold text-rv-text mb-2">Message Sent!</h4>
-                <p className="text-rv-textMuted">The artist will receive your message in their inbox.</p>
+                <p className="text-rv-textMuted">The artist will receive your message via email.</p>
               </div>
             ) : (
               <>
-                <textarea
-                  value={contactMessage}
-                  onChange={(e) => setContactMessage(e.target.value)}
-                  placeholder="Write your message to the artist..."
-                  className="w-full h-40 px-4 py-3 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary resize-none"
-                />
-                <div className="flex gap-3 mt-4">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-rv-text mb-1">Your Name</label>
+                    <input
+                      type="text"
+                      value={contactName}
+                      onChange={(e) => setContactName(e.target.value)}
+                      placeholder="Enter your name"
+                      className="w-full px-4 py-3 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-rv-text mb-1">Your Email</label>
+                    <input
+                      type="email"
+                      value={contactEmail}
+                      onChange={(e) => setContactEmail(e.target.value)}
+                      placeholder="Enter your email"
+                      className="w-full px-4 py-3 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-rv-text mb-1">Message</label>
+                    <textarea
+                      value={contactMessage}
+                      onChange={(e) => setContactMessage(e.target.value)}
+                      placeholder="Write your message to the artist..."
+                      className="w-full h-32 px-4 py-3 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary resize-none"
+                    />
+                  </div>
+                </div>
+                
+                {messageError && (
+                  <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-rvMd">
+                    <p className="text-sm text-red-600">{messageError}</p>
+                  </div>
+                )}
+                
+                <div className="flex gap-3 mt-6">
                   <button
-                    onClick={() => setShowContactModal(false)}
+                    onClick={() => {
+                      setShowContactModal(false);
+                      setMessageError(null);
+                    }}
                     className="flex-1 px-4 py-3 border border-rv-neutral rounded-rvMd font-semibold hover:bg-rv-surface transition-colors"
                   >
                     Cancel
                   </button>
                   <button
-                    onClick={handleSendMessage}
-                    disabled={sendingMessage || !contactMessage.trim()}
+                    onClick={handleSendPublicMessage}
+                    disabled={sendingMessage || !contactName.trim() || !contactEmail.trim() || !contactMessage.trim()}
                     className="flex-1 px-4 py-3 bg-rv-primary text-white rounded-rvMd font-semibold hover:bg-rv-primaryHover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {sendingMessage ? 'Sending...' : 'Send Message'}
