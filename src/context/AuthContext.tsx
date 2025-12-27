@@ -424,19 +424,27 @@ export function AuthProvider({ children }: { children: React.ReactNode}) {
   };
 
   const completeOnboarding = async (): Promise<void> => {
+    console.log('[Auth] completeOnboarding started');
     try {
       const response = await fetch(`${API_URL}/api/auth/complete-onboarding`, {
         method: 'POST',
         credentials: 'include',
       });
 
+      console.log('[Auth] completeOnboarding response status:', response.status);
+      
       if (response.ok) {
-        // Re-fetch user from server to get updated onboardingCompleted flag
-        // This ensures DashboardRouter sees the correct state
+        console.log('[Auth] completeOnboarding success, fetching current user...');
         await fetchCurrentUser();
+        console.log('[Auth] fetchCurrentUser completed');
+      } else {
+        const errorText = await response.text();
+        console.error('[Auth] completeOnboarding failed:', response.status, errorText);
+        throw new Error(`Failed to complete onboarding: ${response.status}`);
       }
     } catch (err) {
-      console.error('Failed to complete onboarding:', err);
+      console.error('[Auth] Failed to complete onboarding:', err);
+      throw err; // Re-throw so caller can handle
     }
   };
 
