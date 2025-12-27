@@ -17,7 +17,6 @@ interface ArtistProfile {
   languages: string[];
   visibleToDesigners: boolean;
   visibleToGalleries: boolean;
-  email: string;
 }
 
 interface Artwork {

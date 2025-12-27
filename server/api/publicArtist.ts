@@ -81,8 +81,8 @@ router.get('/:slug', async (req: any, res) => {
       tiktokUrl: user.tiktok_url || '',
       languages: user.languages || [],
       visibleToDesigners: user.visible_to_designers || false,
-      visibleToGalleries: user.visible_to_galleries || false,
-      email: user.email // Include email for contact form
+      visibleToGalleries: user.visible_to_galleries || false
+      // Note: email is NOT exposed publicly - contact goes through internal inbox
     };
 
     const artworks = artworksResult.rows.map(artwork => ({
@@ -249,15 +249,22 @@ router.post('/artwork/:id/like', async (req: any, res) => {
       );
     }
 
-    // Get updated like count
+    // Get updated like count and verify actual liked state from database
     const updatedResult = await query(
       'SELECT like_count FROM artworks WHERE id = $1',
       [artworkId]
     );
-
+    
+    // Re-check the actual liked state from database (source of truth)
+    const likedCheck = await query(
+      'SELECT id FROM artwork_like_tokens WHERE artwork_id = $1 AND client_token_hash = $2',
+      [artworkId, tokenHash]
+    );
+    const actuallyLiked = likedCheck.rows.length > 0;
+    
     res.json({ 
       likeCount: updatedResult.rows[0]?.like_count || 0,
-      liked: unlike ? false : (!hasLiked || hasLiked)
+      liked: actuallyLiked
     });
   } catch (error: any) {
     console.error('Error toggling artwork like:', error);

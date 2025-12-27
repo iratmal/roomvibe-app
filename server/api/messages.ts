@@ -10,10 +10,11 @@ router.get('/inbox', authenticateToken, async (req: any, res) => {
       `SELECT 
         m.id, m.sender_id, m.recipient_id, m.sender_role,
         m.artwork_id, m.project_name, m.subject, m.body,
-        m.is_read, m.created_at,
-        u.email as sender_email, u.display_name as sender_name
+        m.is_read, m.created_at, m.sender_name as public_sender_name, 
+        m.sender_email as public_sender_email, m.source,
+        u.email as user_sender_email, u.display_name as user_sender_name
        FROM messages m
-       JOIN users u ON m.sender_id = u.id
+       LEFT JOIN users u ON m.sender_id = u.id
        WHERE m.recipient_id = $1
        ORDER BY m.created_at DESC`,
       [req.user.id]
@@ -22,15 +23,16 @@ router.get('/inbox', authenticateToken, async (req: any, res) => {
     const messages = result.rows.map((row: any) => ({
       id: row.id,
       senderId: row.sender_id,
-      senderEmail: row.sender_email,
-      senderName: row.sender_name || row.sender_email,
+      senderEmail: row.user_sender_email || row.public_sender_email,
+      senderName: row.user_sender_name || row.public_sender_name || row.user_sender_email || row.public_sender_email || 'Anonymous',
       senderRole: row.sender_role,
       artworkId: row.artwork_id,
       projectName: row.project_name,
       subject: row.subject,
       body: row.body,
       isRead: row.is_read,
-      createdAt: row.created_at
+      createdAt: row.created_at,
+      source: row.source || 'internal'
     }));
 
     res.json({ messages });
@@ -62,11 +64,12 @@ router.get('/inbox/:messageId', authenticateToken, async (req: any, res) => {
       `SELECT 
         m.id, m.sender_id, m.recipient_id, m.sender_role,
         m.artwork_id, m.project_name, m.subject, m.body,
-        m.is_read, m.created_at,
-        u.email as sender_email, u.display_name as sender_name,
+        m.is_read, m.created_at, m.sender_name as public_sender_name,
+        m.sender_email as public_sender_email, m.source,
+        u.email as user_sender_email, u.display_name as user_sender_name,
         a.title as artwork_title, a.image_url as artwork_image
        FROM messages m
-       JOIN users u ON m.sender_id = u.id
+       LEFT JOIN users u ON m.sender_id = u.id
        LEFT JOIN artworks a ON m.artwork_id = a.id
        WHERE m.id = $1 AND m.recipient_id = $2`,
       [messageId, req.user.id]
@@ -86,8 +89,8 @@ router.get('/inbox/:messageId', authenticateToken, async (req: any, res) => {
     const message = {
       id: row.id,
       senderId: row.sender_id,
-      senderEmail: row.sender_email,
-      senderName: row.sender_name || row.sender_email,
+      senderEmail: row.user_sender_email || row.public_sender_email,
+      senderName: row.user_sender_name || row.public_sender_name || row.user_sender_email || row.public_sender_email || 'Anonymous',
       senderRole: row.sender_role,
       artworkId: row.artwork_id,
       artworkTitle: row.artwork_title,
@@ -96,7 +99,8 @@ router.get('/inbox/:messageId', authenticateToken, async (req: any, res) => {
       subject: row.subject,
       body: row.body,
       isRead: true,
-      createdAt: row.created_at
+      createdAt: row.created_at,
+      source: row.source || 'internal'
     };
 
     res.json({ message });
