@@ -28,7 +28,7 @@ router.get('/profile', authenticateToken, async (req: any, res) => {
         id, email, role,
         display_name, location_city, location_country, bio,
         primary_style_tags, primary_medium, profile_image_url,
-        website_url, instagram_url, languages,
+        website_url, instagram_url, facebook_url, tiktok_url, slug, languages,
         visible_to_designers, visible_to_galleries,
         artist_access, designer_access, gallery_access
        FROM users 
@@ -55,6 +55,9 @@ router.get('/profile', authenticateToken, async (req: any, res) => {
       profileImageUrl: user.profile_image_url || '',
       websiteUrl: user.website_url || '',
       instagramUrl: user.instagram_url || '',
+      facebookUrl: user.facebook_url || '',
+      tiktokUrl: user.tiktok_url || '',
+      slug: user.slug || '',
       languages: user.languages || [],
       visibleToDesigners: user.visible_to_designers || false,
       visibleToGalleries: user.visible_to_galleries || false,
@@ -70,6 +73,17 @@ router.get('/profile', authenticateToken, async (req: any, res) => {
   }
 });
 
+function generateSlug(displayName: string): string {
+  return displayName
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
+}
+
 router.put('/profile', authenticateToken, async (req: any, res) => {
   try {
     const {
@@ -81,6 +95,8 @@ router.put('/profile', authenticateToken, async (req: any, res) => {
       primaryMedium,
       websiteUrl,
       instagramUrl,
+      facebookUrl,
+      tiktokUrl,
       languages
     } = req.body;
 
@@ -98,8 +114,50 @@ router.put('/profile', authenticateToken, async (req: any, res) => {
       }
     }
 
+    let facebookUrlClean = facebookUrl || null;
+    if (facebookUrlClean && !facebookUrlClean.startsWith('http://') && !facebookUrlClean.startsWith('https://')) {
+      facebookUrlClean = 'https://' + facebookUrlClean;
+    }
+
+    let tiktokUrlClean = tiktokUrl || null;
+    if (tiktokUrlClean) {
+      if (tiktokUrlClean.startsWith('@')) {
+        tiktokUrlClean = 'https://tiktok.com/@' + tiktokUrlClean.slice(1);
+      } else if (!tiktokUrlClean.startsWith('http')) {
+        tiktokUrlClean = 'https://tiktok.com/@' + tiktokUrlClean;
+      }
+    }
+
     const styleTagsJson = Array.isArray(primaryStyleTags) ? JSON.stringify(primaryStyleTags) : '[]';
     const languagesJson = Array.isArray(languages) ? JSON.stringify(languages) : '[]';
+
+    let slug: string | null = null;
+    if (displayName) {
+      const baseSlug = generateSlug(displayName);
+      const existingSlug = await query(
+        `SELECT slug FROM users WHERE id = $1`,
+        [req.user.id]
+      );
+      
+      if (!existingSlug.rows[0]?.slug) {
+        let candidateSlug = baseSlug;
+        let counter = 1;
+        while (true) {
+          const check = await query(
+            `SELECT id FROM users WHERE slug = $1 AND id != $2`,
+            [candidateSlug, req.user.id]
+          );
+          if (check.rows.length === 0) {
+            slug = candidateSlug;
+            break;
+          }
+          candidateSlug = `${baseSlug}-${counter}`;
+          counter++;
+        }
+      } else {
+        slug = existingSlug.rows[0].slug;
+      }
+    }
 
     const result = await query(
       `UPDATE users SET
@@ -111,11 +169,14 @@ router.put('/profile', authenticateToken, async (req: any, res) => {
         primary_medium = $6,
         website_url = $7,
         instagram_url = $8,
-        languages = $9,
+        facebook_url = $9,
+        tiktok_url = $10,
+        slug = COALESCE($11, slug),
+        languages = $12,
         updated_at = CURRENT_TIMESTAMP
-       WHERE id = $10
+       WHERE id = $13
        RETURNING id, display_name, location_city, location_country, bio,
-                 primary_style_tags, primary_medium, website_url, instagram_url, languages`,
+                 primary_style_tags, primary_medium, website_url, instagram_url, facebook_url, tiktok_url, slug, languages`,
       [
         displayName || null,
         locationCity || null,
@@ -125,6 +186,9 @@ router.put('/profile', authenticateToken, async (req: any, res) => {
         primaryMedium || null,
         websiteUrlClean,
         instagramUrlClean,
+        facebookUrlClean,
+        tiktokUrlClean,
+        slug,
         languagesJson,
         req.user.id
       ]

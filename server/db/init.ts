@@ -413,6 +413,53 @@ export async function initializeDatabase() {
       END $$;
     `);
 
+    // =====================================================
+    // Artist Public Profile v1 - New fields
+    // =====================================================
+
+    // slug - URL-friendly unique identifier for public profile
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'slug'
+        ) THEN
+          ALTER TABLE users ADD COLUMN slug VARCHAR(255) UNIQUE;
+        END IF;
+      END $$;
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS idx_users_slug ON users(slug);
+    `);
+
+    // facebook_url - Artist's Facebook page
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'facebook_url'
+        ) THEN
+          ALTER TABLE users ADD COLUMN facebook_url TEXT;
+        END IF;
+      END $$;
+    `);
+
+    // tiktok_url - Artist's TikTok profile
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'tiktok_url'
+        ) THEN
+          ALTER TABLE users ADD COLUMN tiktok_url TEXT;
+        END IF;
+      END $$;
+    `);
+
     await query(`
       CREATE TABLE IF NOT EXISTS artworks (
         id SERIAL PRIMARY KEY,

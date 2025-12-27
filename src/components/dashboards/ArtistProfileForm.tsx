@@ -13,10 +13,13 @@ interface ArtistProfile {
   profileImageUrl: string;
   websiteUrl: string;
   instagramUrl: string;
+  facebookUrl: string;
+  tiktokUrl: string;
   languages: string[];
   visibleToDesigners: boolean;
   visibleToGalleries: boolean;
   artistAccess: boolean;
+  slug: string;
 }
 
 const STYLE_TAG_OPTIONS = [
@@ -62,10 +65,13 @@ export function ArtistProfileForm() {
     profileImageUrl: '',
     websiteUrl: '',
     instagramUrl: '',
+    facebookUrl: '',
+    tiktokUrl: '',
     languages: [],
     visibleToDesigners: false,
     visibleToGalleries: false,
-    artistAccess: false
+    artistAccess: false,
+    slug: ''
   });
 
   useEffect(() => {
@@ -202,12 +208,19 @@ export function ArtistProfileForm() {
           primaryMedium: profile.primaryMedium,
           websiteUrl: profile.websiteUrl,
           instagramUrl: profile.instagramUrl,
+          facebookUrl: profile.facebookUrl,
+          tiktokUrl: profile.tiktokUrl,
           languages: profile.languages
         })
       });
 
       if (!response.ok) {
         throw new Error('Failed to save profile');
+      }
+
+      const data = await response.json();
+      if (data.profile?.slug) {
+        setProfile(prev => ({ ...prev, slug: data.profile.slug }));
       }
 
       setSuccess('Profile saved successfully!');
@@ -547,7 +560,49 @@ export function ArtistProfileForm() {
                 placeholder="@yourusername"
               />
             </div>
+
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-rv-text">
+                Facebook
+              </label>
+              <input
+                type="text"
+                name="facebookUrl"
+                value={profile.facebookUrl}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                placeholder="https://facebook.com/yourpage"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-rv-text">
+                TikTok
+              </label>
+              <input
+                type="text"
+                name="tiktokUrl"
+                value={profile.tiktokUrl}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                placeholder="@yourusername"
+              />
+            </div>
           </div>
+
+          {profile.slug && (profile.visibleToDesigners || profile.visibleToGalleries) && (
+            <div className="mt-6 p-4 bg-rv-primary/5 rounded-rvMd border border-rv-primary/20">
+              <p className="text-sm font-medium text-rv-text mb-1">Your Public Profile</p>
+              <a 
+                href={`#/artist/${profile.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-rv-primary hover:underline text-sm break-all"
+              >
+                {window.location.origin}/#/artist/{profile.slug}
+              </a>
+            </div>
+          )}
         </div>
 
         <div className="p-6 bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral">

@@ -1,0 +1,148 @@
+# 🎨 Artist Public Profile v1 (Artist Connect)
+
+## Cilj
+
+Kreirati **javni Artist profil (Connect Profile)** koji je vidljiv dizajnerima i galerijama kada je artist označen kao *Visible*. Profil služi kao profesionalna prezentacija umjetnika i centralno mjesto za kontakt, pregled radova i kontekst (bio, stil, praksa).
+
+---
+
+## 1️⃣ Osnovna logika vidljivosti
+
+* Profil postoji **samo ako** je uključeno:
+
+  * ✅ Visible to Designers i/ili
+  * ✅ Visible to Galleries
+* Ako su oba OFF:
+
+  * Profil nije javno dostupan (404 ili “Private profile”)
+
+---
+
+## 2️⃣ URL struktura
+
+* Format:
+
+  * `/artist/{slug}`
+  * slug generirati iz Display Name-a ili username-a
+* Primjer:
+
+  * `roomvibe.app/artist/irena-malbasa`
+
+---
+
+## 3️⃣ Struktura Artist Public Profile stranice (v1)
+
+### 🧩 SECTION 1 – Hero (Top profila)
+
+**Sadržaj:**
+
+* Profilna slika
+* Display Name
+* City + Country
+* Primary Medium
+* Style Tags (chips)
+* Social icons (ako su uneseni):
+
+  * Website
+  * Instagram
+  * Facebook
+  * TikTok
+
+**CTA gumbi:**
+
+* Primary: **Contact Artist** (otvara interni inbox)
+* Secondary: **View Artworks** (scroll na grid)
+
+---
+
+### 🧩 SECTION 2 – Artist Bio
+
+* Tekst iz polja *Bio* (max 500 znakova)
+* Čitljiv layout, bez zida teksta
+* Ako je bio prazan → sekcija se ne prikazuje
+
+---
+
+### 🧩 SECTION 3 – Featured Artworks
+
+* Grid svih javnih radova artista
+* Kartica rada sadrži:
+
+  * Slika
+  * Naziv
+  * Dimenzije
+  * Cijena (ako postoji)
+  * Gumbi:
+
+    * View in Room
+    * View & Buy (ako postoji URL)
+
+---
+
+### 🧩 SECTION 4 – Artistic Practice
+
+* Primary Medium
+* Style Tags
+* Languages
+
+---
+
+### 🧩 SECTION 5 – Contact & Actions
+
+* Sticky ili donja CTA zona:
+
+  * Contact Artist
+* (Future-ready placeholderi – ne aktivni u v1):
+
+  * Save Artist
+  * Invite to Project
+
+---
+
+## 4️⃣ Povezivanje s Artist Dashboardom
+
+* Togglei u **Artist Connect Visibility** upravljaju vidljivošću profila
+* Promjene se reflektiraju odmah
+* Artist nema poseban editor za public profil – sve se puni iz postojećeg **Artist Profile** forme
+
+---
+
+## 5️⃣ Društvene mreže (v1 scope)
+
+Dodati u **Contact & Links**:
+
+* Website (postojeće)
+* Instagram (postojeće)
+* Facebook (novo)
+* TikTok (novo)
+
+Pravila:
+
+* Ako polje nije popunjeno → ne prikazivati ikonu
+
+---
+
+## 6️⃣ Dizajn smjernice
+
+* Uskladiti s RoomVibe brand bojama (tamna RoomVibe boja)
+* Minimalistički, premium, bez ljubičaste
+* Fokus na sadržaj i radove
+* Mobile-first responsive layout
+
+---
+
+## 7️⃣ Izvan scope-a (kasnije faze)
+
+* SEO optimizacija
+* Public search / directory
+* Follow / Save artist
+* Analytics za artista
+
+---
+
+## Output (Definition of Done)
+
+* Javni Artist profil dostupan na `/artist/{slug}`
+* Vidljiv samo ako je uključen Artist Connect
+* Povezan s internim inboxom
+* Konzistentan dizajn s ostatkom aplikacije
