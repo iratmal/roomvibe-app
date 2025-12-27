@@ -131,14 +131,20 @@ export function ArtistDashboard() {
       });
       
       if (!response.ok) {
-        throw new Error('Failed to fetch artworks');
+        const errorData = await response.json().catch(() => ({}));
+        if (response.status === 403) {
+          console.log('Artworks access issue - showing empty state');
+          setArtworks([]);
+          return;
+        }
+        throw new Error(errorData.message || 'Failed to fetch artworks');
       }
 
       const data = await response.json();
       setArtworks(data.artworks || []);
     } catch (err: any) {
       console.error('Error fetching artworks:', err);
-      setError(err.message);
+      setArtworks([]);
     }
   };
 

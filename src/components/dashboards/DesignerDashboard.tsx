@@ -95,14 +95,20 @@ export function DesignerDashboard() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch projects');
+        const errorData = await response.json().catch(() => ({}));
+        if (response.status === 403 && errorData.error === 'Subscription required') {
+          console.log('Designer projects require subscription - showing empty state');
+          setProjects([]);
+          return;
+        }
+        throw new Error(errorData.message || 'Failed to fetch projects');
       }
 
       const data = await response.json();
       setProjects(data.projects || []);
     } catch (err: any) {
       console.error('Error fetching projects:', err);
-      setError(err.message);
+      setProjects([]);
     }
   };
 

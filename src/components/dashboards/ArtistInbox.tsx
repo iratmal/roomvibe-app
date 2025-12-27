@@ -40,6 +40,12 @@ export function ArtistInbox({ onUnreadCountChange }: ArtistInboxProps) {
       });
       
       if (!response.ok) {
+        if (response.status === 403) {
+          console.log('Messages access issue - showing empty state');
+          setMessages([]);
+          onUnreadCountChange?.(0);
+          return;
+        }
         throw new Error('Failed to fetch messages');
       }
 
@@ -50,7 +56,8 @@ export function ArtistInbox({ onUnreadCountChange }: ArtistInboxProps) {
       onUnreadCountChange?.(unreadCount);
     } catch (err: any) {
       console.error('Error fetching messages:', err);
-      setError(err.message);
+      setMessages([]);
+      onUnreadCountChange?.(0);
     } finally {
       setLoading(false);
     }

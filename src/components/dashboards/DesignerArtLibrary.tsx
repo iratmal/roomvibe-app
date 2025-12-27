@@ -107,14 +107,20 @@ export function DesignerArtLibrary({ onArtworkSelect, projects = [] }: DesignerA
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch art library');
+        const errorData = await response.json().catch(() => ({}));
+        if (response.status === 403 && errorData.error === 'Subscription required') {
+          console.log('Art library requires subscription - showing empty state');
+          setArtworks([]);
+          return;
+        }
+        throw new Error(errorData.message || 'Failed to fetch art library');
       }
 
       const data = await response.json();
       setArtworks(data.artworks || []);
     } catch (err: any) {
       console.error('Error fetching art library:', err);
-      setError(err.message);
+      setArtworks([]);
     } finally {
       setLoading(false);
     }

@@ -89,6 +89,9 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
       gallery_access: targetUser.is_admin ? true : (targetUser.gallery_access || false),
     };
     
+    // Get subscription status for later use
+    const subscriptionStatus = targetUser.subscription_status || 'free';
+    
     // Derive effectivePlan from entitlements FIRST, then fall back to Stripe
     let effectivePlan: string;
     if (targetUser.is_admin) {
@@ -107,8 +110,7 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
         effectivePlan = 'artist';
       } else {
         // No entitlements - fall back to Stripe subscription
-        const status = targetUser.subscription_status || 'free';
-        if (status !== 'active' && status !== 'free') {
+        if (subscriptionStatus !== 'active' && subscriptionStatus !== 'free') {
           effectivePlan = 'user';
         } else {
           effectivePlan = targetUser.subscription_plan || 'user';
@@ -121,16 +123,17 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
       email: targetUser.email,
       role: targetUser.is_admin ? 'admin' : targetUser.role,
       is_admin: isImpersonating ? false : (targetUser.is_admin || false),
-      subscription_status: targetUser.subscription_status || 'free',
+      subscription_status: subscriptionStatus,
       subscription_plan: targetUser.subscription_plan || 'user',
       effectivePlan,
-      isActiveSubscriber: status === 'active' || status === 'free',
+      isActiveSubscriber: subscriptionStatus === 'active' || subscriptionStatus === 'free',
       entitlements,
     };
     req.isImpersonating = isImpersonating;
     
     next();
   } catch (error) {
+    console.error('[Auth] Token verification error:', error);
     res.status(403).json({ error: 'Invalid or expired token.' });
   }
 };
