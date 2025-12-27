@@ -20,8 +20,15 @@ export function ImpersonationBanner() {
     if (isBackendImpersonation) {
       await stopImpersonation();
     } else {
+      // Failsafe: Clear sessionStorage directly to ensure synchronous cleanup
+      sessionStorage.removeItem('impersonatedRole');
+      sessionStorage.removeItem('impersonatedUserId');
+      
+      // Clear React state
       clearImpersonation();
-      window.location.hash = '#/dashboard';
+      
+      // Navigate to admin dashboard - use explicit admin route to bypass impersonation checks
+      window.location.hash = '#/dashboard/admin';
     }
   };
 

@@ -149,6 +149,8 @@ function AppContent() {
         <ArtworkEdit />
       ) : normalizedHash.startsWith("#/dashboard/gallery/collection/") ? (
         <CollectionDetail />
+      ) : normalizedHash === "#/dashboard/admin" ? (
+        <AdminDashboardRouter />
       ) : normalizedHash === "#/dashboard/user" ? (
         <UserDashboardRouter />
       ) : normalizedHash === "#/dashboard/artist" ? (
@@ -315,6 +317,55 @@ function DashboardRouter() {
   // Users with no entitlements → User Dashboard
   window.location.hash = '#/dashboard/user';
   return null;
+}
+
+function AdminDashboardRouter() {
+  const { user, loading, impersonatedUserId, stopImpersonation, clearImpersonation } = useAuth();
+  const [isExitingImpersonation, setIsExitingImpersonation] = React.useState(false);
+
+  useEffect(() => {
+    // Check if there's backend impersonation (real user) - need to call stopImpersonation
+    const storedUserId = sessionStorage.getItem('impersonatedUserId');
+    const storedRole = sessionStorage.getItem('impersonatedRole');
+    
+    if (storedUserId || impersonatedUserId) {
+      // Backend impersonation - call API to stop
+      setIsExitingImpersonation(true);
+      stopImpersonation().finally(() => {
+        setIsExitingImpersonation(false);
+      });
+    } else if (storedRole) {
+      // Frontend-only plan preview - just clear locally
+      sessionStorage.removeItem('impersonatedRole');
+      clearImpersonation();
+    }
+  }, []);
+
+  if (loading || isExitingImpersonation) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-rv-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-rv-textMuted">Loading admin dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    window.location.hash = '#/login';
+    return null;
+  }
+
+  const isAdmin = user.role === 'admin' || user.isAdmin;
+  
+  if (!isAdmin) {
+    // Non-admin users cannot access admin dashboard
+    window.location.hash = '#/dashboard';
+    return null;
+  }
+
+  return <AdminDashboard />;
 }
 
 function UserDashboardRouter() {

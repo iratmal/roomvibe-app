@@ -64,7 +64,7 @@ interface AuthContextType {
   impersonatedUserId: number | null;
   isImpersonating: boolean;
   startImpersonation: (userId: number) => Promise<void>;
-  stopImpersonation: () => void;
+  stopImpersonation: () => Promise<void>;
   loadViewerById: (userId: number) => Promise<ViewerData | null>;
 }
 
