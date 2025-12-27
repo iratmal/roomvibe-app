@@ -38,7 +38,7 @@ const PLAN_DISPLAYS: Record<string, PlanDisplay> = {
   },
   designer: {
     badge: 'Designer',
-    badgeColor: 'bg-purple-100 text-purple-800',
+    badgeColor: 'bg-blue-100 text-blue-800',
     description: 'For interior designers presenting concepts to clients.',
     bullets: [
       'Up to 100 artworks',

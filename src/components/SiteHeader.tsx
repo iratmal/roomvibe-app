@@ -25,7 +25,7 @@ function getPlanDisplayName(effectivePlan: string | undefined): string {
 
 function getPlanBadgeColor(effectivePlan: string | undefined): string {
   switch (effectivePlan) {
-    case 'artist': return 'bg-purple-100 text-purple-700';
+    case 'artist': return 'bg-rv-primary/10 text-rv-primary';
     case 'designer': return 'bg-indigo-100 text-indigo-700';
     case 'gallery': return 'bg-green-100 text-green-700';
     case 'all-access': return 'bg-amber-100 text-amber-700';

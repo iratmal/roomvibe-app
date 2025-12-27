@@ -45,7 +45,7 @@ export function ImpersonationBanner() {
     user: 'bg-blue-50 border-blue-300 text-blue-800',
     artist: 'bg-amber-50 border-amber-300 text-amber-800',
     designer: 'bg-indigo-50 border-indigo-300 text-indigo-800',
-    gallery: 'bg-purple-50 border-purple-300 text-purple-800',
+    gallery: 'bg-emerald-50 border-emerald-300 text-emerald-800',
     allin: 'bg-green-50 border-green-300 text-green-800',
     allaccess: 'bg-green-50 border-green-300 text-green-800',
   };

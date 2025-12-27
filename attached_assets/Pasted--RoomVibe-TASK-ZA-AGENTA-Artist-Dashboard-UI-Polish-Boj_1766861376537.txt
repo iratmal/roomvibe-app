@@ -1,0 +1,163 @@
+# RoomVibe — TASK ZA AGENTA
+
+## Artist Dashboard UI Polish (Boje + Full Dashboard)
+
+**Cilj:** Artist dashboard je funkcionalno stabilan. Sada radimo **UI/UX polish** bez promjene poslovne logike: ukloniti ljubičastu, uskladiti sve s RoomVibe brendom, dodati “dashboard feel” (summary + profile completeness), poboljšati empty states.
+
+> **Važno (Scope guard):**
+>
+> * ✅ Dozvoljene su samo UI/UX promjene i male FE promjene za prikaz (npr. izračun % popunjenosti profila iz već postojećih podataka).
+> * ❌ Bez promjena permissions/subscription logike, bez backend refactora.
+> * ❌ Ne mijenjati postojeće rute / API ugovore.
+
+---
+
+# A) BOJE — UKLONITI LJUBIČASTO, UJEDNAČITI ROOMVIBE STIL
+
+## A1) Zamjena ljubičaste (global)
+
+**Problem:** Ljubičasta boja se pojavljuje na Artist dashboardu (kartice, borderi, switch/checkbox highlight, CTA, header elementi) i odudara od RoomVibe identiteta.
+
+**Zadatak:**
+
+1. Pronaći sve gdje se koristi ljubičasta (Tailwind klase npr. `purple-*`, hex vrijednosti, theme tokeni, shadcn default `primary`, itd.) u:
+
+   * Artist Dashboard home / Artworks
+   * Artist Profile
+   * Artist Connect Visibility (checkbox/switch)
+   * Inbox
+   * Settings
+2. Zamijeniti ljubičastu RoomVibe primarnom tamnom bojom (ona koju već koristimo na `Open Studio` i tamnim CTA gumbima).
+
+## A2) Uvesti dosljednu hijerarhiju CTA gumba
+
+* **Primary CTA** (glavni): tamni RoomVibe (bg), bijeli tekst
+* **Secondary CTA**: bijela pozadina, tamni border + tamni tekst
+* **Tertiary/Link**: tekst link (tamna boja + underline hover)
+
+Primjeri:
+
+* `View Inbox` = Primary
+* `Edit Profile` = Secondary
+* `View & Buy` = Tertiary (link)
+
+## A3) “Light tint” varijante za kartice
+
+Za “info” kartice (npr. Artist Connect panel) napraviti **svijetlu pozadinu** istog brenda (npr. tamna boja s malim opacity), umjesto ljubičastog tona.
+
+* border: brand border (light)
+* bg: brand tint (light)
+* badge: brand muted
+
+**Acceptance:** Nigdje na Artist dashboardu nema ljubičaste.
+
+---
+
+# B) FULL ARTIST DASHBOARD POLISH (UI/UX)
+
+## B1) Dodati “Hero summary” na vrh Artist Dashboard (Home/Artworks view)
+
+**Cilj:** Na vrhu dashboarda (iznad sadržaja) prikazati 4 male stat kartice ili jednu traku sa statistikama.
+
+**Prikazati:**
+
+* **Artworks:** `X / limit` (limit već postoji po planu)
+* **Profile completeness:** `YY%`
+* **Visibility:** Designers (on/off) + Galleries (on/off)
+* **Messages:** `Unread` broj (ako nema, 0)
+
+**Napomena:**
+
+* Ne uvoditi nove API-je.
+* Koristiti postojeće podatke već učitane u dashboardu (artworks count, connect settings, messages count ako postoji endpoint).
+* Ako endpoint za unread count ne postoji, prikazati 0 i ostaviti TODO u kodu za kasnije.
+
+## B2) Profile completeness indikator (Artist Profile)
+
+**Cilj:** Motivirati korisnika da popuni profil.
+
+**UI:**
+
+* Mala progress traka + tekst: `Complete your profile: YY%`
+* Tooltip / help tekst: “Artists with complete profiles get contacted more.”
+
+**Kako izračunati (FE-only):**
+
+* Definirati listu polja (npr.):
+
+  * displayName
+  * city
+  * country
+  * bio
+  * primaryMedium
+  * profilePhoto
+  * (opcionalno) website / socials ako postoje
+* Svako popunjeno polje = 1 bod.
+* % = popunjeno / ukupno.
+
+**Acceptance:** Ako je profil prazan → npr. 0–20%. Kako korisnik popunjava → raste.
+
+## B3) Poboljšati “Empty state” poruke (bez promjene funkcionalnosti)
+
+* **Inbox**: ako nema poruka, dodati malu poruku:
+
+  * “Tip: Enable visibility to designers/galleries to receive inquiries.”
+* **Artworks**: ako nema radova, dodati:
+
+  * “Upload your first artwork to start using Studio and widget.”
+
+## B4) Artist Connect Visibility — microcopy + dosljedan UI
+
+* Checkbox/switch highlight mora biti brand boja.
+* Dodati suptilan info tekst (ne upsell agresivno):
+
+  * “Visible artists receive more inquiries.”
+
+## B5) Uskladiti tipografiju i spacing
+
+* Naslovi sekcija: konzistentna veličina i težina
+* Kartice: konzistentan padding
+* Gumbi: konzistentna visina, radius, hover
+
+**Acceptance:** Vizualno “premium”, bez random spacing-a.
+
+---
+
+# C) QA / TEST CHECKLIST (obavezno)
+
+1. **Artist Dashboard** (home/artworks)
+
+   * Nema ljubičaste
+   * Summary prikazan i ne ruši layout na mobile
+   * Add artwork forma radi kao prije
+2. **Artist Profile**
+
+   * Completeness radi i ažurira se na change
+   * Visibility toggle radi kao prije
+3. **Inbox**
+
+   * Empty state copy prikazan
+4. **Settings**
+
+   * Plan card i “View all plans” radi kao prije
+
+---
+
+# D) OUT OF SCOPE (NE DIRATI)
+
+* Stripe/subscription logika
+* Permissions/role enforcement
+* Backend rute / auth
+* Data model
+
+---
+
+# Deliverable
+
+* PR / commit: “Artist dashboard UI polish: remove purple, add summary + completeness + empty states”
+* Screenshots prije/poslije (desktop + mobile) za:
+
+  * Dashboard home
+  * Artist Profile
+  * Inbox
+  * Settings

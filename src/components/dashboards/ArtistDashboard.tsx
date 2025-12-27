@@ -68,11 +68,18 @@ function formatPrice(priceAmount: number | string | null | undefined, currency: 
   return `${numericPrice.toFixed(2)} ${currency}`;
 }
 
+interface DashboardStats {
+  unreadMessages: number;
+  visibleToDesigners: boolean;
+  visibleToGalleries: boolean;
+}
+
 export function ArtistDashboard() {
   const { user, logout } = useAuth();
   const { effectivePlan: viewerPlan, planLimits: viewerPlanLimits } = useViewer();
   const [activeTab, setActiveTab] = useState<DashboardTab>('artworks');
   const [unreadCount, setUnreadCount] = useState(0);
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats>({ unreadMessages: 0, visibleToDesigners: false, visibleToGalleries: false });
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -110,6 +117,12 @@ export function ArtistDashboard() {
     fetchUnreadCount();
   }, []);
 
+  useEffect(() => {
+    if (activeTab === 'artworks') {
+      fetchUnreadCount();
+    }
+  }, [activeTab]);
+
   const fetchUnreadCount = async () => {
     try {
       const response = await fetch(`${API_URL}/api/artist/profile/connect-stats`, {
@@ -117,7 +130,13 @@ export function ArtistDashboard() {
       });
       if (response.ok) {
         const data = await response.json();
-        setUnreadCount(data.stats?.unreadMessages || 0);
+        const stats = data.stats || {};
+        setUnreadCount(stats.unreadMessages || 0);
+        setDashboardStats({
+          unreadMessages: stats.unreadMessages || 0,
+          visibleToDesigners: stats.visibleToDesigners || false,
+          visibleToGalleries: stats.visibleToGalleries || false
+        });
       }
     } catch (err) {
       console.error('Error fetching unread count:', err);
@@ -487,6 +506,75 @@ export function ArtistDashboard() {
 
         {activeTab === 'artworks' && (
           <>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className="p-4 bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-rv-primary/10 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-rv-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-rv-primary">
+                      {artworks.length}{maxArtworks !== -1 ? `/${maxArtworks}` : ''}
+                    </p>
+                    <p className="text-xs text-rv-textMuted">Artworks</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-rv-primary/10 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-rv-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-rv-primary">{unreadCount}</p>
+                    <p className="text-xs text-rv-textMuted">Messages</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    dashboardStats.visibleToDesigners ? 'bg-green-100' : 'bg-gray-100'
+                  }`}>
+                    <svg className={`w-5 h-5 ${dashboardStats.visibleToDesigners ? 'text-green-600' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className={`text-sm font-bold ${dashboardStats.visibleToDesigners ? 'text-green-600' : 'text-gray-500'}`}>
+                      {dashboardStats.visibleToDesigners ? 'Visible' : 'Hidden'}
+                    </p>
+                    <p className="text-xs text-rv-textMuted">To Designers</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    dashboardStats.visibleToGalleries ? 'bg-green-100' : 'bg-gray-100'
+                  }`}>
+                    <svg className={`w-5 h-5 ${dashboardStats.visibleToGalleries ? 'text-green-600' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className={`text-sm font-bold ${dashboardStats.visibleToGalleries ? 'text-green-600' : 'text-gray-500'}`}>
+                      {dashboardStats.visibleToGalleries ? 'Visible' : 'Hidden'}
+                    </p>
+                    <p className="text-xs text-rv-textMuted">To Galleries</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="mb-6">
               <ArtistConnectWidget 
                 onViewInbox={() => setActiveTab('inbox')}
@@ -732,8 +820,26 @@ export function ArtistDashboard() {
           <h2 className="text-2xl font-bold mb-6 text-rv-primary">My Artworks</h2>
           
           {artworks.length === 0 ? (
-            <div className="text-center py-12 bg-rv-surface rounded-rvLg border border-rv-neutral">
-              <p className="text-rv-textMuted text-lg">No artworks yet. Upload your first piece above!</p>
+            <div className="text-center py-16 bg-rv-surface rounded-rvLg border border-rv-neutral">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-rv-primary/10 flex items-center justify-center">
+                <svg className="w-8 h-8 text-rv-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-rv-text mb-2">No artworks yet</h3>
+              <p className="text-rv-textMuted max-w-md mx-auto mb-4">
+                Upload your first artwork to start using Studio and the embeddable widget on your website.
+              </p>
+              <button
+                type="button"
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-colors text-sm font-semibold"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Add Your First Artwork
+              </button>
             </div>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -888,8 +994,8 @@ export function ArtistDashboard() {
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">
-              <div className="p-6 bg-purple-50 rounded-rvLg border border-purple-200">
-                <h3 className="text-lg font-bold mb-3 text-purple-700">Artist Account</h3>
+              <div className="p-6 bg-rv-primary/5 rounded-rvLg border border-rv-primary/20">
+                <h3 className="text-lg font-bold mb-3 text-rv-primary">Artist Account</h3>
                 <div className="space-y-2 text-sm">
                   <p><span className="font-semibold text-rv-text">Email:</span> <span className="text-rv-textMuted">{user?.email}</span></p>
                   <p><span className="font-semibold text-rv-text">Role:</span> <span className="text-rv-textMuted">Artist</span></p>
