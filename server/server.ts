@@ -19,6 +19,7 @@ import messagesRoutes from './api/messages.js';
 import designerConnectRoutes from './api/designerConnect.js';
 import galleryConnectRoutes from './api/galleryConnect.js';
 import adminImpersonationRoutes from './api/adminImpersonation.js';
+import publicArtistRoutes from './api/publicArtist.js';
 import { initializeDatabase } from './db/init.js';
 import { query } from './db/database.js';
 import { ObjectStorageService, ObjectNotFoundError } from './objectStorage.js';
@@ -80,6 +81,7 @@ app.use('/api/gallery', galleryRoutes);
 app.use('/api/gallery', galleryConnectRoutes);
 app.use('/api/gallery', exhibition360Routes);
 app.use('/api/admin/impersonate', adminImpersonationRoutes);
+app.use('/api/public/artist', publicArtistRoutes);
 app.get('/api/billing/subscription', authenticateToken, async (req: any, res) => {
   try {
     const userId = req.user.id;
