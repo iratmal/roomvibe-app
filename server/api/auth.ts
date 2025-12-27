@@ -77,11 +77,13 @@ router.post('/register', async (req: Request, res: Response) => {
 
     const isProduction = process.env.NODE_ENV === 'production';
     const isSecure = isProduction || !!process.env.REPLIT_DOMAINS;
+    console.log('[Cookie] Setting token cookie on register, isSecure:', isSecure, 'NODE_ENV:', process.env.NODE_ENV);
     res.cookie('token', token, {
       httpOnly: true,
       secure: isSecure,
       sameSite: isSecure ? 'none' : 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/'
     });
 
     // Build entitlements from the user record
@@ -148,11 +150,13 @@ router.post('/login', async (req: Request, res: Response) => {
 
     const isProduction = process.env.NODE_ENV === 'production';
     const isSecure = isProduction || !!process.env.REPLIT_DOMAINS;
+    console.log('[Cookie] Setting token cookie on login, isSecure:', isSecure, 'NODE_ENV:', process.env.NODE_ENV);
     res.cookie('token', token, {
       httpOnly: true,
       secure: isSecure,
       sameSite: isSecure ? 'none' : 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: '/'
     });
 
     res.json({

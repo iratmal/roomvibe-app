@@ -34,6 +34,11 @@ export interface AuthRequest extends Request {
 export const authenticateToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
   const token = req.cookies?.token;
 
+  // Debug logging for cookie issues
+  console.log('[Auth] Request:', req.method, req.path);
+  console.log('[Auth] Cookies received:', Object.keys(req.cookies || {}));
+  console.log('[Auth] Cookie header:', req.headers.cookie ? 'present' : 'missing');
+
   if (!token) {
     console.warn('[Auth] No token cookie found for request:', req.method, req.path);
     return res.status(401).json({ error: 'Not authenticated. Please sign in.' });
