@@ -1,0 +1,113 @@
+Fix Artist plan / billing state inconsistencies (remove false paywall + errors)
+Goal
+
+Kad se korisnik ulogira kao Artist (plan aktivan), ne smiju se pojavljivati:
+
+“You need an Artist subscription to enable visibility in Artist Connect.”
+
+“No billing account found. Please subscribe to a plan first.”
+
+Ako je user zaista aktivan (effectivePlan=artist), UI mora:
+
+omogućiti Artist Connect toggles (ili ih barem normalno prikazati bez error bannera)
+
+prikazati ispravno stanje billing-a (ili sakriti “Manage billing” ako billing nije konfiguriran u stagingu)
+
+Current bug (from screenshots)
+
+Na Artist Profile:
+
+prikazuje crveni banner: “You need an Artist subscription…”
+
+iako je user u Artist dashboardu
+
+Na Settings → Your Plan:
+
+piše Status: Active i badge “Artist”
+
+ali istovremeno crveni banner: “No billing account found…”
+
+i gumb “Manage billing” (koji sugerira Stripe setup), iako staging možda nema pravi Stripe customer
+
+➡️ Ovo je kontradikcija.
+
+Root cause (likely)
+
+Jedno od:
+
+subscriptionStatus/effectivePlan se čita iz jedne tablice, a billingAccount/stripeCustomerId iz druge koja nije kreirana za fresh user
+
+“Artist Connect visibility” check gleda stripeCustomerId umjesto effectivePlan
+
+backend endpoint za billing status vraća null pa frontend prikazuje error banner umjesto “billing not configured”
+
+admin-preview/role switching ostavlja krivi plan state u cacheu
+
+Required backend fixes
+1) Single source of truth for access
+
+Za pristup Artist featureima (Artist Connect visibility toggles):
+
+koristiti effectivePlan / role / subscriptionStatus (npr. role==='artist' && effectivePlan in ['artist','pro','...'])
+
+❌ ne koristiti stripeCustomerId kao uvjet za feature access
+
+2) Ensure “billing account” record exists (bootstrap)
+
+Ako je user “Artist” ali nema billingAccount row:
+
+kreirati default billing record (empty) ili vratiti response koji frontend može tretirati kao “billing not set up”
+
+nikad ne vraćati stanje koje uzrokuje crveni error ako plan već piše Active
+
+3) API contract
+
+Endpoint koji vraća plan/billing info mora jasno razlikovati:
+
+planActive: true/false
+
+billingConfigured: true/false
+
+stripeMode: test/live
+Frontend mora prikazati poruku prema tome.
+
+Required frontend fixes
+4) Artist Connect visibility UI
+
+Ako planActive===true:
+
+nema crvenog bannera
+
+toggles su enabled (ili ako feature još nije live, onda disabled s neutralnom porukom, ali NE “need subscription”)
+
+Ako planActive===false:
+
+tek tada prikazati paywall CTA (“Upgrade to Artist plan”)
+
+5) Settings “No billing account found” banner
+
+Ako planActive===true ali billingConfigured===false (staging / test):
+
+promijeni poruku u neutralnu:
+
+“Billing is not configured for this environment.” ili
+
+sakrij banner i sakrij “Manage billing” gumb
+
+Ako planActive===false:
+
+prikazati “Subscribe to a plan” (to je ok)
+
+Acceptance criteria
+
+Artist user vidi Artist Dashboard bez poruka “need subscription”
+
+Settings → Your Plan ne pokazuje “No billing account found” kad je plan Active
+
+“Manage billing” se prikazuje samo kad billingConfigured===true
+
+Feature gating se temelji na plan/role, ne na Stripe customer id
+
+Priority
+
+HIGH — blokira realno testiranje Artist features i ostavlja dojam “broken billing”.

@@ -139,6 +139,7 @@ export function YourPlanCard() {
   const isFree = plan === 'user' && status === 'free';
   const isActive = status === 'active' && plan !== 'user';
   const isCanceledOrExpired = status === 'canceled' || status === 'expired';
+  const hasBillingConfigured = subscription?.has_stripe_customer || false;
 
   const getStatusDisplay = () => {
     switch (status) {
@@ -199,8 +200,14 @@ export function YourPlanCard() {
         )}
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-            {error}
+          <div className={`mb-4 p-3 rounded-lg text-sm ${
+            error.includes('No billing account') || error.includes('billing')
+              ? 'bg-blue-50 border border-blue-200 text-blue-700'
+              : 'bg-red-50 border border-red-200 text-red-700'
+          }`}>
+            {error.includes('No billing account') 
+              ? 'Billing is not configured for this environment. Your plan is managed by entitlements.'
+              : error}
           </div>
         )}
 
@@ -223,13 +230,15 @@ export function YourPlanCard() {
             </a>
           ) : isActive ? (
             <>
-              <button
-                onClick={handleManageBilling}
-                disabled={actionLoading}
-                className="flex-1 py-2.5 px-4 rounded-rvMd font-semibold text-sm bg-rv-primary text-white hover:bg-rv-primaryHover transition-colors disabled:opacity-50"
-              >
-                {actionLoading ? 'Loading...' : 'Manage billing'}
-              </button>
+              {hasBillingConfigured && (
+                <button
+                  onClick={handleManageBilling}
+                  disabled={actionLoading}
+                  className="flex-1 py-2.5 px-4 rounded-rvMd font-semibold text-sm bg-rv-primary text-white hover:bg-rv-primaryHover transition-colors disabled:opacity-50"
+                >
+                  {actionLoading ? 'Loading...' : 'Manage billing'}
+                </button>
+              )}
               <a
                 href="#/pricing"
                 className="flex-1 text-center py-2.5 px-4 rounded-rvMd font-semibold text-sm border-2 border-rv-neutral text-rv-text hover:border-rv-primary hover:text-rv-primary transition-colors"
