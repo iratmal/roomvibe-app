@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
 
@@ -42,12 +43,15 @@ interface ArtistPublicProfileProps {
 }
 
 export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: ArtistPublicProfileProps) {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [profile, setProfile] = useState<ArtistProfile | null>(null);
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [artistId, setArtistId] = useState<number | null>(null);
   const [showContactModal, setShowContactModal] = useState(false);
+  
+  const isOwner = user && artistId && user.id === artistId;
   
   // Public contact form state
   const [contactName, setContactName] = useState('');
@@ -88,6 +92,7 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
     try {
       setLoading(true);
       setError(null);
+      setArtistId(null);
 
       const response = await fetch(`${API_URL}/api/public/artist/${slug}`);
       
@@ -234,6 +239,17 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
     <div className="min-h-screen bg-rv-surface">
       <section className="bg-white border-b border-rv-neutral">
         <div className="max-w-6xl mx-auto px-4 py-12 md:py-16">
+          {isOwner && (
+            <a
+              href="#/dashboard/artist"
+              className="inline-flex items-center gap-2 text-rv-textMuted hover:text-rv-text transition-colors mb-6 text-sm"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back to Dashboard
+            </a>
+          )}
           <div className="flex flex-col md:flex-row gap-8 items-start">
             <div className="flex-shrink-0">
               {profile.profileImageUrl ? (
