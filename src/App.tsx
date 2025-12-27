@@ -41,6 +41,7 @@ import { Gallery360Editor } from "./components/360/Gallery360Editor";
 import { Viewer360 } from "./components/360/Viewer360";
 import { isExhibitionPublicEnabled } from "./utils/featureFlags";
 import { FeatureDisabled } from "./components/FeatureDisabled";
+import { ArtistPublicProfile } from "./pages/ArtistPublicProfile";
 
 /**
  * RoomVibe — App + Landing + Studio + Authentication
@@ -106,7 +107,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-white text-rv-text">
-      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/privacy" && normalizedHash !== "#/terms" && normalizedHash !== "#/upload-consent" && normalizedHash !== "#/pricing" && normalizedHash !== "#/billing" && normalizedHash !== "#/onboarding" && !normalizedHash.startsWith("#/exhibition") && !normalizedHash.startsWith("#/gallery/exhibitions/") && !normalizedHash.startsWith("#/exhibitions/") && !normalizedHash.startsWith("#/app/exhibitions/") && !normalizedHash.startsWith("#/embed/exhibitions/") && <TopNav />}
+      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/privacy" && normalizedHash !== "#/terms" && normalizedHash !== "#/upload-consent" && normalizedHash !== "#/pricing" && normalizedHash !== "#/billing" && normalizedHash !== "#/onboarding" && !normalizedHash.startsWith("#/exhibition") && !normalizedHash.startsWith("#/gallery/exhibitions/") && !normalizedHash.startsWith("#/exhibitions/") && !normalizedHash.startsWith("#/app/exhibitions/") && !normalizedHash.startsWith("#/embed/exhibitions/") && !normalizedHash.startsWith("#/artist/") && <TopNav />}
       {normalizedHash === "#/onboarding" ? (
         <OnboardingRouter />
       ) : normalizedHash === "#/pricing" ? (
@@ -143,6 +144,8 @@ function AppContent() {
         <AuthPage mode="login" />
       ) : normalizedHash === "#/register" ? (
         <AuthPage mode="register" />
+      ) : normalizedHash.startsWith("#/artist/") ? (
+        <ArtistPublicProfileRouter />
       ) : normalizedHash.startsWith("#/dashboard/designer/project/") ? (
         <ProjectDetail />
       ) : normalizedHash.match(/^#\/dashboard\/gallery\/artwork\/\d+\/edit/) ? (
@@ -224,6 +227,37 @@ function OnboardingRouter() {
   };
 
   return <OnboardingPage onComplete={handleComplete} />;
+}
+
+function ArtistPublicProfileRouter() {
+  const hash = window.location.hash;
+  const slug = hash.replace('#/artist/', '').split('?')[0];
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [slug]);
+
+  if (!slug) {
+    window.location.hash = '#/';
+    return null;
+  }
+
+  return (
+    <ArtistPublicProfile 
+      slug={slug}
+      onViewInRoom={(artwork) => {
+        const params = new URLSearchParams({
+          artworkId: artwork.id.toString(),
+          title: artwork.title,
+          imageUrl: artwork.imageUrl,
+          width: artwork.width.toString(),
+          height: artwork.height.toString(),
+          unit: artwork.dimensionUnit
+        });
+        window.location.hash = `#/studio?${params.toString()}`;
+      }}
+    />
+  );
 }
 
 function DashboardRouter() {
