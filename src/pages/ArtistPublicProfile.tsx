@@ -16,6 +16,8 @@ interface ArtistProfile {
   facebookUrl: string;
   tiktokUrl: string;
   languages: string[];
+  visibleToDesigners: boolean;
+  visibleToGalleries: boolean;
 }
 
 interface Artwork {
@@ -193,7 +195,7 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
               )}
 
               {profile.primaryStyleTags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-6">
+                <div className="flex flex-wrap gap-2 mb-4">
                   {profile.primaryStyleTags.map((tag, index) => (
                     <span
                       key={index}
@@ -202,6 +204,27 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                       {tag}
                     </span>
                   ))}
+                </div>
+              )}
+
+              {(profile.visibleToDesigners || profile.visibleToGalleries) && (
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {profile.visibleToDesigners && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium border border-blue-200">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      Visible to Designers
+                    </span>
+                  )}
+                  {profile.visibleToGalleries && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-sm font-medium border border-purple-200">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                      Visible to Galleries
+                    </span>
+                  )}
                 </div>
               )}
 
