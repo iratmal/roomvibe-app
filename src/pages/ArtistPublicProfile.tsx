@@ -289,6 +289,7 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                     if (user) {
                       setShowContactModal(true);
                     } else {
+                      sessionStorage.setItem('redirectAfterLogin', `#/artist/${slug}`);
                       window.location.hash = '#/login';
                     }
                   }}

@@ -63,6 +63,99 @@ const COUNTRY_OPTIONS = [
   'Vatican City', 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe'
 ];
 
+function SearchableCountrySelect({ 
+  value, 
+  onChange 
+}: { 
+  value: string; 
+  onChange: (value: string) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  const filteredCountries = COUNTRY_OPTIONS.filter(country =>
+    country.toLowerCase().includes(search.toLowerCase())
+  );
+
+  React.useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSelect = (country: string) => {
+    onChange(country);
+    setIsOpen(false);
+    setSearch('');
+  };
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary bg-white text-left flex items-center justify-between"
+      >
+        <span className={value ? 'text-rv-text' : 'text-rv-textMuted'}>
+          {value || 'Select country'}
+        </span>
+        <svg className={`w-5 h-5 text-rv-textMuted transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div className="absolute z-50 w-full mt-1 bg-white border border-rv-neutral rounded-rvMd shadow-rvElevated max-h-60 overflow-hidden">
+          <div className="p-2 border-b border-rv-neutral">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search countries..."
+              className="w-full px-3 py-2 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary text-sm"
+              autoFocus
+            />
+          </div>
+          <div className="max-h-48 overflow-y-auto">
+            {value && (
+              <button
+                type="button"
+                onClick={() => handleSelect('')}
+                className="w-full px-4 py-2 text-left text-sm text-rv-textMuted hover:bg-rv-surface"
+              >
+                Clear selection
+              </button>
+            )}
+            {filteredCountries.length === 0 ? (
+              <div className="px-4 py-3 text-sm text-rv-textMuted text-center">
+                No countries found
+              </div>
+            ) : (
+              filteredCountries.map(country => (
+                <button
+                  key={country}
+                  type="button"
+                  onClick={() => handleSelect(country)}
+                  className={`w-full px-4 py-2 text-left text-sm hover:bg-rv-primary/10 transition-colors ${
+                    value === country ? 'bg-rv-primary/10 text-rv-primary font-medium' : 'text-rv-text'
+                  }`}
+                >
+                  {country}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function ArtistProfileForm() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -468,17 +561,10 @@ export function ArtistProfileForm() {
               <label className="block text-sm font-semibold mb-2 text-rv-text">
                 Country
               </label>
-              <select
-                name="locationCountry"
+              <SearchableCountrySelect
                 value={profile.locationCountry}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary bg-white"
-              >
-                <option value="">Select country</option>
-                {COUNTRY_OPTIONS.map(country => (
-                  <option key={country} value={country}>{country}</option>
-                ))}
-              </select>
+                onChange={(value) => setProfile(prev => ({ ...prev, locationCountry: value }))}
+              />
             </div>
 
             <div className="md:col-span-2">

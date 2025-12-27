@@ -183,7 +183,13 @@ function AuthPage({ mode }: { mode: 'login' | 'register' }) {
   }, []);
 
   const handleSuccess = () => {
-    window.location.hash = '#/dashboard';
+    const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
+    if (redirectUrl) {
+      sessionStorage.removeItem('redirectAfterLogin');
+      window.location.hash = redirectUrl;
+    } else {
+      window.location.hash = '#/dashboard';
+    }
   };
 
   return (
