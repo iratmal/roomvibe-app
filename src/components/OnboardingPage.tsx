@@ -98,12 +98,12 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
     try {
       console.log('[Onboarding] Calling completeOnboarding...');
       await completeOnboarding();
-      console.log('[Onboarding] completeOnboarding done, calling onComplete...');
+      console.log('[Onboarding] completeOnboarding done');
     } catch (err) {
-      console.error('[Onboarding] Failed to complete onboarding (failsafe: continuing anyway):', err);
+      console.warn('[Onboarding] Onboarding completion failed, continuing anyway:', err);
+    } finally {
+      onComplete();
     }
-    // FAILSAFE: Always navigate to dashboard, even if API fails
-    onComplete();
   };
 
   const handleFinish = async () => {
@@ -114,12 +114,12 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
     try {
       console.log('[Onboarding] Calling completeOnboarding...');
       await completeOnboarding();
-      console.log('[Onboarding] completeOnboarding done, calling onComplete...');
+      console.log('[Onboarding] completeOnboarding done');
     } catch (err) {
-      console.error('[Onboarding] Failed to complete onboarding (failsafe: continuing anyway):', err);
+      console.warn('[Onboarding] Onboarding completion failed, continuing anyway:', err);
+    } finally {
+      onComplete();
     }
-    // FAILSAFE: Always navigate to dashboard, even if API fails
-    onComplete();
   };
 
   const handleGoToStudio = async () => {
@@ -130,12 +130,12 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
     try {
       console.log('[Onboarding] Calling completeOnboarding...');
       await completeOnboarding();
-      console.log('[Onboarding] completeOnboarding done, navigating to studio...');
+      console.log('[Onboarding] completeOnboarding done');
     } catch (err) {
-      console.error('[Onboarding] Failed to complete onboarding (failsafe: continuing anyway):', err);
+      console.warn('[Onboarding] Onboarding completion failed, continuing anyway:', err);
+    } finally {
+      window.location.hash = '#/studio';
     }
-    // FAILSAFE: Always navigate to studio, even if API fails
-    window.location.hash = '#/studio';
   };
 
   const hasLockedModules = !hasEntitlement('artist_access') || !hasEntitlement('designer_access') || !hasEntitlement('gallery_access');
