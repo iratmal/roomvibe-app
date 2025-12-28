@@ -367,4 +367,104 @@ router.get('/profile/connect-stats', authenticateToken, async (req: any, res) =>
   }
 });
 
+router.get('/exhibition', authenticateToken, async (req: any, res) => {
+  try {
+    const result = await query(
+      `SELECT c.id, c.title, c.subtitle, c.status, c.created_at,
+        (SELECT COUNT(*) FROM gallery_artworks WHERE collection_id = c.id) as artwork_count
+       FROM gallery_collections c
+       WHERE c.gallery_id = $1
+       ORDER BY c.created_at DESC
+       LIMIT 1`,
+      [req.user.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.json({ exhibition: null });
+    }
+
+    const exhibition = result.rows[0];
+    res.json({
+      exhibition: {
+        id: exhibition.id,
+        title: exhibition.title,
+        subtitle: exhibition.subtitle,
+        status: exhibition.status,
+        artworkCount: parseInt(exhibition.artwork_count),
+        createdAt: exhibition.created_at
+      }
+    });
+  } catch (error: any) {
+    console.error('Error fetching artist exhibition:', error);
+    res.status(500).json({ error: 'Failed to fetch exhibition' });
+  }
+});
+
+router.post('/exhibition', authenticateToken, async (req: any, res) => {
+  try {
+    const existingResult = await query(
+      `SELECT COUNT(*) as count FROM gallery_collections WHERE gallery_id = $1`,
+      [req.user.id]
+    );
+
+    if (parseInt(existingResult.rows[0].count) >= 1) {
+      return res.status(403).json({ 
+        error: 'Exhibition limit reached',
+        message: 'Artists can have 1 active exhibition. Delete the existing one to create a new one.'
+      });
+    }
+
+    const { title, subtitle } = req.body;
+
+    if (!title) {
+      return res.status(400).json({ error: 'Exhibition title is required' });
+    }
+
+    const result = await query(
+      `INSERT INTO gallery_collections (gallery_id, title, subtitle, status, updated_at)
+       VALUES ($1, $2, $3, 'draft', CURRENT_TIMESTAMP)
+       RETURNING *`,
+      [req.user.id, title, subtitle || null]
+    );
+
+    res.status(201).json({ 
+      exhibition: {
+        id: result.rows[0].id,
+        title: result.rows[0].title,
+        subtitle: result.rows[0].subtitle,
+        status: result.rows[0].status,
+        artworkCount: 0,
+        createdAt: result.rows[0].created_at
+      },
+      message: 'Exhibition created successfully' 
+    });
+  } catch (error: any) {
+    console.error('Error creating artist exhibition:', error);
+    res.status(500).json({ error: 'Failed to create exhibition' });
+  }
+});
+
+router.delete('/exhibition/:id', authenticateToken, async (req: any, res) => {
+  try {
+    const exhibitionId = parseInt(req.params.id);
+
+    const checkResult = await query(
+      'SELECT * FROM gallery_collections WHERE id = $1 AND gallery_id = $2',
+      [exhibitionId, req.user.id]
+    );
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Exhibition not found' });
+    }
+
+    await query('DELETE FROM gallery_artworks WHERE collection_id = $1', [exhibitionId]);
+    await query('DELETE FROM gallery_collections WHERE id = $1', [exhibitionId]);
+
+    res.json({ message: 'Exhibition deleted successfully' });
+  } catch (error: any) {
+    console.error('Error deleting artist exhibition:', error);
+    res.status(500).json({ error: 'Failed to delete exhibition' });
+  }
+});
+
 export default router;

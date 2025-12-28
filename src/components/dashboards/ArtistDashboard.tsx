@@ -74,6 +74,15 @@ interface DashboardStats {
   visibleToGalleries: boolean;
 }
 
+interface Exhibition {
+  id: number;
+  title: string;
+  subtitle: string | null;
+  status: 'draft' | 'published';
+  artworkCount: number;
+  createdAt: string;
+}
+
 export function ArtistDashboard() {
   const { user, logout } = useAuth();
   const { effectivePlan: viewerPlan, planLimits: viewerPlanLimits } = useViewer();
@@ -89,6 +98,10 @@ export function ArtistDashboard() {
   const [showWidgetModal, setShowWidgetModal] = useState<Artwork | null>(null);
   const [copySuccess, setCopySuccess] = useState('');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [exhibition, setExhibition] = useState<Exhibition | null>(null);
+  const [showCreateExhibition, setShowCreateExhibition] = useState(false);
+  const [exhibitionFormData, setExhibitionFormData] = useState({ title: '', subtitle: '' });
+  const [showExhibitionDeleteConfirm, setShowExhibitionDeleteConfirm] = useState(false);
   
   const effectivePlan = viewerPlan || 'user';
   const isFreePlan = effectivePlan === 'user' || effectivePlan === 'free';
@@ -115,6 +128,7 @@ export function ArtistDashboard() {
   useEffect(() => {
     fetchArtworks();
     fetchUnreadCount();
+    fetchExhibition();
   }, []);
 
   useEffect(() => {
@@ -165,6 +179,83 @@ export function ArtistDashboard() {
       console.error('Error fetching artworks:', err);
       setArtworks([]);
     }
+  };
+
+  const fetchExhibition = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/artist/exhibition`, {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setExhibition(data.exhibition || null);
+      }
+    } catch (err) {
+      console.error('Error fetching exhibition:', err);
+    }
+  };
+
+  const handleCreateExhibition = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!exhibitionFormData.title.trim()) {
+      setError('Exhibition title is required');
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/artist/exhibition`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(exhibitionFormData)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create exhibition');
+      }
+      
+      const data = await response.json();
+      setExhibition(data.exhibition);
+      setShowCreateExhibition(false);
+      setExhibitionFormData({ title: '', subtitle: '' });
+      setSuccess('Exhibition created! Add artworks in the 360 editor.');
+      setTimeout(() => setSuccess(''), 5000);
+    } catch (err: any) {
+      setError(err.message);
+      setTimeout(() => setError(''), 5000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteExhibition = async (id: number) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/artist/exhibition/${id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete exhibition');
+      }
+      
+      setExhibition(null);
+      setSuccess('Exhibition deleted successfully');
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err: any) {
+      setError(err.message);
+      setTimeout(() => setError(''), 5000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatExhibitionDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -539,6 +630,20 @@ export function ArtistDashboard() {
 
               <div className="p-4 bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral">
                 <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-[#C9A24A]/10 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-[#C9A24A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-[#C9A24A]">{exhibition ? 1 : 0} / 1</p>
+                    <p className="text-xs text-rv-textMuted">Exhibitions</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral">
+                <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                     dashboardStats.visibleToDesigners ? 'bg-green-100' : 'bg-gray-100'
                   }`}>
@@ -552,24 +657,6 @@ export function ArtistDashboard() {
                       {dashboardStats.visibleToDesigners ? 'Visible' : 'Hidden'}
                     </p>
                     <p className="text-xs text-rv-textMuted">To Designers</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-4 bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    dashboardStats.visibleToGalleries ? 'bg-green-100' : 'bg-gray-100'
-                  }`}>
-                    <svg className={`w-5 h-5 ${dashboardStats.visibleToGalleries ? 'text-green-600' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className={`text-sm font-bold ${dashboardStats.visibleToGalleries ? 'text-green-600' : 'text-gray-500'}`}>
-                      {dashboardStats.visibleToGalleries ? 'Visible' : 'Hidden'}
-                    </p>
-                    <p className="text-xs text-rv-textMuted">To Galleries</p>
                   </div>
                 </div>
               </div>
@@ -942,6 +1029,174 @@ export function ArtistDashboard() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </div>
+
+        <div className="mb-10">
+          <h2 className="text-2xl font-bold mb-6 text-rv-primary">My Exhibition</h2>
+          
+          {!exhibition ? (
+            <div className="text-center py-12 bg-white rounded-rvLg border border-rv-neutral shadow-rvSoft">
+              {showCreateExhibition ? (
+                <form onSubmit={handleCreateExhibition} className="max-w-md mx-auto px-6">
+                  <div className="mb-4 text-left">
+                    <label className="block text-sm font-semibold mb-2 text-rv-text">
+                      Exhibition Title <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={exhibitionFormData.title}
+                      onChange={(e) => setExhibitionFormData(prev => ({ ...prev, title: e.target.value }))}
+                      className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                      placeholder="My Virtual Exhibition"
+                      required
+                    />
+                  </div>
+                  <div className="mb-6 text-left">
+                    <label className="block text-sm font-semibold mb-2 text-rv-text">
+                      Subtitle (optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={exhibitionFormData.subtitle}
+                      onChange={(e) => setExhibitionFormData(prev => ({ ...prev, subtitle: e.target.value }))}
+                      className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                      placeholder="A collection of my best works"
+                    />
+                  </div>
+                  <div className="flex gap-3 justify-center">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="px-6 py-2.5 bg-rv-primary text-white rounded-rvMd font-semibold hover:bg-rv-primaryHover transition-colors disabled:opacity-50"
+                    >
+                      {loading ? 'Creating...' : 'Create Exhibition'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowCreateExhibition(false)}
+                      className="px-6 py-2.5 border border-rv-neutral text-rv-text rounded-rvMd font-semibold hover:bg-rv-surface transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <>
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#C9A24A]/10 flex items-center justify-center">
+                    <svg className="w-8 h-8 text-[#C9A24A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-bold text-rv-text mb-2">Create your virtual exhibition</h3>
+                  <p className="text-rv-textMuted max-w-md mx-auto mb-6">
+                    Showcase your artworks in an immersive 360° virtual gallery that visitors can explore online.
+                  </p>
+                  <button
+                    onClick={() => setShowCreateExhibition(true)}
+                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#C9A24A] text-white rounded-rvMd font-semibold hover:bg-[#B8913A] transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    Create Exhibition
+                  </button>
+                </>
+              )}
+            </div>
+          ) : (
+            <div className="bg-white border border-rv-neutral rounded-rvLg shadow-rvSoft overflow-hidden">
+              <div className="relative h-32 bg-gradient-to-br from-rv-primary/10 to-[#C9A24A]/10 flex items-center justify-center">
+                <svg className="w-16 h-16 text-rv-primary/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+              </div>
+              
+              <div className="p-6">
+                <div className="flex items-start justify-between mb-3">
+                  <h3 className="text-xl font-semibold text-rv-primary line-clamp-1">
+                    {exhibition.title}
+                  </h3>
+                  <span className={`flex-shrink-0 ml-2 px-2.5 py-0.5 text-xs font-semibold rounded-full ${
+                    exhibition.status === 'published' 
+                      ? 'bg-green-100 text-green-700' 
+                      : 'bg-slate-100 text-slate-600'
+                  }`}>
+                    {exhibition.status === 'published' ? 'Published' : 'Draft'}
+                  </span>
+                </div>
+
+                {exhibition.subtitle && (
+                  <p className="text-sm text-rv-textMuted mb-3 line-clamp-1">{exhibition.subtitle}</p>
+                )}
+
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center gap-2 text-sm text-rv-textMuted">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>{exhibition.artworkCount} {exhibition.artworkCount === 1 ? 'artwork' : 'artworks'}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 text-sm text-rv-textMuted">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>Created {formatExhibitionDate(exhibition.createdAt)}</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <a
+                    href={`#/gallery/exhibitions/${exhibition.id}/360-editor`}
+                    className="flex-1 px-3 py-2 text-sm bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-all font-semibold text-center"
+                  >
+                    Edit
+                  </a>
+                  <a
+                    href={`#/exhibition/${exhibition.id}`}
+                    className="flex-1 px-3 py-2 text-sm bg-[#C9A24A] text-white rounded-rvMd hover:bg-[#B8913A] transition-all font-semibold text-center flex items-center justify-center gap-1.5"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                    </svg>
+                    Virtual Exhibition
+                  </a>
+                  <button
+                    onClick={() => setShowExhibitionDeleteConfirm(true)}
+                    className="px-3 py-2 text-sm text-red-500 border border-red-200 rounded-rvMd hover:bg-red-50 transition-all font-medium"
+                  >
+                    Delete
+                  </button>
+                </div>
+
+                {showExhibitionDeleteConfirm && (
+                  <div className="mt-4 p-4 bg-red-50 border border-red-100 rounded-rvMd">
+                    <p className="text-sm text-red-700 mb-3 font-medium">
+                      Delete this exhibition and all its artworks?
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          handleDeleteExhibition(exhibition.id);
+                          setShowExhibitionDeleteConfirm(false);
+                        }}
+                        disabled={loading}
+                        className="flex-1 px-3 py-2 text-sm bg-red-500 text-white rounded-rvMd hover:bg-red-600 transition-colors font-semibold disabled:opacity-50"
+                      >
+                        Yes, Delete
+                      </button>
+                      <button
+                        onClick={() => setShowExhibitionDeleteConfirm(false)}
+                        className="flex-1 px-3 py-2 text-sm border border-red-200 text-red-600 rounded-rvMd hover:bg-red-100 transition-colors font-semibold"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

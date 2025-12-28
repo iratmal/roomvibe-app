@@ -1,0 +1,167 @@
+Artist Dashboard – Add Exhibitions Section (1 Active Exhibition)
+GOAL
+
+Proširiti Artist Dashboard tako da umjetnik vidi:
+
+broj aktivnih izložbi (0/1)
+
+CTA za kreiranje izložbe
+
+karticu svoje jedine aktivne izložbe
+
+gumb Virtual Exhibition koji vodi na postojeći public virtual exhibition viewer
+
+Bez promjene postojeće Gallery logike.
+
+CONTEXT
+
+Projekt: RoomVibe
+
+Dashboard: Artist Dashboard
+
+Artist plan: dozvoljena 1 aktivna exhibition
+
+Gallery Dashboard već ima:
+
+UI za exhibition card
+
+gumb Virtual Exhibition
+
+postojeći public exhibition viewer (klasična virtual exhibition na sajtu)
+
+👉 Artist NE DOBIVA editor galerije, samo:
+
+create
+
+view
+
+link na virtual exhibition
+
+SCOPE (OBAVEZNO SE DRŽATI OVOGA)
+1️⃣ Artist Stats – dodati Exhibitions counter
+
+U gornji stats red (gdje su Artworks i Messages):
+
+Dodati novu karticu:
+
+Exhibitions
+0 / 1
+
+
+Ako postoji aktivna exhibition → 1 / 1
+
+Ako ne postoji → 0 / 1
+
+👉 Vizualno isto kao Artworks counter.
+
+2️⃣ CTA iza Artworks sekcije
+
+Iza sekcije My Artworks dodati novu sekciju:
+
+Naslov:
+My Exhibition
+
+Ako artist NEMA exhibition:
+
+prikazati empty-state karticu:
+
+tekst:
+
+“Create your first virtual exhibition”
+
+gumb:
+Create Exhibition
+
+klik vodi na:
+
+/dashboard/artist/exhibition/create
+
+3️⃣ Exhibition Card (kao Gallery Dashboard, ali pojednostavljeno)
+
+Ako artist IMA exhibition → prikazati 1 karticu, stil preuzet iz Gallery Dashboarda:
+
+Kartica sadrži:
+
+Title exhibitiona
+
+Subtitle (ako postoji)
+
+Status badge (Draft / Published)
+
+Broj artworks
+
+Datum kreiranja
+
+Gumbi:
+
+View
+
+Virtual Exhibition (zlatni gumb – isti kao gallery)
+
+(opcionalno kasnije: Delete – za sada može i bez)
+
+⚠️ BITNO:
+
+Artist može imati maksimalno 1 exhibition
+
+Ako postoji → ne prikazivati Create CTA
+
+4️⃣ Virtual Exhibition gumb – LINKANJE
+
+Gumb Virtual Exhibition mora:
+
+linkati na postojeći public virtual exhibition
+
+koristiti ISTI route kao Gallery exhibition
+
+Primjer:
+
+/exhibition/{slug}
+
+
+👉 Ne graditi novi viewer
+👉 Ne duplicirati logiku
+👉 Samo reuse postojećeg virtual exhibitiona
+
+FILEOVI (ORIJENTACIJA)
+
+Agent neka traži i prilagodi postojeće komponente, okvirno:
+
+src/pages/dashboard/ArtistDashboard.tsx
+
+src/components/dashboard/ArtistStats.tsx
+
+src/components/exhibitions/ExhibitionCard.tsx (ako već postoji za gallery → reuse)
+
+postojeće API:
+
+GET /api/exhibitions?owner=artist
+
+Ako API već vraća više → frontend uzima samo prvi.
+
+NE RADITI
+
+❌ Ne dirati Gallery Dashboard
+❌ Ne raditi multi-exhibition logiku
+❌ Ne dodavati nove planove
+❌ Ne dirati billing
+❌ Ne refaktorirati postojeći exhibition editor
+
+STOP CONDITION
+
+Task je gotov kada:
+
+Artist vidi 0/1 ili 1/1 exhibitions
+
+Artist može kreirati jednu exhibition
+
+Artist vidi svoju exhibition karticu
+
+Gumb Virtual Exhibition otvara public virtual exhibition
+
+Gallery Dashboard ostaje nepromijenjen
+
+MODE
+
+👉 FAST MODE
+👉 Fokus samo na UI + minimalni data fetch
