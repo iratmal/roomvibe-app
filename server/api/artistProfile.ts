@@ -612,19 +612,26 @@ router.post('/exhibition/:id/artworks/link/:artworkId', authenticateToken, async
   try {
     const exhibitionId = parseInt(req.params.id);
     const sourceArtworkId = parseInt(req.params.artworkId);
+    const isAdmin = req.user.role === 'admin' || req.user.isAdmin;
 
-    const checkResult = await query(
-      'SELECT * FROM gallery_collections WHERE id = $1 AND gallery_id = $2',
-      [exhibitionId, req.user.id]
-    );
+    // Check exhibition ownership (admins can access any exhibition)
+    const exhibitionQuery = isAdmin 
+      ? 'SELECT * FROM gallery_collections WHERE id = $1'
+      : 'SELECT * FROM gallery_collections WHERE id = $1 AND gallery_id = $2';
+    const exhibitionParams = isAdmin ? [exhibitionId] : [exhibitionId, req.user.id];
+    
+    const checkResult = await query(exhibitionQuery, exhibitionParams);
 
     if (checkResult.rows.length === 0) {
       return res.status(404).json({ error: 'Exhibition not found' });
     }
 
+    const exhibitionOwnerId = checkResult.rows[0].gallery_id;
+
+    // Check artwork ownership (must belong to exhibition owner)
     const artworkResult = await query(
-      'SELECT * FROM artworks WHERE id = $1 AND user_id = $2',
-      [sourceArtworkId, req.user.id]
+      'SELECT * FROM artworks WHERE id = $1 AND artist_id = $2',
+      [sourceArtworkId, exhibitionOwnerId]
     );
 
     if (artworkResult.rows.length === 0) {
@@ -641,7 +648,7 @@ router.post('/exhibition/:id/artworks/link/:artworkId', authenticateToken, async
     }
 
     const artwork = artworkResult.rows[0];
-    const userResult = await query('SELECT display_name, email FROM users WHERE id = $1', [req.user.id]);
+    const userResult = await query('SELECT display_name, email FROM users WHERE id = $1', [exhibitionOwnerId]);
     const artistName = userResult.rows[0]?.display_name || userResult.rows[0]?.email || 'Artist';
 
     const result = await query(

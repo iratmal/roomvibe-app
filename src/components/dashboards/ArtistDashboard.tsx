@@ -334,10 +334,7 @@ export function ArtistDashboard() {
   };
 
   const handleAddToExhibition = async (artworkId: number) => {
-    console.log('[Add to Exhibition] Called with artworkId:', artworkId, 'exhibition:', exhibition?.id);
-    
     if (!exhibition) {
-      console.log('[Add to Exhibition] No exhibition found, showing error');
       setError('Please create an exhibition first');
       setActiveTab('artworks');
       setTimeout(() => {
@@ -351,13 +348,11 @@ export function ArtistDashboard() {
     }
 
     try {
-      console.log('[Add to Exhibition] Sending POST to:', `${API_URL}/api/artist/exhibition/${exhibition.id}/artworks/link/${artworkId}`);
       const response = await fetch(`${API_URL}/api/artist/exhibition/${exhibition.id}/artworks/link/${artworkId}`, {
         method: 'POST',
         credentials: 'include'
       });
 
-      console.log('[Add to Exhibition] Response status:', response.status);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to add artwork to exhibition');
@@ -368,7 +363,6 @@ export function ArtistDashboard() {
       fetchExhibition();
       setTimeout(() => setSuccess(''), 5000);
     } catch (err: any) {
-      console.error('[Add to Exhibition] Error:', err);
       setError(err.message);
       setTimeout(() => setError(''), 5000);
     }
@@ -690,17 +684,13 @@ export function ArtistDashboard() {
     });
     
     try {
-      console.log('[Edit Artwork] Fetching gallery images for artwork:', artwork.id);
       const response = await fetch(`${API_URL}/api/artist/artworks/${artwork.id}/images`, {
         credentials: 'include'
       });
-      console.log('[Edit Artwork] Response status:', response.status);
       if (response.ok) {
         const data = await response.json();
-        console.log('[Edit Artwork] Fetched gallery images:', data.images);
         setGalleryImages(data.images || []);
       } else {
-        console.log('[Edit Artwork] Failed to fetch images, status:', response.status);
         setGalleryImages([]);
       }
     } catch (err) {
