@@ -34,6 +34,7 @@ export function ArtworkImageGallery({
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [newPrimaryFile, setNewPrimaryFile] = useState<File | null>(null);
   const [primaryPreview, setPrimaryPreview] = useState<string | null>(null);
+  const [showStudioWarning, setShowStudioWarning] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -394,17 +395,62 @@ export function ArtworkImageGallery({
             <p className="text-sm font-medium text-rv-text">Create a Room Mockup</p>
             <p className="text-xs text-rv-textMuted">Visualize this artwork in realistic rooms to attract collectors</p>
           </div>
-          <a
-            href={`/#/studio?artworkId=${artworkId}`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
+            onClick={() => setShowStudioWarning(true)}
             className="flex-shrink-0 px-4 py-2 bg-rv-primary text-white text-sm font-semibold rounded-rvMd hover:bg-rv-primary/90 transition-colors flex items-center gap-2"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
             Open in Studio
-          </a>
+          </button>
+        </div>
+      )}
+
+      {showStudioWarning && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl">
+            <div className="flex items-start gap-4 mb-4">
+              <div className="flex-shrink-0 w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+                <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-rv-text mb-1">Before Opening Studio</h3>
+                <p className="text-sm text-rv-textMuted">
+                  The Studio uses your <strong>first artwork image</strong> as the original artwork.
+                </p>
+              </div>
+            </div>
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+              <p className="text-sm text-amber-800">
+                Please make sure your first image is the <strong>original artwork photo</strong>, not a room mockup.
+              </p>
+              <p className="text-sm text-amber-700 mt-2">
+                Otherwise, the artwork will appear as a <em>mockup inside another mockup</em>.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setShowStudioWarning(false)}
+                className="flex-1 px-4 py-2.5 border border-rv-neutral text-rv-text text-sm font-semibold rounded-lg hover:bg-rv-surface transition-colors"
+              >
+                Cancel
+              </button>
+              <a
+                href={`/#/studio?artworkId=${artworkId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setShowStudioWarning(false)}
+                className="flex-1 px-4 py-2.5 bg-rv-primary text-white text-sm font-semibold rounded-lg hover:bg-rv-primary/90 transition-colors text-center"
+              >
+                Continue to Studio
+              </a>
+            </div>
+          </div>
         </div>
       )}
 
@@ -412,7 +458,7 @@ export function ArtworkImageGallery({
         {!isEditing ? (
           <>Tip: After uploading, you can use RoomVibe Studio to create realistic room mockups that help collectors visualize your art.</>
         ) : (
-          <>Tip: Drag images to reorder. The first image is your cover image and cannot be moved.</>
+          <>Tip: Use a <strong>clean artwork image</strong> as your cover. Avoid mockups as the first image.</>
         )}
       </p>
     </div>
