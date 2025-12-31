@@ -1236,34 +1236,51 @@ function Studio() {
                   ? data.artwork.overlayImageUrl 
                   : `${API_URL}${data.artwork.overlayImageUrl}`;
                 
-                // If widthCm/heightCm are missing or invalid, detect from actual image
+                // ALWAYS detect orientation from actual image and correct dimensions if needed
                 let widthCm = data.artwork.widthCm;
                 let heightCm = data.artwork.heightCm;
                 
-                if (!widthCm || !heightCm || isNaN(widthCm) || isNaN(heightCm)) {
-                  // Load image to get natural dimensions
-                  try {
-                    const img = new Image();
-                    await new Promise<void>((resolve, reject) => {
-                      img.onload = () => resolve();
-                      img.onerror = () => reject(new Error('Failed to load image'));
-                      img.src = imageUrl;
-                    });
-                    // Use natural image dimensions to determine aspect ratio
-                    // Scale to a reasonable default size (100cm for the larger dimension)
-                    const aspectRatio = img.naturalWidth / img.naturalHeight;
-                    if (aspectRatio > 1) {
-                      // Landscape
+                // Load image to verify orientation matches database dimensions
+                try {
+                  const img = new Image();
+                  await new Promise<void>((resolve, reject) => {
+                    img.onload = () => resolve();
+                    img.onerror = () => reject(new Error('Failed to load image'));
+                    img.src = imageUrl;
+                  });
+                  
+                  // Detect actual image orientation
+                  const imageAspectRatio = img.naturalWidth / img.naturalHeight;
+                  const isImageLandscape = imageAspectRatio > 1;
+                  const isImagePortrait = imageAspectRatio < 1;
+                  
+                  if (!widthCm || !heightCm || isNaN(widthCm) || isNaN(heightCm)) {
+                    // No valid dimensions - generate from image
+                    if (isImageLandscape) {
                       widthCm = 100;
-                      heightCm = Math.round(100 / aspectRatio);
+                      heightCm = Math.round(100 / imageAspectRatio);
                     } else {
-                      // Portrait or square
                       heightCm = 100;
-                      widthCm = Math.round(100 * aspectRatio);
+                      widthCm = Math.round(100 * imageAspectRatio);
                     }
-                    console.log(`[Studio] Detected dimensions from image: ${widthCm}x${heightCm}cm (aspect: ${aspectRatio.toFixed(2)})`);
-                  } catch (imgErr) {
-                    console.warn('[Studio] Failed to detect image dimensions, using defaults:', imgErr);
+                    console.log(`[Studio] Generated dimensions from image: ${widthCm}x${heightCm}cm`);
+                  } else {
+                    // Dimensions exist - verify they match image orientation
+                    const dbIsLandscape = widthCm > heightCm;
+                    const dbIsPortrait = widthCm < heightCm;
+                    
+                    // If database orientation doesn't match image orientation, swap dimensions
+                    if ((isImagePortrait && dbIsLandscape) || (isImageLandscape && dbIsPortrait)) {
+                      const temp = widthCm;
+                      widthCm = heightCm;
+                      heightCm = temp;
+                      console.log(`[Studio] Corrected swapped dimensions: ${widthCm}x${heightCm}cm (image is ${isImageLandscape ? 'landscape' : 'portrait'})`);
+                    }
+                  }
+                } catch (imgErr) {
+                  console.warn('[Studio] Failed to detect image dimensions:', imgErr);
+                  // Keep database dimensions if image loading fails
+                  if (!widthCm || !heightCm || isNaN(widthCm) || isNaN(heightCm)) {
                     widthCm = 100;
                     heightCm = 70;
                   }
