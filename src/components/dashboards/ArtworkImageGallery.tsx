@@ -55,20 +55,38 @@ export function ArtworkImageGallery({
     
     const hasPrimary = !!(primaryImage || newPrimaryFile);
     const filesList = Array.from(files);
+    const currentGalleryCount = galleryImages.length;
     
     if (fromCoverSlot) {
       const coverFile = filesList[0];
+      const additionalFiles = filesList.slice(1);
+      
+      let updatedGallery = [...galleryImages];
+      
+      if (newPrimaryFile && currentGalleryCount < maxImages - 1) {
+        const demotedCover: GalleryImage = {
+          id: Date.now(),
+          image_url: primaryPreview || '',
+          display_order: 0,
+          is_mockup: false,
+          isNew: true,
+          file: newPrimaryFile,
+          previewUrl: primaryPreview || undefined
+        };
+        updatedGallery = [demotedCover, ...galleryImages.map((img, i) => ({
+          ...img,
+          display_order: i + 1
+        }))];
+      }
+      
       setNewPrimaryFile(coverFile);
       onPrimaryImageChange(coverFile);
       const coverReader = new FileReader();
       coverReader.onload = () => setPrimaryPreview(coverReader.result as string);
       coverReader.readAsDataURL(coverFile);
       
-      const additionalFiles = filesList.slice(1);
-      const remainingSlots = hasPrimary 
-        ? maxImages - 1 - galleryImages.length 
-        : maxImages - 1 - galleryImages.length;
-      const filesToAdd = additionalFiles.slice(0, remainingSlots);
+      const remainingSlots = maxImages - 1 - updatedGallery.length;
+      const filesToAdd = additionalFiles.slice(0, Math.max(0, remainingSlots));
       
       if (filesToAdd.length > 0) {
         const newImages: (GalleryImage | null)[] = new Array(filesToAdd.length).fill(null);
@@ -79,7 +97,7 @@ export function ArtworkImageGallery({
           reader.onload = () => {
             newImages[index] = {
               image_url: reader.result as string,
-              display_order: galleryImages.length + index,
+              display_order: updatedGallery.length + index,
               is_mockup: false,
               isNew: true,
               file,
@@ -89,15 +107,18 @@ export function ArtworkImageGallery({
             
             if (processed === filesToAdd.length) {
               const orderedImages = newImages.filter((img): img is GalleryImage => img !== null);
-              onGalleryImagesChange([...galleryImages, ...orderedImages]);
+              onGalleryImagesChange([...updatedGallery, ...orderedImages]);
             }
           };
           reader.readAsDataURL(file);
         });
+      } else {
+        onGalleryImagesChange(updatedGallery);
       }
     } else {
-      const remainingSlots = maxImages - allImages.length;
-      const filesToProcess = filesList.slice(0, remainingSlots);
+      const remainingSlots = maxImages - 1 - currentGalleryCount - (hasPrimary ? 0 : 0);
+      const effectiveRemaining = hasPrimary ? maxImages - 1 - currentGalleryCount : maxImages - currentGalleryCount;
+      const filesToProcess = filesList.slice(0, Math.max(0, effectiveRemaining));
       
       if (filesToProcess.length === 0) return;
       
@@ -109,7 +130,7 @@ export function ArtworkImageGallery({
         reader.onload = () => {
           newImages[index] = {
             image_url: reader.result as string,
-            display_order: galleryImages.length + index,
+            display_order: currentGalleryCount + index,
             is_mockup: false,
             isNew: true,
             file,
@@ -127,7 +148,7 @@ export function ArtworkImageGallery({
     }
     
     e.target.value = '';
-  }, [primaryImage, newPrimaryFile, galleryImages, maxImages, allImages.length, onPrimaryImageChange, onGalleryImagesChange]);
+  }, [primaryImage, newPrimaryFile, primaryPreview, galleryImages, maxImages, onPrimaryImageChange, onGalleryImagesChange]);
 
   const handleRemoveImage = useCallback((index: number) => {
     if (index === 0 && (primaryImage || newPrimaryFile)) {
