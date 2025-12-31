@@ -1,0 +1,165 @@
+# 🎨 RoomVibe – Artist Profile: Artwork Detail View (NEW)
+
+## Context
+
+On the **public Artist Profile page** (example: `/artist/irena`), artworks are currently shown only as **cards** with:
+
+* main image
+* title
+* size
+* price (or from price)
+* buttons: *View in Room* / *View & Buy*
+
+❗ **Missing:** When a visitor clicks an artwork card, there is **no detailed view** of that artwork.
+
+This is a UX + conversion issue, especially for collectors.
+
+---
+
+## 🎯 Goal
+
+Introduce a **dedicated Artwork Detail View** that opens when clicking an artwork card on the Artist Profile page.
+
+This view should clearly present:
+
+* all artwork images
+* sizes & pricing logic
+* buying / contact options
+* RoomVibe usage
+
+---
+
+## ✅ Required Behaviour
+
+### 1️⃣ Artwork Card Click
+
+* Clicking **anywhere on the artwork card** (image or title)
+* Opens **Artwork Detail Modal** (preferred)
+
+  * OR a dedicated page: `/artist/:artistSlug/artwork/:artworkSlug`
+
+(Agent may choose modal vs page, but modal preferred for UX continuity)
+
+---
+
+### 2️⃣ Artwork Detail View – Layout
+
+#### A) Image Section
+
+* Large main image
+* Thumbnail gallery below / side
+* Supports **multiple uploaded images (up to 4)**
+* Click thumbnails → change main image
+
+---
+
+#### B) Artwork Info
+
+* Artwork title
+* Medium
+* Style tags
+* Availability label:
+
+  * `Available in 1 size`
+  * `Available in X sizes`
+
+---
+
+#### C) Sizes & Prices
+
+If artwork has **multiple sizes**:
+
+* Table or selectable list:
+
+  * Width × Height (cm / inch)
+  * Price
+  * Availability
+
+If artwork has **single size**:
+
+* Show dimensions clearly
+* Show price
+
+⚠️ IMPORTANT:
+
+* **Do NOT calculate or override prices**
+* Just display data already saved in dashboard
+
+---
+
+#### D) Actions (CTA)
+
+Buttons:
+
+* **View in Room** → opens RoomVibe Studio for this artwork
+* **View & Buy** → uses GLOBAL Buy URL
+* **Contact Artist about this artwork**
+
+  * Pre-filled message: artwork title + size
+
+---
+
+### 3️⃣ Contact Artist (Artwork-specific)
+
+* Contact form should include:
+
+  * Artwork ID
+  * Artwork title
+  * Selected size (if applicable)
+
+This improves lead quality.
+
+---
+
+### 4️⃣ Navigation & UX
+
+* Modal: close (X) or ESC
+* Page version: back button to Artist Profile
+
+---
+
+## 🚫 Explicitly Out of Scope
+
+* No checkout logic here
+* No Stripe logic
+* No pricing calculation
+* No edition logic changes
+
+---
+
+## 📌 Why This Matters
+
+* Collectors expect **detail view** (industry standard)
+* Needed for trust & decision-making
+* Unlocks RoomVibe value properly
+* Improves conversion & professionalism
+
+---
+
+## 🧪 Acceptance Criteria
+
+* Clicking artwork opens detail view
+* All uploaded images visible
+* Sizes displayed correctly
+* Correct price source used
+* View in Room works from detail view
+* Contact Artist references artwork
+
+---
+
+## Reference
+
+Public Artist Profile:
+
+* `/artist/:slug`
+
+Example artwork data already visible on cards:
+
+* "Available in 2 sizes"
+* "From EUR 800"
+
+Detail view must expand this, not replace it.
+
+---
+
+✨ This task is **NEW**, isolated, and should NOT touch dashboard logic.
