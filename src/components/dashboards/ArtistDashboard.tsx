@@ -1427,31 +1427,49 @@ export function ArtistDashboard() {
                       )}
                     </p>
                     {(() => {
-                      if (artwork.variants && Array.isArray(artwork.variants) && artwork.variants.length > 0) {
-                        const pricedVariants = artwork.variants.filter((v: any) => {
-                          if (!v || v.price == null) return false;
-                          const parsed = parseFloat(String(v.price).replace(/,/g, ''));
-                          return !isNaN(parsed) && parsed > 0;
-                        });
-                        if (pricedVariants.length > 0) {
-                          const lowestVariant = pricedVariants.reduce((min: any, v: any) => {
-                            const minPrice = parseFloat(String(min.price).replace(/,/g, ''));
-                            const vPrice = parseFloat(String(v.price).replace(/,/g, ''));
-                            return vPrice < minPrice ? v : min;
-                          });
-                          const displayPrice = parseFloat(String(lowestVariant.price).replace(/,/g, ''));
-                          const displayCurrency = lowestVariant.currency || artwork.price_currency || 'EUR';
-                          return (
-                            <p className="text-sm font-semibold text-rv-accent mb-2">
-                              From {displayCurrency} {displayPrice.toLocaleString()}
-                            </p>
-                          );
+                      const allPrices: { price: number; currency: string }[] = [];
+                      
+                      if (artwork.price_amount !== null && artwork.price_amount !== undefined && artwork.price_amount !== '') {
+                        const basePrice = typeof artwork.price_amount === 'number' 
+                          ? artwork.price_amount 
+                          : parseFloat(String(artwork.price_amount).replace(/,/g, ''));
+                        if (!isNaN(basePrice) && basePrice > 0) {
+                          allPrices.push({ price: basePrice, currency: artwork.price_currency || 'EUR' });
                         }
                       }
-                      const basePrice = formatPrice(artwork.price_amount, artwork.price_currency);
-                      return basePrice ? (
-                        <p className="text-sm font-semibold text-rv-accent mb-2">{basePrice}</p>
-                      ) : null;
+                      
+                      if (artwork.variants && Array.isArray(artwork.variants)) {
+                        artwork.variants.forEach((v: any) => {
+                          if (v && v.price != null) {
+                            const parsed = parseFloat(String(v.price).replace(/,/g, ''));
+                            if (!isNaN(parsed) && parsed > 0) {
+                              allPrices.push({ price: parsed, currency: v.currency || artwork.price_currency || 'EUR' });
+                            }
+                          }
+                        });
+                      }
+                      
+                      if (allPrices.length === 0) {
+                        return null;
+                      }
+                      
+                      const lowest = allPrices.reduce((min, current) => 
+                        current.price < min.price ? current : min
+                      );
+                      
+                      if (allPrices.length === 1) {
+                        return (
+                          <p className="text-sm font-semibold text-rv-accent mb-2">
+                            {lowest.currency} {lowest.price.toLocaleString()}
+                          </p>
+                        );
+                      }
+                      
+                      return (
+                        <p className="text-sm font-semibold text-rv-accent mb-2">
+                          From {lowest.currency} {lowest.price.toLocaleString()}
+                        </p>
+                      );
                     })()}
                     
                     {artwork.tags && artwork.tags.length > 0 && (

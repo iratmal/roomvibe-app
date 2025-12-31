@@ -1,0 +1,98 @@
+# RoomVibe – Artist Dashboard Critical Fixes (Single Task)
+
+**Scope:** Artist Dashboard (staging). Fokus samo na bugovima koji trenutno blokiraju normalan rad.
+
+**Napomena (ispravak):**
+
+* ✅ *Multiple image upload radi* kada se **kreira novi artwork** (može se označiti 3–4 slike odjednom).
+* ❌ Problem je u **Edit Artwork**: postojeće slike **ne učitava / ne prikazuje** (osim prve), pa su 2–3 kartice prazne i ne može se zamijeniti ili upravljati postojećim fotografijama.
+
+---
+
+## 1) BUG: Edit Artwork ne prikazuje sve postojeće slike (3/4 su prazne)
+
+### Problem
+
+Kad otvorim **Edit Artwork**, iako je artwork originalno uploadan s više fotografija (npr. 4), u editoru se prikaže samo **prva (cover)**, a ostale 2–3 kartice su **prazne**.
+
+### Očekivano
+
+* U Edit Artwork prikazati **sve postojeće slike** koje su već spremljene za taj artwork.
+* Svaka postojeća slika mora se moći:
+
+  * zamijeniti (upload new file),
+  * obrisati,
+  * promijeniti redoslijed (drag & drop),
+  * postaviti drugu sliku kao cover (ili drag na prvo mjesto).
+
+### Acceptance criteria
+
+* Otvorim Edit za artwork koji ima 4 slike → vidim sve 4 slike.
+* Mogu zamijeniti npr. “Artwork 3” slikom iz file pickera → nakon Save-a i refresh-a i dalje je prikazana nova slika.
+* Nakon Save-a i refresh-a se ne vraća na prazne kartice.
+
+### Hint za dev (što provjeriti)
+
+* API koji vraća artwork detalje mora vraćati **punu listu image URL-ova** (ne samo cover).
+* Frontend mora mapirati tu listu u 4 slota (ili dinamički) i popuniti postojeće.
+* Paziti na field naming mismatch (npr. `images`, `imageUrls`, `artworkImages`, `additionalImages`).
+
+---
+
+## 2) BUG: “From” cijena na kartici je kriva (uzima najskuplju umjesto najjeftinije)
+
+### Problem
+
+Na karticama u **My Artworks** piše npr. `From EUR 980`, ali najniža cijena je `EUR 780`.
+
+### Očekivano
+
+* Ako prikazujemo **From**, vrijednost mora biti **minimum** od svih cijena (base + multiple sizes).
+* Ako artwork ima samo jednu cijenu, može pisati samo `EUR X` (ili `From EUR X` – ali onda mora biti točno).
+
+### Acceptance criteria
+
+* Artwork s cijenama 780 i 980 prikazuje `From EUR 780`.
+* Artwork s jednom cijenom 520 prikazuje `EUR 520` ili `From EUR 520` (dogovoreno ponašanje), ali mora biti točno.
+
+---
+
+## 3) Add to My Exhibition – redoslijed gumba i funkcionalnost
+
+### Problem A (UI)
+
+Na kartici artworka redoslijed gumba mora biti:
+
+1. **Edit**
+2. **Delete**
+3. **Add to My Exhibition** (zlatni)
+4. **Get Widget Code**
+
+Trenutno nije tim redom.
+
+### Problem B (behavior)
+
+Klik na **Add to My Exhibition** ne radi ništa. Artwork se mora pojaviti u sekciji **Exhibition Artworks** ispod.
+
+### Očekivano
+
+* Artist plan: **1 exhibition** → nema biranja izložbe, nego se automatski dodaje u postojeću (onu prikazanu ispod).
+* Nakon klika:
+
+  * pokaži success toast (npr. “Added to exhibition”),
+  * artwork se odmah prikaže u **Exhibition Artworks** (optimistic update ili refresh).
+
+### Acceptance criteria
+
+* Klik na “Add to My Exhibition” doda artwork u Exhibition Artworks listu.
+* Nakon refresh-a stranice artwork i dalje ostaje u Exhibition Artworks.
+* Ne dopušta duplikate (ako je već dodan, gumb postaje disabled ili piše “Added”).
+
+---
+
+## Definition of Done (DoD)
+
+* Sve gore radi na stagingu.
+* Testirano s artworkovima koji imaju 1 sliku i 4 slike.
+* Testirano s artworkom koji ima više size-ova i različite cijene.
+* Nakon hard refresh-a, stanje je konzistentno (nema praznih kartica u edit-u).

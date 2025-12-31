@@ -390,7 +390,7 @@ router.get('/artworks/:id/images', authenticateToken, async (req: any, res) => {
       [artworkId]
     );
     
-    // Normalize image URLs
+    // Normalize image URLs - transform storage paths to API endpoints
     const images = result.rows.map((img: any) => ({
       ...img,
       image_url: img.image_url?.startsWith('/objects/')
