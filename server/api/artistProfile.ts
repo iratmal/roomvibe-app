@@ -496,4 +496,147 @@ router.delete('/exhibition/:id', authenticateToken, async (req: any, res) => {
   }
 });
 
+router.get('/exhibition/:id/artworks', authenticateToken, async (req: any, res) => {
+  try {
+    const exhibitionId = parseInt(req.params.id);
+
+    const checkResult = await query(
+      'SELECT * FROM gallery_collections WHERE id = $1 AND gallery_id = $2',
+      [exhibitionId, req.user.id]
+    );
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Exhibition not found' });
+    }
+
+    const result = await query(
+      `SELECT id, collection_id, title, artist_name, image_url, 
+              width_value, height_value, dimension_unit,
+              price_amount, price_currency, buy_url, description, created_at
+       FROM gallery_artworks
+       WHERE collection_id = $1
+       ORDER BY created_at DESC`,
+      [exhibitionId]
+    );
+
+    const artworks = result.rows.map(row => ({
+      id: row.id,
+      collectionId: row.collection_id,
+      title: row.title,
+      artistName: row.artist_name,
+      imageUrl: row.image_url,
+      widthValue: row.width_value,
+      heightValue: row.height_value,
+      dimensionUnit: row.dimension_unit || 'cm',
+      priceAmount: row.price_amount,
+      priceCurrency: row.price_currency,
+      buyUrl: row.buy_url,
+      description: row.description,
+      createdAt: row.created_at
+    }));
+
+    res.json({ artworks });
+  } catch (error: any) {
+    console.error('Error fetching exhibition artworks:', error);
+    res.status(500).json({ error: 'Failed to fetch artworks' });
+  }
+});
+
+router.post('/exhibition/:id/artworks', authenticateToken, upload.single('image'), async (req: any, res) => {
+  try {
+    const exhibitionId = parseInt(req.params.id);
+
+    const checkResult = await query(
+      'SELECT * FROM gallery_collections WHERE id = $1 AND gallery_id = $2',
+      [exhibitionId, req.user.id]
+    );
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Exhibition not found' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'Artwork image is required' });
+    }
+
+    const { title, widthValue, heightValue, dimensionUnit } = req.body;
+
+    if (!title) {
+      return res.status(400).json({ error: 'Artwork title is required' });
+    }
+
+    const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    const imageUrl = `/api/gallery-artwork-image/PLACEHOLDER`;
+    
+    const validUnits = ['cm', 'in'];
+    const unit = dimensionUnit && validUnits.includes(dimensionUnit) ? dimensionUnit : 'cm';
+
+    const userResult = await query('SELECT display_name, email FROM users WHERE id = $1', [req.user.id]);
+    const artistName = userResult.rows[0]?.display_name || userResult.rows[0]?.email || 'Artist';
+
+    const result = await query(
+      `INSERT INTO gallery_artworks 
+       (collection_id, title, artist_name, image_url, image_data, width_value, height_value, dimension_unit)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       RETURNING *`,
+      [exhibitionId, title, artistName, imageUrl, base64Image, 
+       parseFloat(widthValue) || 50, parseFloat(heightValue) || 50, unit]
+    );
+
+    const artworkId = result.rows[0].id;
+    await query(
+      `UPDATE gallery_artworks SET image_url = $1 WHERE id = $2`,
+      [`/api/gallery-artwork-image/${artworkId}`, artworkId]
+    );
+
+    res.status(201).json({ 
+      artwork: {
+        id: artworkId,
+        title: result.rows[0].title,
+        artistName: result.rows[0].artist_name,
+        imageUrl: `/api/gallery-artwork-image/${artworkId}`,
+        widthValue: result.rows[0].width_value,
+        heightValue: result.rows[0].height_value,
+        dimensionUnit: result.rows[0].dimension_unit
+      },
+      message: 'Artwork added to exhibition' 
+    });
+  } catch (error: any) {
+    console.error('Error adding exhibition artwork:', error);
+    res.status(500).json({ error: 'Failed to add artwork' });
+  }
+});
+
+router.delete('/exhibition/:id/artworks/:artworkId', authenticateToken, async (req: any, res) => {
+  try {
+    const exhibitionId = parseInt(req.params.id);
+    const artworkId = parseInt(req.params.artworkId);
+
+    const checkResult = await query(
+      'SELECT * FROM gallery_collections WHERE id = $1 AND gallery_id = $2',
+      [exhibitionId, req.user.id]
+    );
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Exhibition not found' });
+    }
+
+    const artworkCheck = await query(
+      'SELECT * FROM gallery_artworks WHERE id = $1 AND collection_id = $2',
+      [artworkId, exhibitionId]
+    );
+
+    if (artworkCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Artwork not found' });
+    }
+
+    await query('DELETE FROM gallery_artworks WHERE id = $1', [artworkId]);
+
+    res.json({ message: 'Artwork deleted successfully' });
+  } catch (error: any) {
+    console.error('Error deleting exhibition artwork:', error);
+    res.status(500).json({ error: 'Failed to delete artwork' });
+  }
+});
+
 export default router;
