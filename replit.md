@@ -65,6 +65,13 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
   - Visibility controlled by "Visible to Designers/Galleries" settings
   - Database fields: slug, facebook_url, tiktok_url added to users table
 - **Onboarding Flow**: A 3-screen introductory wizard for first-time users, guiding them through the application's modules and features.
+- **Multi-Image Artwork Gallery**: Each artwork supports up to 4 images with drag-to-reorder functionality:
+  - Primary cover image plus up to 3 additional gallery images
+  - Database: `artwork_images` table with FK constraint and cascade delete
+  - API endpoints: GET/POST/DELETE `/artworks/:id/images`, PUT `/artworks/:id/images/reorder`
+  - Mockup tagging system: Toggle button to mark images as RoomVibe Studio mockups
+  - "Open in Studio" CTA links to Studio with artwork preloaded for mockup creation
+  - Public profile carousel: Navigation arrows and dot indicators for browsing images
 - **Artwork Management**: Includes artwork upload, editing, and automated enrichment from Shopify.
 - **Real-Scale Rendering**: Achieves accurate artwork sizing using physical dimensions and standardized room wall heights.
 - **Feature Locking**: Comprehensive access control enforced on both frontend and backend based on subscription plans and defined limits.
