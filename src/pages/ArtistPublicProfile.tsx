@@ -26,10 +26,10 @@ interface ArtistProfile {
 interface ArtworkVariant {
   width: string;
   height: string;
+  unit?: string;
   price: string;
   currency: string;
   availability: string;
-  buyUrl: string;
 }
 
 interface GalleryImage {

@@ -49,57 +49,85 @@ export function ArtworkImageGallery({
     ...galleryImages
   ];
 
-  const handlePrimaryChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setNewPrimaryFile(file);
-      onPrimaryImageChange(file);
-      const reader = new FileReader();
-      reader.onload = () => setPrimaryPreview(reader.result as string);
-      reader.readAsDataURL(file);
-    }
-  }, [onPrimaryImageChange]);
-
-  const handleAddImage = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMultiFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>, fromCoverSlot: boolean = false) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     
-    const remainingSlots = maxImages - allImages.length;
-    const filesToProcess = Array.from(files).slice(0, remainingSlots);
+    const hasPrimary = !!(primaryImage || newPrimaryFile);
+    const filesList = Array.from(files);
     
-    if (filesToProcess.length === 0) return;
-    
-    const newImages: (GalleryImage | null)[] = new Array(filesToProcess.length).fill(null);
-    let processed = 0;
-    
-    filesToProcess.forEach((file, index) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const nextOrder = galleryImages.length + index;
-        newImages[index] = {
-          image_url: reader.result as string,
-          display_order: nextOrder,
-          is_mockup: false,
-          isNew: true,
-          file,
-          previewUrl: reader.result as string
-        };
-        processed++;
+    if (fromCoverSlot) {
+      const coverFile = filesList[0];
+      setNewPrimaryFile(coverFile);
+      onPrimaryImageChange(coverFile);
+      const coverReader = new FileReader();
+      coverReader.onload = () => setPrimaryPreview(coverReader.result as string);
+      coverReader.readAsDataURL(coverFile);
+      
+      const additionalFiles = filesList.slice(1);
+      const remainingSlots = hasPrimary 
+        ? maxImages - 1 - galleryImages.length 
+        : maxImages - 1 - galleryImages.length;
+      const filesToAdd = additionalFiles.slice(0, remainingSlots);
+      
+      if (filesToAdd.length > 0) {
+        const newImages: (GalleryImage | null)[] = new Array(filesToAdd.length).fill(null);
+        let processed = 0;
         
-        if (processed === filesToProcess.length) {
-          const orderedImages = newImages.filter((img): img is GalleryImage => img !== null);
-          const normalizedImages = orderedImages.map((img, i) => ({
-            ...img,
-            display_order: galleryImages.length + i
-          }));
-          onGalleryImagesChange([...galleryImages, ...normalizedImages]);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+        filesToAdd.forEach((file, index) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            newImages[index] = {
+              image_url: reader.result as string,
+              display_order: galleryImages.length + index,
+              is_mockup: false,
+              isNew: true,
+              file,
+              previewUrl: reader.result as string
+            };
+            processed++;
+            
+            if (processed === filesToAdd.length) {
+              const orderedImages = newImages.filter((img): img is GalleryImage => img !== null);
+              onGalleryImagesChange([...galleryImages, ...orderedImages]);
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+    } else {
+      const remainingSlots = maxImages - allImages.length;
+      const filesToProcess = filesList.slice(0, remainingSlots);
+      
+      if (filesToProcess.length === 0) return;
+      
+      const newImages: (GalleryImage | null)[] = new Array(filesToProcess.length).fill(null);
+      let processed = 0;
+      
+      filesToProcess.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          newImages[index] = {
+            image_url: reader.result as string,
+            display_order: galleryImages.length + index,
+            is_mockup: false,
+            isNew: true,
+            file,
+            previewUrl: reader.result as string
+          };
+          processed++;
+          
+          if (processed === filesToProcess.length) {
+            const orderedImages = newImages.filter((img): img is GalleryImage => img !== null);
+            onGalleryImagesChange([...galleryImages, ...orderedImages]);
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    }
     
     e.target.value = '';
-  }, [galleryImages, maxImages, allImages.length, onGalleryImagesChange]);
+  }, [primaryImage, newPrimaryFile, galleryImages, maxImages, allImages.length, onPrimaryImageChange, onGalleryImagesChange]);
 
   const handleRemoveImage = useCallback((index: number) => {
     if (index === 0 && (primaryImage || newPrimaryFile)) {
@@ -181,6 +209,26 @@ export function ArtworkImageGallery({
         )}
       </div>
 
+      {allImages.length === 0 ? (
+        <label className="w-full aspect-[2/1] md:aspect-[4/1] bg-rv-surface rounded-rvLg border-2 border-dashed border-rv-neutral hover:border-rv-primary/50 flex flex-col items-center justify-center cursor-pointer transition-colors p-8">
+          <svg className="w-12 h-12 text-rv-textMuted mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span className="text-lg font-semibold text-rv-text mb-1">Upload Artwork Images</span>
+          <span className="text-sm text-rv-textMuted text-center">
+            Select up to 4 images at once. First image will be your cover.
+          </span>
+          <span className="text-xs text-rv-textMuted mt-2">Click to browse or drag files here</span>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => handleMultiFileUpload(e, true)}
+            className="hidden"
+            multiple
+            required
+          />
+        </label>
+      ) : (
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {Array.from({ length: maxImages }).map((_, slotIndex) => {
           const img = allImages[slotIndex];
@@ -194,24 +242,18 @@ export function ArtworkImageGallery({
                 className="aspect-square bg-rv-surface rounded-rvMd border-2 border-dashed border-rv-neutral hover:border-rv-primary/50 flex flex-col items-center justify-center cursor-pointer transition-colors"
               >
                 <svg className="w-8 h-8 text-rv-textMuted mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={isFirstSlot 
-                    ? "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" 
-                    : "M12 4v16m8-8H4"
-                  } />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
                 </svg>
                 <span className="text-sm text-rv-textMuted font-medium">
-                  {isFirstSlot ? 'Add Cover Image' : `Artwork ${slotIndex + 1}`}
+                  Artwork {slotIndex + 1}
                 </span>
-                <span className="text-xs text-rv-textMuted mt-1">
-                  {isFirstSlot ? 'Required' : 'Click to add'}
-                </span>
+                <span className="text-xs text-rv-textMuted mt-1">Click to add</span>
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={isFirstSlot ? handlePrimaryChange : handleAddImage}
+                  onChange={(e) => handleMultiFileUpload(e, false)}
                   className="hidden"
-                  multiple={!isFirstSlot}
-                  required={isFirstSlot && allImages.length === 0}
+                  multiple
                 />
               </label>
             );
@@ -287,8 +329,9 @@ export function ArtworkImageGallery({
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={handlePrimaryChange}
+                    onChange={(e) => handleMultiFileUpload(e, true)}
                     className="hidden"
+                    multiple
                   />
                 </label>
               )}
@@ -296,6 +339,7 @@ export function ArtworkImageGallery({
           );
         })}
       </div>
+      )}
 
       {isEditing && artworkId && primaryImage && (
         <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-rv-surface to-rv-warm/20 rounded-rvMd border border-rv-neutral">

@@ -1,0 +1,99 @@
+# RoomVibe – Open Issues for Agent (Artwork Upload & Display)
+
+> **Scope:** Only unresolved issues discussed in the latest round. Do **not** mix with previously completed tasks.
+
+---
+
+## 1. Artwork Images – Upload UX (Critical)
+
+### Problem
+
+* User **cannot upload multiple images at once**.
+* File dialog allows selecting **only one image**, instead of selecting 3–4 images in one action.
+* Current behaviour opens **separate empty placeholders**, forcing one-by-one uploads.
+
+### Required Fix
+
+* Enable **multi-file upload** (`multiple=true`) for artwork images.
+* User must be able to:
+
+  * Select **up to 4 images at once** from computer
+  * Have them **auto-filled sequentially** into the 4 image slots
+* Support drag & drop of **multiple images** as well (optional but recommended).
+
+---
+
+## 2. Edit Artwork – Image Slots Bug (Critical)
+
+### Problem
+
+* On **Edit Artwork**, clicking empty image slots does **nothing**.
+* Upload dialog opens, but selected images are **not applied**.
+* Empty placeholders become unusable in edit mode.
+
+### Required Fix
+
+* Make image slots in **Edit Artwork** fully functional:
+
+  * Click → open file dialog
+  * Selected image → immediately replaces empty slot
+* Behaviour must match **Create Artwork** flow.
+
+---
+
+## 3. Multiple Sizes – Wrong Data Display on Public Artwork Card (Critical)
+
+### Problem
+
+* Artwork configured with **multiple sizes** (e.g. 90×90 and 120×120)
+* Public artwork card shows:
+
+  * ❌ “Available in 1 size”
+  * ❌ Wrong price (uses secondary size instead of primary)
+
+### Required Fix
+
+* Public card logic must:
+
+  * Count **all available sizes** correctly
+  * Display text: `Available in X sizes`
+  * **Do not** derive price from secondary size
+* Price display options (choose one):
+
+  * Option A: Show **no price** when multiple sizes exist
+  * Option B: Show `From EUR X` using **primary size only**
+
+---
+
+## 4. Image Upload Flow – UX Simplification (Important)
+
+### Problem
+
+* System currently opens **four separate upload boxes** instead of one smart uploader.
+* Confusing for artists and not aligned with modern UX standards.
+
+### Required Fix
+
+* Single upload area that:
+
+  * Accepts **1–4 images at once**
+  * Automatically assigns:
+
+    * First image → Cover
+    * Others → Artwork 2–4
+* Still allow reordering after upload.
+
+---
+
+## Acceptance Criteria (Checklist)
+
+* [ ] Multi-select upload works (Create Artwork)
+* [ ] Multi-select upload works (Edit Artwork)
+* [ ] Empty slots clickable and functional in Edit
+* [ ] Correct number of available sizes shown publicly
+* [ ] No incorrect price pulled from secondary size
+* [ ] UX reduced to one smart upload interaction
+
+---
+
+**Priority:** 🔴 High – blocks smooth artist onboarding and damages trust
