@@ -49,8 +49,6 @@ export function ArtworkImageGallery({
     ...galleryImages
   ];
 
-  const canAddMore = allImages.length < maxImages;
-
   const handlePrimaryChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -184,118 +182,119 @@ export function ArtworkImageGallery({
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {allImages.map((img, index) => (
-          <div
-            key={img.id || `new-${index}`}
-            draggable={index > 0}
-            onDragStart={() => handleDragStart(index)}
-            onDragOver={(e) => handleDragOver(e, index)}
-            onDragEnd={handleDragEnd}
-            className={`relative aspect-square bg-rv-surface rounded-rvMd overflow-hidden border-2 transition-all ${
-              draggedIndex === index
-                ? 'border-rv-primary opacity-50'
-                : 'border-rv-neutral hover:border-rv-primary/50'
-            } ${index > 0 ? 'cursor-grab active:cursor-grabbing' : ''}`}
-          >
-            <img
-              src={getImageUrl(img)}
-              alt={`Artwork ${index + 1}`}
-              className="w-full h-full object-cover"
-            />
-            
-            {index === 0 && (
-              <span className="absolute top-2 left-2 px-2 py-0.5 bg-rv-primary text-white text-xs font-semibold rounded-full">
-                Cover
-              </span>
-            )}
-            
-            {img.is_mockup && (
-              <span className="absolute bottom-2 left-2 px-2 py-0.5 bg-[#C9A24A] text-white text-xs font-semibold rounded-full flex items-center gap-1">
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                </svg>
-                Mockup
-              </span>
-            )}
-            
-            <div className="absolute top-2 right-2 flex gap-1">
-              {index > 0 && (
-                <button
-                  type="button"
-                  onClick={() => handleToggleMockup(index)}
-                  title={img.is_mockup ? "Unmark as mockup" : "Mark as room mockup"}
-                  className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors shadow-lg ${
-                    img.is_mockup 
-                      ? 'bg-[#C9A24A] text-white hover:bg-[#B8933F]' 
-                      : 'bg-white/90 text-rv-textMuted hover:bg-white hover:text-[#C9A24A]'
-                  }`}
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                  </svg>
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => handleRemoveImage(index)}
-                className="w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
+        {Array.from({ length: maxImages }).map((_, slotIndex) => {
+          const img = allImages[slotIndex];
+          const isEmptySlot = !img;
+          const isFirstSlot = slotIndex === 0;
+          
+          if (isEmptySlot) {
+            return (
+              <label
+                key={`empty-${slotIndex}`}
+                className="aspect-square bg-rv-surface rounded-rvMd border-2 border-dashed border-rv-neutral hover:border-rv-primary/50 flex flex-col items-center justify-center cursor-pointer transition-colors"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg className="w-8 h-8 text-rv-textMuted mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={isFirstSlot 
+                    ? "M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" 
+                    : "M12 4v16m8-8H4"
+                  } />
                 </svg>
-              </button>
-            </div>
-            
-            {index === 0 && !isEditing && (
-              <label className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
-                <span className="px-3 py-1.5 bg-white text-rv-text text-sm font-semibold rounded-rvMd">
-                  Change
+                <span className="text-sm text-rv-textMuted font-medium">
+                  {isFirstSlot ? 'Add Cover Image' : `Artwork ${slotIndex + 1}`}
+                </span>
+                <span className="text-xs text-rv-textMuted mt-1">
+                  {isFirstSlot ? 'Required' : 'Click to add'}
                 </span>
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={handlePrimaryChange}
+                  onChange={isFirstSlot ? handlePrimaryChange : handleAddImage}
                   className="hidden"
+                  multiple={!isFirstSlot}
+                  required={isFirstSlot && allImages.length === 0}
                 />
               </label>
-            )}
-          </div>
-        ))}
-
-        {!isEditing && allImages.length === 0 && (
-          <label className="aspect-square bg-rv-surface rounded-rvMd border-2 border-dashed border-rv-neutral hover:border-rv-primary/50 flex flex-col items-center justify-center cursor-pointer transition-colors">
-            <svg className="w-8 h-8 text-rv-textMuted mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <span className="text-sm text-rv-textMuted font-medium">Add Cover Image</span>
-            <span className="text-xs text-rv-textMuted mt-1">Required</span>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handlePrimaryChange}
-              className="hidden"
-              required
-            />
-          </label>
-        )}
-
-        {canAddMore && allImages.length > 0 && (
-          <label className="aspect-square bg-rv-surface rounded-rvMd border-2 border-dashed border-rv-neutral hover:border-rv-primary/50 flex flex-col items-center justify-center cursor-pointer transition-colors">
-            <svg className="w-8 h-8 text-rv-textMuted mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
-            </svg>
-            <span className="text-sm text-rv-textMuted font-medium">Add Image</span>
-            <span className="text-xs text-rv-textMuted mt-1">{maxImages - allImages.length} remaining</span>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleAddImage}
-              className="hidden"
-              ref={fileInputRef}
-              multiple
-            />
-          </label>
-        )}
+            );
+          }
+          
+          return (
+            <div
+              key={img.id || `new-${slotIndex}`}
+              draggable={slotIndex > 0}
+              onDragStart={() => handleDragStart(slotIndex)}
+              onDragOver={(e) => handleDragOver(e, slotIndex)}
+              onDragEnd={handleDragEnd}
+              className={`relative aspect-square bg-rv-surface rounded-rvMd overflow-hidden border-2 transition-all ${
+                draggedIndex === slotIndex
+                  ? 'border-rv-primary opacity-50'
+                  : 'border-rv-neutral hover:border-rv-primary/50'
+              } ${slotIndex > 0 ? 'cursor-grab active:cursor-grabbing' : ''}`}
+            >
+              <img
+                src={getImageUrl(img)}
+                alt={`Artwork ${slotIndex + 1}`}
+                className="w-full h-full object-cover"
+              />
+              
+              {slotIndex === 0 && (
+                <span className="absolute top-2 left-2 px-2 py-0.5 bg-rv-primary text-white text-xs font-semibold rounded-full">
+                  Cover
+                </span>
+              )}
+              
+              {img.is_mockup && (
+                <span className="absolute bottom-2 left-2 px-2 py-0.5 bg-[#C9A24A] text-white text-xs font-semibold rounded-full flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  </svg>
+                  Mockup
+                </span>
+              )}
+              
+              <div className="absolute top-2 right-2 flex gap-1">
+                {slotIndex > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => handleToggleMockup(slotIndex)}
+                    title={img.is_mockup ? "Unmark as mockup" : "Mark as room mockup"}
+                    className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors shadow-lg ${
+                      img.is_mockup 
+                        ? 'bg-[#C9A24A] text-white hover:bg-[#B8933F]' 
+                        : 'bg-white/90 text-rv-textMuted hover:bg-white hover:text-[#C9A24A]'
+                    }`}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    </svg>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveImage(slotIndex)}
+                  className="w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              {slotIndex === 0 && !isEditing && (
+                <label className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
+                  <span className="px-3 py-1.5 bg-white text-rv-text text-sm font-semibold rounded-rvMd">
+                    Change
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePrimaryChange}
+                    className="hidden"
+                  />
+                </label>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {isEditing && artworkId && primaryImage && (
