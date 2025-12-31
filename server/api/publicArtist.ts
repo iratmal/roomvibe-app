@@ -59,12 +59,25 @@ router.get('/:slug', async (req: any, res) => {
 
     const artworksResult = await query(
       `SELECT 
-        id, title, image_url, width, height, 
-        price_amount, price_currency, dimension_unit,
-        buy_url, medium, style_tags, availability, like_count, variants
-       FROM artworks 
-       WHERE artist_id = $1 AND show_on_public_profile = true
-       ORDER BY created_at DESC`,
+        a.id, a.title, a.image_url, a.width, a.height, 
+        a.price_amount, a.price_currency, a.dimension_unit,
+        a.buy_url, a.medium, a.style_tags, a.availability, a.like_count, a.variants,
+        COALESCE(
+          (SELECT json_agg(
+            json_build_object(
+              'id', ai.id,
+              'image_url', ai.image_url,
+              'display_order', ai.display_order,
+              'is_mockup', ai.is_mockup
+            ) ORDER BY ai.display_order
+          )
+          FROM artwork_images ai 
+          WHERE ai.artwork_id = a.id
+          ), '[]'
+        ) AS gallery_images
+       FROM artworks a
+       WHERE a.artist_id = $1 AND a.show_on_public_profile = true
+       ORDER BY a.created_at DESC`,
       [user.id]
     );
 
@@ -103,7 +116,8 @@ router.get('/:slug', async (req: any, res) => {
       styleTags: artwork.style_tags || [],
       availability: artwork.availability || 'available',
       likeCount: artwork.like_count || 0,
-      variants: artwork.variants || []
+      variants: artwork.variants || [],
+      galleryImages: artwork.gallery_images || []
     }));
 
     res.json({ 

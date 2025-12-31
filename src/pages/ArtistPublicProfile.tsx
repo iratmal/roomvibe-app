@@ -32,6 +32,13 @@ interface ArtworkVariant {
   buyUrl: string;
 }
 
+interface GalleryImage {
+  id: number;
+  image_url: string;
+  display_order: number;
+  is_mockup: boolean;
+}
+
 interface Artwork {
   id: number;
   title: string;
@@ -47,6 +54,7 @@ interface Artwork {
   availability: string;
   likeCount: number;
   variants?: ArtworkVariant[];
+  galleryImages?: GalleryImage[];
 }
 
 interface ArtistPublicProfileProps {
@@ -76,6 +84,9 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
   
   // Likes state - track which artworks user has liked (cookie-based)
   const [likedArtworks, setLikedArtworks] = useState<Set<number>>(new Set());
+  
+  // Track current image index for each artwork carousel
+  const [artworkImageIndex, setArtworkImageIndex] = useState<Record<number, number>>({});
 
   useEffect(() => {
     fetchProfile();
@@ -447,14 +458,94 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
           <div className="max-w-6xl mx-auto px-4">
             <h2 className="text-2xl font-bold text-rv-text mb-8">Artworks</h2>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {artworks.map((artwork) => (
+              {artworks.map((artwork) => {
+                const galleryImgs = artwork.galleryImages || [];
+                const allImages: GalleryImage[] = [];
+                
+                if (artwork.imageUrl) {
+                  allImages.push({ id: 0, image_url: artwork.imageUrl, display_order: 0, is_mockup: false });
+                }
+                
+                galleryImgs.forEach(img => {
+                  if (img.image_url && !allImages.some(existing => existing.image_url === img.image_url)) {
+                    allImages.push(img);
+                  }
+                });
+                
+                if (allImages.length === 0) return null;
+                
+                const currentIndex = Math.min(artworkImageIndex[artwork.id] || 0, allImages.length - 1);
+                const hasMultipleImages = allImages.length > 1;
+                const currentImage = allImages[currentIndex];
+                const imageUrl = currentImage.image_url.startsWith('/api/') 
+                  ? `${API_URL}${currentImage.image_url}` 
+                  : currentImage.image_url;
+
+                return (
                 <div key={artwork.id} className="bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral overflow-hidden group">
                   <div className="aspect-square bg-rv-surface relative overflow-hidden">
                     <img
-                      src={artwork.imageUrl.startsWith('/api/') ? `${API_URL}${artwork.imageUrl}` : artwork.imageUrl}
+                      src={imageUrl}
                       alt={artwork.title}
-                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-contain transition-transform duration-300"
                     />
+                    
+                    {hasMultipleImages && (
+                      <>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setArtworkImageIndex(prev => ({
+                              ...prev,
+                              [artwork.id]: (currentIndex - 1 + allImages.length) % allImages.length
+                            }));
+                          }}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors opacity-0 group-hover:opacity-100"
+                        >
+                          <svg className="w-5 h-5 text-rv-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setArtworkImageIndex(prev => ({
+                              ...prev,
+                              [artwork.id]: (currentIndex + 1) % allImages.length
+                            }));
+                          }}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors opacity-0 group-hover:opacity-100"
+                        >
+                          <svg className="w-5 h-5 text-rv-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </button>
+                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                          {allImages.map((_, idx) => (
+                            <button
+                              key={idx}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setArtworkImageIndex(prev => ({ ...prev, [artwork.id]: idx }));
+                              }}
+                              className={`w-2 h-2 rounded-full transition-colors ${
+                                idx === currentIndex ? 'bg-rv-primary' : 'bg-white/70'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                    
+                    {currentImage.is_mockup && (
+                      <span className="absolute top-3 left-3 px-2 py-1 bg-[#C9A24A] text-white text-xs font-bold rounded-full flex items-center gap-1">
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        </svg>
+                        Mockup
+                      </span>
+                    )}
+                    
                     {artwork.availability === 'sold' && (
                       <div className="absolute top-3 right-3 px-3 py-1 bg-red-500 text-white text-xs font-bold rounded-full">
                         SOLD
@@ -537,7 +628,8 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                     </div>
                   </div>
                 </div>
-              ))}
+              );
+              })}
             </div>
           </div>
         </section>
