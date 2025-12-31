@@ -1144,8 +1144,14 @@ function Studio() {
             }));
             setUserArtworks(transformedArtworks);
             
-            // Set first user artwork as selected if user has artworks
-            if (transformedArtworks.length > 0 && !isFreePlan) {
+            // Check if URL has an artworkId - if so, don't auto-select first artwork
+            const hash = window.location.hash;
+            const queryIndex = hash.indexOf('?');
+            const hasUrlArtworkId = queryIndex !== -1 && 
+              new URLSearchParams(hash.substring(queryIndex + 1)).get('artworkId');
+            
+            // Set first user artwork as selected only if no URL artworkId
+            if (transformedArtworks.length > 0 && !isFreePlan && !hasUrlArtworkId) {
               setArtId(transformedArtworks[0].id);
             }
           }
@@ -1169,14 +1175,23 @@ function Studio() {
       } else {
         // Authenticated paid users: show ONLY their artworks (no demo fallback)
         setArtworksState(userArtworks);
-        // Auto-select first artwork if current selection doesn't exist
-        if (userArtworks.length > 0) {
+        
+        // Check if URL has an artworkId - if so, don't override the selection
+        const hash = window.location.hash;
+        const queryIndex = hash.indexOf('?');
+        const hasUrlArtworkId = queryIndex !== -1 && 
+          new URLSearchParams(hash.substring(queryIndex + 1)).get('artworkId');
+        
+        // Auto-select first artwork only if:
+        // 1. No URL artworkId is present
+        // 2. Current artId doesn't exist in userArtworks
+        if (userArtworks.length > 0 && !hasUrlArtworkId) {
           const currentExists = userArtworks.some((a: any) => a.id === artId);
           if (!currentExists) {
             setArtId(userArtworks[0].id);
           }
-        } else {
-          // No artworks - clear artId to avoid stale references
+        } else if (userArtworks.length === 0 && !hasUrlArtworkId) {
+          // No artworks and no URL param - clear artId to avoid stale references
           setArtId('');
         }
       }

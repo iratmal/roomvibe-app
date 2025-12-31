@@ -1,0 +1,81 @@
+# TASK ZA AGENTA – Artwork modal (public artist page) & Studio linking
+
+Ovo je **NOVI, ZASEBNI TASK** (ne miješati s prethodnima). Odnosi se isključivo na **public Artist profile → klik na artwork → modal karticu** i povezivanje sa Studio view.
+
+---
+
+## 1️⃣ BOJE STATUSA (UI FIX)
+
+**Problem:**
+U artwork modal kartici (koja se otvara klikom na artwork na javnom artist profilu) koriste se **zelene badge oznake**.
+
+**Trenutno:**
+
+* "Available" → zelena
+* "Available" uz size → zelena
+* "Available in 2 sizes" → zlatna (OK)
+
+**Zahtjev:**
+
+* ❌ Zelena boja se **ne koristi nigdje**
+* ✅ "Available" i svi availability statusi moraju biti **RoomVibe PLAVA**
+* ✅ "Available in X sizes" ostaje **RoomVibe ZLATNA**
+
+👉 Cilj: vizualna konzistentnost s RoomVibe brandom
+
+---
+
+## 2️⃣ VIEW IN ROOM → POGREŠAN ARTWORK (KRITIČNI BUG)
+
+**Problem:**
+Kada sam na javnom Artist profilu i:
+
+1. Kliknem na artwork **Pulse**
+2. Otvori se artwork modal kartica
+3. Kliknem **"View in Room"**
+
+➡️ Studio se otvara s **drugim artworkom (Energy)**, a ne s onim koji sam kliknula.
+
+**Zahtjev (OBAVEZNO):**
+
+* Studio mora **uvijek** otvoriti **TOČNO onaj artwork**:
+
+  * koji je kliknut na public profilu
+  * koji je otvorio taj modal
+
+**Tehnički hint:**
+
+* Provjeriti `artworkId` / routing / query params
+* Studio mora biti vezan uz **context aktivnog artworka**, ne default / first artwork
+
+👉 Ovo je blocker za user experience
+
+---
+
+## 3️⃣ KONTEXT MODALA – VALIDACIJA
+
+**Provjeriti i potvrditi:**
+
+* Modal koristi ispravne podatke artworka:
+
+  * title
+  * images (gallery thumbnails)
+  * sizes & pricing
+  * buy URL
+
+Ako se koristi shared state ili fallback artwork → to mora biti uklonjeno.
+
+---
+
+## 4️⃣ ACCEPTANCE KRITERIJI (QA)
+
+✅ Klik na **Pulse** → modal pokazuje Pulse
+✅ Klik "View in Room" iz Pulse modala → Studio prikazuje Pulse
+✅ Klik na **Energy** → Studio prikazuje Energy
+✅ Nema zelene boje nigdje u artwork modalu
+✅ Vizualno: plava = status, zlatna = sizes info
+
+---
+
+Ako nešto nije jasno → pitati prije implementacije.
+Ovo je UX + funkcionalni bug, **nije samo kozmetika**.

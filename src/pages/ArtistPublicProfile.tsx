@@ -823,7 +823,7 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                         ? 'bg-red-100 text-red-600' 
                         : selectedArtwork.availability === 'on_request'
                         ? 'bg-amber-100 text-amber-600'
-                        : 'bg-green-100 text-green-600'
+                        : 'bg-rv-primary/10 text-rv-primary'
                     }`}>
                       {selectedArtwork.availability === 'sold' ? 'Sold' 
                         : selectedArtwork.availability === 'on_request' ? 'On Request' 
@@ -898,7 +898,7 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                                 ? 'bg-red-100 text-red-600' 
                                 : variant.availability === 'on_request'
                                 ? 'bg-amber-100 text-amber-600'
-                                : 'bg-green-100 text-green-600'
+                                : 'bg-rv-primary/10 text-rv-primary'
                             }`}>
                               {variant.availability === 'sold' ? 'Sold' 
                                 : variant.availability === 'on_request' ? 'On Request' 
