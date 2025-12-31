@@ -60,9 +60,9 @@ router.get('/:slug', async (req: any, res) => {
       `SELECT 
         id, title, image_url, width, height, 
         price_amount, price_currency, dimension_unit,
-        buy_url, medium, style_tags, availability, like_count
+        buy_url, medium, style_tags, availability, like_count, variants
        FROM artworks 
-       WHERE artist_id = $1
+       WHERE artist_id = $1 AND show_on_public_profile = true
        ORDER BY created_at DESC`,
       [user.id]
     );
@@ -98,7 +98,8 @@ router.get('/:slug', async (req: any, res) => {
       medium: artwork.medium || '',
       styleTags: artwork.style_tags || [],
       availability: artwork.availability || 'available',
-      likeCount: artwork.like_count || 0
+      likeCount: artwork.like_count || 0,
+      variants: artwork.variants || []
     }));
 
     res.json({ 

@@ -613,6 +613,37 @@ export async function initializeDatabase() {
       END $$;
     `);
 
+    // show_on_public_profile - per-artwork visibility toggle (default: true)
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'artworks' AND column_name = 'show_on_public_profile'
+        ) THEN
+          ALTER TABLE artworks ADD COLUMN show_on_public_profile BOOLEAN DEFAULT true;
+        END IF;
+      END $$;
+    `);
+
+    // Backfill: Set show_on_public_profile to true for all existing artworks with NULL
+    await query(`
+      UPDATE artworks SET show_on_public_profile = true WHERE show_on_public_profile IS NULL;
+    `);
+
+    // variants - artwork size/price variants for prints (JSONB array)
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'artworks' AND column_name = 'variants'
+        ) THEN
+          ALTER TABLE artworks ADD COLUMN variants JSONB DEFAULT '[]'::jsonb;
+        END IF;
+      END $$;
+    `);
+
     // artwork_like_tokens - track who has liked which artwork (cookie-based)
     await query(`
       CREATE TABLE IF NOT EXISTS artwork_like_tokens (

@@ -1,0 +1,233 @@
+# 🎯 ROOMVIBE – ARTIST DASHBOARD & PROFILE UX UPGRADE
+
+## 🔗 Reference links (STAGING)
+
+* Artist Dashboard: [https://staging.roomvibe.app/#/dashboard/artist](https://staging.roomvibe.app/#/dashboard/artist)
+* Artist Dashboard (same link): [https://staging.roomvibe.app/#/dashboard/artist](https://staging.roomvibe.app/#/dashboard/artist)
+
+> Note: Public Artist Page is reachable from the **“Your Public Profile”** section inside Artist Profile (Edit view).
+
+**Priority:** HIGH
+**Mode:** FAST MODE where possible
+**Environment:** STAGING ONLY
+**Goal:** Improve Artist UX, public profile quality, and real‑world selling flexibility (prints & variants) without overcomplicating MVP.
+
+---
+
+## 🧩 STRATEGY (READ FIRST)
+
+This task is intentionally split into **PHASES inside ONE TASK**.
+
+**Why one task?**
+
+* All changes are UX‑connected (Artist flow → Public Profile → Artworks → Sales)
+* Shared components & data models
+* Easier to reason about edge cases
+
+**Important:**
+
+* Do NOT deploy to production
+* Do NOT refactor unrelated code
+* Do NOT introduce heavy abstractions
+
+---
+
+# PHASE 1 — ARTIST PROFILE (EDIT VIEW)
+
+## 1️⃣ Profile Completeness Indicator
+
+### Change
+
+* Replace green color with **RoomVibe yellow** (use brand accent)
+
+### UX improvement
+
+* Add micro‑copy below indicator:
+
+  > "Profiles with 100% completeness get more visibility"
+
+---
+
+## 2️⃣ “Your Public Profile” — Make It a HERO Element
+
+### Current problem
+
+* Looks like a normal input field
+* Undervalues its importance
+
+### Required changes
+
+* Convert into a **highlighted card/box**
+* Include:
+
+  * Label: **Your Public Artist Page**
+  * Short description:
+
+    > "Share this page with collectors, designers and galleries"
+  * Read‑only URL field
+  * **Copy link** button
+
+---
+
+## 3️⃣ Public Visibility Per Artwork (CRITICAL)
+
+### Problem
+
+* Currently: If artist is visible → ALL artworks are public
+
+### Solution
+
+* Add per‑artwork toggle:
+
+  * ☑ **Show on public profile**
+
+### Rules
+
+* Default: ON
+* Stored per artwork
+* Used by:
+
+  * Public artist page
+  * Designer/Gallery discovery
+
+---
+
+# PHASE 2 — ADD ARTWORK: MULTIPLE SIZE / PRICE VARIANTS
+
+## 4️⃣ Artwork Variants (Print‑friendly)
+
+### Key concept
+
+* **Artwork = visual/motif**
+* **Variant = size + price + availability**
+
+---
+
+### UI Changes (Add Artwork Form)
+
+#### Default state (unchanged)
+
+* One size
+* One price
+
+#### New toggle
+
+☐ **This artwork is available in multiple sizes (prints / editions)**
+
+---
+
+### When toggle is ON
+
+Replace single dimension fields with **Variant List**:
+
+Each variant includes:
+
+* Width
+* Height
+* Price
+* Currency
+* Availability (Available / Sold out / Limited)
+* Optional Buy URL
+
+UI example:
+
+```
+[ 150 x 100 cm ]  [ €550 ]  [ Available ]  [ Remove ]
++ Add another size
+```
+
+### Rules
+
+* At least one variant required
+* No artificial limit on number of variants (reasonable UI)
+
+---
+
+### Data Model (minimal extension)
+
+* Artwork has:
+
+  * variants: Variant[]
+
+Variant fields:
+
+* width
+* height
+* price
+* currency
+* availability
+* buyUrl (optional)
+
+---
+
+# PHASE 3 — PUBLIC ARTIST PROFILE (SHAREABLE PAGE)
+
+## 5️⃣ Artwork Visibility Logic
+
+* Display **ONLY artworks with `showOnPublicProfile = true`**
+
+---
+
+## 6️⃣ Artwork Cards (Public)
+
+### Single variant artwork
+
+* Display exactly as now
+
+### Multiple variant artwork
+
+* Show label:
+
+  > "Available in multiple sizes"
+
+### CTA behavior
+
+* **View & Buy** → open modal / panel listing variants
+* **View in Room** →
+
+  * Use selected variant (dropdown)
+  * Default to first variant
+
+---
+
+# PHASE 4 — POLISH & SAFETY CHECKS
+
+## 7️⃣ UX Rules
+
+* Keep UI clean
+* No clutter
+* No forced configuration
+
+## 8️⃣ Backward compatibility
+
+* Existing artworks without variants must continue to work
+
+## 9️⃣ QA Checklist
+
+* Add artwork (single size)
+* Add artwork (multiple sizes)
+* Toggle public visibility ON/OFF
+* Public profile reflects changes
+* View in Room works with selected size
+
+---
+
+## 🚨 IMPORTANT CONSTRAINTS
+
+* STAGING only
+* No production deploy
+* No breaking DB migrations
+* No Stripe logic changes
+
+---
+
+## ✅ DEFINITION OF DONE
+
+* Artist can choose which artworks are public
+* Artist can sell one artwork in multiple sizes
+* Public profile feels premium and share‑ready
+* No regression in Studio or Exhibitions
+
+---
+
+**This task upgrades RoomVibe from a basic artist tool into a professional sales‑ready platform.**

@@ -14,6 +14,15 @@ type DashboardTab = 'artworks' | 'profile' | 'inbox' | 'settings';
 
 const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
 
+interface ArtworkVariant {
+  width: string;
+  height: string;
+  price: string;
+  currency: string;
+  availability: string;
+  buyUrl: string;
+}
+
 interface Artwork {
   id: number;
   artist_id: number;
@@ -31,6 +40,8 @@ interface Artwork {
   dominant_colors?: string[];
   medium?: string;
   availability?: string;
+  show_on_public_profile?: boolean;
+  variants?: ArtworkVariant[];
   created_at: string;
   updated_at: string;
   artist_email?: string;
@@ -122,7 +133,10 @@ export function ArtistDashboard() {
     image: null as File | null,
     medium: '',
     styleTags: [] as string[],
-    availability: 'available'
+    availability: 'available',
+    showOnPublicProfile: true,
+    hasVariants: false,
+    variants: [] as Array<{ width: string; height: string; price: string; currency: string; availability: string; buyUrl: string }>
   });
 
   useEffect(() => {
@@ -323,6 +337,10 @@ export function ArtistDashboard() {
         formDataObj.append('styleTags', JSON.stringify(formData.styleTags));
       }
       formDataObj.append('availability', formData.availability);
+      formDataObj.append('showOnPublicProfile', String(formData.showOnPublicProfile));
+      if (formData.hasVariants && formData.variants.length > 0) {
+        formDataObj.append('variants', JSON.stringify(formData.variants));
+      }
 
       const url = editingArtwork
         ? `${API_URL}/api/artist/artworks/${editingArtwork.id}`
@@ -375,7 +393,10 @@ export function ArtistDashboard() {
         image: null,
         medium: '',
         styleTags: [],
-        availability: 'available'
+        availability: 'available',
+        showOnPublicProfile: true,
+        hasVariants: false,
+        variants: []
       });
       setEditingArtwork(null);
       
@@ -403,6 +424,7 @@ export function ArtistDashboard() {
       priceAmountStr = artwork.price_amount.toString();
     }
     
+    const artworkVariants = artwork.variants || [];
     setFormData({
       title: artwork.title,
       width: artwork.width.toString(),
@@ -414,7 +436,10 @@ export function ArtistDashboard() {
       image: null,
       medium: artwork.medium || '',
       styleTags: artwork.style_tags || [],
-      availability: artwork.availability || 'available'
+      availability: artwork.availability || 'available',
+      showOnPublicProfile: artwork.show_on_public_profile !== false,
+      hasVariants: artworkVariants.length > 0,
+      variants: artworkVariants
     });
     setError('');
     setSuccess('');
@@ -434,7 +459,10 @@ export function ArtistDashboard() {
       image: null,
       medium: '',
       styleTags: [],
-      availability: 'available'
+      availability: 'available',
+      showOnPublicProfile: true,
+      hasVariants: false,
+      variants: []
     });
     setError('');
     setSuccess('');
@@ -897,6 +925,160 @@ export function ArtistDashboard() {
                     </button>
                   ))}
                 </div>
+              </div>
+
+              <div className="md:col-span-2 pt-4 border-t border-rv-neutral">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.showOnPublicProfile}
+                    onChange={(e) => setFormData(prev => ({ ...prev, showOnPublicProfile: e.target.checked }))}
+                    className="w-5 h-5 rounded border-gray-300 text-rv-primary focus:ring-rv-primary"
+                  />
+                  <div>
+                    <span className="font-semibold text-rv-text">Show on public profile</span>
+                    <p className="text-xs text-rv-textMuted">Make this artwork visible on your public artist page</p>
+                  </div>
+                </label>
+              </div>
+
+              <div className="md:col-span-2 pt-4 border-t border-rv-neutral">
+                <label className="flex items-center gap-3 cursor-pointer mb-4">
+                  <input
+                    type="checkbox"
+                    checked={formData.hasVariants}
+                    onChange={(e) => {
+                      const hasVariants = e.target.checked;
+                      setFormData(prev => ({
+                        ...prev,
+                        hasVariants,
+                        variants: hasVariants && prev.variants.length === 0 
+                          ? [{ width: prev.width, height: prev.height, price: prev.priceAmount, currency: prev.priceCurrency, availability: prev.availability, buyUrl: prev.buyUrl }]
+                          : prev.variants
+                      }));
+                    }}
+                    className="w-5 h-5 rounded border-gray-300 text-rv-primary focus:ring-rv-primary"
+                  />
+                  <div>
+                    <span className="font-semibold text-rv-text">Available in multiple sizes (prints / editions)</span>
+                    <p className="text-xs text-rv-textMuted">Offer this artwork in different sizes with separate pricing</p>
+                  </div>
+                </label>
+
+                {formData.hasVariants && (
+                  <div className="space-y-4 mt-4 pl-8">
+                    {formData.variants.map((variant, index) => (
+                      <div key={index} className="p-4 bg-rv-surface rounded-rvMd border border-rv-neutral">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-sm font-semibold text-rv-text">Size {index + 1}</span>
+                          {formData.variants.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  variants: prev.variants.filter((_, i) => i !== index)
+                                }));
+                              }}
+                              className="text-red-500 text-sm hover:underline"
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          <div>
+                            <label className="block text-xs text-rv-textMuted mb-1">Width</label>
+                            <input
+                              type="number"
+                              value={variant.width}
+                              onChange={(e) => {
+                                const newVariants = [...formData.variants];
+                                newVariants[index] = { ...variant, width: e.target.value };
+                                setFormData(prev => ({ ...prev, variants: newVariants }));
+                              }}
+                              className="w-full px-3 py-2 border border-rv-neutral rounded-rvMd text-sm"
+                              placeholder="Width"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs text-rv-textMuted mb-1">Height</label>
+                            <input
+                              type="number"
+                              value={variant.height}
+                              onChange={(e) => {
+                                const newVariants = [...formData.variants];
+                                newVariants[index] = { ...variant, height: e.target.value };
+                                setFormData(prev => ({ ...prev, variants: newVariants }));
+                              }}
+                              className="w-full px-3 py-2 border border-rv-neutral rounded-rvMd text-sm"
+                              placeholder="Height"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs text-rv-textMuted mb-1">Price</label>
+                            <input
+                              type="number"
+                              value={variant.price}
+                              onChange={(e) => {
+                                const newVariants = [...formData.variants];
+                                newVariants[index] = { ...variant, price: e.target.value };
+                                setFormData(prev => ({ ...prev, variants: newVariants }));
+                              }}
+                              className="w-full px-3 py-2 border border-rv-neutral rounded-rvMd text-sm"
+                              placeholder="Price"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs text-rv-textMuted mb-1">Availability</label>
+                            <select
+                              value={variant.availability}
+                              onChange={(e) => {
+                                const newVariants = [...formData.variants];
+                                newVariants[index] = { ...variant, availability: e.target.value };
+                                setFormData(prev => ({ ...prev, variants: newVariants }));
+                              }}
+                              className="w-full px-3 py-2 border border-rv-neutral rounded-rvMd text-sm bg-white"
+                            >
+                              <option value="available">Available</option>
+                              <option value="sold">Sold Out</option>
+                              <option value="limited">Limited</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div className="mt-3">
+                          <label className="block text-xs text-rv-textMuted mb-1">Buy URL (optional)</label>
+                          <input
+                            type="url"
+                            value={variant.buyUrl}
+                            onChange={(e) => {
+                              const newVariants = [...formData.variants];
+                              newVariants[index] = { ...variant, buyUrl: e.target.value };
+                              setFormData(prev => ({ ...prev, variants: newVariants }));
+                            }}
+                            className="w-full px-3 py-2 border border-rv-neutral rounded-rvMd text-sm"
+                            placeholder="https://..."
+                          />
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData(prev => ({
+                          ...prev,
+                          variants: [...prev.variants, { width: '', height: '', price: '', currency: prev.priceCurrency, availability: 'available', buyUrl: '' }]
+                        }));
+                      }}
+                      className="text-rv-primary text-sm font-semibold hover:underline flex items-center gap-1"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      Add another size
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 

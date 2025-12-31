@@ -392,25 +392,23 @@ export function ArtistProfileForm() {
       <div className="p-4 bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <svg className="w-5 h-5 text-rv-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-5 h-5 text-[#C9A24A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <span className="font-semibold text-rv-text">Profile Completeness</span>
           </div>
-          <span className={`text-sm font-bold ${profileCompleteness >= 80 ? 'text-green-600' : profileCompleteness >= 50 ? 'text-amber-600' : 'text-rv-textMuted'}`}>
+          <span className={`text-sm font-bold ${profileCompleteness >= 80 ? 'text-[#C9A24A]' : profileCompleteness >= 50 ? 'text-[#C9A24A]/70' : 'text-rv-textMuted'}`}>
             {profileCompleteness}%
           </span>
         </div>
         <div className="w-full h-2 bg-rv-neutral rounded-full overflow-hidden">
           <div 
-            className={`h-full transition-all duration-500 rounded-full ${
-              profileCompleteness >= 80 ? 'bg-green-500' : profileCompleteness >= 50 ? 'bg-amber-500' : 'bg-rv-primary'
-            }`}
+            className="h-full transition-all duration-500 rounded-full bg-[#C9A24A]"
             style={{ width: `${profileCompleteness}%` }}
           />
         </div>
         <p className="text-xs text-rv-textMuted mt-2">
-          Artists with complete profiles get contacted more by designers and galleries.
+          Profiles with 100% completeness get more visibility
         </p>
       </div>
 
@@ -692,17 +690,54 @@ export function ArtistProfileForm() {
             </div>
           </div>
 
-          {profile.slug && (profile.visibleToDesigners || profile.visibleToGalleries) && (
-            <div className="mt-6 p-4 bg-rv-primary/5 rounded-rvMd border border-rv-primary/20">
-              <p className="text-sm font-medium text-rv-text mb-1">Your Public Profile</p>
-              <a 
-                href={`#/artist/${profile.slug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-rv-primary hover:underline text-sm break-all"
-              >
-                {window.location.origin}/#/artist/{profile.slug}
-              </a>
+          {profile.slug && (
+            <div className="mt-6 p-5 bg-gradient-to-r from-[#C9A24A]/10 to-[#C9A24A]/5 rounded-rvLg border-2 border-[#C9A24A]/30 shadow-md">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-[#C9A24A]/20 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-6 h-6 text-[#C9A24A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-lg font-bold text-[#C9A24A] mb-1">Your Public Artist Page</h4>
+                  <p className="text-sm text-rv-textMuted mb-3">
+                    Share this page with collectors, designers and galleries
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value={`${window.location.origin}/#/artist/${profile.slug}`}
+                      className="flex-1 px-3 py-2 bg-white border border-rv-neutral rounded-rvMd text-sm text-rv-text font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/#/artist/${profile.slug}`);
+                        setSuccess('Link copied to clipboard!');
+                        setTimeout(() => setSuccess(''), 3000);
+                      }}
+                      className="px-4 py-2 bg-[#C9A24A] text-white rounded-rvMd hover:bg-[#B8913A] transition-colors font-semibold text-sm whitespace-nowrap flex items-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      Copy Link
+                    </button>
+                  </div>
+                  <a 
+                    href={`#/artist/${profile.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 mt-3 text-sm text-[#C9A24A] hover:underline font-medium"
+                  >
+                    View your page
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                </div>
+              </div>
             </div>
           )}
         </div>

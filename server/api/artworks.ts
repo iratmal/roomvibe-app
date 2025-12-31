@@ -49,13 +49,13 @@ router.get('/artworks', authenticateToken, async (req: any, res) => {
     let queryParams;
 
     if (effectivePlan === 'admin') {
-      queryText = `SELECT a.id, a.artist_id, a.title, a.image_url, a.width, a.height, a.dimension_unit, a.price_amount, a.price_currency, a.buy_url, a.tags, a.orientation, a.style_tags, a.dominant_colors, a.medium, a.availability, a.created_at, a.updated_at, u.email as artist_email
+      queryText = `SELECT a.id, a.artist_id, a.title, a.image_url, a.width, a.height, a.dimension_unit, a.price_amount, a.price_currency, a.buy_url, a.tags, a.orientation, a.style_tags, a.dominant_colors, a.medium, a.availability, a.show_on_public_profile, a.variants, a.created_at, a.updated_at, u.email as artist_email
                    FROM artworks a
                    LEFT JOIN users u ON a.artist_id = u.id
                    ORDER BY a.created_at DESC`;
       queryParams = [];
     } else {
-      queryText = `SELECT id, artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, created_at, updated_at
+      queryText = `SELECT id, artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, show_on_public_profile, variants, created_at, updated_at
                    FROM artworks 
                    WHERE artist_id = $1 
                    ORDER BY created_at DESC`;
@@ -97,7 +97,7 @@ router.get('/mine', authenticateToken, async (req: any, res) => {
     console.log('[/mine] Fetching artworks for logged-in user:', req.user.id);
     
     const result = await query(
-      `SELECT id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, created_at
+      `SELECT id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, show_on_public_profile, variants, created_at
        FROM artworks 
        WHERE artist_id = $1 
        ORDER BY created_at DESC`,
@@ -172,7 +172,7 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
       role: req.user?.role
     });
 
-    const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, artistId, orientation, styleTags, dominantColors, medium, availability } = req.body;
+    const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, artistId, orientation, styleTags, dominantColors, medium, availability, showOnPublicProfile, variants } = req.body;
 
     console.log('[UPLOAD] Artwork data:', { title, width, height, dimensionUnit, buyUrl, orientation, medium, availability });
 
@@ -212,13 +212,15 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
     const artworkOrientation = orientation || null;
     const artworkMedium = medium || null;
     const artworkAvailability = availability || 'available';
+    const artworkShowOnPublicProfile = showOnPublicProfile !== undefined ? showOnPublicProfile === 'true' || showOnPublicProfile === true : true;
+    const artworkVariants = variants ? (typeof variants === 'string' ? variants : JSON.stringify(variants)) : '[]';
 
     console.log('Inserting artwork into database...');
     const result = await query(
-      `INSERT INTO artworks (artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, CURRENT_TIMESTAMP)
-       RETURNING id, artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, created_at, updated_at`,
-      [targetArtistId, title, imageUrl, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, tags, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability]
+      `INSERT INTO artworks (artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, show_on_public_profile, variants, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, CURRENT_TIMESTAMP)
+       RETURNING id, artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, show_on_public_profile, variants, created_at, updated_at`,
+      [targetArtistId, title, imageUrl, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, tags, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability, artworkShowOnPublicProfile, artworkVariants]
     );
 
     const artworkId = result.rows[0].id;
@@ -258,7 +260,7 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
   try {
     const isAdmin = req.user.role === 'admin' || req.user.isAdmin;
     const artworkId = parseInt(req.params.id);
-    const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, orientation, styleTags, dominantColors, medium, availability } = req.body;
+    const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, orientation, styleTags, dominantColors, medium, availability, showOnPublicProfile, variants } = req.body;
 
     // Admin can edit any artwork, regular users can only edit their own
     let existingArtwork;
@@ -308,13 +310,19 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
     const artworkOrientation = orientation !== undefined ? orientation : existingArtwork.rows[0].orientation;
     const artworkMedium = medium !== undefined ? medium : existingArtwork.rows[0].medium;
     const artworkAvailability = availability !== undefined ? availability : (existingArtwork.rows[0].availability || 'available');
+    const artworkShowOnPublicProfile = showOnPublicProfile !== undefined 
+      ? (showOnPublicProfile === 'true' || showOnPublicProfile === true) 
+      : (existingArtwork.rows[0].show_on_public_profile !== false);
+    const artworkVariants = variants !== undefined 
+      ? (typeof variants === 'string' ? variants : JSON.stringify(variants || [])) 
+      : JSON.stringify(existingArtwork.rows[0].variants || []);
 
     const result = await query(
       `UPDATE artworks 
-       SET title = $1, image_url = $2, width = $3, height = $4, dimension_unit = $5, price_amount = $6, price_currency = $7, buy_url = $8, orientation = $9, style_tags = $10, dominant_colors = $11, medium = $12, availability = $13, updated_at = CURRENT_TIMESTAMP
-       WHERE id = $14
-       RETURNING id, artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, orientation, style_tags, dominant_colors, medium, availability, created_at, updated_at`,
-      [title, imageUrl, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability, artworkId]
+       SET title = $1, image_url = $2, width = $3, height = $4, dimension_unit = $5, price_amount = $6, price_currency = $7, buy_url = $8, orientation = $9, style_tags = $10, dominant_colors = $11, medium = $12, availability = $13, show_on_public_profile = $14, variants = $15, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $16
+       RETURNING id, artist_id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url, orientation, style_tags, dominant_colors, medium, availability, show_on_public_profile, variants, created_at, updated_at`,
+      [title, imageUrl, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability, artworkShowOnPublicProfile, artworkVariants, artworkId]
     );
 
     // Return the API endpoint URL for frontend compatibility (actual path is stored in DB)

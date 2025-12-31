@@ -20,6 +20,15 @@ interface ArtistProfile {
   visibleToGalleries: boolean;
 }
 
+interface ArtworkVariant {
+  width: string;
+  height: string;
+  price: string;
+  currency: string;
+  availability: string;
+  buyUrl: string;
+}
+
 interface Artwork {
   id: number;
   title: string;
@@ -34,6 +43,7 @@ interface Artwork {
   styleTags: string[];
   availability: string;
   likeCount: number;
+  variants?: ArtworkVariant[];
 }
 
 interface ArtistPublicProfileProps {
@@ -415,11 +425,22 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                       {artwork.width} x {artwork.height} {artwork.dimensionUnit}
                       {artwork.medium && ` • ${artwork.medium}`}
                     </p>
-                    {artwork.priceAmount && (
+                    {artwork.variants && artwork.variants.length > 0 ? (
+                      <div className="mb-3">
+                        <span className="inline-block px-2 py-1 text-xs font-medium bg-[#C9A24A]/10 text-[#C9A24A] rounded-full">
+                          Available in {artwork.variants.length} size{artwork.variants.length > 1 ? 's' : ''}
+                        </span>
+                        {artwork.variants[0]?.price && (
+                          <p className="text-lg font-bold text-rv-primary mt-2">
+                            From {artwork.variants[0].currency || 'EUR'} {parseFloat(artwork.variants[0].price).toLocaleString()}
+                          </p>
+                        )}
+                      </div>
+                    ) : artwork.priceAmount ? (
                       <p className="text-lg font-bold text-rv-primary mb-3">
                         {artwork.priceCurrency} {artwork.priceAmount.toLocaleString()}
                       </p>
-                    )}
+                    ) : null}
                     
                     {/* Like button */}
                     <div className="flex items-center justify-between mb-3">
