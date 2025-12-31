@@ -132,6 +132,8 @@ export function ArtistDashboard() {
   const [exhibitionArtworkPreview, setExhibitionArtworkPreview] = useState<string | null>(null);
   const [exhibitionArtworkLoading, setExhibitionArtworkLoading] = useState(false);
   const [deleteExhibitionArtworkId, setDeleteExhibitionArtworkId] = useState<number | null>(null);
+  const [showStudioWarning, setShowStudioWarning] = useState(false);
+  const [pendingStudioArtwork, setPendingStudioArtwork] = useState<Artwork | null>(null);
   
   const effectivePlan = viewerPlan || 'user';
   const isFreePlan = effectivePlan === 'user' || effectivePlan === 'free';
@@ -1559,7 +1561,21 @@ export function ArtistDashboard() {
                       View & Buy →
                     </button>
                     
-                    <div className="flex gap-2 mt-4">
+                    <button
+                      onClick={() => {
+                        setPendingStudioArtwork(artwork);
+                        setShowStudioWarning(true);
+                      }}
+                      className="w-full mt-4 px-4 py-2.5 text-sm bg-[#C9A24A] text-white rounded-rvMd hover:bg-[#B8913A] transition-colors font-semibold flex items-center justify-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 22V12h6v10" />
+                      </svg>
+                      View in Studio
+                    </button>
+
+                    <div className="flex gap-2 mt-2">
                       <button
                         onClick={() => handleEdit(artwork)}
                         className="flex-1 px-4 py-2 text-sm bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-colors font-semibold"
@@ -2182,6 +2198,70 @@ export function ArtistDashboard() {
             suggestedPlan="artist"
             onClose={() => setShowUpgradeModal(false)}
           />
+        )}
+
+        {/* Studio Warning Modal */}
+        {showStudioWarning && pendingStudioArtwork && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="flex-shrink-0 w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+                  <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-rv-text mb-1">Important Notice</h3>
+                  <p className="text-sm text-rv-textMuted">
+                    Before opening Studio
+                  </p>
+                </div>
+              </div>
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+                <p className="text-sm text-amber-800">
+                  Please make sure your first image is a <strong>clean artwork image</strong> (without any room mockups).
+                </p>
+                <p className="text-sm text-amber-700 mt-2">
+                  The Studio already places your artwork into realistic interiors. If you use a mockup image as the first image, it will result in a <em>mockup inside a mockup</em>.
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowStudioWarning(false);
+                    setPendingStudioArtwork(null);
+                  }}
+                  className="flex-1 px-4 py-2.5 border border-rv-neutral text-rv-text text-sm font-semibold rounded-lg hover:bg-rv-surface transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (pendingStudioArtwork) {
+                      const params = new URLSearchParams({
+                        artworkId: pendingStudioArtwork.id.toString(),
+                        title: pendingStudioArtwork.title,
+                        imageUrl: pendingStudioArtwork.image_url.startsWith('http') 
+                          ? pendingStudioArtwork.image_url 
+                          : `${API_URL}${pendingStudioArtwork.image_url}`,
+                        width: pendingStudioArtwork.width.toString(),
+                        height: pendingStudioArtwork.height.toString(),
+                        unit: pendingStudioArtwork.dimension_unit || 'cm'
+                      });
+                      window.location.hash = `#/studio?${params.toString()}`;
+                    }
+                    setShowStudioWarning(false);
+                    setPendingStudioArtwork(null);
+                  }}
+                  className="flex-1 px-4 py-2.5 bg-[#C9A24A] text-white text-sm font-semibold rounded-lg hover:bg-[#B8913A] transition-colors"
+                >
+                  Continue to Studio
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

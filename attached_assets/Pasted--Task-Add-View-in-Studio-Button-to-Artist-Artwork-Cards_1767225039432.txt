@@ -1,0 +1,92 @@
+# Task: Add **View in Studio** Button to Artist Artwork Cards
+
+## Context
+
+On **Artist Dashboard → My Artworks**, artwork cards currently allow:
+
+* Edit
+* Delete
+* In Exhibition status
+* Get Widget Code
+
+❌ **Critical missing feature:** There is **NO direct way** for an artist to open their artwork in **RoomVibe Studio** (visualize on wall, upload own room, try frames, export, etc.).
+
+This is the **core value of RoomVibe**, and it must be accessible directly from each artwork card.
+
+---
+
+## Required Change
+
+### 1. Add Primary CTA: **View in Studio**
+
+Add a clear, primary button on **each artwork card**:
+
+* **Label:** `View in Studio`
+* **Icon:** Studio / wall / frame / room icon
+* **Style:** Primary (same importance level as gold actions)
+* **Placement (recommended):**
+
+  * Top action button on artwork card **OR**
+  * Directly above `Edit / Delete`
+
+This button should be immediately visible without scrolling.
+
+---
+
+### 2. Button Behavior
+
+On click:
+
+* Open **RoomVibe Studio** with:
+
+  * This specific artwork pre-selected
+  * Correct artwork dimensions
+  * Correct orientation (portrait / landscape)
+  * First artwork image used as the source image
+
+Equivalent to:
+
+> "Open this artwork in the Studio as if user clicked *View in Room*"
+
+---
+
+### 3. Technical Notes
+
+* Studio must always load **the first artwork image** (cover image)
+* Orientation must respect the uploaded image (no forced horizontal)
+* This should work for:
+
+  * Single-image artworks
+  * Multi-image artworks
+
+---
+
+## Why This Is Important (Do NOT Skip)
+
+* Studio visualization is **RoomVibe’s core feature**
+* Artists expect to:
+
+  > upload artwork → immediately see it on a wall
+* Currently this creates confusion:
+
+  * Artists see Studio in the main menu
+  * But **cannot access Studio per artwork**
+
+This button fixes that UX gap.
+
+---
+
+## Acceptance Criteria
+
+* Every artwork card has a **View in Studio** button
+* Clicking it opens Studio with the correct artwork
+* Orientation + dimensions are correct
+* No mockup-on-mockup issue
+
+---
+
+## Priority
+
+🔥 **HIGH – Core Product Functionality**
+
+This is not a nice-to-have. This is the product.
