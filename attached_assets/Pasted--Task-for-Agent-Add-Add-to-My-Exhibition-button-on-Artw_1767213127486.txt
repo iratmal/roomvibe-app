@@ -1,0 +1,75 @@
+# Task for Agent: Add “Add to My Exhibition” button on Artwork cards (Artist Dashboard)
+
+## Context
+
+On **Artist Dashboard → My Artworks** section, each artwork card currently shows buttons like **Edit / Delete / Get Widget Code**.
+Artists on their plan can have **only 1 active exhibition**, so adding an artwork to the exhibition should be **one-click** (no dropdown to choose exhibition).
+
+Screenshot reference: My Artworks grid with cards “Energy” and “Pulse” (no gold button present).
+
+---
+
+## Problem
+
+There is **no CTA** on artwork cards to quickly add the artwork into the artist’s single exhibition.
+
+---
+
+## Required change
+
+### 1) Add new button on each artwork card
+
+Add a **gold** button labeled:
+
+* **“Add to My Exhibition”**
+
+Placement:
+
+* On each artwork card **under existing buttons** (or aligned with them), but visible without scrolling inside the card.
+* Recommended order (left → right / top → bottom): keep existing buttons, then show the new gold CTA.
+
+Style:
+
+* Use **RoomVibe gold** (same gold used elsewhere, e.g., “Preview / Virtual Exhibition” buttons).
+* Same rounded corners, padding, and typography as other primary/secondary buttons.
+
+State rules:
+
+* If artwork is **already in the exhibition**, replace button with:
+
+  * disabled state **“In Exhibition”** OR show **“Remove from Exhibition”** (choose whichever matches current UX patterns best).
+
+---
+
+## Behavior
+
+On click “Add to My Exhibition”:
+
+1. System finds the artist’s **single exhibition** (the one visible in “My Exhibition” block below).
+2. Adds the selected artwork to that exhibition.
+3. Shows success toast (use RoomVibe gold / standard success style).
+4. Button state updates immediately (optimistic UI ok).
+
+Edge cases:
+
+* If artist **does not have an exhibition yet**:
+
+  * Show a small modal/toast: **“Create an exhibition first”** with CTA button **“Create Exhibition”** (scroll/jump to exhibition section or open creation flow).
+* If plan limits prevent adding (shouldn’t, since 1 exhibition allowed): show clear error message.
+
+---
+
+## Acceptance criteria
+
+* Each artwork card shows the gold **“Add to My Exhibition”** button.
+* Clicking adds that artwork into the artist’s exhibition (no selection step).
+* UI updates correctly: button changes to “In Exhibition” (or “Remove…”) and exhibition artwork list reflects the change.
+* Works for multiple artworks in a row.
+* Works after refresh (data persisted).
+
+---
+
+## Notes
+
+* Keep this feature **artist-only**.
+* Reuse existing exhibition add/remove API logic if it already exists in Gallery dashboard; just adapt to “single exhibition” assumption for artist plan.
