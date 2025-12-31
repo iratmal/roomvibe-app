@@ -246,8 +246,38 @@ export function ArtworkImageGallery({
         )}
       </div>
 
+      {isEditing && artworkId && primaryImage && (
+        <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-rv-surface to-rv-warm/20 rounded-rvMd border border-rv-neutral">
+          <div className="flex-shrink-0 w-10 h-10 bg-rv-primary/10 rounded-full flex items-center justify-center">
+            <svg className="w-5 h-5 text-rv-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 22V12h6v10" />
+            </svg>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-rv-text">Create a Room Mockup</p>
+            <p className="text-xs text-rv-textMuted">Visualize this artwork in realistic rooms to attract collectors</p>
+          </div>
+          <a
+            href={`/#/studio?artworkId=${artworkId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-shrink-0 px-4 py-2 bg-rv-primary text-white text-sm font-semibold rounded-rvMd hover:bg-rv-primary/90 transition-colors flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+            Open in Studio
+          </a>
+        </div>
+      )}
+
       <p className="text-xs text-rv-textMuted">
-        Tip: Use RoomVibe Studio to create realistic room mockups that help collectors visualize your art.
+        {!isEditing ? (
+          <>Tip: After uploading, you can use RoomVibe Studio to create realistic room mockups that help collectors visualize your art.</>
+        ) : (
+          <>Tip: Drag images to reorder. The first image is your cover image and cannot be moved.</>
+        )}
       </p>
     </div>
   );
