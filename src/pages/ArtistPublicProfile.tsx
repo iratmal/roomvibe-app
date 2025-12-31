@@ -473,15 +473,24 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                           View in Room
                         </button>
                       )}
-                      {artwork.buyUrl && artwork.availability !== 'sold' && (
-                        <a
-                          href={artwork.buyUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1 px-3 py-2 text-sm font-medium text-center bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-colors"
-                        >
-                          View & Buy
-                        </a>
+                      {artwork.availability !== 'sold' && (
+                        artwork.buyUrl ? (
+                          <a
+                            href={artwork.buyUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 px-3 py-2 text-sm font-medium text-center bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-colors"
+                          >
+                            View & Buy
+                          </a>
+                        ) : (
+                          <button
+                            onClick={() => setShowContactModal(true)}
+                            className="flex-1 px-3 py-2 text-sm font-medium text-center bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-colors"
+                          >
+                            Inquire
+                          </button>
+                        )
                       )}
                     </div>
                   </div>

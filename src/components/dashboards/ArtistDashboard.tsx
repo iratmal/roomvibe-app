@@ -299,7 +299,7 @@ export function ArtistDashboard() {
     setError('');
     setSuccess('');
 
-    if (!formData.title || !formData.width || !formData.height || !formData.buyUrl) {
+    if (!formData.title || !formData.width || !formData.height) {
       setError('Please fill in all required fields');
       return;
     }
@@ -309,7 +309,7 @@ export function ArtistDashboard() {
       return;
     }
 
-    if (!formData.buyUrl.startsWith('http://') && !formData.buyUrl.startsWith('https://')) {
+    if (formData.buyUrl && !formData.buyUrl.startsWith('http://') && !formData.buyUrl.startsWith('https://')) {
       setError('Buy URL must start with http:// or https://');
       return;
     }
@@ -859,17 +859,17 @@ export function ArtistDashboard() {
 
               <div>
                 <label className="block text-sm font-semibold mb-2 text-rv-text">
-                  Buy URL <span className="text-red-500">*</span>
+                  Buy URL (optional)
                 </label>
                 <input
                   type="url"
                   name="buyUrl"
                   value={formData.buyUrl}
                   onChange={handleInputChange}
-                  required
                   className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
                   placeholder="https://your-shop.com/product"
                 />
+                <p className="mt-1 text-xs text-rv-textMuted">Leave empty to use Contact Artist for inquiries</p>
               </div>
 
               <div>
