@@ -563,11 +563,19 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                         <span className="inline-block px-2 py-1 text-xs font-medium bg-[#C9A24A]/10 text-[#C9A24A] rounded-full">
                           Available in {artwork.variants.length} size{artwork.variants.length > 1 ? 's' : ''}
                         </span>
-                        {artwork.variants[0]?.price && (
-                          <p className="text-lg font-bold text-rv-primary mt-2">
-                            From {artwork.variants[0].currency || 'EUR'} {parseFloat(artwork.variants[0].price).toLocaleString()}
-                          </p>
-                        )}
+                        {(() => {
+                          if (!Array.isArray(artwork.variants)) return null;
+                          const pricedVariants = artwork.variants.filter(v => v && v.price != null && parseFloat(String(v.price)) > 0);
+                          if (pricedVariants.length === 0) return null;
+                          const lowestVariant = pricedVariants.reduce((min, v) => 
+                            parseFloat(String(v.price)) < parseFloat(String(min.price)) ? v : min
+                          );
+                          return (
+                            <p className="text-lg font-bold text-rv-primary mt-2">
+                              From {lowestVariant.currency || 'EUR'} {parseFloat(String(lowestVariant.price)).toLocaleString()}
+                            </p>
+                          );
+                        })()}
                       </div>
                     ) : artwork.priceAmount ? (
                       <p className="text-lg font-bold text-rv-primary mb-3">
