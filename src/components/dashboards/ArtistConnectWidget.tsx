@@ -120,14 +120,14 @@ export function ArtistConnectWidget({ onViewInbox, onEditProfile }: ArtistConnec
             <div className="flex flex-wrap gap-2">
               <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
                 stats?.visibleToDesigners 
-                  ? 'bg-green-100 text-green-700' 
+                  ? 'bg-[#C9A24A]/15 text-[#C9A24A]' 
                   : 'bg-gray-100 text-gray-500'
               }`}>
                 {stats?.visibleToDesigners ? 'Visible to Designers' : 'Hidden from Designers'}
               </span>
               <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
                 stats?.visibleToGalleries 
-                  ? 'bg-green-100 text-green-700' 
+                  ? 'bg-[#C9A24A]/15 text-[#C9A24A]' 
                   : 'bg-gray-100 text-gray-500'
               }`}>
                 {stats?.visibleToGalleries ? 'Visible to Galleries' : 'Hidden from Galleries'}
