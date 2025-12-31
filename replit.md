@@ -72,6 +72,9 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
   - Mockup tagging system: Toggle button to mark images as RoomVibe Studio mockups
   - "Open in Studio" CTA links to Studio with artwork preloaded for mockup creation
   - Public profile carousel: Navigation arrows and dot indicators for browsing images
+  - Multi-file upload: Select up to 4 images at once; first becomes cover, rest fill gallery slots
+  - Smart upload UX: Single large upload area when empty, 4-slot grid after first upload
+  - Cover demotion: When replacing an unsaved cover, old cover moves to gallery (if space available)
 - **Artwork Management**: Includes artwork upload, editing, and automated enrichment from Shopify.
 - **Real-Scale Rendering**: Achieves accurate artwork sizing using physical dimensions and standardized room wall heights.
 - **Feature Locking**: Comprehensive access control enforced on both frontend and backend based on subscription plans and defined limits.
