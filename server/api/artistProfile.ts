@@ -28,7 +28,8 @@ router.get('/profile', authenticateToken, async (req: any, res) => {
         id, email, role,
         display_name, location_city, location_country, bio,
         primary_style_tags, primary_medium, profile_image_url,
-        website_url, instagram_url, facebook_url, tiktok_url, slug, languages,
+        website_url, instagram_url, facebook_url, tiktok_url, 
+        linkedin_url, pinterest_url, etsy_url, slug, languages,
         visible_to_designers, visible_to_galleries,
         artist_access, designer_access, gallery_access
        FROM users 
@@ -57,6 +58,9 @@ router.get('/profile', authenticateToken, async (req: any, res) => {
       instagramUrl: user.instagram_url || '',
       facebookUrl: user.facebook_url || '',
       tiktokUrl: user.tiktok_url || '',
+      linkedinUrl: user.linkedin_url || '',
+      pinterestUrl: user.pinterest_url || '',
+      etsyUrl: user.etsy_url || '',
       slug: user.slug || '',
       languages: user.languages || [],
       visibleToDesigners: user.visible_to_designers || false,
@@ -97,6 +101,9 @@ router.put('/profile', authenticateToken, async (req: any, res) => {
       instagramUrl,
       facebookUrl,
       tiktokUrl,
+      linkedinUrl,
+      pinterestUrl,
+      etsyUrl,
       languages
     } = req.body;
 
@@ -126,6 +133,21 @@ router.put('/profile', authenticateToken, async (req: any, res) => {
       } else if (!tiktokUrlClean.startsWith('http')) {
         tiktokUrlClean = 'https://tiktok.com/@' + tiktokUrlClean;
       }
+    }
+
+    let linkedinUrlClean = linkedinUrl || null;
+    if (linkedinUrlClean && !linkedinUrlClean.startsWith('http://') && !linkedinUrlClean.startsWith('https://')) {
+      linkedinUrlClean = 'https://' + linkedinUrlClean;
+    }
+
+    let pinterestUrlClean = pinterestUrl || null;
+    if (pinterestUrlClean && !pinterestUrlClean.startsWith('http://') && !pinterestUrlClean.startsWith('https://')) {
+      pinterestUrlClean = 'https://pinterest.com/' + pinterestUrlClean;
+    }
+
+    let etsyUrlClean = etsyUrl || null;
+    if (etsyUrlClean && !etsyUrlClean.startsWith('http://') && !etsyUrlClean.startsWith('https://')) {
+      etsyUrlClean = 'https://etsy.com/shop/' + etsyUrlClean;
     }
 
     const styleTagsJson = Array.isArray(primaryStyleTags) ? JSON.stringify(primaryStyleTags) : '[]';
@@ -171,12 +193,16 @@ router.put('/profile', authenticateToken, async (req: any, res) => {
         instagram_url = $8,
         facebook_url = $9,
         tiktok_url = $10,
-        slug = COALESCE($11, slug),
-        languages = $12,
+        linkedin_url = $11,
+        pinterest_url = $12,
+        etsy_url = $13,
+        slug = COALESCE($14, slug),
+        languages = $15,
         updated_at = CURRENT_TIMESTAMP
-       WHERE id = $13
+       WHERE id = $16
        RETURNING id, display_name, location_city, location_country, bio,
-                 primary_style_tags, primary_medium, website_url, instagram_url, facebook_url, tiktok_url, slug, languages`,
+                 primary_style_tags, primary_medium, website_url, instagram_url, 
+                 facebook_url, tiktok_url, linkedin_url, pinterest_url, etsy_url, slug, languages`,
       [
         displayName || null,
         locationCity || null,
@@ -188,6 +214,9 @@ router.put('/profile', authenticateToken, async (req: any, res) => {
         instagramUrlClean,
         facebookUrlClean,
         tiktokUrlClean,
+        linkedinUrlClean,
+        pinterestUrlClean,
+        etsyUrlClean,
         slug,
         languagesJson,
         req.user.id

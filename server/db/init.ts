@@ -460,6 +460,45 @@ export async function initializeDatabase() {
       END $$;
     `);
 
+    // linkedin_url - Artist's LinkedIn profile
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'linkedin_url'
+        ) THEN
+          ALTER TABLE users ADD COLUMN linkedin_url TEXT;
+        END IF;
+      END $$;
+    `);
+
+    // pinterest_url - Artist's Pinterest profile
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'pinterest_url'
+        ) THEN
+          ALTER TABLE users ADD COLUMN pinterest_url TEXT;
+        END IF;
+      END $$;
+    `);
+
+    // etsy_url - Artist's Etsy shop
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'etsy_url'
+        ) THEN
+          ALTER TABLE users ADD COLUMN etsy_url TEXT;
+        END IF;
+      END $$;
+    `);
+
     await query(`
       CREATE TABLE IF NOT EXISTS artworks (
         id SERIAL PRIMARY KEY,

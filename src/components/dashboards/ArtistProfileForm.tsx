@@ -15,6 +15,9 @@ interface ArtistProfile {
   instagramUrl: string;
   facebookUrl: string;
   tiktokUrl: string;
+  linkedinUrl: string;
+  pinterestUrl: string;
+  etsyUrl: string;
   languages: string[];
   visibleToDesigners: boolean;
   visibleToGalleries: boolean;
@@ -176,6 +179,9 @@ export function ArtistProfileForm() {
     instagramUrl: '',
     facebookUrl: '',
     tiktokUrl: '',
+    linkedinUrl: '',
+    pinterestUrl: '',
+    etsyUrl: '',
     languages: [],
     visibleToDesigners: false,
     visibleToGalleries: false,
@@ -686,6 +692,48 @@ export function ArtistProfileForm() {
                 onChange={handleInputChange}
                 className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
                 placeholder="@yourusername"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-rv-text">
+                LinkedIn
+              </label>
+              <input
+                type="text"
+                name="linkedinUrl"
+                value={profile.linkedinUrl}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                placeholder="https://linkedin.com/in/yourprofile"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-rv-text">
+                Pinterest
+              </label>
+              <input
+                type="text"
+                name="pinterestUrl"
+                value={profile.pinterestUrl}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                placeholder="https://pinterest.com/yourusername"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-rv-text">
+                Etsy Shop
+              </label>
+              <input
+                type="text"
+                name="etsyUrl"
+                value={profile.etsyUrl}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                placeholder="https://etsy.com/shop/yourshop"
               />
             </div>
           </div>

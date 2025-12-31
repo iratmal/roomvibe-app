@@ -1,0 +1,105 @@
+# 🔗 ROOMVIBE – ARTIST SOCIAL LINKS & PROFILE HEADER UPGRADE
+
+**Standalone task – NEW**
+**Priority:** HIGH
+**Environment:** STAGING ONLY
+
+---
+
+## 🎯 GOAL
+
+Upgrade the **Public Artist Profile** so it works like a strong, shareable artist page (Facebook / Instagram style), by clearly showing all artist social & external links.
+
+This task is **separate from previous dashboard tasks** to avoid confusion.
+
+---
+
+## PHASE 1 — ARTIST PROFILE (EDIT VIEW)
+
+### 1️⃣ Add Social & External Link Fields
+
+Add the following OPTIONAL fields to **Artist Profile (Edit)**:
+
+* Website (already exists)
+* Instagram
+* Facebook
+* TikTok
+* LinkedIn
+* Pinterest
+* Etsy
+
+#### Rules
+
+* All fields OPTIONAL
+* Accept full URLs or usernames where relevant
+* Saving profile must NOT be blocked if fields are empty
+
+---
+
+## PHASE 2 — PUBLIC ARTIST PROFILE (DISPLAY VIEW)
+
+### 2️⃣ Social Icons Row (CRITICAL)
+
+#### Current problem
+
+* Only one generic globe icon (website)
+* Social presence is invisible
+* Profile page feels unfinished for sharing
+
+---
+
+#### Required solution
+
+Display **social icons directly under artist name / bio section** and **above artworks grid**.
+
+##### Icon order priority
+
+1. Website
+2. Instagram
+3. Facebook
+4. TikTok
+5. LinkedIn
+6. Pinterest
+7. Etsy
+
+##### Display rules
+
+* Show ONLY icons for links that exist
+* Icons must:
+
+  * Be clickable
+  * Open in new tab
+  * Use recognizable brand icons (no generic globe-only solution)
+* Clean horizontal layout
+* Matches RoomVibe premium aesthetic
+
+---
+
+### 3️⃣ Data Flow
+
+Artist Profile (Edit)
+→ Store links
+→ Automatically render on Public Artist Profile
+
+No manual sync.
+
+---
+
+## ✅ DEFINITION OF DONE
+
+* Artist can enter all major social / external links
+* Public profile visually reflects full online presence
+* Profile page is **share-ready and professional**
+* No regression to artworks, dashboard or studio
+
+---
+
+🚨 Constraints
+
+* STAGING ONLY
+* No Stripe / payment changes
+* No refactoring unrelated code
+
+---
+
+This task finalizes the Artist Profile as a true digital identity hub inside RoomVibe.

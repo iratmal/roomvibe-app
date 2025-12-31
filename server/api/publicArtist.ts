@@ -40,7 +40,8 @@ router.get('/:slug', async (req: any, res) => {
       `SELECT 
         id, email, display_name, location_city, location_country, bio,
         primary_style_tags, primary_medium, profile_image_url,
-        website_url, instagram_url, facebook_url, tiktok_url, languages,
+        website_url, instagram_url, facebook_url, tiktok_url, 
+        linkedin_url, pinterest_url, etsy_url, languages,
         visible_to_designers, visible_to_galleries
        FROM users 
        WHERE slug = $1`,
@@ -79,6 +80,9 @@ router.get('/:slug', async (req: any, res) => {
       instagramUrl: user.instagram_url || '',
       facebookUrl: user.facebook_url || '',
       tiktokUrl: user.tiktok_url || '',
+      linkedinUrl: user.linkedin_url || '',
+      pinterestUrl: user.pinterest_url || '',
+      etsyUrl: user.etsy_url || '',
       languages: user.languages || [],
       visibleToDesigners: user.visible_to_designers || false,
       visibleToGalleries: user.visible_to_galleries || false
