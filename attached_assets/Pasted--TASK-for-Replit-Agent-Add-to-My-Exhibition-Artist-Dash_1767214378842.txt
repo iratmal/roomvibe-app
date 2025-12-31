@@ -1,0 +1,114 @@
+# TASK for Replit Agent — **Add to My Exhibition** (Artist Dashboard)
+
+## Context
+
+On **Artist Dashboard → My Artworks** cards we added a gold button **“+ Add to My Exhibition”**.
+
+Two issues remain:
+
+1. Button order is wrong on the artwork card.
+2. Clicking **Add to My Exhibition** does nothing — the artwork must appear inside **My Exhibition → Exhibition Artworks** section.
+
+---
+
+## A) Fix button order on artwork cards (UI)
+
+### Current (wrong)
+
+**Edit** → **Delete** → **Get Widget Code** → **Add to My Exhibition**
+
+### Required order (correct)
+
+**Edit** → **Delete** → **Add to My Exhibition** → **Get Widget Code**
+
+### Notes
+
+* Keep **Add to My Exhibition** in **RoomVibe Gold**.
+* Keep the card spacing consistent after reordering.
+
+### Acceptance criteria
+
+* On every artwork card, buttons render in the required order.
+* No visual overlap / wrapping issues on desktop.
+
+---
+
+## B) Make **Add to My Exhibition** actually add the artwork (functionality)
+
+### Expected behavior
+
+When an artist clicks **“+ Add to My Exhibition”** on an artwork card:
+
+1. The artwork is added to the **artist’s single allowed exhibition** (artists have **max 1 exhibition**).
+2. The artwork immediately appears in **My Exhibition → Exhibition Artworks** list/grid.
+3. The UI gives clear feedback:
+
+   * Success toast/message (use RoomVibe styling)
+   * The button becomes disabled OR changes label to **“Added”** (recommended)
+
+### Requirements
+
+* **No exhibition picker** is needed (artist plan = 1 exhibition).
+* If the artist has **no exhibition created yet**:
+
+  * Either auto-create a draft exhibition (if that’s acceptable in your logic), **OR** show a helpful message: “Create an exhibition first.”
+* Prevent duplicates:
+
+  * If the artwork is already in the exhibition, do not add again; show a small info message.
+
+### Data + API expectations (implementation guidance)
+
+* Use a dedicated endpoint/action like:
+
+  * `POST /api/artist/exhibition/artworks` with `{ exhibitionId, artworkId }`
+  * or a server action equivalent.
+* The server must validate:
+
+  * user is the exhibition owner
+  * artist plan allows 1 exhibition
+  * artwork belongs to the artist
+* After success:
+
+  * refresh the **Exhibition Artworks** query/state so the list updates without full page reload.
+
+### Acceptance criteria
+
+* Clicking **Add to My Exhibition** results in the artwork showing under **Exhibition Artworks**.
+* Page refresh still shows the artwork in the exhibition (persisted).
+* Duplicate clicks do not create duplicates.
+* Button gives immediate feedback (disabled/“Added” + toast).
+
+---
+
+## Screens
+
+* Artist Dashboard card button order + gold button: see latest screenshots (Dec 31 ~21:45).
+* Exhibition Artworks section currently shows: “No artworks yet” even after clicking.
+
+## Additional Fixes (Add to Existing Task)
+
+• **Price Logic Bug ("From" Price)**
+
+* When an artwork has multiple sizes/prices, the card label **"From EUR" must always use the LOWEST available price**, not the highest.
+* Example:
+
+  * Sizes: 780 EUR, 980 EUR → Card must show **From EUR 780**
+* If only one size exists → show the exact price (no misleading "From" logic).
+
+• **Add to My Exhibition – Button Order**
+
+* Buttons on artwork cards must be ordered strictly as:
+
+  1. Edit
+  2. Delete
+  3. **Add to My Exhibition** (RoomVibe gold color)
+  4. Get Widget Code
+
+• **Add to My Exhibition – Behavior**
+
+* Clicking **Add to My Exhibition** must:
+
+  * Immediately add the artwork to **My Exhibition → Exhibition Artworks**
+  * Work without page refresh
+  * Not ask to choose an exhibition (artist plan allows only one exhibition)
+  * Disable or change state if artwork is already added (e.g. "Already added")

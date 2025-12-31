@@ -1495,16 +1495,6 @@ export function ArtistDashboard() {
                       </button>
                     </div>
 
-                    <button
-                      onClick={() => setShowWidgetModal(artwork)}
-                      className="w-full mt-2 px-4 py-2 text-sm border-2 border-rv-primary text-rv-primary rounded-rvMd hover:bg-rv-primary hover:text-white transition-colors font-semibold flex items-center justify-center gap-2"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                      </svg>
-                      Get Widget Code
-                    </button>
-
                     {isArtworkInExhibition(artwork.id) ? (
                       <button
                         onClick={() => handleRemoveFromExhibition(artwork.id)}
@@ -1526,6 +1516,16 @@ export function ArtistDashboard() {
                         Add to My Exhibition
                       </button>
                     )}
+
+                    <button
+                      onClick={() => setShowWidgetModal(artwork)}
+                      className="w-full mt-2 px-4 py-2 text-sm border-2 border-rv-primary text-rv-primary rounded-rvMd hover:bg-rv-primary hover:text-white transition-colors font-semibold flex items-center justify-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                      </svg>
+                      Get Widget Code
+                    </button>
 
                     {showDeleteConfirm === artwork.id && (
                       <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-rvMd">
