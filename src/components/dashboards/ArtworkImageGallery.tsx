@@ -128,6 +128,18 @@ export function ArtworkImageGallery({
     setDraggedIndex(null);
   };
 
+  const handleToggleMockup = useCallback((index: number) => {
+    const hasPrimary = !!(primaryImage || newPrimaryFile);
+    const adjustedIndex = hasPrimary ? index - 1 : index;
+    
+    if (adjustedIndex < 0 || adjustedIndex >= galleryImages.length) return;
+    
+    const updated = galleryImages.map((img, i) => 
+      i === adjustedIndex ? { ...img, is_mockup: !img.is_mockup } : img
+    );
+    onGalleryImagesChange(updated);
+  }, [primaryImage, newPrimaryFile, galleryImages, onGalleryImagesChange]);
+
   const getImageUrl = (img: GalleryImage) => {
     if (img.previewUrl) return img.previewUrl;
     if (img.image_url?.startsWith('data:')) return img.image_url;
@@ -181,19 +193,37 @@ export function ArtworkImageGallery({
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                 </svg>
-                RoomVibe Mockup
+                Mockup
               </span>
             )}
             
-            <button
-              type="button"
-              onClick={() => handleRemoveImage(index)}
-              className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+            <div className="absolute top-2 right-2 flex gap-1">
+              {index > 0 && (
+                <button
+                  type="button"
+                  onClick={() => handleToggleMockup(index)}
+                  title={img.is_mockup ? "Unmark as mockup" : "Mark as room mockup"}
+                  className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors shadow-lg ${
+                    img.is_mockup 
+                      ? 'bg-[#C9A24A] text-white hover:bg-[#B8933F]' 
+                      : 'bg-white/90 text-rv-textMuted hover:bg-white hover:text-[#C9A24A]'
+                  }`}
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  </svg>
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => handleRemoveImage(index)}
+                className="w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
             
             {index === 0 && !isEditing && (
               <label className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
