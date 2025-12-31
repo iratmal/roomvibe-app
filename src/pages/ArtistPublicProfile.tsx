@@ -597,22 +597,36 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                           Available in {artwork.variants.length + 1} sizes
                         </span>
                         {(() => {
-                          const pricedVariants = artwork.variants.filter(v => {
-                            if (!v || v.price == null) return false;
-                            const parsed = parseFloat(String(v.price).replace(/,/g, ''));
-                            return !isNaN(parsed) && parsed > 0;
+                          // Collect ALL prices: base price + variant prices
+                          const allPrices: { price: number; currency: string }[] = [];
+                          
+                          // Add base price if exists
+                          if (artwork.priceAmount != null) {
+                            const basePrice = parseFloat(String(artwork.priceAmount).replace(/,/g, ''));
+                            if (!isNaN(basePrice) && basePrice > 0) {
+                              allPrices.push({ price: basePrice, currency: artwork.priceCurrency || 'EUR' });
+                            }
+                          }
+                          
+                          // Add all variant prices
+                          artwork.variants.forEach(v => {
+                            if (v && v.price != null) {
+                              const variantPrice = parseFloat(String(v.price).replace(/,/g, ''));
+                              if (!isNaN(variantPrice) && variantPrice > 0) {
+                                allPrices.push({ price: variantPrice, currency: v.currency || artwork.priceCurrency || 'EUR' });
+                              }
+                            }
                           });
-                          if (pricedVariants.length === 0) return null;
-                          const lowestVariant = pricedVariants.reduce((min, v) => {
-                            const minPrice = parseFloat(String(min.price).replace(/,/g, ''));
-                            const vPrice = parseFloat(String(v.price).replace(/,/g, ''));
-                            return vPrice < minPrice ? v : min;
-                          });
-                          const displayPrice = parseFloat(String(lowestVariant.price).replace(/,/g, ''));
-                          const displayCurrency = lowestVariant.currency || artwork.priceCurrency || 'EUR';
+                          
+                          if (allPrices.length === 0) return null;
+                          
+                          // Find lowest price
+                          const lowest = allPrices.reduce((min, curr) => curr.price < min.price ? curr : min);
+                          const showFromPrefix = allPrices.length > 1;
+                          
                           return (
                             <p className="text-lg font-bold text-rv-primary mt-2">
-                              From {displayCurrency} {displayPrice.toLocaleString()}
+                              {showFromPrefix ? 'From ' : ''}{lowest.currency} {lowest.price.toLocaleString()}
                             </p>
                           );
                         })()}

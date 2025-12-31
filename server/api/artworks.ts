@@ -391,10 +391,11 @@ router.get('/artworks/:id/images', authenticateToken, async (req: any, res) => {
     );
     
     // Normalize image URLs - transform storage paths to API endpoints
+    // Route is mounted at /api/artist, so full path is /api/artist/artwork-gallery-image/:imageId
     const images = result.rows.map((img: any) => ({
       ...img,
       image_url: img.image_url?.startsWith('/objects/')
-        ? `/api/artwork-gallery-image/${img.id}`
+        ? `/api/artist/artwork-gallery-image/${img.id}`
         : img.image_url
     }));
     
@@ -461,8 +462,8 @@ router.post('/artworks/:id/images', authenticateToken, upload.single('image'), a
       [artworkId, imageUrl, displayOrder, is_mockup === 'true' || is_mockup === true]
     );
     
-    // Return API endpoint URL
-    result.rows[0].image_url = `/api/artwork-gallery-image/${result.rows[0].id}`;
+    // Return API endpoint URL (route is mounted at /api/artist)
+    result.rows[0].image_url = `/api/artist/artwork-gallery-image/${result.rows[0].id}`;
     
     res.status(201).json({ image: result.rows[0], message: 'Image added successfully' });
   } catch (error) {
