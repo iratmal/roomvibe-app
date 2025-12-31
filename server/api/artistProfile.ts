@@ -612,7 +612,7 @@ router.post('/exhibition/:id/artworks/link/:artworkId', authenticateToken, async
   try {
     const exhibitionId = parseInt(req.params.id);
     const sourceArtworkId = parseInt(req.params.artworkId);
-    const isAdmin = req.user.role === 'admin' || req.user.isAdmin;
+    const isAdmin = req.user.is_admin === true;
 
     // Check exhibition ownership (admins can access any exhibition)
     const exhibitionQuery = isAdmin 
