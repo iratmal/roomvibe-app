@@ -30,6 +30,9 @@ export default {
         rvSoft: "0 10px 30px rgba(38, 76, 97, 0.08)",
         rvElevated: "0 14px 40px rgba(38, 76, 97, 0.15)",
       },
+      accentColor: {
+        'rv-primary': '#264C61',
+      },
     },
   },
   plugins: [],

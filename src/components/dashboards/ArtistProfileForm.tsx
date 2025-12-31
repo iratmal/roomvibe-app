@@ -452,7 +452,7 @@ export function ArtistProfileForm() {
               checked={profile.visibleToDesigners}
               onChange={(e) => handleVisibilityChange('visibleToDesigners', e.target.checked)}
               disabled={!profile.artistAccess}
-              className="w-5 h-5 rounded border-gray-300 text-rv-primary focus:ring-rv-primary"
+              className="w-5 h-5 rounded border-gray-300 text-rv-primary focus:ring-rv-primary accent-rv-primary"
             />
             <div>
               <span className="font-semibold text-rv-text">Visible to Designers</span>
@@ -470,7 +470,7 @@ export function ArtistProfileForm() {
               checked={profile.visibleToGalleries}
               onChange={(e) => handleVisibilityChange('visibleToGalleries', e.target.checked)}
               disabled={!profile.artistAccess}
-              className="w-5 h-5 rounded border-gray-300 text-rv-primary focus:ring-rv-primary"
+              className="w-5 h-5 rounded border-gray-300 text-rv-primary focus:ring-rv-primary accent-rv-primary"
             />
             <div>
               <span className="font-semibold text-rv-text">Visible to Galleries</span>
