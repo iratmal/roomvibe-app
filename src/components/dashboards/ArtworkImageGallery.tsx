@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 
 const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
 
@@ -16,7 +16,7 @@ interface ArtworkImageGalleryProps {
   artworkId?: number;
   primaryImage: string | null;
   galleryImages: GalleryImage[];
-  onPrimaryImageChange: (file: File | null) => void;
+  onPrimaryImageChange: (file: File | string | null) => void;
   onGalleryImagesChange: (images: GalleryImage[]) => void;
   isEditing: boolean;
   maxImages?: number;
@@ -35,6 +35,12 @@ export function ArtworkImageGallery({
   const [newPrimaryFile, setNewPrimaryFile] = useState<File | null>(null);
   const [primaryPreview, setPrimaryPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setNewPrimaryFile(null);
+    setPrimaryPreview(null);
+    setDraggedIndex(null);
+  }, [artworkId, isEditing]);
 
   const allImages: GalleryImage[] = [
     ...(primaryImage || newPrimaryFile ? [{
@@ -168,28 +174,39 @@ export function ArtworkImageGallery({
 
   const handleDragOver = (e: React.DragEvent, index: number) => {
     e.preventDefault();
-    if (draggedIndex === null || draggedIndex === index) return;
+  };
 
-    const hasPrimary = !!(primaryImage || newPrimaryFile);
-    
-    if (hasPrimary) {
-      if (draggedIndex === 0 || index === 0) return;
-      
-      const adjustedDraggedIndex = draggedIndex - 1;
-      const adjustedTargetIndex = index - 1;
-      
-      const newImages = [...galleryImages];
-      const [draggedItem] = newImages.splice(adjustedDraggedIndex, 1);
-      newImages.splice(adjustedTargetIndex, 0, draggedItem);
-      onGalleryImagesChange(newImages);
-    } else {
-      const newImages = [...galleryImages];
-      const [draggedItem] = newImages.splice(draggedIndex, 1);
-      newImages.splice(index, 0, draggedItem);
-      onGalleryImagesChange(newImages);
+  const handleDrop = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === targetIndex) {
+      setDraggedIndex(null);
+      return;
     }
     
-    setDraggedIndex(index);
+    const reorderedImages = [...allImages];
+    const [draggedItem] = reorderedImages.splice(draggedIndex, 1);
+    reorderedImages.splice(targetIndex, 0, draggedItem);
+    
+    if (reorderedImages.length > 0) {
+      const newCover = reorderedImages[0];
+      if (newCover.file) {
+        setNewPrimaryFile(newCover.file);
+        onPrimaryImageChange(newCover.file);
+        setPrimaryPreview(newCover.previewUrl || newCover.image_url);
+      } else if (newCover.image_url) {
+        setNewPrimaryFile(null);
+        setPrimaryPreview(null);
+        onPrimaryImageChange(newCover.image_url);
+      }
+      
+      const newGalleryImages = reorderedImages.slice(1).map((img, i) => ({
+        ...img,
+        display_order: i
+      }));
+      onGalleryImagesChange(newGalleryImages);
+    }
+    
+    setDraggedIndex(null);
   };
 
   const handleDragEnd = () => {
@@ -283,15 +300,18 @@ export function ArtworkImageGallery({
           return (
             <div
               key={img.id || `new-${slotIndex}`}
-              draggable={slotIndex > 0}
+              draggable={allImages.length > 1}
               onDragStart={() => handleDragStart(slotIndex)}
               onDragOver={(e) => handleDragOver(e, slotIndex)}
+              onDrop={(e) => handleDrop(e, slotIndex)}
               onDragEnd={handleDragEnd}
               className={`relative aspect-square bg-rv-surface rounded-rvMd overflow-hidden border-2 transition-all ${
                 draggedIndex === slotIndex
                   ? 'border-rv-primary opacity-50'
-                  : 'border-rv-neutral hover:border-rv-primary/50'
-              } ${slotIndex > 0 ? 'cursor-grab active:cursor-grabbing' : ''}`}
+                  : draggedIndex !== null && draggedIndex !== slotIndex
+                    ? 'border-rv-primary/30'
+                    : 'border-rv-neutral hover:border-rv-primary/50'
+              } ${allImages.length > 1 ? 'cursor-grab active:cursor-grabbing' : ''}`}
             >
               <img
                 src={getImageUrl(img)}

@@ -141,7 +141,7 @@ export function ArtistDashboard() {
     priceAmount: '',
     priceCurrency: 'EUR',
     buyUrl: '',
-    image: null as File | null,
+    image: null as File | string | null,
     medium: '',
     styleTags: [] as string[],
     availability: 'available',
@@ -330,7 +330,8 @@ export function ArtistDashboard() {
       return;
     }
 
-    if (!formData.image && !editingArtwork) {
+    const hasImage = formData.image || editingArtwork?.image_url;
+    if (!hasImage) {
       setError('Please select an image');
       return;
     }
@@ -353,7 +354,7 @@ export function ArtistDashboard() {
       if (formData.priceAmount) {
         formDataObj.append('priceAmount', formData.priceAmount);
       }
-      if (formData.image) {
+      if (formData.image && formData.image instanceof File) {
         formDataObj.append('image', formData.image);
       }
       if (formData.medium) {
@@ -1032,15 +1033,15 @@ export function ArtistDashboard() {
                         ...prev,
                         hasVariants,
                         variants: hasVariants && prev.variants.length === 0 
-                          ? [{ width: prev.width, height: prev.height, unit: prev.dimensionUnit, price: prev.priceAmount, currency: prev.priceCurrency, availability: prev.availability }]
+                          ? [{ width: '', height: '', unit: prev.dimensionUnit, price: '', currency: prev.priceCurrency, availability: 'available' }]
                           : prev.variants
                       }));
                     }}
                     className="w-5 h-5 rounded border-gray-300 text-rv-primary focus:ring-rv-primary accent-rv-primary"
                   />
                   <div>
-                    <span className="font-semibold text-rv-text">Available in multiple sizes (prints / editions)</span>
-                    <p className="text-xs text-rv-textMuted">Offer this artwork in different sizes with separate pricing</p>
+                    <span className="font-semibold text-rv-text">Available in additional sizes (prints / editions)</span>
+                    <p className="text-xs text-rv-textMuted">Add more size options beyond the original dimensions above</p>
                   </div>
                 </label>
 
@@ -1244,12 +1245,39 @@ export function ArtistDashboard() {
                     <h3 className="font-bold text-lg mb-2 text-rv-text">{artwork.title}</h3>
                     <p className="text-sm text-rv-textMuted mb-1">
                       {artwork.width} × {artwork.height} {artwork.dimension_unit || 'cm'}
+                      {artwork.variants && Array.isArray(artwork.variants) && artwork.variants.length > 0 && (
+                        <span className="ml-2 text-[#C9A24A] font-medium">
+                          (+{artwork.variants.length} more)
+                        </span>
+                      )}
                     </p>
-                    {formatPrice(artwork.price_amount, artwork.price_currency) && (
-                      <p className="text-sm font-semibold text-rv-accent mb-2">
-                        {formatPrice(artwork.price_amount, artwork.price_currency)}
-                      </p>
-                    )}
+                    {(() => {
+                      if (artwork.variants && Array.isArray(artwork.variants) && artwork.variants.length > 0) {
+                        const pricedVariants = artwork.variants.filter((v: any) => {
+                          if (!v || v.price == null) return false;
+                          const parsed = parseFloat(String(v.price).replace(/,/g, ''));
+                          return !isNaN(parsed) && parsed > 0;
+                        });
+                        if (pricedVariants.length > 0) {
+                          const lowestVariant = pricedVariants.reduce((min: any, v: any) => {
+                            const minPrice = parseFloat(String(min.price).replace(/,/g, ''));
+                            const vPrice = parseFloat(String(v.price).replace(/,/g, ''));
+                            return vPrice < minPrice ? v : min;
+                          });
+                          const displayPrice = parseFloat(String(lowestVariant.price).replace(/,/g, ''));
+                          const displayCurrency = lowestVariant.currency || artwork.price_currency || 'EUR';
+                          return (
+                            <p className="text-sm font-semibold text-rv-accent mb-2">
+                              From {displayCurrency} {displayPrice.toLocaleString()}
+                            </p>
+                          );
+                        }
+                      }
+                      const basePrice = formatPrice(artwork.price_amount, artwork.price_currency);
+                      return basePrice ? (
+                        <p className="text-sm font-semibold text-rv-accent mb-2">{basePrice}</p>
+                      ) : null;
+                    })()}
                     
                     {artwork.tags && artwork.tags.length > 0 && (
                       <div className="mb-3">

@@ -558,21 +558,28 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                       {artwork.width} x {artwork.height} {artwork.dimensionUnit}
                       {artwork.medium && ` • ${artwork.medium}`}
                     </p>
-                    {artwork.variants && artwork.variants.length > 0 ? (
+                    {Array.isArray(artwork.variants) && artwork.variants.length > 0 ? (
                       <div className="mb-3">
                         <span className="inline-block px-2 py-1 text-xs font-medium bg-[#C9A24A]/10 text-[#C9A24A] rounded-full">
-                          Available in {artwork.variants.length} size{artwork.variants.length > 1 ? 's' : ''}
+                          Available in {artwork.variants.length + 1} sizes
                         </span>
                         {(() => {
-                          if (!Array.isArray(artwork.variants)) return null;
-                          const pricedVariants = artwork.variants.filter(v => v && v.price != null && parseFloat(String(v.price)) > 0);
+                          const pricedVariants = artwork.variants.filter(v => {
+                            if (!v || v.price == null) return false;
+                            const parsed = parseFloat(String(v.price).replace(/,/g, ''));
+                            return !isNaN(parsed) && parsed > 0;
+                          });
                           if (pricedVariants.length === 0) return null;
-                          const lowestVariant = pricedVariants.reduce((min, v) => 
-                            parseFloat(String(v.price)) < parseFloat(String(min.price)) ? v : min
-                          );
+                          const lowestVariant = pricedVariants.reduce((min, v) => {
+                            const minPrice = parseFloat(String(min.price).replace(/,/g, ''));
+                            const vPrice = parseFloat(String(v.price).replace(/,/g, ''));
+                            return vPrice < minPrice ? v : min;
+                          });
+                          const displayPrice = parseFloat(String(lowestVariant.price).replace(/,/g, ''));
+                          const displayCurrency = lowestVariant.currency || artwork.priceCurrency || 'EUR';
                           return (
                             <p className="text-lg font-bold text-rv-primary mt-2">
-                              From {lowestVariant.currency || 'EUR'} {parseFloat(String(lowestVariant.price)).toLocaleString()}
+                              From {displayCurrency} {displayPrice.toLocaleString()}
                             </p>
                           );
                         })()}

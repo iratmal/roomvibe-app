@@ -1,0 +1,103 @@
+Edit Artwork – upload slika NE RADI (BUG)
+
+Problem:
+
+Na Edit Artwork ekranu:
+
+Klik na prazne image slotove ne otvara upload
+
+Pojavljuju se prazni prozori u koje nije moguće uploadati sliku
+
+Zahtjev:
+
+Edit Artwork mora imati isti upload behaviour kao Add New Artwork
+
+Mora biti moguće:
+
+dodati nove slike
+
+zamijeniti postojeće slike
+
+3️⃣ Drag & Drop redoslijed slika (Cover image)
+
+Problem:
+
+Slike se mogu micati samo djelomično (npr. udesno)
+
+Ne može se slobodno postaviti koja slika je prva / cover
+
+Zahtjev:
+
+Full drag & drop reorder između svih slika
+
+Bilo koja slika može postati cover image
+
+Jasna oznaka: “First image = cover image”
+
+4️⃣ Pogrešan prikaz cijene i dimenzija na artwork kartici (BUG)
+
+Problem:
+
+Ako artwork ima multiple sizes:
+
+kartica povlači krivu cijenu (sekundarnu / veću)
+
+prikazuje npr. “Available in 1 size – From EUR 800” iako postoje 2 dimenzije
+
+Zahtjev:
+
+Artwork kartica mora:
+
+prikazivati broj dostupnih dimenzija (npr. “Available in 2 sizes”)
+
+NE mora prikazivati cijenu ako ima više dimenzija
+
+Ako se cijena prikazuje → mora biti najniža (base) cijena, ne varijanta
+
+5️⃣ Prioritet: glavna dimenzija vs. varijante
+
+Problem:
+
+Sustav trenutno tretira dodatne dimenzije kao glavne
+
+Zahtjev:
+
+Prva unesena dimenzija = primary / base artwork
+
+Additional sizes = varijante (prints / editions)
+
+Kartice, preview i listing moraju koristiti base artwork podatke
+
+6️⃣ Neočekivano ponovno otvaranje “Add New Artwork” nakon uploada (BUG)
+
+Problem:
+
+Nakon uspješnog uploada novog artworka:
+
+sustav ponovno otvara Add New Artwork s prethodnom slikom
+
+Zahtjev:
+
+Nakon save:
+
+reset form
+
+ili redirect na My Artworks
+
+NEMA povlačenja stare slike u novi artwork form
+
+🎯 Definition of Done
+
+✔ Multi-upload radi na Add i Edit
+
+✔ Edit artwork omogućuje dodavanje i zamjenu slika
+
+✔ Drag & drop redoslijed radi u oba smjera
+
+✔ Artwork kartice prikazuju točne informacije
+
+✔ Primary vs. variant logika jasna i konzistentna
+
+✔ Nema ghost / stale state bugova
+
+Ako nešto od ovoga zahtijeva backend promjene (model, API) → slobodno refaktorirati, ali UX ponašanje je obavezno kako je gore opisano.
