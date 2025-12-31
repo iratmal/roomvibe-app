@@ -239,6 +239,8 @@ function ArtistPublicProfileRouter() {
   const hash = window.location.hash;
   const [pathPart] = hash.replace('#/artist/', '').split('?');
   const slug = decodeURIComponent(pathPart);
+  const [showStudioWarning, setShowStudioWarning] = useState(false);
+  const [pendingArtwork, setPendingArtwork] = useState<any>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -249,21 +251,81 @@ function ArtistPublicProfileRouter() {
     return null;
   }
 
+  const handleViewInRoom = (artwork: any) => {
+    setPendingArtwork(artwork);
+    setShowStudioWarning(true);
+  };
+
+  const confirmViewInRoom = () => {
+    if (pendingArtwork) {
+      const params = new URLSearchParams({
+        artworkId: pendingArtwork.id.toString(),
+        title: pendingArtwork.title,
+        imageUrl: pendingArtwork.imageUrl,
+        width: pendingArtwork.width.toString(),
+        height: pendingArtwork.height.toString(),
+        unit: pendingArtwork.dimensionUnit
+      });
+      window.location.hash = `#/studio?${params.toString()}`;
+    }
+    setShowStudioWarning(false);
+    setPendingArtwork(null);
+  };
+
   return (
-    <ArtistPublicProfile 
-      slug={slug}
-      onViewInRoom={(artwork) => {
-        const params = new URLSearchParams({
-          artworkId: artwork.id.toString(),
-          title: artwork.title,
-          imageUrl: artwork.imageUrl,
-          width: artwork.width.toString(),
-          height: artwork.height.toString(),
-          unit: artwork.dimensionUnit
-        });
-        window.location.hash = `#/studio?${params.toString()}`;
-      }}
-    />
+    <>
+      <ArtistPublicProfile 
+        slug={slug}
+        onViewInRoom={handleViewInRoom}
+      />
+      
+      {showStudioWarning && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl">
+            <div className="flex items-start gap-4 mb-4">
+              <div className="flex-shrink-0 w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
+                <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-rv-text mb-1">Important Notice</h3>
+                <p className="text-sm text-rv-textMuted">
+                  Before opening Studio
+                </p>
+              </div>
+            </div>
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+              <p className="text-sm text-amber-800">
+                Please make sure your first image is a <strong>clean artwork image</strong> (without any room mockups).
+              </p>
+              <p className="text-sm text-amber-700 mt-2">
+                The Studio already places your artwork into realistic interiors. If you use a mockup image as the first image, it will result in a <em>mockup inside a mockup</em>.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowStudioWarning(false);
+                  setPendingArtwork(null);
+                }}
+                className="flex-1 px-4 py-2.5 border border-rv-neutral text-rv-text text-sm font-semibold rounded-lg hover:bg-rv-surface transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmViewInRoom}
+                className="flex-1 px-4 py-2.5 bg-rv-primary text-white text-sm font-semibold rounded-lg hover:bg-rv-primary/90 transition-colors"
+              >
+                Continue to Studio
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
