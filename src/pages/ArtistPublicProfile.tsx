@@ -71,6 +71,9 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [artistId, setArtistId] = useState<number | null>(null);
   const [showContactModal, setShowContactModal] = useState(false);
+  const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(null);
+  const [detailImageIndex, setDetailImageIndex] = useState(0);
+  const [selectedVariantIndex, setSelectedVariantIndex] = useState<number | null>(null);
   
   const isOwner = user && artistId && user.id === artistId;
   
@@ -188,6 +191,28 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
     } finally {
       setSendingMessage(false);
     }
+  };
+
+  const openArtworkDetail = (artwork: Artwork) => {
+    setSelectedArtwork(artwork);
+    setDetailImageIndex(0);
+    setSelectedVariantIndex(null);
+  };
+
+  const closeArtworkDetail = () => {
+    setSelectedArtwork(null);
+    setDetailImageIndex(0);
+    setSelectedVariantIndex(null);
+  };
+
+  const openContactAboutArtwork = (artwork: Artwork) => {
+    const sizeInfo = selectedVariantIndex !== null && artwork.variants?.[selectedVariantIndex]
+      ? `${artwork.variants[selectedVariantIndex].width} × ${artwork.variants[selectedVariantIndex].height} ${artwork.variants[selectedVariantIndex].unit || artwork.dimensionUnit}`
+      : `${artwork.width} × ${artwork.height} ${artwork.dimensionUnit}`;
+    
+    setContactMessage(`Hi, I'm interested in "${artwork.title}" (${sizeInfo}). `);
+    setShowContactModal(true);
+    setSelectedArtwork(null);
   };
 
   const handleLikeArtwork = async (artworkId: number) => {
@@ -483,7 +508,10 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
 
                 return (
                 <div key={artwork.id} className="bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral overflow-hidden group">
-                  <div className="aspect-square bg-rv-surface relative overflow-hidden">
+                  <div 
+                    className="aspect-square bg-rv-surface relative overflow-hidden cursor-pointer"
+                    onClick={() => openArtworkDetail(artwork)}
+                  >
                     <img
                       src={imageUrl}
                       alt={artwork.title}
@@ -553,7 +581,12 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                     )}
                   </div>
                   <div className="p-4">
-                    <h3 className="font-bold text-rv-text mb-1 truncate">{artwork.title}</h3>
+                    <h3 
+                      className="font-bold text-rv-text mb-1 truncate cursor-pointer hover:text-rv-primary transition-colors"
+                      onClick={() => openArtworkDetail(artwork)}
+                    >
+                      {artwork.title}
+                    </h3>
                     <p className="text-sm text-rv-textMuted mb-2">
                       {artwork.width} x {artwork.height} {artwork.dimensionUnit}
                       {artwork.medium && ` • ${artwork.medium}`}
@@ -676,6 +709,253 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
             </div>
           </div>
         </section>
+      )}
+
+      {/* Artwork Detail Modal */}
+      {selectedArtwork && (
+        <div 
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+          onClick={closeArtworkDetail}
+        >
+          <div 
+            className="bg-white rounded-rvLg shadow-rvElevated max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex flex-col md:flex-row">
+              {/* Image Section */}
+              <div className="md:w-1/2 bg-rv-surface p-6">
+                {(() => {
+                  const galleryImages = selectedArtwork.galleryImages || [];
+                  const allImages = [
+                    { image_url: selectedArtwork.imageUrl, is_mockup: false },
+                    ...galleryImages.filter(img => img.image_url !== selectedArtwork.imageUrl)
+                  ];
+                  
+                  const safeIndex = Math.min(detailImageIndex, allImages.length - 1);
+                  const currentImage = allImages[safeIndex] || allImages[0];
+                  const displayUrl = currentImage.image_url.startsWith('/api/')
+                    ? `${API_URL}${currentImage.image_url}`
+                    : currentImage.image_url;
+                  
+                  return (
+                    <>
+                      <div className="aspect-square relative bg-white rounded-rvMd overflow-hidden mb-4">
+                        <img
+                          src={displayUrl}
+                          alt={selectedArtwork.title}
+                          className="w-full h-full object-contain"
+                        />
+                        {currentImage.is_mockup && (
+                          <span className="absolute top-3 left-3 px-2 py-1 bg-[#C9A24A] text-white text-xs font-bold rounded-full flex items-center gap-1">
+                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                            </svg>
+                            Mockup
+                          </span>
+                        )}
+                      </div>
+                      
+                      {allImages.length > 1 && (
+                        <div className="flex gap-2 justify-center">
+                          {allImages.map((img, idx) => {
+                            const thumbUrl = img.image_url.startsWith('/api/')
+                              ? `${API_URL}${img.image_url}`
+                              : img.image_url;
+                            return (
+                              <button
+                                key={idx}
+                                onClick={() => setDetailImageIndex(idx)}
+                                className={`w-16 h-16 rounded-rvMd overflow-hidden border-2 transition-colors ${
+                                  idx === safeIndex ? 'border-rv-primary' : 'border-transparent'
+                                }`}
+                              >
+                                <img
+                                  src={thumbUrl}
+                                  alt={`${selectedArtwork.title} ${idx + 1}`}
+                                  className="w-full h-full object-cover"
+                                />
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+              
+              {/* Info Section */}
+              <div className="md:w-1/2 p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <h2 className="text-2xl font-bold text-rv-text">{selectedArtwork.title}</h2>
+                  <button
+                    onClick={closeArtworkDetail}
+                    className="p-2 hover:bg-rv-surface rounded-full transition-colors"
+                  >
+                    <svg className="w-5 h-5 text-rv-textMuted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                
+                {/* Artwork Info */}
+                <div className="space-y-3 mb-6">
+                  {selectedArtwork.medium && (
+                    <div>
+                      <span className="text-sm text-rv-textMuted">Medium:</span>
+                      <span className="ml-2 font-medium text-rv-text">{selectedArtwork.medium}</span>
+                    </div>
+                  )}
+                  
+                  {selectedArtwork.styleTags && selectedArtwork.styleTags.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {selectedArtwork.styleTags.map((tag, idx) => (
+                        <span key={idx} className="px-2 py-1 text-xs font-medium bg-rv-surface text-rv-textMuted rounded-full">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                      selectedArtwork.availability === 'sold' 
+                        ? 'bg-red-100 text-red-600' 
+                        : selectedArtwork.availability === 'on_request'
+                        ? 'bg-amber-100 text-amber-600'
+                        : 'bg-green-100 text-green-600'
+                    }`}>
+                      {selectedArtwork.availability === 'sold' ? 'Sold' 
+                        : selectedArtwork.availability === 'on_request' ? 'On Request' 
+                        : 'Available'}
+                    </span>
+                    
+                    {Array.isArray(selectedArtwork.variants) && selectedArtwork.variants.length > 0 && (
+                      <span className="px-2 py-1 text-xs font-medium bg-[#C9A24A]/10 text-[#C9A24A] rounded-full">
+                        Available in {selectedArtwork.variants.length + 1} sizes
+                      </span>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Sizes & Prices */}
+                <div className="mb-6">
+                  <h3 className="text-sm font-semibold text-rv-text mb-3 uppercase tracking-wide">Sizes & Pricing</h3>
+                  
+                  {/* Original Size */}
+                  <div 
+                    onClick={() => setSelectedVariantIndex(null)}
+                    className={`p-3 rounded-rvMd border mb-2 cursor-pointer transition-colors ${
+                      selectedVariantIndex === null 
+                        ? 'border-rv-primary bg-rv-primary/5' 
+                        : 'border-rv-neutral hover:border-rv-primary/50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="font-medium text-rv-text">
+                          {selectedArtwork.width} × {selectedArtwork.height} {selectedArtwork.dimensionUnit}
+                        </span>
+                        <span className="text-xs text-rv-textMuted ml-2">(Original)</span>
+                      </div>
+                      {selectedArtwork.priceAmount ? (
+                        <span className="font-bold text-rv-primary">
+                          {selectedArtwork.priceCurrency} {selectedArtwork.priceAmount.toLocaleString()}
+                        </span>
+                      ) : (
+                        <span className="text-sm text-rv-textMuted">Price on request</span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Variants */}
+                  {Array.isArray(selectedArtwork.variants) && selectedArtwork.variants.map((variant, idx) => {
+                    const price = variant.price ? parseFloat(String(variant.price).replace(/,/g, '')) : null;
+                    return (
+                      <div 
+                        key={idx}
+                        onClick={() => setSelectedVariantIndex(idx)}
+                        className={`p-3 rounded-rvMd border mb-2 cursor-pointer transition-colors ${
+                          selectedVariantIndex === idx 
+                            ? 'border-rv-primary bg-rv-primary/5' 
+                            : 'border-rv-neutral hover:border-rv-primary/50'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-rv-text">
+                            {variant.width} × {variant.height} {variant.unit || selectedArtwork.dimensionUnit}
+                          </span>
+                          <div className="flex items-center gap-3">
+                            {price && price > 0 ? (
+                              <span className="font-bold text-rv-primary">
+                                {variant.currency || selectedArtwork.priceCurrency} {price.toLocaleString()}
+                              </span>
+                            ) : (
+                              <span className="text-sm text-rv-textMuted">Price on request</span>
+                            )}
+                            <span className={`px-2 py-0.5 text-xs rounded-full ${
+                              variant.availability === 'sold' 
+                                ? 'bg-red-100 text-red-600' 
+                                : variant.availability === 'on_request'
+                                ? 'bg-amber-100 text-amber-600'
+                                : 'bg-green-100 text-green-600'
+                            }`}>
+                              {variant.availability === 'sold' ? 'Sold' 
+                                : variant.availability === 'on_request' ? 'On Request' 
+                                : 'Available'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                {/* Actions */}
+                <div className="space-y-3">
+                  {onViewInRoom && (
+                    <button
+                      onClick={() => {
+                        onViewInRoom(selectedArtwork);
+                        closeArtworkDetail();
+                      }}
+                      className="w-full px-4 py-3 font-semibold bg-rv-primary/10 text-rv-primary rounded-rvMd hover:bg-rv-primary/20 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                      </svg>
+                      View in Room
+                    </button>
+                  )}
+                  
+                  {selectedArtwork.availability !== 'sold' && selectedArtwork.buyUrl && (
+                    <a
+                      href={selectedArtwork.buyUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full px-4 py-3 font-semibold bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-colors flex items-center justify-center gap-2"
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      View & Buy
+                    </a>
+                  )}
+                  
+                  <button
+                    onClick={() => openContactAboutArtwork(selectedArtwork)}
+                    className="w-full px-4 py-3 font-semibold border border-rv-neutral text-rv-text rounded-rvMd hover:bg-rv-surface transition-colors flex items-center justify-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    Contact Artist About This Artwork
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Public Contact Modal */}
