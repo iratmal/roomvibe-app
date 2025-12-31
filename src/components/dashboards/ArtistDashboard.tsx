@@ -333,6 +333,69 @@ export function ArtistDashboard() {
     }
   };
 
+  const handleAddToExhibition = async (artworkId: number) => {
+    if (!exhibition) {
+      setError('Please create an exhibition first');
+      setActiveTab('artworks');
+      setTimeout(() => {
+        const exhibitionSection = document.querySelector('[data-section="exhibition"]');
+        if (exhibitionSection) {
+          exhibitionSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+      setTimeout(() => setError(''), 5000);
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/api/artist/exhibition/${exhibition.id}/artworks/link/${artworkId}`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to add artwork to exhibition');
+      }
+
+      setSuccess('Artwork added to exhibition!');
+      fetchExhibitionArtworks(exhibition.id);
+      fetchExhibition();
+      setTimeout(() => setSuccess(''), 5000);
+    } catch (err: any) {
+      setError(err.message);
+      setTimeout(() => setError(''), 5000);
+    }
+  };
+
+  const handleRemoveFromExhibition = async (artworkId: number) => {
+    if (!exhibition) return;
+
+    try {
+      const response = await fetch(`${API_URL}/api/artist/exhibition/${exhibition.id}/artworks/unlink/${artworkId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to remove artwork from exhibition');
+      }
+
+      setSuccess('Artwork removed from exhibition');
+      fetchExhibitionArtworks(exhibition.id);
+      fetchExhibition();
+      setTimeout(() => setSuccess(''), 5000);
+    } catch (err: any) {
+      setError(err.message);
+      setTimeout(() => setError(''), 5000);
+    }
+  };
+
+  const isArtworkInExhibition = (artworkId: number) => {
+    return exhibitionArtworks.some(ea => ea.sourceArtworkId === artworkId);
+  };
+
   const handleExhibitionArtworkImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -1442,6 +1505,28 @@ export function ArtistDashboard() {
                       Get Widget Code
                     </button>
 
+                    {isArtworkInExhibition(artwork.id) ? (
+                      <button
+                        onClick={() => handleRemoveFromExhibition(artwork.id)}
+                        className="w-full mt-2 px-4 py-2 text-sm bg-[#C9A24A]/10 text-[#C9A24A] border border-[#C9A24A] rounded-rvMd hover:bg-[#C9A24A]/20 transition-colors font-semibold flex items-center justify-center gap-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        In Exhibition
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleAddToExhibition(artwork.id)}
+                        className="w-full mt-2 px-4 py-2 text-sm bg-[#C9A24A] text-white rounded-rvMd hover:bg-[#B8913A] transition-colors font-semibold flex items-center justify-center gap-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add to My Exhibition
+                      </button>
+                    )}
+
                     {showDeleteConfirm === artwork.id && (
                       <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-rvMd">
                         <p className="text-sm text-red-700 mb-2 font-semibold">
@@ -1470,7 +1555,7 @@ export function ArtistDashboard() {
           )}
         </div>
 
-        <div className="mb-10">
+        <div className="mb-10" data-section="exhibition">
           <h2 className="text-2xl font-bold mb-6 text-rv-primary">My Exhibition</h2>
           
           {!exhibition ? (
