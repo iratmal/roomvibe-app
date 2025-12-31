@@ -1,0 +1,80 @@
+# RoomVibe – FINAL POLISH TASKS (ONLY OPEN ITEMS)
+
+> ⚠️ This task contains **ONLY the remaining, unresolved items**. All previous tasks are already completed and should NOT be revisited.
+
+---
+
+## 1️⃣ Buy URL – Global Only (REMOVE per-size Buy URL)
+
+### Decision (final):
+
+* **Buy URL exists ONLY once per artwork (global).**
+* Individual size entries (prints / editions) must NOT contain Buy URL fields.
+
+### Required changes:
+
+* ❌ Remove **Buy URL (optional)** from:
+
+  * “Available in multiple sizes (prints / editions)” section
+  * All Size blocks (Size 1, Size 2, etc.)
+
+### Final behaviour:
+
+* All sizes inherit the **same global Buy URL**.
+* If global Buy URL is empty:
+
+  * “Contact Artist” is used for **all sizes**.
+
+### Reason:
+
+* Prevents artist confusion
+* Covers 90% of real-world selling setups
+* Keeps MVP clean and beginner-friendly
+
+---
+
+## 2️⃣ Units (cm / inch) for Multiple Sizes
+
+### Problem:
+
+* In the **Multiple Sizes / Editions** section, it is unclear whether Width / Height values are in **cm or inches**.
+
+### Required changes:
+
+* Add a **unit selector (cm / inch)** next to Width / Height inputs **for each size entry**.
+* Behaviour must match the main Dimensions field above:
+
+  * cm or inch selectable
+  * Saved and displayed consistently
+
+### Rules:
+
+* Unit selector works **per artwork** (or per size if simpler technically)
+* Must be visually identical to the main Dimensions unit selector
+
+---
+
+## 3️⃣ Price Currency Selector for Multiple Sizes
+
+### Problem:
+
+* Currency selector exists for the main price, but NOT for prices inside size entries.
+
+### Required changes:
+
+* Add **currency selector (EUR / USD / GBP)** next to Price field **for each size entry**.
+* Selector must be identical to the main price currency selector above.
+
+---
+
+## ✅ Definition of DONE
+
+* No Buy URL fields exist inside size entries
+* Unit (cm / inch) is clearly selectable for all dimensions
+* Currency is clearly selectable for all prices
+* UI is consistent between main fields and multiple sizes section
+* No regression to previously completed features
+
+---
+
+> This task is **FINAL POLISH before lock**. No new features beyond this scope.

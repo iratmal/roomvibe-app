@@ -28,10 +28,10 @@ const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
 interface ArtworkVariant {
   width: string;
   height: string;
+  unit?: string;
   price: string;
   currency: string;
   availability: string;
-  buyUrl: string;
 }
 
 interface Artwork {
@@ -147,7 +147,7 @@ export function ArtistDashboard() {
     availability: 'available',
     showOnPublicProfile: true,
     hasVariants: false,
-    variants: [] as Array<{ width: string; height: string; price: string; currency: string; availability: string; buyUrl: string }>
+    variants: [] as Array<{ width: string; height: string; unit: string; price: string; currency: string; availability: string }>
   });
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
 
@@ -162,6 +162,20 @@ export function ArtistDashboard() {
       fetchUnreadCount();
     }
   }, [activeTab]);
+
+  const prevDimensionUnit = React.useRef(formData.dimensionUnit);
+  useEffect(() => {
+    if (formData.variants.length > 0 && prevDimensionUnit.current !== formData.dimensionUnit) {
+      const oldUnit = prevDimensionUnit.current;
+      setFormData(prev => ({
+        ...prev,
+        variants: prev.variants.map(v => 
+          v.unit === oldUnit ? { ...v, unit: formData.dimensionUnit } : v
+        )
+      }));
+    }
+    prevDimensionUnit.current = formData.dimensionUnit;
+  }, [formData.dimensionUnit]);
 
   const fetchUnreadCount = async () => {
     try {
@@ -468,7 +482,14 @@ export function ArtistDashboard() {
       priceAmountStr = artwork.price_amount.toString();
     }
     
-    const artworkVariants = artwork.variants || [];
+    const artworkVariants = (artwork.variants || []).map(v => ({
+      width: v.width,
+      height: v.height,
+      unit: v.unit || artwork.dimension_unit || 'cm',
+      price: v.price,
+      currency: v.currency,
+      availability: v.availability
+    }));
     setFormData({
       title: artwork.title,
       width: artwork.width.toString(),
@@ -1011,7 +1032,7 @@ export function ArtistDashboard() {
                         ...prev,
                         hasVariants,
                         variants: hasVariants && prev.variants.length === 0 
-                          ? [{ width: prev.width, height: prev.height, price: prev.priceAmount, currency: prev.priceCurrency, availability: prev.availability, buyUrl: prev.buyUrl }]
+                          ? [{ width: prev.width, height: prev.height, unit: prev.dimensionUnit, price: prev.priceAmount, currency: prev.priceCurrency, availability: prev.availability }]
                           : prev.variants
                       }));
                     }}
@@ -1044,7 +1065,7 @@ export function ArtistDashboard() {
                             </button>
                           )}
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                           <div>
                             <label className="block text-xs text-rv-textMuted mb-1">Width</label>
                             <input
@@ -1074,54 +1095,66 @@ export function ArtistDashboard() {
                             />
                           </div>
                           <div>
-                            <label className="block text-xs text-rv-textMuted mb-1">Price ({variant.currency || formData.priceCurrency})</label>
-                            <div className="relative">
-                              <input
-                                type="number"
-                                value={variant.price}
-                                onChange={(e) => {
-                                  const newVariants = [...formData.variants];
-                                  newVariants[index] = { ...variant, price: e.target.value };
-                                  setFormData(prev => ({ ...prev, variants: newVariants }));
-                                }}
-                                className="w-full px-3 py-2 pr-12 border border-rv-neutral rounded-rvMd text-sm"
-                                placeholder="Price"
-                              />
-                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-rv-textMuted font-medium">
-                                {variant.currency || formData.priceCurrency}
-                              </span>
-                            </div>
-                          </div>
-                          <div>
-                            <label className="block text-xs text-rv-textMuted mb-1">Availability</label>
+                            <label className="block text-xs text-rv-textMuted mb-1">Unit</label>
                             <select
-                              value={variant.availability}
+                              value={variant.unit || formData.dimensionUnit}
                               onChange={(e) => {
                                 const newVariants = [...formData.variants];
-                                newVariants[index] = { ...variant, availability: e.target.value };
+                                newVariants[index] = { ...variant, unit: e.target.value };
                                 setFormData(prev => ({ ...prev, variants: newVariants }));
                               }}
                               className="w-full px-3 py-2 border border-rv-neutral rounded-rvMd text-sm bg-white"
                             >
-                              <option value="available">Available</option>
-                              <option value="sold">Sold Out</option>
-                              <option value="limited">Limited</option>
+                              <option value="cm">cm</option>
+                              <option value="inch">inch</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs text-rv-textMuted mb-1">Price</label>
+                            <input
+                              type="number"
+                              value={variant.price}
+                              onChange={(e) => {
+                                const newVariants = [...formData.variants];
+                                newVariants[index] = { ...variant, price: e.target.value };
+                                setFormData(prev => ({ ...prev, variants: newVariants }));
+                              }}
+                              className="w-full px-3 py-2 border border-rv-neutral rounded-rvMd text-sm"
+                              placeholder="Price"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs text-rv-textMuted mb-1">Currency</label>
+                            <select
+                              value={variant.currency || formData.priceCurrency}
+                              onChange={(e) => {
+                                const newVariants = [...formData.variants];
+                                newVariants[index] = { ...variant, currency: e.target.value };
+                                setFormData(prev => ({ ...prev, variants: newVariants }));
+                              }}
+                              className="w-full px-3 py-2 border border-rv-neutral rounded-rvMd text-sm bg-white"
+                            >
+                              <option value="EUR">EUR</option>
+                              <option value="USD">USD</option>
+                              <option value="GBP">GBP</option>
                             </select>
                           </div>
                         </div>
                         <div className="mt-3">
-                          <label className="block text-xs text-rv-textMuted mb-1">Buy URL (optional)</label>
-                          <input
-                            type="url"
-                            value={variant.buyUrl}
+                          <label className="block text-xs text-rv-textMuted mb-1">Availability</label>
+                          <select
+                            value={variant.availability}
                             onChange={(e) => {
                               const newVariants = [...formData.variants];
-                              newVariants[index] = { ...variant, buyUrl: e.target.value };
+                              newVariants[index] = { ...variant, availability: e.target.value };
                               setFormData(prev => ({ ...prev, variants: newVariants }));
                             }}
-                            className="w-full px-3 py-2 border border-rv-neutral rounded-rvMd text-sm"
-                            placeholder="https://..."
-                          />
+                            className="w-full px-3 py-2 border border-rv-neutral rounded-rvMd text-sm bg-white"
+                          >
+                            <option value="available">Available</option>
+                            <option value="sold">Sold Out</option>
+                            <option value="limited">Limited</option>
+                          </select>
                         </div>
                       </div>
                     ))}
@@ -1130,7 +1163,7 @@ export function ArtistDashboard() {
                       onClick={() => {
                         setFormData(prev => ({
                           ...prev,
-                          variants: [...prev.variants, { width: '', height: '', price: '', currency: prev.priceCurrency, availability: 'available', buyUrl: '' }]
+                          variants: [...prev.variants, { width: '', height: '', unit: prev.dimensionUnit, price: '', currency: prev.priceCurrency, availability: 'available' }]
                         }));
                       }}
                       className="text-rv-primary text-sm font-semibold hover:underline flex items-center gap-1"
