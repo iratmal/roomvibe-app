@@ -1321,7 +1321,7 @@ export function ArtistDashboard() {
                   </h3>
                   <span className={`flex-shrink-0 ml-2 px-2.5 py-0.5 text-xs font-semibold rounded-full ${
                     exhibition.status === 'published' 
-                      ? 'bg-green-100 text-green-700' 
+                      ? 'bg-[#C9A24A]/15 text-[#C9A24A]' 
                       : 'bg-slate-100 text-slate-600'
                   }`}>
                     {exhibition.status === 'published' ? 'Published' : 'Draft'}
@@ -1455,7 +1455,7 @@ export function ArtistDashboard() {
                 <div className="space-y-2 text-sm">
                   <p><span className="font-semibold text-rv-text">Email:</span> <span className="text-rv-textMuted">{user?.email}</span></p>
                   <p><span className="font-semibold text-rv-text">Role:</span> <span className="text-rv-textMuted">Artist</span></p>
-                  <p><span className="font-semibold text-rv-text">Status:</span> {user?.emailConfirmed ? <span className="text-green-600 font-semibold">✓ Verified</span> : <span className="text-amber-600 font-semibold">⚠ Pending</span>}</p>
+                  <p><span className="font-semibold text-rv-text">Status:</span> {user?.emailConfirmed ? <span className="text-[#C9A24A] font-semibold">✓ Verified</span> : <span className="text-amber-600 font-semibold">⚠ Pending</span>}</p>
                   <p><span className="font-semibold text-rv-text">Artworks:</span> <span className="text-rv-textMuted">{artworks.length}</span></p>
                 </div>
               </div>

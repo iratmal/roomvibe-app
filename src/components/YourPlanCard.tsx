@@ -144,7 +144,7 @@ export function YourPlanCard() {
   const getStatusDisplay = () => {
     switch (status) {
       case 'active':
-        return { text: 'Active', color: 'text-green-600' };
+        return { text: 'Active', color: 'text-[#C9A24A]' };
       case 'canceled':
         return { text: 'Canceled', color: 'text-red-600' };
       case 'expired':
@@ -184,7 +184,7 @@ export function YourPlanCard() {
           <ul className="mb-4 space-y-2">
             {planDisplay.bullets.map((bullet, i) => (
               <li key={i} className="flex items-center text-sm text-rv-textMuted">
-                <svg className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 mr-2 text-[#C9A24A] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
                 {bullet}
