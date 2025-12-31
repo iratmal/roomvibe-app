@@ -9,6 +9,17 @@ import { PLAN_LIMITS } from '../../config/planLimits';
 import { ArtistProfileForm } from './ArtistProfileForm';
 import { ArtistInbox } from './ArtistInbox';
 import { ArtistConnectWidget } from './ArtistConnectWidget';
+import { ArtworkImageGallery } from './ArtworkImageGallery';
+
+interface GalleryImage {
+  id?: number;
+  image_url: string;
+  display_order: number;
+  is_mockup: boolean;
+  isNew?: boolean;
+  file?: File;
+  previewUrl?: string;
+}
 
 type DashboardTab = 'artworks' | 'profile' | 'inbox' | 'settings';
 
@@ -138,6 +149,7 @@ export function ArtistDashboard() {
     hasVariants: false,
     variants: [] as Array<{ width: string; height: string; price: string; currency: string; availability: string; buyUrl: string }>
   });
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
 
   useEffect(() => {
     fetchArtworks();
@@ -380,6 +392,42 @@ export function ArtistDashboard() {
       }
 
       const data = await response.json();
+      const savedArtworkId = data.artwork?.id || editingArtwork?.id;
+      
+      if (savedArtworkId && galleryImages.length > 0) {
+        const newImages = galleryImages.filter(img => img.isNew && img.file);
+        for (const img of newImages) {
+          const imgFormData = new FormData();
+          imgFormData.append('image', img.file!);
+          imgFormData.append('is_mockup', String(img.is_mockup));
+          
+          try {
+            await fetch(`${API_URL}/api/artist/artworks/${savedArtworkId}/images`, {
+              method: 'POST',
+              credentials: 'include',
+              body: imgFormData
+            });
+          } catch (imgErr) {
+            console.error('Error uploading gallery image:', imgErr);
+          }
+        }
+        
+        const existingImages = galleryImages.filter(img => !img.isNew && img.id);
+        if (existingImages.length > 0) {
+          const imageOrder = existingImages.map(img => img.id);
+          try {
+            await fetch(`${API_URL}/api/artist/artworks/${savedArtworkId}/images/reorder`, {
+              method: 'PUT',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ imageOrder })
+            });
+          } catch (reorderErr) {
+            console.error('Error reordering gallery images:', reorderErr);
+          }
+        }
+      }
+      
       setSuccess(data.message || (editingArtwork ? 'Artwork updated successfully!' : 'Artwork uploaded successfully!'));
       
       setFormData({
@@ -398,12 +446,8 @@ export function ArtistDashboard() {
         hasVariants: false,
         variants: []
       });
+      setGalleryImages([]);
       setEditingArtwork(null);
-      
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-      if (fileInput) {
-        fileInput.value = '';
-      }
       
       await fetchArtworks();
 
@@ -416,7 +460,7 @@ export function ArtistDashboard() {
     }
   };
 
-  const handleEdit = (artwork: Artwork) => {
+  const handleEdit = async (artwork: Artwork) => {
     setEditingArtwork(artwork);
     
     let priceAmountStr = '';
@@ -441,6 +485,22 @@ export function ArtistDashboard() {
       hasVariants: artworkVariants.length > 0,
       variants: artworkVariants
     });
+    
+    try {
+      const response = await fetch(`${API_URL}/api/artist/artworks/${artwork.id}/images`, {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setGalleryImages(data.images || []);
+      } else {
+        setGalleryImages([]);
+      }
+    } catch (err) {
+      console.error('Error fetching gallery images:', err);
+      setGalleryImages([]);
+    }
+    
     setError('');
     setSuccess('');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -464,6 +524,7 @@ export function ArtistDashboard() {
       hasVariants: false,
       variants: []
     });
+    setGalleryImages([]);
     setError('');
     setSuccess('');
   };
@@ -775,17 +836,14 @@ export function ArtistDashboard() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold mb-2 text-rv-text">
-                  Image <span className="text-red-500">*</span>
-                  {editingArtwork && <span className="text-rv-textMuted font-normal text-xs ml-2">(Leave empty to keep current image)</span>}
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  required={!editingArtwork}
-                  className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+              <div className="md:col-span-2">
+                <ArtworkImageGallery
+                  artworkId={editingArtwork?.id}
+                  primaryImage={editingArtwork?.image_url || null}
+                  galleryImages={galleryImages}
+                  onPrimaryImageChange={(file) => setFormData(prev => ({ ...prev, image: file }))}
+                  onGalleryImagesChange={setGalleryImages}
+                  isEditing={!!editingArtwork}
                 />
               </div>
 
