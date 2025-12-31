@@ -292,7 +292,8 @@ export function ArtistProfileForm() {
       }
 
       const data = await response.json();
-      setProfile(prev => ({ ...prev, profileImageUrl: data.profileImageUrl }));
+      const cacheBustUrl = `${data.profileImageUrl}?t=${Date.now()}`;
+      setProfile(prev => ({ ...prev, profileImageUrl: cacheBustUrl }));
       setSuccess('Profile image updated!');
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
@@ -390,7 +391,7 @@ export function ArtistProfileForm() {
       )}
 
       {success && (
-        <div className="p-4 bg-green-50 border border-green-200 rounded-rvMd text-green-700">
+        <div className="p-4 bg-[#C9A24A]/10 border border-[#C9A24A]/30 rounded-rvMd text-[#8B7033]">
           {success}
         </div>
       )}

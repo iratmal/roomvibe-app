@@ -98,7 +98,7 @@ function ChangePasswordGallery() {
 
       {message && (
         <div className={`mb-4 p-3 rounded-lg text-sm ${
-          message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+          message.type === 'success' ? 'bg-[#C9A24A]/10 text-[#8B7033]' : 'bg-red-50 text-red-700'
         }`}>
           {message.text}
         </div>

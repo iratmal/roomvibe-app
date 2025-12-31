@@ -679,7 +679,7 @@ export function ArtistDashboard() {
         )}
 
         {activeTab === 'artworks' && success && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-rvMd text-green-700">
+          <div className="mb-6 p-4 bg-[#C9A24A]/10 border border-[#C9A24A]/30 rounded-rvMd text-[#8B7033]">
             {success}
           </div>
         )}
@@ -1074,18 +1074,23 @@ export function ArtistDashboard() {
                             />
                           </div>
                           <div>
-                            <label className="block text-xs text-rv-textMuted mb-1">Price</label>
-                            <input
-                              type="number"
-                              value={variant.price}
-                              onChange={(e) => {
-                                const newVariants = [...formData.variants];
-                                newVariants[index] = { ...variant, price: e.target.value };
-                                setFormData(prev => ({ ...prev, variants: newVariants }));
-                              }}
-                              className="w-full px-3 py-2 border border-rv-neutral rounded-rvMd text-sm"
-                              placeholder="Price"
-                            />
+                            <label className="block text-xs text-rv-textMuted mb-1">Price ({variant.currency || formData.priceCurrency})</label>
+                            <div className="relative">
+                              <input
+                                type="number"
+                                value={variant.price}
+                                onChange={(e) => {
+                                  const newVariants = [...formData.variants];
+                                  newVariants[index] = { ...variant, price: e.target.value };
+                                  setFormData(prev => ({ ...prev, variants: newVariants }));
+                                }}
+                                className="w-full px-3 py-2 pr-12 border border-rv-neutral rounded-rvMd text-sm"
+                                placeholder="Price"
+                              />
+                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-rv-textMuted font-medium">
+                                {variant.currency || formData.priceCurrency}
+                              </span>
+                            </div>
                           </div>
                           <div>
                             <label className="block text-xs text-rv-textMuted mb-1">Availability</label>

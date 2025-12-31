@@ -310,8 +310,8 @@ export default function ArtworkEdit() {
         )}
 
         {success && (
-          <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-xl">
-            <p className="text-green-700 font-semibold">{success}</p>
+          <div className="mb-6 p-4 bg-[#C9A24A]/10 border-l-4 border-[#C9A24A] rounded-xl">
+            <p className="text-[#8B7033] font-semibold">{success}</p>
           </div>
         )}
 

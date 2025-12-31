@@ -1,0 +1,121 @@
+# 🛠️ ROOMVIBE – UPLOAD UX FIXES & PROFILE PHOTO BUG
+
+**Type:** UX fixes + bug fixes + UI consistency
+**Priority:** HIGH (blocking usability)
+**Environment:** STAGING ONLY
+
+---
+
+## 🎯 GOAL
+
+Fix critical friction points in **image uploading, profile photo update, notifications, and pricing clarity**, so the artist workflow feels smooth, modern, and trustworthy.
+
+---
+
+## ISSUE 1 — MULTI-IMAGE UPLOAD (CRITICAL UX)
+
+### ❌ Current problem
+
+* Artist must upload images **one by one**
+* Cannot select multiple files from computer
+* Very slow and frustrating workflow
+
+### ✅ Required fix
+
+Enable **multi-select image upload**:
+
+* Allow selecting **multiple images at once** (Cmd/Ctrl + click)
+* All selected images upload in one action
+* Images appear in upload order
+* Respect max limit (4 images)
+
+Applies to:
+
+* Artwork image upload (Add / Edit Artwork)
+
+---
+
+## ISSUE 2 — PROFILE PHOTO UPDATE NOT WORKING (BUG)
+
+### ❌ Current problem
+
+* "Profile image updated" success message shows
+* Actual profile photo **does NOT change**
+
+### ✅ Required fix
+
+* Ensure profile photo actually updates
+* Force refresh / invalidate cache if needed
+* Confirm new image appears:
+
+  * Immediately in UI
+  * On public profile
+
+This is a **functional bug**, not UI only.
+
+---
+
+## ISSUE 3 — SUCCESS / INFO MESSAGES COLOR
+
+### ❌ Current problem
+
+* Success messages shown in generic green
+
+### ✅ Required fix
+
+Replace green success/info banners with:
+
+* **RoomVibe GOLD** (brand success color)
+
+Applies to:
+
+* Profile updated
+* Image uploaded
+* Any positive confirmation messages
+
+---
+
+## ISSUE 4 — PRICE WITHOUT CURRENCY (CONFUSING)
+
+### ❌ Current problem
+
+* Price shown as number only (e.g. 800)
+* Currency is not visible
+* Causes confusion and mistrust
+
+### ✅ Required fix
+
+For **each size / edition price**:
+
+* Display currency next to price
+* Use selected currency (EUR / USD etc.)
+
+Example:
+
+* 800 **EUR**
+
+Applies to:
+
+* Multiple sizes section
+* Public artwork display
+
+---
+
+## ❌ DO NOT
+
+* No pricing logic changes
+* No Stripe changes
+* No backend refactor beyond upload handling
+
+---
+
+## ✅ DEFINITION OF DONE
+
+* Multiple images selectable in one upload
+* Profile photo reliably updates
+* Success messages use RoomVibe GOLD
+* Prices always show currency
+
+---
+
+This task removes friction and increases trust in the platform.

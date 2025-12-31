@@ -63,24 +63,45 @@ export function ArtworkImageGallery({
   }, [onPrimaryImageChange]);
 
   const handleAddImage = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && canAddMore) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    const remainingSlots = maxImages - allImages.length;
+    const filesToProcess = Array.from(files).slice(0, remainingSlots);
+    
+    if (filesToProcess.length === 0) return;
+    
+    const newImages: (GalleryImage | null)[] = new Array(filesToProcess.length).fill(null);
+    let processed = 0;
+    
+    filesToProcess.forEach((file, index) => {
       const reader = new FileReader();
       reader.onload = () => {
-        const newImage: GalleryImage = {
+        const nextOrder = galleryImages.length + index;
+        newImages[index] = {
           image_url: reader.result as string,
-          display_order: galleryImages.length,
+          display_order: nextOrder,
           is_mockup: false,
           isNew: true,
           file,
           previewUrl: reader.result as string
         };
-        onGalleryImagesChange([...galleryImages, newImage]);
+        processed++;
+        
+        if (processed === filesToProcess.length) {
+          const orderedImages = newImages.filter((img): img is GalleryImage => img !== null);
+          const normalizedImages = orderedImages.map((img, i) => ({
+            ...img,
+            display_order: galleryImages.length + i
+          }));
+          onGalleryImagesChange([...galleryImages, ...normalizedImages]);
+        }
       };
       reader.readAsDataURL(file);
-    }
+    });
+    
     e.target.value = '';
-  }, [galleryImages, canAddMore, onGalleryImagesChange]);
+  }, [galleryImages, maxImages, allImages.length, onGalleryImagesChange]);
 
   const handleRemoveImage = useCallback((index: number) => {
     if (index === 0 && (primaryImage || newPrimaryFile)) {
@@ -271,6 +292,7 @@ export function ArtworkImageGallery({
               onChange={handleAddImage}
               className="hidden"
               ref={fileInputRef}
+              multiple
             />
           </label>
         )}
