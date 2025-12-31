@@ -1,0 +1,140 @@
+# 🖼️ ROOMVIBE – ARTWORK GALLERY & STUDIO MOCKUP INTEGRATION
+
+**Type:** UX + feature enhancement (artist-facing)
+**Priority:** HIGH (core RoomVibe differentiation)
+**Environment:** STAGING ONLY
+
+---
+
+## 🎯 GOAL
+
+Upgrade **Artwork upload** so artists can:
+
+* Showcase artworks professionally (multiple images)
+* Naturally discover & use **RoomVibe Studio mockups**
+* Strengthen public profile & conversion without forcing complexity
+
+RoomVibe should *teach artists to use RoomVibe* through the product itself.
+
+---
+
+## CORE CONCEPT (IMPORTANT)
+
+**Artwork = one work**
+**Artwork Gallery = up to 4 images per artwork**
+
+Images can be:
+
+* Real artwork photos
+* RoomVibe-generated mockups
+
+---
+
+## PHASE 1 — MULTI‑IMAGE UPLOAD (FOUNDATION)
+
+### 1️⃣ Artwork Image Gallery
+
+Replace single image upload with **up to 4 images per artwork**.
+
+#### Rules
+
+* Minimum: 1 image (required)
+* Maximum: 4 images
+* First image = primary / cover image
+
+#### UX
+
+* Grid or carousel preview
+* Drag to reorder
+* Remove image
+
+---
+
+## PHASE 2 — ROOMVIBE STUDIO MOCKUP ENTRY POINT
+
+### 2️⃣ "Create Room Mockup" CTA (KEY)
+
+Add a **secondary CTA** inside Add/Edit Artwork:
+
+🖌️ **Create Room Mockup in Studio**
+
+---
+
+### Behaviour
+
+* Opens RoomVibe Studio
+* Preloads:
+
+  * Selected artwork
+  * Correct dimensions
+
+Artist workflow:
+
+1. Upload artwork photo
+2. Click **Create Room Mockup**
+3. Generate room visuals
+4. Save mockup
+5. Return to artwork → mockup appears as selectable image
+
+---
+
+## PHASE 3 — MOCKUP IMAGE HANDLING
+
+### 3️⃣ Mockup as Artwork Image
+
+Mockups behave like normal images:
+
+* Can be selected as cover image
+* Can be reordered
+* Can be removed
+
+But visually tagged:
+
+* Small badge: **RoomVibe Mockup**
+
+---
+
+## PHASE 4 — EDUCATIONAL MICRO‑UX (IMPORTANT)
+
+### 4️⃣ Teach Without Explaining
+
+Add subtle helper text under image upload:
+
+> "Tip: Use RoomVibe Studio to create realistic room mockups that help collectors visualize your art."
+
+Optional tooltip:
+
+> "Artworks with room mockups get more engagement."
+
+No hard enforcement.
+
+---
+
+## PHASE 5 — PUBLIC PROFILE DISPLAY
+
+### 5️⃣ Artwork Gallery (Public Page)
+
+* Display image carousel (up to 4 images)
+* Mockups blend naturally with photos
+* Cover image used in grids
+
+---
+
+## ❌ DO NOT
+
+* No hard dependency on Studio
+* No forced mockups
+* No heavy AI logic
+
+---
+
+## ✅ DEFINITION OF DONE
+
+* Artist can upload up to 4 images per artwork
+* Studio mockups can be added seamlessly
+* Artists naturally discover RoomVibe Studio
+* Public profiles look richer & more professional
+
+---
+
+This feature turns RoomVibe from a tool into a habit.

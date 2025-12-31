@@ -358,4 +358,224 @@ router.delete('/artworks/:id', authenticateToken, async (req: any, res) => {
   }
 });
 
+// =====================================================
+// Artwork Gallery Images API - Multiple images per artwork
+// =====================================================
+
+// Get all gallery images for an artwork
+router.get('/artworks/:id/images', authenticateToken, async (req: any, res) => {
+  try {
+    const artworkId = parseInt(req.params.id);
+    
+    // Verify artwork ownership
+    const artworkCheck = await query(
+      'SELECT artist_id FROM artworks WHERE id = $1',
+      [artworkId]
+    );
+    
+    if (artworkCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Artwork not found' });
+    }
+    
+    const isAdmin = req.user.role === 'admin' || req.user.isAdmin;
+    if (!isAdmin && artworkCheck.rows[0].artist_id !== req.user.id) {
+      return res.status(403).json({ error: 'Not authorized to view this artwork' });
+    }
+    
+    const result = await query(
+      `SELECT id, artwork_id, image_url, display_order, is_mockup, created_at
+       FROM artwork_images 
+       WHERE artwork_id = $1 
+       ORDER BY display_order ASC, id ASC`,
+      [artworkId]
+    );
+    
+    // Normalize image URLs
+    const images = result.rows.map((img: any) => ({
+      ...img,
+      image_url: img.image_url?.startsWith('/objects/')
+        ? `/api/artwork-gallery-image/${img.id}`
+        : img.image_url
+    }));
+    
+    res.json({ images });
+  } catch (error) {
+    console.error('Error fetching artwork images:', error);
+    res.status(500).json({ error: 'Failed to fetch artwork images' });
+  }
+});
+
+// Add a new image to artwork gallery (max 4)
+router.post('/artworks/:id/images', authenticateToken, upload.single('image'), async (req: any, res) => {
+  try {
+    const artworkId = parseInt(req.params.id);
+    const { is_mockup } = req.body;
+    
+    // Verify artwork ownership
+    const artworkCheck = await query(
+      'SELECT artist_id FROM artworks WHERE id = $1',
+      [artworkId]
+    );
+    
+    if (artworkCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Artwork not found' });
+    }
+    
+    if (artworkCheck.rows[0].artist_id !== req.user.id) {
+      return res.status(403).json({ error: 'Not authorized to modify this artwork' });
+    }
+    
+    // Check current image count (max 4)
+    const countResult = await query(
+      'SELECT COUNT(*) as count FROM artwork_images WHERE artwork_id = $1',
+      [artworkId]
+    );
+    
+    if (parseInt(countResult.rows[0].count) >= 4) {
+      return res.status(400).json({ error: 'Maximum 4 images per artwork allowed' });
+    }
+    
+    if (!req.file) {
+      return res.status(400).json({ error: 'Image file is required' });
+    }
+    
+    // Upload to Object Storage
+    const objectStorage = new ObjectStorageService();
+    const imageUrl = await objectStorage.uploadBuffer(
+      req.file.buffer,
+      req.file.originalname,
+      req.file.mimetype
+    );
+    
+    // Get next display order
+    const orderResult = await query(
+      'SELECT COALESCE(MAX(display_order), -1) + 1 as next_order FROM artwork_images WHERE artwork_id = $1',
+      [artworkId]
+    );
+    const displayOrder = orderResult.rows[0].next_order;
+    
+    const result = await query(
+      `INSERT INTO artwork_images (artwork_id, image_url, display_order, is_mockup)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, artwork_id, image_url, display_order, is_mockup, created_at`,
+      [artworkId, imageUrl, displayOrder, is_mockup === 'true' || is_mockup === true]
+    );
+    
+    // Return API endpoint URL
+    result.rows[0].image_url = `/api/artwork-gallery-image/${result.rows[0].id}`;
+    
+    res.status(201).json({ image: result.rows[0], message: 'Image added successfully' });
+  } catch (error) {
+    console.error('Error adding artwork image:', error);
+    res.status(500).json({ error: 'Failed to add artwork image' });
+  }
+});
+
+// Reorder artwork gallery images
+router.put('/artworks/:id/images/reorder', authenticateToken, async (req: any, res) => {
+  try {
+    const artworkId = parseInt(req.params.id);
+    const { imageOrder } = req.body; // Array of image IDs in desired order
+    
+    if (!Array.isArray(imageOrder)) {
+      return res.status(400).json({ error: 'imageOrder must be an array of image IDs' });
+    }
+    
+    // Verify artwork ownership
+    const artworkCheck = await query(
+      'SELECT artist_id FROM artworks WHERE id = $1',
+      [artworkId]
+    );
+    
+    if (artworkCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Artwork not found' });
+    }
+    
+    if (artworkCheck.rows[0].artist_id !== req.user.id) {
+      return res.status(403).json({ error: 'Not authorized to modify this artwork' });
+    }
+    
+    // Update display_order for each image
+    for (let i = 0; i < imageOrder.length; i++) {
+      await query(
+        'UPDATE artwork_images SET display_order = $1 WHERE id = $2 AND artwork_id = $3',
+        [i, imageOrder[i], artworkId]
+      );
+    }
+    
+    res.json({ message: 'Images reordered successfully' });
+  } catch (error) {
+    console.error('Error reordering artwork images:', error);
+    res.status(500).json({ error: 'Failed to reorder images' });
+  }
+});
+
+// Delete an artwork gallery image
+router.delete('/artworks/:id/images/:imageId', authenticateToken, async (req: any, res) => {
+  try {
+    const artworkId = parseInt(req.params.id);
+    const imageId = parseInt(req.params.imageId);
+    
+    // Verify artwork ownership
+    const artworkCheck = await query(
+      'SELECT artist_id FROM artworks WHERE id = $1',
+      [artworkId]
+    );
+    
+    if (artworkCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Artwork not found' });
+    }
+    
+    if (artworkCheck.rows[0].artist_id !== req.user.id) {
+      return res.status(403).json({ error: 'Not authorized to modify this artwork' });
+    }
+    
+    const result = await query(
+      'DELETE FROM artwork_images WHERE id = $1 AND artwork_id = $2 RETURNING id',
+      [imageId, artworkId]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Image not found' });
+    }
+    
+    res.json({ message: 'Image deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting artwork image:', error);
+    res.status(500).json({ error: 'Failed to delete image' });
+  }
+});
+
+// Serve artwork gallery image from Object Storage
+router.get('/artwork-gallery-image/:imageId', async (req: any, res) => {
+  try {
+    const imageId = parseInt(req.params.imageId);
+    
+    const result = await query(
+      'SELECT image_url FROM artwork_images WHERE id = $1',
+      [imageId]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Image not found' });
+    }
+    
+    const imageUrl = result.rows[0].image_url;
+    
+    if (!imageUrl || !imageUrl.startsWith('/objects/')) {
+      return res.status(404).json({ error: 'Image not found in storage' });
+    }
+    
+    // Use ObjectStorageService to stream the image
+    const objectStorage = new ObjectStorageService();
+    const objectInfo = await objectStorage.getObjectFile(imageUrl);
+    await objectStorage.downloadObject(objectInfo, res, 31536000); // Cache for 1 year
+  } catch (error) {
+    console.error('Error serving gallery image:', error);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Failed to serve image' });
+    }
+  }
+});
+
 export default router;

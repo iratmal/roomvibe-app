@@ -698,6 +698,24 @@ export async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_artwork_like_tokens_artwork_id ON artwork_like_tokens(artwork_id);
     `);
 
+    // =====================================================
+    // Artwork Images - Multiple images per artwork (up to 4)
+    // =====================================================
+    await query(`
+      CREATE TABLE IF NOT EXISTS artwork_images (
+        id SERIAL PRIMARY KEY,
+        artwork_id INTEGER NOT NULL REFERENCES artworks(id) ON DELETE CASCADE,
+        image_url TEXT NOT NULL,
+        display_order INTEGER DEFAULT 0,
+        is_mockup BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS idx_artwork_images_artwork_id ON artwork_images(artwork_id);
+    `);
+
     await query(`
       CREATE TABLE IF NOT EXISTS projects (
         id SERIAL PRIMARY KEY,
