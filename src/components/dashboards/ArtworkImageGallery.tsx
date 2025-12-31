@@ -32,6 +32,7 @@ export function ArtworkImageGallery({
   maxImages = 4
 }: ArtworkImageGalleryProps) {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
   const [newPrimaryFile, setNewPrimaryFile] = useState<File | null>(null);
   const [primaryPreview, setPrimaryPreview] = useState<string | null>(null);
   const [showStudioWarning, setShowStudioWarning] = useState(false);
@@ -41,6 +42,7 @@ export function ArtworkImageGallery({
     setNewPrimaryFile(null);
     setPrimaryPreview(null);
     setDraggedIndex(null);
+    setDropTargetIndex(null);
   }, [artworkId, isEditing]);
 
   const allImages: GalleryImage[] = [
@@ -169,49 +171,85 @@ export function ArtworkImageGallery({
     }
   }, [primaryImage, newPrimaryFile, galleryImages, onPrimaryImageChange, onGalleryImagesChange]);
 
-  const handleDragStart = (index: number) => {
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(index));
     setDraggedIndex(index);
   };
 
   const handleDragOver = (e: React.DragEvent, index: number) => {
     e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (draggedIndex !== null && draggedIndex !== index) {
+      setDropTargetIndex(index);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDropTargetIndex(null);
   };
 
   const handleDrop = (e: React.DragEvent, targetIndex: number) => {
     e.preventDefault();
+    setDropTargetIndex(null);
+    
     if (draggedIndex === null || draggedIndex === targetIndex) {
       setDraggedIndex(null);
       return;
     }
     
-    const reorderedImages = [...allImages];
-    const [draggedItem] = reorderedImages.splice(draggedIndex, 1);
-    reorderedImages.splice(targetIndex, 0, draggedItem);
+    // Create a stable copy of allImages for reordering
+    const imagesCopy = allImages.map((img, idx) => ({
+      ...img,
+      _originalIndex: idx
+    }));
     
-    if (reorderedImages.length > 0) {
-      const newCover = reorderedImages[0];
+    // Perform the swap
+    const draggedItem = imagesCopy[draggedIndex];
+    imagesCopy.splice(draggedIndex, 1);
+    imagesCopy.splice(targetIndex, 0, draggedItem);
+    
+    // Determine the new cover (first image after reorder)
+    const newCover = imagesCopy[0];
+    const oldCoverWasPrimary = draggedIndex !== 0 && targetIndex === 0 || (draggedIndex === 0 && targetIndex !== 0);
+    
+    // Update the primary image
+    if (newCover) {
       if (newCover.file) {
+        // New file being promoted to cover
         setNewPrimaryFile(newCover.file);
-        onPrimaryImageChange(newCover.file);
         setPrimaryPreview(newCover.previewUrl || newCover.image_url);
-      } else if (newCover.image_url) {
+        onPrimaryImageChange(newCover.file);
+      } else {
+        // Existing image being promoted to cover - pass URL with gallery image ID
         setNewPrimaryFile(null);
-        setPrimaryPreview(null);
-        onPrimaryImageChange(newCover.image_url);
+        // Keep the preview showing the new cover image URL
+        setPrimaryPreview(newCover.previewUrl || newCover.image_url);
+        // Pass an object with the image info so the parent can track it
+        const promotedImageInfo = newCover.id && newCover.id > 0 
+          ? { type: 'gallery', id: newCover.id, url: newCover.image_url }
+          : newCover.image_url;
+        onPrimaryImageChange(promotedImageInfo as any);
       }
-      
-      const newGalleryImages = reorderedImages.slice(1).map((img, i) => ({
-        ...img,
-        display_order: i
-      }));
-      onGalleryImagesChange(newGalleryImages);
     }
     
+    // Update gallery images (all except the first which is the cover)
+    const newGalleryImages = imagesCopy.slice(1).map((img, i) => {
+      // Remove the tracking property
+      const { _originalIndex, ...cleanImg } = img;
+      return {
+        ...cleanImg,
+        display_order: i
+      };
+    });
+    
+    onGalleryImagesChange(newGalleryImages);
     setDraggedIndex(null);
   };
 
   const handleDragEnd = () => {
     setDraggedIndex(null);
+    setDropTargetIndex(null);
   };
 
   const handleToggleMockup = useCallback((index: number) => {
@@ -302,16 +340,19 @@ export function ArtworkImageGallery({
             <div
               key={img.id || `new-${slotIndex}`}
               draggable={allImages.length > 1}
-              onDragStart={() => handleDragStart(slotIndex)}
+              onDragStart={(e) => handleDragStart(e, slotIndex)}
               onDragOver={(e) => handleDragOver(e, slotIndex)}
+              onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, slotIndex)}
               onDragEnd={handleDragEnd}
               className={`relative aspect-square bg-rv-surface rounded-rvMd overflow-hidden border-2 transition-all ${
                 draggedIndex === slotIndex
-                  ? 'border-rv-primary opacity-50'
-                  : draggedIndex !== null && draggedIndex !== slotIndex
-                    ? 'border-rv-primary/30'
-                    : 'border-rv-neutral hover:border-rv-primary/50'
+                  ? 'border-rv-primary opacity-50 scale-95'
+                  : dropTargetIndex === slotIndex
+                    ? 'border-rv-primary border-dashed bg-rv-primary/10'
+                    : draggedIndex !== null
+                      ? 'border-rv-primary/30'
+                      : 'border-rv-neutral hover:border-rv-primary/50'
               } ${allImages.length > 1 ? 'cursor-grab active:cursor-grabbing' : ''}`}
             >
               <img
@@ -320,7 +361,13 @@ export function ArtworkImageGallery({
                 className="w-full h-full object-cover"
               />
               
-              {slotIndex === 0 && (
+              {draggedIndex !== null && (
+                <span className="absolute top-1 left-1 w-5 h-5 bg-black/60 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                  {slotIndex + 1}
+                </span>
+              )}
+              
+              {slotIndex === 0 && draggedIndex === null && (
                 <span className="absolute top-2 left-2 px-2 py-0.5 bg-rv-primary text-white text-xs font-semibold rounded-full">
                   Cover
                 </span>

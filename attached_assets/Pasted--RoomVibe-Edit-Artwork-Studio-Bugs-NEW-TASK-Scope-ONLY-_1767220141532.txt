@@ -1,0 +1,110 @@
+# RoomVibe – Edit Artwork & Studio Bugs (NEW TASK)
+
+> **Scope:** ONLY the issues listed below. Do **not** touch already-resolved items. This is a clean, focused task list.
+
+---
+
+## 1. Open Studio pulls WRONG image (critical)
+
+**Current behavior:**
+
+* Even after reordering images in **Edit Artwork**, clicking **Open Studio** still loads **image #2**.
+* Warning modal shows correctly, but the Studio ignores the updated image order.
+
+**Expected behavior:**
+
+* Studio must **always use image index = 0** (first image) from the artwork gallery.
+* This must reflect the **current saved order**, not the original upload order.
+
+**Acceptance criteria:**
+
+* Reorder images → Save artwork → Open Studio → Studio uses the new first image.
+* No fallback to old image order.
+
+---
+
+## 2. Image reordering bug (duplication & loss)
+
+**Current behavior:**
+
+* Dragging images causes:
+
+  * Image duplication
+  * Other images disappearing
+  * Unstable and confusing behavior
+
+**Expected behavior:**
+
+* Pure **reordering only** (array index swap).
+* No image duplication.
+* No image deletion.
+* No re-upload triggered during reorder.
+
+**Technical note (important):**
+
+* This must be handled as a **stable reorder of image IDs**, not re-creation of objects.
+* Use deterministic drag & drop behavior.
+
+**Acceptance criteria:**
+
+* Drag image A → position changes
+* Total images count stays the same
+* All images remain intact
+
+---
+
+## 3. Studio image source must match Dashboard cover
+
+**Rule:**
+
+* The **cover image** (first image in Edit Artwork) is the **single source of truth** for Studio rendering.
+
+**Must NOT happen:**
+
+* Studio picking second / random image
+* Studio using stale cached image
+
+**Acceptance criteria:**
+
+* Whatever image is marked as `cover` in Edit Artwork is what Studio renders.
+
+---
+
+## 4. UX improvement – image reorder clarity
+
+**Problem:**
+
+* Current drag interaction is confusing and error-prone.
+
+**Required improvements:**
+
+* Clear drag handles or visual feedback
+* Smooth animation when moving images
+* No cloning effect during drag
+
+**Optional (nice to have):**
+
+* Show index numbers (1–4) during drag
+
+---
+
+## 5. Regression safety check
+
+After fixing:
+
+* Test **new artwork upload**
+* Test **edit existing artwork**
+* Test **image reorder → save → reopen edit**
+* Test **Open Studio** after reorder
+
+Nothing from previous completed tasks should break.
+
+---
+
+### Priority
+
+🚨 **High priority** – this directly affects Studio credibility and artist trust.
+
+---
+
+If anything is unclear → ask **before** implementing, do not guess.

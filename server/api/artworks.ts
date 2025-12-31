@@ -258,9 +258,9 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
 
 router.put('/artworks/:id', authenticateToken, upload.single('image'), async (req: any, res) => {
   try {
-    const isAdmin = req.user.role === 'admin' || req.user.isAdmin;
+    const isAdmin = req.user.role === 'admin' || req.user.is_admin === true || req.user.isAdmin === true;
     const artworkId = parseInt(req.params.id);
-    const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, orientation, styleTags, dominantColors, medium, availability, showOnPublicProfile, variants } = req.body;
+    const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, orientation, styleTags, dominantColors, medium, availability, showOnPublicProfile, variants, promotedGalleryImageId } = req.body;
 
     // Admin can edit any artwork, regular users can only edit their own
     let existingArtwork;
@@ -292,6 +292,26 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
         req.file.mimetype
       );
       console.log('[Update] New image uploaded:', imageUrl);
+    } else if (promotedGalleryImageId) {
+      // A gallery image is being promoted to cover - get its URL
+      const promotedId = parseInt(promotedGalleryImageId);
+      console.log(`[Update] Promoting gallery image ${promotedId} to cover...`);
+      
+      const galleryImageResult = await query(
+        'SELECT image_url FROM artwork_images WHERE id = $1 AND artwork_id = $2',
+        [promotedId, artworkId]
+      );
+      
+      if (galleryImageResult.rows.length > 0) {
+        imageUrl = galleryImageResult.rows[0].image_url;
+        console.log(`[Update] Gallery image promoted. New cover URL: ${imageUrl}`);
+        
+        // Delete the gallery image since it's now the primary cover
+        await query('DELETE FROM artwork_images WHERE id = $1', [promotedId]);
+        console.log(`[Update] Gallery image ${promotedId} deleted after promotion`);
+      } else {
+        console.warn(`[Update] Gallery image ${promotedId} not found for artwork ${artworkId}`);
+      }
     } else if (isCorrupted) {
       // If no new file and existing is corrupted, keep it but warn
       console.warn(`[Update] No new image provided for artwork ${artworkId} with corrupted image. Image will remain broken.`);

@@ -156,6 +156,7 @@ export function ArtistDashboard() {
     hasVariants: false,
     variants: [] as Array<{ width: string; height: string; unit: string; price: string; currency: string; availability: string }>
   });
+  const [promotedGalleryImageId, setPromotedGalleryImageId] = useState<number | null>(null);
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
 
   useEffect(() => {
@@ -531,6 +532,8 @@ export function ArtistDashboard() {
       }
       if (formData.image && formData.image instanceof File) {
         formDataObj.append('image', formData.image);
+      } else if (promotedGalleryImageId) {
+        formDataObj.append('promotedGalleryImageId', String(promotedGalleryImageId));
       }
       if (formData.medium) {
         formDataObj.append('medium', formData.medium);
@@ -637,6 +640,7 @@ export function ArtistDashboard() {
         variants: []
       });
       setGalleryImages([]);
+      setPromotedGalleryImageId(null);
       setEditingArtwork(null);
       
       await fetchArtworks();
@@ -652,6 +656,7 @@ export function ArtistDashboard() {
 
   const handleEdit = async (artwork: Artwork) => {
     setEditingArtwork(artwork);
+    setPromotedGalleryImageId(null);
     
     let priceAmountStr = '';
     if (artwork.price_amount !== null && artwork.price_amount !== undefined && artwork.price_amount !== '') {
@@ -705,6 +710,7 @@ export function ArtistDashboard() {
 
   const handleCancelEdit = () => {
     setEditingArtwork(null);
+    setPromotedGalleryImageId(null);
     setFormData({
       title: '',
       width: '',
@@ -1038,7 +1044,15 @@ export function ArtistDashboard() {
                   artworkId={editingArtwork?.id}
                   primaryImage={editingArtwork?.image_url || null}
                   galleryImages={galleryImages}
-                  onPrimaryImageChange={(file) => setFormData(prev => ({ ...prev, image: file }))}
+                  onPrimaryImageChange={(fileOrInfo) => {
+                    if (fileOrInfo && typeof fileOrInfo === 'object' && 'type' in fileOrInfo && fileOrInfo.type === 'gallery') {
+                      setPromotedGalleryImageId((fileOrInfo as any).id);
+                      setFormData(prev => ({ ...prev, image: (fileOrInfo as any).url }));
+                    } else {
+                      setPromotedGalleryImageId(null);
+                      setFormData(prev => ({ ...prev, image: fileOrInfo }));
+                    }
+                  }}
                   onGalleryImagesChange={setGalleryImages}
                   isEditing={!!editingArtwork}
                 />
