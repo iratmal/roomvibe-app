@@ -1232,11 +1232,48 @@ function Studio() {
             if (response.ok) {
               const data = await response.json();
               if (data.artwork) {
+                const imageUrl = data.artwork.overlayImageUrl.startsWith('http') 
+                  ? data.artwork.overlayImageUrl 
+                  : `${API_URL}${data.artwork.overlayImageUrl}`;
+                
+                // If widthCm/heightCm are missing or invalid, detect from actual image
+                let widthCm = data.artwork.widthCm;
+                let heightCm = data.artwork.heightCm;
+                
+                if (!widthCm || !heightCm || isNaN(widthCm) || isNaN(heightCm)) {
+                  // Load image to get natural dimensions
+                  try {
+                    const img = new Image();
+                    await new Promise<void>((resolve, reject) => {
+                      img.onload = () => resolve();
+                      img.onerror = () => reject(new Error('Failed to load image'));
+                      img.src = imageUrl;
+                    });
+                    // Use natural image dimensions to determine aspect ratio
+                    // Scale to a reasonable default size (100cm for the larger dimension)
+                    const aspectRatio = img.naturalWidth / img.naturalHeight;
+                    if (aspectRatio > 1) {
+                      // Landscape
+                      widthCm = 100;
+                      heightCm = Math.round(100 / aspectRatio);
+                    } else {
+                      // Portrait or square
+                      heightCm = 100;
+                      widthCm = Math.round(100 * aspectRatio);
+                    }
+                    console.log(`[Studio] Detected dimensions from image: ${widthCm}x${heightCm}cm (aspect: ${aspectRatio.toFixed(2)})`);
+                  } catch (imgErr) {
+                    console.warn('[Studio] Failed to detect image dimensions, using defaults:', imgErr);
+                    widthCm = 100;
+                    heightCm = 70;
+                  }
+                }
+                
                 const dbArtwork = {
                   ...data.artwork,
-                  overlayImageUrl: data.artwork.overlayImageUrl.startsWith('http') 
-                    ? data.artwork.overlayImageUrl 
-                    : `${API_URL}${data.artwork.overlayImageUrl}`
+                  overlayImageUrl: imageUrl,
+                  widthCm,
+                  heightCm
                 };
                 setArtworksState(prev => [dbArtwork, ...prev]);
                 setArtId(dbArtwork.id);
@@ -3635,11 +3672,23 @@ function Exhibition360EditorPage() {
   const match = hash.match(/^#\/gallery\/exhibitions\/(\d+)\/360-editor/);
   const collectionId = match ? match[1] : null;
   
+  // Check for preset parameter in URL (e.g., ?preset=classic-gallery for artist exhibitions)
+  const getUrlPreset = () => {
+    const queryIndex = hash.indexOf('?');
+    if (queryIndex !== -1) {
+      const params = new URLSearchParams(hash.substring(queryIndex + 1));
+      return params.get('preset');
+    }
+    return null;
+  };
+  const urlPreset = getUrlPreset();
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [availableArtworks, setAvailableArtworks] = useState<any[]>([]);
   const [initialAssignments, setInitialAssignments] = useState<any[]>([]);
-  const [presetId, setPresetId] = useState('modern-gallery-v2');
+  // Default to classic-gallery if specified in URL (for artist exhibitions), otherwise modern-gallery-v2
+  const [presetId, setPresetId] = useState(urlPreset || 'modern-gallery-v2');
   const [collectionTitle, setCollectionTitle] = useState('');
   
   const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
@@ -3667,8 +3716,12 @@ function Exhibition360EditorPage() {
           const sceneData = await sceneRes.json();
           setCollectionTitle(sceneData.title || '');
           if (sceneData.scene360Data) {
-            setPresetId(sceneData.scene360Data.presetId || 'modern-gallery-v2');
+            // Use saved preset if available, otherwise use URL preset, otherwise default
+            setPresetId(sceneData.scene360Data.presetId || urlPreset || 'modern-gallery-v2');
             setInitialAssignments(sceneData.scene360Data.slots || []);
+          } else if (urlPreset) {
+            // No saved data yet - use URL preset for new exhibitions
+            setPresetId(urlPreset);
           }
         }
       } catch (err) {

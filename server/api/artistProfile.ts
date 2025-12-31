@@ -496,6 +496,57 @@ router.delete('/exhibition/:id', authenticateToken, async (req: any, res) => {
   }
 });
 
+// Update artist exhibition (title, subtitle)
+router.put('/exhibition/:id', authenticateToken, async (req: any, res) => {
+  try {
+    const exhibitionId = parseInt(req.params.id);
+    const { title, subtitle } = req.body;
+
+    if (!title?.trim()) {
+      return res.status(400).json({ error: 'Exhibition title is required' });
+    }
+
+    // Verify ownership
+    const checkResult = await query(
+      'SELECT * FROM gallery_collections WHERE id = $1 AND gallery_id = $2',
+      [exhibitionId, req.user.id]
+    );
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Exhibition not found' });
+    }
+
+    const result = await query(
+      `UPDATE gallery_collections 
+       SET title = $1, subtitle = $2, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $3
+       RETURNING *`,
+      [title.trim(), subtitle?.trim() || null, exhibitionId]
+    );
+
+    // Get artwork count
+    const artworkCountResult = await query(
+      'SELECT COUNT(*) as count FROM gallery_artworks WHERE collection_id = $1',
+      [exhibitionId]
+    );
+
+    res.json({ 
+      exhibition: {
+        id: result.rows[0].id,
+        title: result.rows[0].title,
+        subtitle: result.rows[0].subtitle,
+        status: result.rows[0].status,
+        artworkCount: parseInt(artworkCountResult.rows[0].count),
+        createdAt: result.rows[0].created_at
+      },
+      message: 'Exhibition updated successfully' 
+    });
+  } catch (error: any) {
+    console.error('Error updating artist exhibition:', error);
+    res.status(500).json({ error: 'Failed to update exhibition' });
+  }
+});
+
 router.get('/exhibition/:id/artworks', authenticateToken, async (req: any, res) => {
   try {
     const exhibitionId = parseInt(req.params.id);

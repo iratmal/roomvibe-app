@@ -122,6 +122,7 @@ export function ArtistDashboard() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [exhibition, setExhibition] = useState<Exhibition | null>(null);
   const [showCreateExhibition, setShowCreateExhibition] = useState(false);
+  const [showEditExhibition, setShowEditExhibition] = useState(false);
   const [exhibitionFormData, setExhibitionFormData] = useState({ title: '', subtitle: '' });
   const [showExhibitionDeleteConfirm, setShowExhibitionDeleteConfirm] = useState(false);
   const [exhibitionArtworks, setExhibitionArtworks] = useState<any[]>([]);
@@ -466,6 +467,52 @@ export function ArtistDashboard() {
       setTimeout(() => setError(''), 5000);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUpdateExhibition = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!exhibition) return;
+    if (!exhibitionFormData.title.trim()) {
+      setError('Exhibition title is required');
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/artist/exhibition/${exhibition.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(exhibitionFormData)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update exhibition');
+      }
+      
+      const data = await response.json();
+      setExhibition(data.exhibition);
+      setShowEditExhibition(false);
+      setExhibitionFormData({ title: '', subtitle: '' });
+      setSuccess('Exhibition updated successfully!');
+      setTimeout(() => setSuccess(''), 5000);
+    } catch (err: any) {
+      setError(err.message);
+      setTimeout(() => setError(''), 5000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const startEditExhibition = () => {
+    if (exhibition) {
+      setExhibitionFormData({
+        title: exhibition.title,
+        subtitle: exhibition.subtitle || ''
+      });
+      setShowEditExhibition(true);
     }
   };
 
@@ -1669,24 +1716,84 @@ export function ArtistDashboard() {
                 </div>
                 
                 <div className="p-6">
-                  <div className="flex items-start justify-between mb-3">
-                    <h3 className="text-xl font-semibold text-rv-primary line-clamp-1">
-                      {exhibition.title}
-                    </h3>
-                    <span className={`flex-shrink-0 ml-2 px-2.5 py-0.5 text-xs font-semibold rounded-full ${
-                      exhibition.status === 'published' 
-                        ? 'bg-[#C9A24A]/15 text-[#C9A24A]' 
-                        : 'bg-slate-100 text-slate-600'
-                    }`}>
-                      {exhibition.status === 'published' ? 'Published' : 'Draft'}
-                    </span>
-                  </div>
+                  {showEditExhibition ? (
+                    <form onSubmit={handleUpdateExhibition} className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-semibold mb-2 text-rv-text">
+                          Exhibition Title <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={exhibitionFormData.title}
+                          onChange={(e) => setExhibitionFormData(prev => ({ ...prev, title: e.target.value }))}
+                          className="w-full px-3 py-2 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                          placeholder="My Virtual Exhibition"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold mb-2 text-rv-text">
+                          Description (optional)
+                        </label>
+                        <textarea
+                          value={exhibitionFormData.subtitle}
+                          onChange={(e) => setExhibitionFormData(prev => ({ ...prev, subtitle: e.target.value }))}
+                          className="w-full px-3 py-2 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                          placeholder="A brief description of your exhibition..."
+                          rows={3}
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          type="submit"
+                          disabled={loading}
+                          className="flex-1 px-4 py-2 bg-rv-primary text-white rounded-rvMd font-semibold hover:bg-rv-primaryHover transition-colors disabled:opacity-50"
+                        >
+                          {loading ? 'Saving...' : 'Save Changes'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowEditExhibition(false);
+                            setExhibitionFormData({ title: '', subtitle: '' });
+                          }}
+                          className="px-4 py-2 border border-rv-neutral text-rv-text rounded-rvMd font-semibold hover:bg-rv-surface transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <>
+                      <div className="flex items-start justify-between mb-3">
+                        <h3 className="text-xl font-semibold text-rv-primary line-clamp-1">
+                          {exhibition.title}
+                        </h3>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={startEditExhibition}
+                            className="p-1.5 text-rv-textMuted hover:text-rv-primary hover:bg-rv-surface rounded transition-colors"
+                            title="Edit exhibition"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                          <span className={`flex-shrink-0 px-2.5 py-0.5 text-xs font-semibold rounded-full ${
+                            exhibition.status === 'published' 
+                              ? 'bg-[#C9A24A]/15 text-[#C9A24A]' 
+                              : 'bg-slate-100 text-slate-600'
+                          }`}>
+                            {exhibition.status === 'published' ? 'Published' : 'Draft'}
+                          </span>
+                        </div>
+                      </div>
 
-                  {exhibition.subtitle && (
-                    <p className="text-sm text-rv-textMuted mb-3 line-clamp-1">{exhibition.subtitle}</p>
-                  )}
+                      {exhibition.subtitle && (
+                        <p className="text-sm text-rv-textMuted mb-3 line-clamp-1">{exhibition.subtitle}</p>
+                      )}
 
-                  <div className="space-y-2 mb-4">
+                      <div className="space-y-2 mb-4">
                     <div className="flex items-center gap-2 text-sm text-rv-textMuted">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -1704,7 +1811,7 @@ export function ArtistDashboard() {
 
                   <div className="flex gap-2">
                     <a
-                      href={`#/gallery/exhibitions/${exhibition.id}/360-editor`}
+                      href={`#/gallery/exhibitions/${exhibition.id}/360-editor?preset=classic-gallery`}
                       className="flex-1 px-3 py-2 text-sm bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-all font-semibold text-center"
                     >
                       360° Editor
@@ -1727,30 +1834,32 @@ export function ArtistDashboard() {
                     </button>
                   </div>
 
-                  {showExhibitionDeleteConfirm && (
-                    <div className="mt-4 p-4 bg-red-50 border border-red-100 rounded-rvMd">
-                      <p className="text-sm text-red-700 mb-3 font-medium">
-                        Delete this exhibition and all its artworks?
-                      </p>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => {
-                            handleDeleteExhibition(exhibition.id);
-                            setShowExhibitionDeleteConfirm(false);
-                          }}
-                          disabled={loading}
-                          className="flex-1 px-3 py-2 text-sm bg-red-500 text-white rounded-rvMd hover:bg-red-600 transition-colors font-semibold disabled:opacity-50"
-                        >
-                          Yes, Delete
-                        </button>
-                        <button
-                          onClick={() => setShowExhibitionDeleteConfirm(false)}
-                          className="flex-1 px-3 py-2 text-sm border border-red-200 text-red-600 rounded-rvMd hover:bg-red-100 transition-colors font-semibold"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
+                      {showExhibitionDeleteConfirm && (
+                        <div className="mt-4 p-4 bg-red-50 border border-red-100 rounded-rvMd">
+                          <p className="text-sm text-red-700 mb-3 font-medium">
+                            Delete this exhibition and all its artworks?
+                          </p>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => {
+                                handleDeleteExhibition(exhibition.id);
+                                setShowExhibitionDeleteConfirm(false);
+                              }}
+                              disabled={loading}
+                              className="flex-1 px-3 py-2 text-sm bg-red-500 text-white rounded-rvMd hover:bg-red-600 transition-colors font-semibold disabled:opacity-50"
+                            >
+                              Yes, Delete
+                            </button>
+                            <button
+                              onClick={() => setShowExhibitionDeleteConfirm(false)}
+                              className="flex-1 px-3 py-2 text-sm border border-red-200 text-red-600 rounded-rvMd hover:bg-red-100 transition-colors font-semibold"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>

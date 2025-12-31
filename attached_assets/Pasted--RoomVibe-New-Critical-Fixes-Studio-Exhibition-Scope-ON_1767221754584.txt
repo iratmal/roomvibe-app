@@ -1,0 +1,91 @@
+# RoomVibe – New Critical Fixes (Studio & Exhibition)
+
+> **Scope:** ONLY issues listed below. Do **not** touch previously resolved tasks.
+
+---
+
+## 1. Studio Orientation Bug (Vertical Artwork)
+
+**Problem:**
+
+* When clicking **View in Room** from Artist Profile, a vertically uploaded artwork opens **horizontally** in Studio.
+* Example: Artwork is uploaded vertical, but Studio forces horizontal orientation.
+
+**Expected behavior:**
+
+* Studio must **preserve original image orientation**.
+* If artwork is uploaded vertical → display vertical in Studio.
+* Orientation must be derived from the **original artwork image**, not from mockups or room presets.
+
+**Fix requirement:**
+
+* Detect image orientation (portrait / landscape) from source artwork image.
+* Apply correct aspect ratio when rendering in Studio.
+* Never auto-rotate or force landscape.
+
+---
+
+## 2. Artist Exhibition – Missing Edit Capabilities
+
+**Problem:**
+
+* Artist Exhibition view does **not** have edit controls.
+* Artist cannot:
+
+  * Edit exhibition title
+  * Add description
+  * Set exhibition cover image
+  * Manage exhibition metadata
+
+**Expected behavior:**
+
+* Artist Exhibition must have **same edit capabilities as Gallery Exhibition** (adjusted for artist role).
+* UI and flow should be **aligned with Gallery Dashboard**:
+
+  * Edit exhibition details
+  * Manage artworks inside exhibition
+  * Set exhibition image & description
+
+**Fix requirement:**
+
+* Reuse Gallery Exhibition edit UI logic for Artist Exhibition.
+* Respect artist permissions (single exhibition limit).
+
+---
+
+## 3. Wrong Gallery Type Opened from Artist Exhibition
+
+**Problem:**
+
+* Clicking **360° Editor / Exhibition button** opens **Modern Gallery**.
+* Artist Exhibition should open **Classic Gallery**.
+
+**Expected behavior:**
+
+* Artist Exhibition → always link to **Classic Gallery**.
+* Modern Gallery must NOT be used for artist exhibitions.
+
+**Fix requirement:**
+
+* Update routing / mapping:
+
+  * Artist Exhibition → Classic Gallery
+  * Gallery Exhibition → keep existing behavior
+
+---
+
+## 4. Consistency Check (Do Not Skip)
+
+After fixes:
+
+* View in Room → correct orientation
+* Artist Exhibition → editable
+* 360° Editor button → Classic Gallery
+
+---
+
+### Priority: 🔴 HIGH
+
+These issues block correct artist usage and create broken UX.
+
+Please implement **only** the above tasks and confirm once done.
