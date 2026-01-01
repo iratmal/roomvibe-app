@@ -1279,6 +1279,7 @@ function Studio() {
         
         if (!artworkIdParam) return;
         
+        // Only skip API fetch for demo/local artworks (non-numeric IDs)
         const existsInLocal = (localArtworks as any[]).some((a: any) => a.id === artworkIdParam);
         if (existsInLocal) {
           setArtId(artworkIdParam);
@@ -1289,8 +1290,12 @@ function Studio() {
         if (!isNaN(numericId)) {
           setIsLoadingArtwork(true);
           try {
-            // Use public artwork endpoint (no auth required for widget)
-            const response = await fetch(`${API_URL}/api/artwork/${numericId}`);
+            // ALWAYS fetch fresh data from API with cache-busting to ensure correct orientation
+            const cacheBuster = Date.now();
+            const response = await fetch(`${API_URL}/api/artwork/${numericId}?_t=${cacheBuster}`, {
+              cache: 'no-store',
+              headers: { 'Cache-Control': 'no-cache' }
+            });
             if (response.ok) {
               const data = await response.json();
               if (data.artwork) {
@@ -1354,7 +1359,20 @@ function Studio() {
                   widthCm,
                   heightCm
                 };
-                setArtworksState(prev => [dbArtwork, ...prev]);
+                // Replace existing artwork or add new one to ensure fresh data is used
+                setArtworksState(prev => {
+                  const existingIndex = prev.findIndex((a: any) => 
+                    String(a.id) === String(dbArtwork.id)
+                  );
+                  if (existingIndex >= 0) {
+                    // Replace existing with fresh data
+                    const updated = [...prev];
+                    updated[existingIndex] = dbArtwork;
+                    return updated;
+                  }
+                  // Add new artwork at the beginning
+                  return [dbArtwork, ...prev];
+                });
                 setArtId(dbArtwork.id);
               }
             }
