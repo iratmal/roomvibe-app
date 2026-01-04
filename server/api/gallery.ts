@@ -41,19 +41,22 @@ router.get('/collections', authenticateToken, requireGalleryFeature, async (req:
     let queryParams;
 
     if (effectivePlan === 'admin') {
+      // Admin in Gallery Dashboard only sees gallery-type collections, not artist exhibitions
       queryText = `
         SELECT c.*, u.email as gallery_email,
         (SELECT COUNT(*) FROM gallery_artworks WHERE collection_id = c.id) as artwork_count
         FROM gallery_collections c
         LEFT JOIN users u ON c.gallery_id = u.id
+        WHERE c.owner_type = 'gallery' OR c.owner_type IS NULL
         ORDER BY c.created_at DESC`;
       queryParams = [];
     } else {
+      // Regular gallery users see only their own gallery-type collections
       queryText = `
         SELECT c.*,
         (SELECT COUNT(*) FROM gallery_artworks WHERE collection_id = c.id) as artwork_count
         FROM gallery_collections c
-        WHERE c.gallery_id = $1
+        WHERE c.gallery_id = $1 AND (c.owner_type = 'gallery' OR c.owner_type IS NULL)
         ORDER BY c.created_at DESC`;
       queryParams = [req.user.id];
     }
@@ -111,8 +114,8 @@ router.post('/collections', authenticateToken, requireGalleryFeature, async (req
     const collectionStatus = status && validStatuses.includes(status) ? status : 'draft';
 
     const result = await query(
-      `INSERT INTO gallery_collections (gallery_id, title, subtitle, description, status, updated_at)
-       VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
+      `INSERT INTO gallery_collections (gallery_id, title, subtitle, description, status, owner_type, updated_at)
+       VALUES ($1, $2, $3, $4, $5, 'gallery', CURRENT_TIMESTAMP)
        RETURNING *`,
       [req.user.id, title, subtitle || null, description || null, collectionStatus]
     );
@@ -136,8 +139,9 @@ router.put('/collections/:id', authenticateToken, requireGalleryFeature, async (
     const collectionId = req.params.id;
     const { title, subtitle, description, status } = req.body;
 
+    // Only allow access to gallery-type collections (not artist exhibitions)
     const checkResult = await query(
-      'SELECT * FROM gallery_collections WHERE id = $1',
+      "SELECT * FROM gallery_collections WHERE id = $1 AND (owner_type = 'gallery' OR owner_type IS NULL)",
       [collectionId]
     );
 
@@ -183,8 +187,9 @@ router.delete('/collections/:id', authenticateToken, requireGalleryFeature, asyn
     const collectionId = req.params.id;
     console.log('Attempting to delete collection:', collectionId);
 
+    // Only allow deletion of gallery-type collections (not artist exhibitions)
     const checkResult = await query(
-      'SELECT * FROM gallery_collections WHERE id = $1',
+      "SELECT * FROM gallery_collections WHERE id = $1 AND (owner_type = 'gallery' OR owner_type IS NULL)",
       [collectionId]
     );
 
@@ -217,8 +222,9 @@ router.get('/collections/:id/artworks', authenticateToken, requireGalleryFeature
     const collectionId = req.params.id;
     console.log('Fetching artworks for collection:', collectionId);
 
+    // Only allow access to gallery-type collections (not artist exhibitions)
     const checkResult = await query(
-      'SELECT * FROM gallery_collections WHERE id = $1',
+      "SELECT * FROM gallery_collections WHERE id = $1 AND (owner_type = 'gallery' OR owner_type IS NULL)",
       [collectionId]
     );
 
@@ -298,8 +304,9 @@ router.post('/collections/:id/artworks', authenticateToken, requireGalleryFeatur
     const collectionId = req.params.id;
     console.log('Adding artwork to collection:', collectionId);
 
+    // Only allow adding to gallery-type collections (not artist exhibitions)
     const checkResult = await query(
-      'SELECT * FROM gallery_collections WHERE id = $1',
+      "SELECT * FROM gallery_collections WHERE id = $1 AND (owner_type = 'gallery' OR owner_type IS NULL)",
       [collectionId]
     );
 
@@ -646,8 +653,9 @@ router.put('/collections/:id/scene', authenticateToken, requireGalleryFeature, a
       }
     }
 
+    // Only allow updating gallery-type collections (not artist exhibitions)
     const checkResult = await query(
-      'SELECT gallery_id FROM gallery_collections WHERE id = $1',
+      "SELECT gallery_id FROM gallery_collections WHERE id = $1 AND (owner_type = 'gallery' OR owner_type IS NULL)",
       [collectionId]
     );
 

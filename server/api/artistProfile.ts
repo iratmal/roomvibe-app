@@ -452,8 +452,8 @@ router.post('/exhibition', authenticateToken, async (req: any, res) => {
     }
 
     const result = await query(
-      `INSERT INTO gallery_collections (gallery_id, title, subtitle, status, updated_at)
-       VALUES ($1, $2, $3, 'draft', CURRENT_TIMESTAMP)
+      `INSERT INTO gallery_collections (gallery_id, title, subtitle, status, owner_type, updated_at)
+       VALUES ($1, $2, $3, 'draft', 'artist', CURRENT_TIMESTAMP)
        RETURNING *`,
       [req.user.id, title, subtitle || null]
     );

@@ -791,6 +791,19 @@ export async function initializeDatabase() {
       END $$;
     `);
 
+    // Add owner_type column to gallery_collections to distinguish artist exhibitions from gallery collections
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'gallery_collections' AND column_name = 'owner_type'
+        ) THEN
+          ALTER TABLE gallery_collections ADD COLUMN owner_type VARCHAR(20) DEFAULT 'gallery';
+        END IF;
+      END $$;
+    `);
+
     await query(`
       CREATE TABLE IF NOT EXISTS gallery_artworks (
         id SERIAL PRIMARY KEY,
