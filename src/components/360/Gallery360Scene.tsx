@@ -647,7 +647,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       {/* Main ceiling plane - light warm off-white */}
       <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
-        <SafeCeilingMaterial color="#ECEBE7" />
+        <SafeCeilingMaterial color="#D4CDC4" />
       </mesh>
       
       {/* Cove edge - lighter dark grey for contrast */}
