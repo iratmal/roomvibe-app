@@ -727,6 +727,69 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         <planeGeometry args={[depth, height]} />
         <SafeWallMaterial color="#8A8782" />
       </mesh>
+      
+      {/* Wall edge trims - dark lines where walls meet */}
+      {/* Vertical corner edges */}
+      <mesh position={[-halfW + 0.02, height / 2, -halfD + 0.02]}>
+        <boxGeometry args={[0.06, height, 0.06]} />
+        <meshBasicMaterial color="#1F1F1F" />
+      </mesh>
+      <mesh position={[halfW - 0.02, height / 2, -halfD + 0.02]}>
+        <boxGeometry args={[0.06, height, 0.06]} />
+        <meshBasicMaterial color="#1F1F1F" />
+      </mesh>
+      <mesh position={[-halfW + 0.02, height / 2, halfD - 0.02]}>
+        <boxGeometry args={[0.06, height, 0.06]} />
+        <meshBasicMaterial color="#1F1F1F" />
+      </mesh>
+      <mesh position={[halfW - 0.02, height / 2, halfD - 0.02]}>
+        <boxGeometry args={[0.06, height, 0.06]} />
+        <meshBasicMaterial color="#1F1F1F" />
+      </mesh>
+      
+      {/* Horizontal ceiling edges where walls meet ceiling */}
+      {/* North wall top edge */}
+      <mesh position={[0, height - 0.03, -halfD + 0.03]}>
+        <boxGeometry args={[width, 0.06, 0.06]} />
+        <meshBasicMaterial color="#1F1F1F" />
+      </mesh>
+      {/* South wall top edge */}
+      <mesh position={[0, height - 0.03, halfD - 0.03]}>
+        <boxGeometry args={[width, 0.06, 0.06]} />
+        <meshBasicMaterial color="#1F1F1F" />
+      </mesh>
+      {/* East wall top edge */}
+      <mesh position={[halfW - 0.03, height - 0.03, 0]}>
+        <boxGeometry args={[0.06, 0.06, depth]} />
+        <meshBasicMaterial color="#1F1F1F" />
+      </mesh>
+      {/* West wall top edge */}
+      <mesh position={[-halfW + 0.03, height - 0.03, 0]}>
+        <boxGeometry args={[0.06, 0.06, depth]} />
+        <meshBasicMaterial color="#1F1F1F" />
+      </mesh>
+      
+      {/* Floor edges where walls meet floor */}
+      {/* North wall floor edge */}
+      <mesh position={[0, 0.03, -halfD + 0.03]}>
+        <boxGeometry args={[width, 0.06, 0.06]} />
+        <meshBasicMaterial color="#1F1F1F" />
+      </mesh>
+      {/* South wall floor edge */}
+      <mesh position={[0, 0.03, halfD - 0.03]}>
+        <boxGeometry args={[width, 0.06, 0.06]} />
+        <meshBasicMaterial color="#1F1F1F" />
+      </mesh>
+      {/* East wall floor edge */}
+      <mesh position={[halfW - 0.03, 0.03, 0]}>
+        <boxGeometry args={[0.06, 0.06, depth]} />
+        <meshBasicMaterial color="#1F1F1F" />
+      </mesh>
+      {/* West wall floor edge */}
+      <mesh position={[-halfW + 0.03, 0.03, 0]}>
+        <boxGeometry args={[0.06, 0.06, depth]} />
+        <meshBasicMaterial color="#1F1F1F" />
+      </mesh>
 
       {columnPositions.map((pos, i) => (
         <Column
