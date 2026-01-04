@@ -278,6 +278,11 @@ export function ArtistDashboard() {
       setError('Artwork image is required');
       return;
     }
+    
+    if (!exhibitionArtworkForm.widthValue || !exhibitionArtworkForm.heightValue) {
+      setError('Artwork dimensions (width and height) are required');
+      return;
+    }
 
     setExhibitionArtworkLoading(true);
     setError('');
@@ -285,8 +290,8 @@ export function ArtistDashboard() {
     try {
       const formDataToSend = new FormData();
       formDataToSend.append('title', exhibitionArtworkForm.title);
-      formDataToSend.append('widthValue', exhibitionArtworkForm.widthValue || '50');
-      formDataToSend.append('heightValue', exhibitionArtworkForm.heightValue || '50');
+      formDataToSend.append('widthValue', exhibitionArtworkForm.widthValue);
+      formDataToSend.append('heightValue', exhibitionArtworkForm.heightValue);
       formDataToSend.append('dimensionUnit', exhibitionArtworkForm.dimensionUnit);
       formDataToSend.append('image', exhibitionArtworkImage);
 
