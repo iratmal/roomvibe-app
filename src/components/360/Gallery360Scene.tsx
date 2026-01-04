@@ -66,7 +66,7 @@ function isValidArtworkUrl(url: string | undefined | null): boolean {
  * There are two floor meshes: outerEnclosureFloor and tiledFloorMain; both guarded by FloorGuard.
  */
 
-const GALLERY_WALL_COLOR = '#9A9792';
+const GALLERY_WALL_COLOR = '#8A8782';
 const GALLERY_CEILING_COLOR = '#F0F0EE';
 const GALLERY_FLOOR_COLOR = '#D8D5D0';
 
@@ -706,7 +706,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       {/* Gallery walls - warm gallery grey */}
       <mesh position={[0, height / 2, -halfD]} receiveShadow>
         <planeGeometry args={[width, height]} />
-        <SafeWallMaterial color="#9A9792" />
+        <SafeWallMaterial color="#8A8782" />
       </mesh>
 
       {/* South wall with entrance opening */}
@@ -720,12 +720,12 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
 
       <mesh position={[halfW, height / 2, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
-        <SafeWallMaterial color="#9A9792" />
+        <SafeWallMaterial color="#8A8782" />
       </mesh>
 
       <mesh position={[-halfW, height / 2, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
-        <SafeWallMaterial color="#9A9792" />
+        <SafeWallMaterial color="#8A8782" />
       </mesh>
 
       {columnPositions.map((pos, i) => (
@@ -773,12 +773,16 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
             color="#FFF2E0"
           />
           
-          {/* Ceiling downlights - warm spotlights illuminating artwork walls - intensity +18% */}
-          <pointLight position={[-4, height - 0.3, -3]} intensity={0.95} color="#FFF2E0" distance={12} decay={2} />
-          <pointLight position={[4, height - 0.3, -3]} intensity={0.95} color="#FFF2E0" distance={12} decay={2} />
-          <pointLight position={[-4, height - 0.3, 3]} intensity={0.95} color="#FFF2E0" distance={12} decay={2} />
-          <pointLight position={[4, height - 0.3, 3]} intensity={0.95} color="#FFF2E0" distance={12} decay={2} />
-          <pointLight position={[0, height - 0.3, 0]} intensity={0.7} color="#FFF2E0" distance={15} decay={2} />
+          {/* Ceiling downlights - stronger spotlights illuminating artwork walls - intensity +40% */}
+          <pointLight position={[-4, height - 0.3, -3]} intensity={1.3} color="#FFF2E0" distance={14} decay={1.8} />
+          <pointLight position={[4, height - 0.3, -3]} intensity={1.3} color="#FFF2E0" distance={14} decay={1.8} />
+          <pointLight position={[-4, height - 0.3, 3]} intensity={1.3} color="#FFF2E0" distance={14} decay={1.8} />
+          <pointLight position={[4, height - 0.3, 3]} intensity={1.3} color="#FFF2E0" distance={14} decay={1.8} />
+          <pointLight position={[0, height - 0.3, 0]} intensity={1.0} color="#FFF2E0" distance={16} decay={1.8} />
+          {/* Additional wall-focused spotlights */}
+          <pointLight position={[-6, height - 0.5, 0]} intensity={1.1} color="#FFF2E0" distance={10} decay={2} />
+          <pointLight position={[6, height - 0.5, 0]} intensity={1.1} color="#FFF2E0" distance={10} decay={2} />
+          <pointLight position={[0, height - 0.5, -5]} intensity={1.1} color="#FFF2E0" distance={10} decay={2} />
           
           {/* Designer benches with premium dark grey */}
           <GalleryBench position={[-3.0, 0, 0]} rotation={[0, Math.PI / 2, 0]} />
@@ -874,27 +878,27 @@ function EntrancePortal({ position, rotation }: { position: [number, number, num
         </mesh>
       </group>
 
-      {/* Entrance corridor - matching gallery walls */}
+      {/* Entrance corridor - darker to create transition from another space */}
       <group>
-        {/* Corridor left wall */}
+        {/* Corridor left wall - darker */}
         <mesh position={[-(PORTAL_W / 2) - (FRAME_T / 2), PORTAL_H / 2, -CORRIDOR_DEPTH / 2]}>
           <boxGeometry args={[FRAME_T, PORTAL_H, CORRIDOR_DEPTH]} />
-          <meshBasicMaterial color="#9A9792" />
+          <meshBasicMaterial color="#706E6C" />
         </mesh>
-        {/* Corridor right wall */}
+        {/* Corridor right wall - darker */}
         <mesh position={[(PORTAL_W / 2) + (FRAME_T / 2), PORTAL_H / 2, -CORRIDOR_DEPTH / 2]}>
           <boxGeometry args={[FRAME_T, PORTAL_H, CORRIDOR_DEPTH]} />
-          <meshBasicMaterial color="#9A9792" />
+          <meshBasicMaterial color="#706E6C" />
         </mesh>
-        {/* Corridor ceiling - light grey */}
+        {/* Corridor ceiling - darker */}
         <mesh position={[0, PORTAL_H, -CORRIDOR_DEPTH / 2]}>
           <boxGeometry args={[PORTAL_W + FRAME_T * 2, 0.10, CORRIDOR_DEPTH]} />
-          <SafeCeilingMaterial color="#F0F0EE" />
+          <SafeCeilingMaterial color="#E0E0DE" />
         </mesh>
-        {/* Corridor floor - matching gallery tiles */}
+        {/* Corridor floor - darker */}
         <mesh name="corridorFloor" position={[0, 0.005, -CORRIDOR_DEPTH / 2]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[PORTAL_W, CORRIDOR_DEPTH]} />
-          <SafeFloorMaterial color="#D8D5D0" />
+          <SafeFloorMaterial color="#B8B5B0" />
         </mesh>
       </group>
 
@@ -906,44 +910,50 @@ function EntrancePortal({ position, rotation }: { position: [number, number, num
           <SafeFloorMaterial color="#D8D5D0" />
         </mesh>
         
-        {/* Secondary gallery back wall - matching gallery */}
+        {/* Secondary gallery back wall - darker for depth illusion */}
         <mesh position={[0, PORTAL_H / 2, -SECONDARY_D]}>
           <boxGeometry args={[SECONDARY_W, PORTAL_H + 0.5, 0.15]} />
-          <meshBasicMaterial color="#9A9792" />
+          <meshBasicMaterial color="#5A5856" />
         </mesh>
         
-        {/* Secondary gallery left wall */}
+        {/* Secondary gallery left wall - darker */}
         <mesh position={[-SECONDARY_W / 2, PORTAL_H / 2, -SECONDARY_D / 2]}>
           <boxGeometry args={[0.15, PORTAL_H + 0.5, SECONDARY_D]} />
-          <meshBasicMaterial color="#9A9792" />
+          <meshBasicMaterial color="#656361" />
         </mesh>
         
-        {/* Secondary gallery right wall */}
+        {/* Secondary gallery right wall - darker */}
         <mesh position={[SECONDARY_W / 2, PORTAL_H / 2, -SECONDARY_D / 2]}>
           <boxGeometry args={[0.15, PORTAL_H + 0.5, SECONDARY_D]} />
-          <meshBasicMaterial color="#9A9792" />
+          <meshBasicMaterial color="#656361" />
         </mesh>
         
-        {/* Secondary gallery ceiling */}
+        {/* Secondary gallery ceiling - darker */}
         <mesh position={[0, PORTAL_H + 0.2, -SECONDARY_D / 2]}>
           <boxGeometry args={[SECONDARY_W, 0.1, SECONDARY_D]} />
-          <SafeCeilingMaterial color="#F0F0EE" />
+          <SafeCeilingMaterial color="#E0E0DE" />
+        </mesh>
+        
+        {/* Secondary gallery floor - darker */}
+        <mesh position={[0, 0.002, -SECONDARY_D / 2]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[SECONDARY_W, SECONDARY_D]} />
+          <SafeFloorMaterial color="#B0ADA8" />
         </mesh>
 
-        {/* Corridor lighting - warm glow inviting inside */}
+        {/* Very dim corridor lighting - creates dark passage effect */}
         <pointLight 
           position={[0, PORTAL_H * 0.85, -CORRIDOR_DEPTH * 0.5]} 
-          intensity={0.5} 
-          distance={8} 
-          color="#FFF2E0"
+          intensity={0.15} 
+          distance={5} 
+          color="#E8E0D8"
         />
         
-        {/* Dimmer ambient lighting in secondary space */}
+        {/* Very dim secondary space - feels like another darker room */}
         <pointLight 
           position={[0, PORTAL_H * 0.85, -SECONDARY_D * 0.4]} 
-          intensity={0.35} 
-          distance={12} 
-          color="#FFF2E0"
+          intensity={0.12} 
+          distance={8} 
+          color="#E8E0D8"
         />
         <pointLight 
           position={[-2, PORTAL_H * 0.7, -SECONDARY_D * 0.6]} 
@@ -992,19 +1002,19 @@ function SouthWallWithOpening({
       {/* Left section of wall */}
       <mesh position={[-(width / 2 - leftWidth / 2), height / 2, 0]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[leftWidth, height]} />
-        <SafeWallMaterial color="#9A9792" />
+        <SafeWallMaterial color="#8A8782" />
       </mesh>
 
       {/* Right section of wall */}
       <mesh position={[(width / 2 - rightWidth / 2), height / 2, 0]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[rightWidth, height]} />
-        <SafeWallMaterial color="#9A9792" />
+        <SafeWallMaterial color="#8A8782" />
       </mesh>
 
       {/* Top section above portal */}
       <mesh position={[0, portalH + topHeight / 2, 0]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[portalW, topHeight]} />
-        <SafeWallMaterial color="#9A9792" />
+        <SafeWallMaterial color="#8A8782" />
       </mesh>
     </group>
   );
