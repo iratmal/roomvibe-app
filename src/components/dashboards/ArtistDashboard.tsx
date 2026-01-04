@@ -1657,8 +1657,8 @@ export function ArtistDashboard() {
                       </button>
                       {isArtworkInExhibition(artwork.id) ? (
                         <button
-                          disabled
-                          className="flex-1 h-11 px-3 text-sm bg-[#C9A24A]/10 text-[#C9A24A]/70 border border-[#C9A24A]/30 rounded-rvMd font-semibold flex items-center justify-center gap-1.5 cursor-default"
+                          onClick={() => handleRemoveFromExhibition(artwork.id)}
+                          className="flex-1 h-11 px-3 text-sm bg-[#C9A24A]/10 text-[#C9A24A] border border-[#C9A24A]/40 rounded-rvMd font-semibold flex items-center justify-center gap-1.5 hover:bg-[#C9A24A]/20 transition-colors"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -1986,6 +1986,64 @@ export function ArtistDashboard() {
                           </div>
                         </div>
                       )}
+
+                      {/* Embed Exhibition Section */}
+                      <div className="mt-5 pt-5 border-t border-rv-neutral">
+                        <div className="flex items-center gap-2 mb-3">
+                          <svg className="w-4 h-4 text-rv-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                          </svg>
+                          <h4 className="text-sm font-semibold text-rv-text">Embed this Exhibition</h4>
+                        </div>
+                        <p className="text-xs text-rv-textMuted mb-3">
+                          Copy this code into your website to display your 360° exhibition.
+                        </p>
+                        <div className="bg-slate-50 rounded-rvMd p-3 mb-3 overflow-x-auto">
+                          <pre className="text-xs text-slate-700 whitespace-pre-wrap break-all font-mono">
+{`<iframe
+  src="${window.location.origin}/#/embed/exhibitions/${exhibition.id}"
+  width="100%"
+  height="720"
+  style="border:0; border-radius:12px;"
+  loading="lazy"
+  allowfullscreen
+></iframe>`}
+                          </pre>
+                        </div>
+                        <button
+                          onClick={async () => {
+                            const embedCode = `<iframe
+  src="${window.location.origin}/#/embed/exhibitions/${exhibition.id}"
+  width="100%"
+  height="720"
+  style="border:0; border-radius:12px;"
+  loading="lazy"
+  allowfullscreen
+></iframe>`;
+                            try {
+                              await navigator.clipboard.writeText(embedCode);
+                              setSuccess('Embed code copied to clipboard!');
+                              setTimeout(() => setSuccess(''), 3000);
+                            } catch (err) {
+                              setError('Failed to copy embed code');
+                            }
+                          }}
+                          className="w-full px-3 py-2 text-sm border border-rv-primary text-rv-primary rounded-rvMd hover:bg-rv-primary hover:text-white transition-all font-medium flex items-center justify-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                          Copy Code
+                        </button>
+                        {exhibition.status !== 'published' && (
+                          <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            Publish your exhibition first for the embed to work.
+                          </p>
+                        )}
+                      </div>
                     </>
                   )}
                 </div>
