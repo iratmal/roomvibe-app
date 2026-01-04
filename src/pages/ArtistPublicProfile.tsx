@@ -721,7 +721,7 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                 </p>
                 <a
                   href={`#/embed/exhibitions/${publishedExhibition.id}`}
-                  className="group w-full flex items-center justify-center gap-3 px-8 py-4 bg-white border-2 border-[#1E2A3B] text-[#1E2A3B] rounded-rvMd hover:bg-[#1E2A3B] hover:text-white transition-all duration-150"
+                  className="group w-full flex items-center justify-center gap-3 px-8 py-4 bg-white border-2 border-[#1E2A3B] text-[#1E2A3B] rounded-rvMd hover:bg-[#C9A24A] hover:border-[#C9A24A] hover:text-white transition-all duration-150"
                 >
                   <svg className="w-5 h-5 flex-shrink-0 transition-colors duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
