@@ -385,37 +385,58 @@ function WallSpotlight({ position, targetY }: {
 }
 
 function TiledFloor({ width, depth, color }: { width: number; depth: number; color: string }) {
-  const tiles = useMemo(() => {
-    const tileSize = 0.6;
-    const groutWidth = 0.015;
+  const tileData = useMemo(() => {
+    const tileSize = 0.8;
+    const groutWidth = 0.02;
     const tileActual = tileSize - groutWidth;
     const rows = Math.ceil(depth / tileSize);
     const cols = Math.ceil(width / tileSize);
-    const result: Array<{ x: number; z: number; shade: number; roughnessVar: number }> = [];
+    const tiles: Array<{ x: number; z: number; shade: number }> = [];
+    
+    const seededRandom = (seed: number) => {
+      const x = Math.sin(seed * 12.9898 + seed * 78.233) * 43758.5453;
+      return x - Math.floor(x);
+    };
     
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
+        const seed = row * 1000 + col;
         const x = -width / 2 + col * tileSize + tileSize / 2;
         const z = -depth / 2 + row * tileSize + tileSize / 2;
         if (x < width / 2 && x > -width / 2 && z < depth / 2 && z > -depth / 2) {
-          const shade = 0.96 + Math.random() * 0.08;
-          const roughnessVar = 0.55 + Math.random() * 0.15;
-          result.push({ x, z, shade, roughnessVar });
+          const shade = 0.97 + seededRandom(seed) * 0.06;
+          tiles.push({ x, z, shade });
         }
       }
     }
-    return { tiles: result, tileActual };
+    return { tiles, tileActual };
   }, [width, depth]);
 
-  const baseColor = new THREE.Color(color);
-  const groutColor = baseColor.clone().multiplyScalar(0.85);
+  const baseColor = useMemo(() => new THREE.Color('#E8E5E0'), []);
+  const groutColor = useMemo(() => new THREE.Color('#C8C5C0'), []);
 
   return (
     <group position={[0, 0.001, 0]}>
+      {/* Grout layer (base) */}
       <mesh name="tiledFloorMain" rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
-        <meshBasicMaterial color={GALLERY_FLOOR_COLOR} />
+        <meshBasicMaterial color={groutColor} />
       </mesh>
+      
+      {/* Individual tiles on top */}
+      {tileData.tiles.slice(0, 800).map((tile, i) => {
+        const tileColor = baseColor.clone().multiplyScalar(tile.shade);
+        return (
+          <mesh
+            key={i}
+            position={[tile.x, 0.002, tile.z]}
+            rotation={[-Math.PI / 2, 0, 0]}
+          >
+            <planeGeometry args={[tileData.tileActual, tileData.tileActual]} />
+            <meshBasicMaterial color={tileColor} />
+          </mesh>
+        );
+      })}
     </group>
   );
 }
@@ -439,7 +460,7 @@ function OuterEnclosure({ width, height, depth }: { width: number; height: numbe
       </mesh>
       <mesh name="outerEnclosureFloor" position={[0, -0.8, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[size, size]} />
-        <meshBasicMaterial color={GALLERY_FLOOR_COLOR} />
+        <meshBasicMaterial color="#C8C5C0" />
       </mesh>
     </group>
   );
