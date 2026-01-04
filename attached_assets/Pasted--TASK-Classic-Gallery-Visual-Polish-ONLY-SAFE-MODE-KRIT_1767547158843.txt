@@ -1,0 +1,197 @@
+# 🎯 TASK: Classic Gallery – Visual Polish ONLY (SAFE MODE)
+
+## 🔒 KRITIČNO – PROČITATI PRIJE RADA
+
+Ovo je **isključivo dizajnerski (visual) task**.
+
+❗ **ZABRANJENO JE DIRATI:**
+
+* kretanje po galeriji (street‑view / navigation)
+* kameru (position, rotation, limits)
+* viewpoint logiku
+* Three.js / R3F kontrole
+* hitboxe, colliders, evente
+* bilo kakvu logiku vezanu uz movement
+
+➡️ **Kretanje trenutno radi SAVRŠENO i NE SMIJE SE PROMIJENITI.**
+
+Ako postoji i najmanja sumnja da bi neka promjena mogla utjecati na kretanje – **NEMOJ JE RADITI**.
+
+---
+
+## 🧠 KONTEKST (VAŽNO)
+
+* Editira se **Classic Gallery** u **Gallery Dashboardu**
+* Classic Gallery je **SINGLE SOURCE OF TRUTH**
+* Sve promjene se **automatski preslikavaju** na:
+
+  * Gallery Dashboard
+  * Artist Dashboard
+  * public gallery / exhibition view
+
+➡️ Zato su dozvoljene **samo vizualne promjene materijala, boja i svjetla**.
+
+---
+
+## 🎯 CILJ TASKA
+
+Učiniti Classic Gallery:
+
+* toplijom
+* prirodnijom
+* realističnijom
+* „gallery-like“ (premium art space vibe)
+* vizualno konzistentnom (nema „bijelog outliera“ zida)
+
+⚠️ **Bez ikakvog utjecaja na ponašanje galerije.**
+
+---
+
+## ✅ DOZVOLJEN SCOPE (SAMO OVO)
+
+### 1️⃣ ZIDOVI (NAJBITNIJE)
+
+* SVI zidovi moraju imati **istu baznu boju** (nema izuzetaka)
+* Trenutno je jedan zid ostao bijel → **to treba ispraviti**
+
+Koristiti **toplu srednje-svijetlu sivu** (gallery gray):
+
+* `#CFCFCB` (preporučeno)
+* ili vrlo bliska nijansa
+
+➡️ NEMA čistog bijelog zida.
+➡️ Samo `material.color`.
+➡️ Bez tekstura, bez normal maps.
+
+---
+
+### 2️⃣ POD
+
+* Trenutni crni pod djeluje previše "teško" i guta prostor
+* Zamijeniti s **tamnim toplim sivim tonom**
+
+**Primjeri:**
+
+* `#2B2B2B`
+* `#3A3A3A`
+
+Ako postoji parametar:
+
+* blagi roughness (diskretno)
+
+➡️ Ne dirati mesh.
+➡️ Ne dirati scale.
+
+---
+
+### 3️⃣ PLAFON / GREDE
+
+* Plafon **NE smije biti tamniji od zidova**
+* Plafon treba koristiti **svjetliju nijansu iste palete** kao zidovi
+
+Preporuka:
+
+* plafon = svijetlija verzija zidne boje (npr. `#E5E5E3`)
+* grede ostaju tamnije, ali ne čisto crne
+
+Grede:
+
+* `#1F1F1F` (charcoal)
+
+---
+
+### 4️⃣ OSVJETLJENJE (JAKO VAŽNO)
+
+* **NE MIJENJATI POZICIJE SVJETALA**
+* **NE MIJENJATI BROJ SVJETALA**
+
+Dozvoljeno:
+
+* pojačati intenzitet gornjih svjetiljki koje osvjetljavaju zidove sa slikama
+* blago zagrijati temperaturu svjetla
+
+Cilj:
+
+* da se **jasno i snažno vidi osvjetljenje koje pada NA SLIKE**
+* da zidovi s radovima budu vidljivo naglašeni
+
+Ako postoji light color:
+
+* koristiti blago topli ton (npr. `#FFF2E0`)
+* intenzitet max +15–20% (ne više)
+
+---
+
+### 5️⃣ OSTALO
+
+#### Ulaz / vrata
+
+* Trenutno su vidljivi samo obrisi ulaza
+* Potrebno je napraviti **realističniji prikaz ulaznog prostora**
+
+Dozvoljeno:
+
+* jasniji frame / opening
+* suptilna dubina (bez novih mesh-eva ako nije nužno)
+
+❗ Ne dodavati kompleksna vrata.
+❗ Samo vizualno jasno naznačiti ulaz / izlaz.
+
+#### Stupići (trenutno žuti)
+
+* Zamijeniti žutu boju s **RoomVibe Navy / Anthracite**
+
+Preporuka:
+
+* `#0B1F2A` ili vrlo bliska nijansa
+
+➡️ Diskretan brand touch u prostoru.
+
+---
+
+## ❌ STROGO ZABRANJENO
+
+* promjena kamere
+* promjena movement speeda
+* promjena rotacije
+* promjena controls
+* refactor Three.js scene
+* promjena scene grapha
+* dodavanje novih light sourceova
+
+Ako nešto od ovoga dotakneš → task se smatra neuspješnim.
+
+---
+
+## 🛑 STOP CONDITION
+
+* Vizual galerije je topliji i prirodniji
+* Osvjetljenje jasno naglašava slike
+* Kretanje se ponaša **identično kao prije**
+* Nema side‑effecta na druge dashboarde
+
+Kad završiš:
+
+1. Napiši **točno koje fileove si mijenjao**
+2. Kratko opiši **što je vizualno promijenjeno**
+3. **Ne radi ništa dalje**
+
+---
+
+## 📸 NAPOMENA ZA SCREENSHOTE
+
+Uz ovaj task bit će priloženi screenshoti trenutnog stanja i referentnog toplijeg izgleda **ISKLJUČIVO kao vizualna referenca**.
+
+➡️ Screenshoti služe da razumiješ vibe, **ne da kopiraš layout ili logiku**.
+
+---
+
+## ⚡ PRIORITY MODE
+
+FAST MODE – ON
+
+---
+
+## 🧩 SAŽETAK (JEDNA REČENICA)
+
+**Poliraj izgled Classic galerije (boje + svjetlo) tako da djeluje toplije i premium, bez diranja ijedne linije koda vezane uz kretanje ili kameru.**
