@@ -66,7 +66,7 @@ function isValidArtworkUrl(url: string | undefined | null): boolean {
  * There are two floor meshes: outerEnclosureFloor and tiledFloorMain; both guarded by FloorGuard.
  */
 
-const GALLERY_WALL_COLOR = '#A8A5A0';
+const GALLERY_WALL_COLOR = '#9A9792';
 const GALLERY_CEILING_COLOR = '#F0F0EE';
 const GALLERY_FLOOR_COLOR = '#D8D5D0';
 
@@ -706,7 +706,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       {/* Gallery walls - warm gallery grey */}
       <mesh position={[0, height / 2, -halfD]} receiveShadow>
         <planeGeometry args={[width, height]} />
-        <SafeWallMaterial color="#A8A5A0" />
+        <SafeWallMaterial color="#9A9792" />
       </mesh>
 
       {/* South wall with entrance opening */}
@@ -720,12 +720,12 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
 
       <mesh position={[halfW, height / 2, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
-        <SafeWallMaterial color="#A8A5A0" />
+        <SafeWallMaterial color="#9A9792" />
       </mesh>
 
       <mesh position={[-halfW, height / 2, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
-        <SafeWallMaterial color="#A8A5A0" />
+        <SafeWallMaterial color="#9A9792" />
       </mesh>
 
       {columnPositions.map((pos, i) => (
@@ -808,10 +808,10 @@ function GalleryBench({ position, rotation }: { position: [number, number, numbe
 
   return (
     <group position={position} rotation={rotation}>
-      {/* Minimalist premium dark grey cube bench - no legs, pure block form */}
+      {/* Minimalist premium RoomVibe Navy bench - no legs, pure block form */}
       <mesh position={[0, BENCH_H / 2, 0]} castShadow receiveShadow>
         <boxGeometry args={[BENCH_L, BENCH_H, BENCH_W]} />
-        <meshBasicMaterial color="#2F2F2F" />
+        <meshBasicMaterial color="#1E2A3B" />
       </mesh>
     </group>
   );
@@ -824,22 +824,22 @@ function DecorativeVase({ position }: { position: [number, number, number] }) {
 
   return (
     <group position={position}>
-      {/* Main body - RoomVibe Navy/Anthracite */}
+      {/* Main body - RoomVibe Navy */}
       <mesh position={[0, VASE_H / 2, 0]}>
         <cylinderGeometry args={[TOP_R, BASE_R, VASE_H, 32]} />
-        <meshBasicMaterial color="#0B1F2A" />
+        <meshBasicMaterial color="#1E2A3B" />
       </mesh>
       
       {/* Subtle inner shadow ring at top */}
       <mesh position={[0, VASE_H - 0.02, 0]}>
         <cylinderGeometry args={[TOP_R - 0.02, TOP_R, 0.04, 32]} />
-        <meshBasicMaterial color="#081920" />
+        <meshBasicMaterial color="#151F2D" />
       </mesh>
       
       {/* Base ring for grounding */}
       <mesh position={[0, 0.015, 0]}>
         <cylinderGeometry args={[BASE_R + 0.01, BASE_R + 0.02, 0.03, 32]} />
-        <meshBasicMaterial color="#0A1D26" />
+        <meshBasicMaterial color="#1A2535" />
       </mesh>
     </group>
   );
@@ -855,22 +855,22 @@ function EntrancePortal({ position, rotation }: { position: [number, number, num
 
   return (
     <group position={position} rotation={rotation}>
-      {/* Portal Frame - darker charcoal for definition */}
+      {/* Portal Frame - RoomVibe Navy for brand accent */}
       <group>
         {/* Left post */}
         <mesh position={[-(PORTAL_W / 2) - (FRAME_T / 2), PORTAL_H / 2, 0]} castShadow>
           <boxGeometry args={[FRAME_T, PORTAL_H, FRAME_T]} />
-          <meshBasicMaterial color="#2A2A2A" />
+          <meshBasicMaterial color="#1E2A3B" />
         </mesh>
         {/* Right post */}
         <mesh position={[(PORTAL_W / 2) + (FRAME_T / 2), PORTAL_H / 2, 0]} castShadow>
           <boxGeometry args={[FRAME_T, PORTAL_H, FRAME_T]} />
-          <meshBasicMaterial color="#2A2A2A" />
+          <meshBasicMaterial color="#1E2A3B" />
         </mesh>
         {/* Top lintel */}
         <mesh position={[0, PORTAL_H + (FRAME_T / 2), 0]} castShadow>
           <boxGeometry args={[PORTAL_W + FRAME_T * 2, FRAME_T, FRAME_T]} />
-          <meshBasicMaterial color="#2A2A2A" />
+          <meshBasicMaterial color="#1E2A3B" />
         </mesh>
       </group>
 
@@ -879,12 +879,12 @@ function EntrancePortal({ position, rotation }: { position: [number, number, num
         {/* Corridor left wall */}
         <mesh position={[-(PORTAL_W / 2) - (FRAME_T / 2), PORTAL_H / 2, -CORRIDOR_DEPTH / 2]}>
           <boxGeometry args={[FRAME_T, PORTAL_H, CORRIDOR_DEPTH]} />
-          <meshBasicMaterial color="#A8A5A0" />
+          <meshBasicMaterial color="#9A9792" />
         </mesh>
         {/* Corridor right wall */}
         <mesh position={[(PORTAL_W / 2) + (FRAME_T / 2), PORTAL_H / 2, -CORRIDOR_DEPTH / 2]}>
           <boxGeometry args={[FRAME_T, PORTAL_H, CORRIDOR_DEPTH]} />
-          <meshBasicMaterial color="#A8A5A0" />
+          <meshBasicMaterial color="#9A9792" />
         </mesh>
         {/* Corridor ceiling - light grey */}
         <mesh position={[0, PORTAL_H, -CORRIDOR_DEPTH / 2]}>
@@ -906,36 +906,44 @@ function EntrancePortal({ position, rotation }: { position: [number, number, num
           <SafeFloorMaterial color="#D8D5D0" />
         </mesh>
         
-        {/* Secondary gallery back wall - slightly darker */}
+        {/* Secondary gallery back wall - matching gallery */}
         <mesh position={[0, PORTAL_H / 2, -SECONDARY_D]}>
           <boxGeometry args={[SECONDARY_W, PORTAL_H + 0.5, 0.15]} />
-          <meshBasicMaterial color="#d8d5d0" />
+          <meshBasicMaterial color="#9A9792" />
         </mesh>
         
         {/* Secondary gallery left wall */}
         <mesh position={[-SECONDARY_W / 2, PORTAL_H / 2, -SECONDARY_D / 2]}>
           <boxGeometry args={[0.15, PORTAL_H + 0.5, SECONDARY_D]} />
-          <meshBasicMaterial color="#dcd9d4" />
+          <meshBasicMaterial color="#9A9792" />
         </mesh>
         
         {/* Secondary gallery right wall */}
         <mesh position={[SECONDARY_W / 2, PORTAL_H / 2, -SECONDARY_D / 2]}>
           <boxGeometry args={[0.15, PORTAL_H + 0.5, SECONDARY_D]} />
-          <meshBasicMaterial color="#dcd9d4" />
+          <meshBasicMaterial color="#9A9792" />
         </mesh>
         
         {/* Secondary gallery ceiling */}
         <mesh position={[0, PORTAL_H + 0.2, -SECONDARY_D / 2]}>
           <boxGeometry args={[SECONDARY_W, 0.1, SECONDARY_D]} />
-          <SafeCeilingMaterial color="#e0ddd8" />
+          <SafeCeilingMaterial color="#F0F0EE" />
         </mesh>
 
+        {/* Corridor lighting - warm glow inviting inside */}
+        <pointLight 
+          position={[0, PORTAL_H * 0.85, -CORRIDOR_DEPTH * 0.5]} 
+          intensity={0.5} 
+          distance={8} 
+          color="#FFF2E0"
+        />
+        
         {/* Dimmer ambient lighting in secondary space */}
         <pointLight 
           position={[0, PORTAL_H * 0.85, -SECONDARY_D * 0.4]} 
-          intensity={0.25} 
-          distance={10} 
-          color="#f5f0e8"
+          intensity={0.35} 
+          distance={12} 
+          color="#FFF2E0"
         />
         <pointLight 
           position={[-2, PORTAL_H * 0.7, -SECONDARY_D * 0.6]} 
@@ -984,19 +992,19 @@ function SouthWallWithOpening({
       {/* Left section of wall */}
       <mesh position={[-(width / 2 - leftWidth / 2), height / 2, 0]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[leftWidth, height]} />
-        <SafeWallMaterial color="#A8A5A0" />
+        <SafeWallMaterial color="#9A9792" />
       </mesh>
 
       {/* Right section of wall */}
       <mesh position={[(width / 2 - rightWidth / 2), height / 2, 0]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[rightWidth, height]} />
-        <SafeWallMaterial color="#A8A5A0" />
+        <SafeWallMaterial color="#9A9792" />
       </mesh>
 
       {/* Top section above portal */}
       <mesh position={[0, portalH + topHeight / 2, 0]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[portalW, topHeight]} />
-        <SafeWallMaterial color="#A8A5A0" />
+        <SafeWallMaterial color="#9A9792" />
       </mesh>
     </group>
   );
