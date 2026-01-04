@@ -182,10 +182,10 @@ export function Gallery360Editor({
     }
   }, [selectedPresetId, previousPresetId, preset.slots, resetToSlots]);
 
-  // Auto-switch to classic-gallery when hidePresetSelector becomes true (artist-only users)
+  // Auto-switch to white-cube-v1 (Classic Gallery) when hidePresetSelector becomes true (artist-only users)
   useEffect(() => {
-    if (hidePresetSelector && selectedPresetId !== 'classic-gallery') {
-      setSelectedPresetId('classic-gallery');
+    if (hidePresetSelector && selectedPresetId !== 'white-cube-v1') {
+      setSelectedPresetId('white-cube-v1');
     }
   }, [hidePresetSelector, selectedPresetId]);
 

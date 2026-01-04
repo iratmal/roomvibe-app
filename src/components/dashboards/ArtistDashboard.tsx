@@ -1934,7 +1934,7 @@ export function ArtistDashboard() {
 
                   <div className="flex gap-2">
                     <a
-                      href={`#/gallery/exhibitions/${exhibition.id}/360-editor?preset=classic-gallery`}
+                      href={`#/gallery/exhibitions/${exhibition.id}/360-editor?preset=white-cube-v1`}
                       className="flex-1 px-3 py-2 text-sm bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-all font-semibold text-center"
                     >
                       Edit Exhibition

@@ -3774,7 +3774,7 @@ function Exhibition360EditorPage() {
   // Determine if user is artist-only (has artist entitlement but NOT gallery entitlement)
   const isArtistOnly = !authLoading && hasEntitlement?.('artist_access') && !hasEntitlement?.('gallery_access');
   
-  // Check for preset parameter in URL (e.g., ?preset=classic-gallery for artist exhibitions)
+  // Check for preset parameter in URL (e.g., ?preset=white-cube-v1 for artist exhibitions)
   const getUrlPreset = () => {
     const queryIndex = hash.indexOf('?');
     if (queryIndex !== -1) {
@@ -3785,8 +3785,8 @@ function Exhibition360EditorPage() {
   };
   const urlPreset = getUrlPreset();
   
-  // Force classic-gallery for artists, regardless of URL parameter
-  const effectivePreset = isArtistOnly ? 'classic-gallery' : (urlPreset || 'modern-gallery-v2');
+  // Force white-cube-v1 (Classic Gallery) for artists, regardless of URL parameter
+  const effectivePreset = isArtistOnly ? 'white-cube-v1' : (urlPreset || 'modern-gallery-v2');
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -3797,17 +3797,17 @@ function Exhibition360EditorPage() {
   
   const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
   
-  // Force preset to classic-gallery when isArtistOnly becomes true
+  // Force preset to white-cube-v1 (Classic Gallery) when isArtistOnly becomes true
   useEffect(() => {
     if (isArtistOnly) {
-      setPresetId('classic-gallery');
+      setPresetId('white-cube-v1');
     }
   }, [isArtistOnly]);
   
   // Redirect artist to canonical URL if needed
   useEffect(() => {
-    if (isArtistOnly && urlPreset !== 'classic-gallery') {
-      window.location.hash = `#/gallery/exhibitions/${collectionId}/360-editor?preset=classic-gallery`;
+    if (isArtistOnly && urlPreset !== 'white-cube-v1') {
+      window.location.hash = `#/gallery/exhibitions/${collectionId}/360-editor?preset=white-cube-v1`;
     }
   }, [isArtistOnly, urlPreset, collectionId]);
 
@@ -3834,13 +3834,13 @@ function Exhibition360EditorPage() {
           const sceneData = await sceneRes.json();
           setCollectionTitle(sceneData.title || '');
           if (sceneData.scene360Data) {
-            // For artists, always use classic-gallery regardless of saved preset
+            // For artists, always use white-cube-v1 (Classic Gallery) regardless of saved preset
             const savedPreset = sceneData.scene360Data.presetId || urlPreset || 'modern-gallery-v2';
-            setPresetId(isArtistOnly ? 'classic-gallery' : savedPreset);
+            setPresetId(isArtistOnly ? 'white-cube-v1' : savedPreset);
             setInitialAssignments(sceneData.scene360Data.slots || []);
           } else if (urlPreset) {
             // No saved data yet - use URL preset for new exhibitions (artist gets classic)
-            setPresetId(isArtistOnly ? 'classic-gallery' : urlPreset);
+            setPresetId(isArtistOnly ? 'white-cube-v1' : urlPreset);
           }
         }
       } catch (err) {

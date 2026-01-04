@@ -1,0 +1,92 @@
+🧨 BUGFIX — “Classic Gallery” label je OK, ali učitava MODERN scene/visual (mora učitati pravi Classic preset)
+
+Problem (trenutno stanje):
+U 360 editoru gore piše Classic Gallery, ali vizual/scena/slotovi koji se učitavaju su i dalje Modern Gallery (tj. koristi modern assets/config). Dakle promijenjen je tekst, ali nije promijenjen stvarni preset.
+
+Goal:
+Kad je preset=classic-gallery (ili kad je user role artist), editor mora:
+
+učitati classic gallery scene, classic pano/assets, classic wall slots map, i sve classic config vrijednosti
+
+i ne smije koristiti modern defaults.
+
+✅ Acceptance criteria (strogo)
+
+Ako je URL .../360-editor?preset=classic-gallery → učitani preset mora biti classic (provjerljivo u codeu i networku).
+
+Ako se ručno stavi preset=modern-gallery i user je artist → i dalje mora učitati classic.
+
+UI label i stvarna scena moraju biti 1:1 (nema “label-only” rješenja).
+
+🔍 Što točno treba provjeriti (root cause checklist)
+A) Preset resolver / default preset
+
+Nađi funkciju/komad koda koji bira preset (npr. resolvePreset(), getPresetFromQuery(), preset || defaultPreset).
+
+Vjerojatno se događa: query kaže classic, ali kod kasnije radi preset = defaultModern ili hardcode modern assets.
+
+Fix: preset varijabla mora biti single source of truth i mora se proslijediti u scene loader.
+
+B) Scene loader koristi krivi config
+
+Provjeri gdje se učitava:
+
+panorama image / 360 texture
+
+hotspots/nav points
+
+wall slots positions map
+
+environment config
+
+Ako postoji nešto tipa:
+
+loadModernScene() se poziva uvijek
+
+ili if (!preset) modern a preset nikad nije “truthy” zbog krivog ključa (npr. očekuje classic a dobiva classic-gallery)
+
+Fix: uskladi enum/ključeve:
+
+"classic-gallery" mora mapirati na classic config file
+
+"modern-gallery" mapira na modern config file
+
+C) Mismatch u nazivima presetova (najčešći bug)
+
+Možda query koristi: preset=classic-gallery
+a kod očekuje: preset=classic (ili obrnuto)
+
+Fix: napravi normalizaciju:
+
+classic-gallery → classic
+
+modern-gallery → modern
+ili promijeni query da matcha ono što loader očekuje.
+
+🛠 Implementation requirement (konkretno)
+
+Dodaj centralnu mapu:
+
+PRESET_CONFIG = { classic: { sceneConfig: classicConfig, pano: classicPano, slots: classicSlots }, modern: { sceneConfig: modernConfig, pano: modernPano, slots: modernSlots } }
+
+Resolver:
+
+uzmi preset iz query
+
+normaliziraj ga
+
+ako role=artist → preset = classic
+
+onda const cfg = PRESET_CONFIG[preset]
+
+i svugdje koristi cfg.*
+
+Ne prihvaćam rješenje gdje samo piše “Classic Gallery” a engine ostaje modern.
+
+✅ Test steps (agent mora dokazati)
+
+Otvori .../360-editor?preset=classic-gallery → scena je classic (visual + slots).
+
+Otvori .../360-editor?preset=modern-gallery kao artist → i dalje classic.
+
+U konzoli log: console.log("preset resolved:", preset) → mora pokazati classic.
