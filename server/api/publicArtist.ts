@@ -122,8 +122,8 @@ router.get('/:slug', async (req: any, res) => {
 
     // Check if artist has a published exhibition
     const exhibitionResult = await query(
-      `SELECT id, title FROM gallery_exhibitions 
-       WHERE user_id = $1 AND status = 'published'
+      `SELECT id, title FROM gallery_collections 
+       WHERE gallery_id = $1 AND status = 'published' AND owner_type = 'artist'
        ORDER BY published_at DESC LIMIT 1`,
       [user.id]
     );

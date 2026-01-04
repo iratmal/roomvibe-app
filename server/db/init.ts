@@ -804,6 +804,19 @@ export async function initializeDatabase() {
       END $$;
     `);
 
+    // Add published_at column for tracking when exhibitions are published
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'gallery_collections' AND column_name = 'published_at'
+        ) THEN
+          ALTER TABLE gallery_collections ADD COLUMN published_at TIMESTAMP;
+        END IF;
+      END $$;
+    `);
+
     await query(`
       CREATE TABLE IF NOT EXISTS gallery_artworks (
         id SERIAL PRIMARY KEY,

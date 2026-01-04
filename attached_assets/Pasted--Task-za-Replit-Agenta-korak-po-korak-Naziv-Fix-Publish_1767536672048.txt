@@ -1,0 +1,133 @@
+# Task za Replit Agenta (korak po korak)
+
+## Naziv
+
+**Fix: Publish Exhibition button ne radi + Public Artist Page (“Profile Not Available”) + prikaz objavljene izložbe**
+
+## Kontekst (što sada vidimo)
+
+* U Artist Dashboardu na kartici izložbe postoji **Publish** / **Publish Exhibition** (gumb je dodan), ali **klik ne radi ništa** (nema promjene statusa, nema poruke, nema refresh-a embed koda).
+* Na Artist Dashboard → **Artist Profile** kartici, u boxu “Your Public Artist Page”, klik na **View your page** vodi na stranicu koja se ne učita i prikazuje:
+
+  * **“Profile Not Available – Failed to load artist profile”**
+* Nakon uspješnog publish-a, želimo da se na public artist page pojavi **gumb/link na objavljenu izložbu** (kasnije ćemo dizajnerski dotjerati; sada fokus na funkcionalnosti).
+
+## Cilj
+
+1. Publish mora stvarno objaviti izložbu (persist u bazi) i UI mora odmah pokazati da je izložba objavljena.
+2. Public artist page mora se učitavati stabilno (bez “Profile Not Available”).
+3. Kad je izložba **published**, na public artist page mora postojati jasan CTA koji vodi na public view izložbe.
+
+---
+
+## A) Publish Exhibition – funkcionalnost
+
+### Što treba napraviti
+
+1. **Provjeri handler** za klik na Publish (frontend) – trenutno izgleda kao da:
+
+   * nema API poziva, ili
+   * API vraća grešku, ali UI je ne prikazuje, ili
+   * poziv ide na krivi endpoint / krivi exhibitionId.
+2. Implementiraj (ili popravi) endpoint npr.:
+
+   * `POST /api/exhibitions/:id/publish`
+   * ili `PATCH /api/exhibitions/:id` sa `status="published"`
+3. U bazi postaviti:
+
+   * `status = 'published'` (ili `isPublished=true`)
+   * `publishedAt = now()`
+4. Nakon uspješnog publish-a:
+
+   * UI badge se promijeni iz **Draft** u **Published**
+   * sekcija “Embed this Exhibition” se prebacuje iz upozorenja u **embed code + Copy Code**
+   * **Publish gumb se sakrije** ili postane “Unpublish” (ako nemamo unpublish, onda samo disabled + tooltip “Already published”).
+
+### UX (minimalno)
+
+* Nakon publish-a prikazati **toast ili modal**:
+
+  * “✅ Čestitamo! Upravo ste objavili svoju izložbu.”
+  * sekundarni tekst: “Sada možete kopirati embed kod i podijeliti izložbu.”
+  * gumbi: **View Exhibition** (otvara public view) + **Close**
+
+### Acceptance criteria
+
+* Klik na Publish uvijek rezultira jednim od:
+
+  * (a) uspješan publish + promjena UI-a + poruka, ili
+  * (b) error poruka (npr. “Ne možemo objaviti izložbu. Pokušajte ponovno.”) s logom u konzoli/serveru.
+
+---
+
+## B) Public Artist Page – “Profile Not Available” fix
+
+### Što treba napraviti
+
+1. Repro:
+
+   * Artist Dashboard → Artist Profile → “Your Public Artist Page” → **View your page**
+   * URL tipa: `/artist/irena` (ili slug)
+2. U network tabu provjeri koji request puca:
+
+   * `GET /api/artists/:slug` ili slično
+3. Najčešći uzroci:
+
+   * slug/route mismatch (frontend traži `irena`, backend očekuje `id`)
+   * auth guard blokira public endpoint
+   * query u bazi vraća null jer se gleda krivi user/role
+   * CORS/relative path problem u stagingu
+4. Popraviti tako da:
+
+   * public endpoint radi bez auth-a
+   * vraća ispravan artist profil (name, bio, location, socials, artworks list)
+   * UI ne pada na “Profile Not Available” za validan artist slug
+
+### Acceptance criteria
+
+* `/artist/irena` (ili bilo koji postojeći artist) se učita 10/10 puta bez greške.
+* Ako slug ne postoji, onda tek prikazati “Profile Not Available” (valid error state).
+
+---
+
+## C) Prikaz Published Exhibition na public artist page
+
+### Što treba napraviti
+
+1. Kada je izložba published, public artist page treba dobiti info o **trenutno aktivnoj/published izložbi**:
+
+   * `GET /api/artists/:slug` u response dodati `publishedExhibition` (id, title, slug/id, coverImage)
+   * ili zaseban endpoint `GET /api/artists/:slug/exhibition`
+2. Na public artist page u gornjem hero dijelu dodati CTA:
+
+   * Novi gumb uz postojeće: **View Exhibition**
+   * Link vodi na public prikaz izložbe (npr. `/exhibitions/:id` ili `/embed/exhibitions/:id` – odaberi onaj koji je predviđen za javni view, ne editor).
+3. Ako artist nema published izložbu:
+
+   * gumb se ne prikazuje (ili disabled s tooltipom – ali preferiram da se ne prikazuje).
+
+### Acceptance criteria
+
+* Nakon publish-a, refresh public artist page pokazuje **View Exhibition** i vodi na ispravnu izložbu.
+
+---
+
+## Test scenariji (obavezno)
+
+1. Draft → Publish:
+
+   * klik Publish → status postane Published → embed kod se pojavi.
+2. Reload page:
+
+   * status ostaje Published (persistirano).
+3. Public artist page:
+
+   * “View your page” radi.
+4. Public CTA:
+
+   * “View Exhibition” je vidljiv samo kad postoji published izložba i radi link.
+
+## Napomena
+
+* Artist **ne smije** moći mijenjati postavke galerije (Classic/Modern itd.) – ovo nije dio ovog taska.
+* Fokus je isključivo: publish flow + public page load + public link na published exhibition.

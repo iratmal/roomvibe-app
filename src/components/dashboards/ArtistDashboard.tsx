@@ -138,6 +138,7 @@ export function ArtistDashboard() {
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
   const [uploadingCoverImage, setUploadingCoverImage] = useState(false);
+  const [showPublishSuccessModal, setShowPublishSuccessModal] = useState(false);
   
   const effectivePlan = viewerPlan || 'user';
   const isFreePlan = effectivePlan === 'user' || effectivePlan === 'free';
@@ -497,10 +498,9 @@ export function ArtistDashboard() {
       
       const data = await response.json();
       setExhibition(data.exhibition);
-      setSuccess('Exhibition published! Your embed code is now active.');
-      setTimeout(() => setSuccess(''), 5000);
+      setShowPublishSuccessModal(true);
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Failed to publish exhibition. Please try again.');
       setTimeout(() => setError(''), 5000);
     } finally {
       setLoading(false);
@@ -2517,6 +2517,40 @@ export function ArtistDashboard() {
                 >
                   Continue to Studio
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Publish Success Modal */}
+        {showPublishSuccessModal && exhibition && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-rvLg p-6 max-w-md w-full">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-rv-text mb-2">Exhibition Published!</h3>
+                <p className="text-rv-textMuted text-sm">
+                  Congratulations! Your exhibition is now live. You can copy the embed code and share it on your website.
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowPublishSuccessModal(false)}
+                  className="flex-1 px-4 py-2.5 border border-rv-neutral text-rv-text text-sm font-semibold rounded-rvMd hover:bg-rv-surface transition-colors"
+                >
+                  Close
+                </button>
+                <a
+                  href={`#/embed/exhibitions/${exhibition.id}`}
+                  className="flex-1 px-4 py-2.5 bg-[#C9A24A] text-white text-sm font-semibold rounded-rvMd hover:bg-[#B8913A] transition-colors text-center"
+                  onClick={() => setShowPublishSuccessModal(false)}
+                >
+                  View Exhibition
+                </a>
               </div>
             </div>
           </div>
