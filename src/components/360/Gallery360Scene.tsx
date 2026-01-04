@@ -68,7 +68,7 @@ function isValidArtworkUrl(url: string | undefined | null): boolean {
 
 const GALLERY_WALL_COLOR = '#CFCFCB';
 const GALLERY_CEILING_COLOR = '#E5E5E3';
-const GALLERY_FLOOR_COLOR = '#3A3A3A';
+const GALLERY_FLOOR_COLOR = '#D8D5D0';
 
 function DebugOverlay() {
   const { scene, gl } = useThree();
@@ -412,8 +412,8 @@ function TiledFloor({ width, depth, color }: { width: number; depth: number; col
     return { tiles, tileActual };
   }, [width, depth]);
 
-  const baseColor = useMemo(() => new THREE.Color('#3A3A3A'), []);
-  const groutColor = useMemo(() => new THREE.Color('#2B2B2B'), []);
+  const baseColor = useMemo(() => new THREE.Color('#D8D5D0'), []);
+  const groutColor = useMemo(() => new THREE.Color('#B8B5B0'), []);
 
   return (
     <group position={[0, 0.001, 0]}>
@@ -460,7 +460,7 @@ function OuterEnclosure({ width, height, depth }: { width: number; height: numbe
       </mesh>
       <mesh name="outerEnclosureFloor" position={[0, -0.8, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[size, size]} />
-        <meshBasicMaterial color="#2B2B2B" />
+        <meshBasicMaterial color="#B8B5B0" />
       </mesh>
     </group>
   );
@@ -762,7 +762,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
           
           {/* Warm hemisphere light - sky/ground - intensity +15% */}
           <hemisphereLight 
-            args={['#FFF2E0', '#3A3A3A', 0.58]} 
+            args={['#FFF2E0', '#D8D5D0', 0.58]} 
             position={[0, height, 0]}
           />
           
