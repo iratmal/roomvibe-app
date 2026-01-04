@@ -1,0 +1,120 @@
+✅ TASK (Canvas) — Add “Embed Exhibition” widget to My Exhibition card (Artist Dashboard)
+PRIORITY: P1 (launch-critical feature)
+🎯 Goal
+
+Na My Exhibition kartici (Artist Dashboard) dodati widget/embed section koji omogućuje artistu da svoju izložbu stavi na vlastitu web stranicu (copy/paste code).
+
+Trenutno imamo:
+
+Exhibition card (banner + title + Edit Exhibition + Delete)
+
+Exhibition Artworks list
+Ali nemamo embed widget za izložbu.
+
+✅ Placement / UI (must look clean)
+
+Na kartici “My Exhibition”:
+
+Variant (recommended):
+
+Row s gumbima:
+
+Edit Exhibition (primary, full width)
+
+Delete (danger, small) može ostati desno ili kao secondary link
+
+Ispod toga dodati novi blok:
+
+“Embed this Exhibition” (title)
+
+kratki opis: “Copy this code into your website to display your exhibition.”
+
+code box + “Copy code” button
+
+➡️ Widget dio neka bude ispod gumba, unutar iste kartice, ali vizualno odvojen (divider / light background).
+Ne stavljati još jedan veliki gumb u isti red da ne bude pretrpano.
+
+✅ Widget Code requirements (must)
+1) Provide HTML snippet (iframe)
+
+Generirati embed kod za tu izložbu:
+
+iframe src mora targetirati public route za exhibition viewer:
+
+npr. /exhibitions/:id/embed ili /exhibitions/:id/view
+
+obavezno:
+
+width="100%"
+
+height="720" (default)
+
+style="border:0; border-radius:12px;" (optional)
+
+loading="lazy"
+
+allowfullscreen
+
+Example (format može biti drugačiji, ali koncept isti):
+
+<iframe
+  src="https://roomvibe.app/exhibitions/EXHIBITION_ID/embed"
+  width="100%"
+  height="720"
+  style="border:0;"
+  loading="lazy"
+  allowfullscreen
+></iframe>
+
+2) Copy button
+
+Gumb: Copy code
+
+Nakon kopiranja: toast “Copied!”
+
+3) Optional controls (nice-to-have, but if quick add)
+
+dropdown “Height” (720 / 900 / 1080)
+
+toggle “Show title” (adds query param ?title=1/0)
+Ako je previše, skipaj u ovoj iteraciji i samo napravi default.
+
+🔐 Access / Security
+
+Embed route mora biti public read-only (bez edit mogućnosti)
+
+Ako exhibition nije Published (Draft):
+
+ili:
+
+widget prikazuje “This exhibition is not published yet.”
+
+ili:
+
+widget code se svejedno daje, ali embed prikaz je gated dok nije publish (preporuka)
+
+(Agent: implementirati najjednostavnije ispravno ponašanje, ali jasno.)
+
+✅ Acceptance criteria
+
+Na “My Exhibition” kartici postoji sekcija “Embed this Exhibition”
+
+Vidim code snippet
+
+Klik “Copy code” kopira točan HTML u clipboard
+
+Embed URL otvara izložbu u read-only modu
+
+UI ne izgleda pretrpano (nije “gumbi na gumbe”)
+
+📌 Output
+
+Agent mora napisati:
+
+koji route koristi za embed
+
+gdje se generira code snippet
+
+koji fileovi su mijenjani
+
+screenshot My Exhibition kartice nakon promjene
