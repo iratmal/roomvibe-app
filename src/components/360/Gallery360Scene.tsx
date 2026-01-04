@@ -172,7 +172,7 @@ function DebugOverlay() {
 
 function SafeWallMaterial({ color }: { color?: string }) {
   const safeColor = (color && color !== '#000000' && color !== '#000' && color !== 'black') ? color : GALLERY_WALL_COLOR;
-  return <meshLambertMaterial color={safeColor} side={THREE.DoubleSide} />;
+  return <meshStandardMaterial color={safeColor} side={THREE.DoubleSide} roughness={0.7} metalness={0} />;
 }
 
 function SafeCeilingMaterial({ color }: { color?: string }) {
@@ -372,6 +372,7 @@ function WallSpotlight({ position, targetY }: {
 
   return (
     <group position={position}>
+      {/* Spotlight fixture */}
       <mesh>
         <cylinderGeometry args={[0.06, 0.10, 0.12, 16]} />
         <meshBasicMaterial color="#1F1F1F" />
@@ -380,6 +381,18 @@ function WallSpotlight({ position, targetY }: {
         <cylinderGeometry args={[0.04, 0.04, 0.02, 16]} />
         <meshBasicMaterial color="#FFF5E0" />
       </mesh>
+      {/* Actual spotlight beam - focused narrow cone */}
+      <spotLight
+        ref={spotlightRef}
+        position={[0, -0.08, 0]}
+        intensity={8}
+        angle={0.35}
+        penumbra={0.4}
+        distance={6}
+        decay={1.2}
+        color="#FFF8E0"
+        castShadow={false}
+      />
     </group>
   );
 }
