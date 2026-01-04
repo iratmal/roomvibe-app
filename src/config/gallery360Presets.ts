@@ -104,7 +104,7 @@ export const gallery360Presets: Gallery360Preset[] = [
     dimensions: { width: 20, height: 4.5, depth: 16 },
     wallColor: '#9A9792',
     floorColor: '#3A3A3A',
-    ceilingColor: '#D4CDC4',
+    ceilingColor: '#C8BFB2',
     floorType: 'tile',
     viewpoints: [
       {

@@ -67,7 +67,7 @@ function isValidArtworkUrl(url: string | undefined | null): boolean {
  */
 
 const GALLERY_WALL_COLOR = '#9A9792';
-const GALLERY_CEILING_COLOR = '#D4CDC4';
+const GALLERY_CEILING_COLOR = '#C8BFB2';
 const GALLERY_FLOOR_COLOR = '#3A3A3A';
 
 function DebugOverlay() {
@@ -647,7 +647,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       {/* Main ceiling plane - light warm off-white */}
       <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
-        <SafeCeilingMaterial color="#D4CDC4" />
+        <SafeCeilingMaterial color="#C8BFB2" />
       </mesh>
       
       {/* Cove edge - lighter dark grey for contrast */}
@@ -690,7 +690,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
           {/* Recessed ceiling panel - light warm grey */}
           <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
             <planeGeometry args={[panel.w, panel.d]} />
-            <SafeCeilingMaterial color="#D4CDC4" />
+            <SafeCeilingMaterial color="#C8BFB2" />
           </mesh>
         </group>
       ))}
