@@ -63,6 +63,11 @@ interface ArtistPublicProfileProps {
   onViewInRoom?: (artwork: Artwork) => void;
 }
 
+interface PublishedExhibition {
+  id: number;
+  title: string;
+}
+
 export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: ArtistPublicProfileProps) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -70,6 +75,7 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
   const [profile, setProfile] = useState<ArtistProfile | null>(null);
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [artistId, setArtistId] = useState<number | null>(null);
+  const [publishedExhibition, setPublishedExhibition] = useState<PublishedExhibition | null>(null);
   const [showContactModal, setShowContactModal] = useState(false);
   const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(null);
   const [detailImageIndex, setDetailImageIndex] = useState(0);
@@ -136,6 +142,7 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
       setProfile(data.profile);
       setArtworks(data.artworks.map((a: any) => ({ ...a, likeCount: a.likeCount || 0 })));
       setArtistId(data.artistId);
+      setPublishedExhibition(data.publishedExhibition || null);
     } catch (err) {
       console.error('Error fetching artist profile:', err);
       setError('Failed to load artist profile');
@@ -461,6 +468,18 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                     View Artworks
                   </button>
                 )}
+                {publishedExhibition && (
+                  <a
+                    href={`#/embed/exhibitions/${publishedExhibition.id}`}
+                    className="px-6 py-3 bg-[#C9A24A] text-white rounded-rvMd font-semibold hover:bg-[#B8913A] transition-colors shadow-rvSoft flex items-center gap-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    View Exhibition
+                  </a>
+                )}
               </div>
             </div>
           </div>
@@ -693,6 +712,25 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
               );
               })}
             </div>
+            
+            {/* Explore Exhibition CTA - only shown if artist has published exhibition */}
+            {publishedExhibition && (
+              <div className="mt-10 text-center">
+                <a
+                  href={`#/embed/exhibitions/${publishedExhibition.id}`}
+                  className="inline-flex items-center gap-2 px-6 py-3 text-[#C9A24A] font-semibold hover:text-[#B8913A] transition-colors group"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  <span>Explore Artist's 360° Exhibition</span>
+                  <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </a>
+              </div>
+            )}
           </div>
         </section>
       )}

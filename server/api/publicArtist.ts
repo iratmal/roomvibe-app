@@ -120,10 +120,23 @@ router.get('/:slug', async (req: any, res) => {
       galleryImages: artwork.gallery_images || []
     }));
 
+    // Check if artist has a published exhibition
+    const exhibitionResult = await query(
+      `SELECT id, title FROM gallery_exhibitions 
+       WHERE user_id = $1 AND status = 'published'
+       ORDER BY published_at DESC LIMIT 1`,
+      [user.id]
+    );
+    
+    const publishedExhibition = exhibitionResult.rows.length > 0 
+      ? { id: exhibitionResult.rows[0].id, title: exhibitionResult.rows[0].title }
+      : null;
+
     res.json({ 
       profile,
       artworks,
-      artistId: user.id
+      artistId: user.id,
+      publishedExhibition
     });
   } catch (error: any) {
     console.error('Error fetching public artist profile:', error);
