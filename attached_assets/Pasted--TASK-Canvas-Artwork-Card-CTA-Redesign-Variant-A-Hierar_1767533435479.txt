@@ -1,0 +1,93 @@
+✅ TASK (Canvas) — Artwork Card CTA Redesign (Variant A: Hierarchy Stack)
+
+Goal:
+Preurediti gumbe na Artwork kartici (Artist Dashboard artworks grid) tako da UI bude čišći i manje “nabijen”, uz jasnu hijerarhiju akcija.
+
+Current problem:
+Previše gumbova u jednom bloku → kartica izgleda preširoko i vizualno teška. Treba smanjiti “CTA overload” i složiti akcije u 3 reda (hijerarhija).
+
+✅ New layout (MUST match)
+Row 1 — Admin actions (compact)
+
+Edit (secondary)
+
+Delete (danger)
+
+Dimenzije: kao sadašnji Edit/Delete (manji gumbi)
+
+U istom redu, 2 stupca, razmak 10–12px.
+
+Row 2 — Primary usage actions (main)
+
+View in Studio (primary)
+
+Add to My Exhibition (secondary / gold)
+
+U istom redu, 2 stupca, oba jednaka (50%/50%)
+
+Ovi gumbi mogu biti malo viši od Edit/Delete (npr. 44px), da se vidi da su “glavni”.
+
+Row 3 — Secondary (advanced)
+
+Get Widget Code (outline/ghost)
+
+Full width (100%)
+
+✅ Conditional states (critical UX)
+“Add to My Exhibition” state
+
+Ako artwork nije u exhibitionu → prikaži gumb Add to My Exhibition
+
+Ako artwork je u exhibitionu → ne prikazivati “Add…” nego prikazati:
+
+disabled badge/button: ✓ In Exhibition (vizualno mirno, bez CTA boje)
+
+i dalje ostaje u Row 2 na istoj poziciji (desno), da layout ne skače
+
+✅ Styling rules (keep RoomVibe look)
+
+Zadržati postojeći styling (radius, font, spacing)
+
+Ne povećavati visinu kartice više nego nužno
+
+Gap između redova: 8–10px
+
+Row 1 gumbi: compact (npr. h-9 / 36px)
+
+Row 2 gumbi: slightly bigger (npr. h-11 / 44px)
+
+Row 3: outline/ghost, full width
+
+✅ Implementation notes (agent)
+
+Pronađi komponentu koja rendera artwork card actions (Artist Dashboard grid)
+
+Refactor actions container:
+
+koristi grid/flex s grid-cols-2 za row 1 i row 2
+
+row 3 w-full
+
+Nemoj duplicirati logiku; napravi helper isInExhibition(artworkId, exhibition) ili koristi postojeće polje/flag ako postoji.
+
+✅ Acceptance criteria (test)
+
+Na artwork kartici se gumbi prikazuju točno u 3 reda:
+
+Row1: Edit | Delete
+
+Row2: View in Studio | Add to My Exhibition / ✓ In Exhibition
+
+Row3: Get Widget Code
+
+Layout izgleda čišće i ne “širi” karticu vizualno.
+
+Za artwork koji je već u exhibitionu: “Add…” nije vidljiv, nego piše ✓ In Exhibition disabled.
+
+Sve radi i na mobile (na uskom ekranu može pasti u 1 stupac po redu, ali redoslijed mora ostati Row1 → Row2 → Row3).
+
+✅ Output
+
+Navesti koje fileove si mijenjao
+
+Screenshot prije/poslije u opisu taska (ako može)

@@ -1624,60 +1624,64 @@ export function ArtistDashboard() {
                       View & Buy →
                     </button>
                     
-                    <button
-                      onClick={() => {
-                        setPendingStudioArtwork(artwork);
-                        setShowStudioWarning(true);
-                      }}
-                      className="w-full mt-4 px-4 py-2.5 text-sm bg-[#C9A24A] text-white rounded-rvMd hover:bg-[#B8913A] transition-colors font-semibold flex items-center justify-center gap-2"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 22V12h6v10" />
-                      </svg>
-                      View in Studio
-                    </button>
-
-                    <div className="flex gap-2 mt-2">
+                    {/* Row 1: Admin actions (compact) */}
+                    <div className="flex gap-2.5 mt-4">
                       <button
                         onClick={() => handleEdit(artwork)}
-                        className="flex-1 px-4 py-2 text-sm bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-colors font-semibold"
+                        className="flex-1 h-9 px-3 text-sm bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-colors font-semibold"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => setShowDeleteConfirm(artwork.id)}
-                        className="flex-1 px-4 py-2 text-sm bg-red-500 text-white rounded-rvMd hover:bg-red-600 transition-colors font-semibold"
+                        className="flex-1 h-9 px-3 text-sm bg-red-500 text-white rounded-rvMd hover:bg-red-600 transition-colors font-semibold"
                       >
                         Delete
                       </button>
                     </div>
 
-                    {isArtworkInExhibition(artwork.id) ? (
+                    {/* Row 2: Primary usage actions (main) */}
+                    <div className="flex gap-2.5 mt-2">
                       <button
-                        onClick={() => handleRemoveFromExhibition(artwork.id)}
-                        className="w-full mt-2 px-4 py-2 text-sm bg-[#C9A24A]/10 text-[#C9A24A] border border-[#C9A24A] rounded-rvMd hover:bg-[#C9A24A]/20 transition-colors font-semibold flex items-center justify-center gap-2"
+                        onClick={() => {
+                          setPendingStudioArtwork(artwork);
+                          setShowStudioWarning(true);
+                        }}
+                        className="flex-1 h-11 px-3 text-sm bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-colors font-semibold flex items-center justify-center gap-1.5"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 22V12h6v10" />
                         </svg>
-                        In Exhibition
+                        View in Studio
                       </button>
-                    ) : (
-                      <button
-                        onClick={() => handleAddToExhibition(artwork.id)}
-                        className="w-full mt-2 px-4 py-2 text-sm bg-[#C9A24A] text-white rounded-rvMd hover:bg-[#B8913A] transition-colors font-semibold flex items-center justify-center gap-2"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                        </svg>
-                        Add to My Exhibition
-                      </button>
-                    )}
+                      {isArtworkInExhibition(artwork.id) ? (
+                        <button
+                          disabled
+                          className="flex-1 h-11 px-3 text-sm bg-[#C9A24A]/10 text-[#C9A24A]/70 border border-[#C9A24A]/30 rounded-rvMd font-semibold flex items-center justify-center gap-1.5 cursor-default"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          In Exhibition
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleAddToExhibition(artwork.id)}
+                          className="flex-1 h-11 px-3 text-sm bg-[#C9A24A] text-white rounded-rvMd hover:bg-[#B8913A] transition-colors font-semibold flex items-center justify-center gap-1.5"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                          Add to Exhibition
+                        </button>
+                      )}
+                    </div>
 
+                    {/* Row 3: Secondary (advanced) */}
                     <button
                       onClick={() => setShowWidgetModal(artwork)}
-                      className="w-full mt-2 px-4 py-2 text-sm border-2 border-rv-primary text-rv-primary rounded-rvMd hover:bg-rv-primary hover:text-white transition-colors font-semibold flex items-center justify-center gap-2"
+                      className="w-full h-9 mt-2 px-4 text-sm border border-rv-primary text-rv-primary rounded-rvMd hover:bg-rv-primary hover:text-white transition-colors font-medium flex items-center justify-center gap-2"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
