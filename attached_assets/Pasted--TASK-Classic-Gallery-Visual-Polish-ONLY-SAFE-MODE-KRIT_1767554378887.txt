@@ -1,0 +1,198 @@
+# 🎯 TASK: Classic Gallery – Visual Polish ONLY (SAFE MODE)
+
+## 🔒 KRITIČNO – PROČITATI PRIJE RADA
+
+Ovo je **isključivo dizajnerski (visual) task**.
+
+❗ **ZABRANJENO JE DIRATI:**
+
+* kretanje po galeriji (street‑view / navigation)
+* kameru (position, rotation, limits)
+* viewpoint logiku
+* Three.js / R3F kontrole
+* hitboxe, colliders, evente
+* bilo kakvu logiku vezanu uz movement
+
+➡️ **Kretanje trenutno radi SAVRŠENO i NE SMIJE SE PROMIJENITI.**
+
+Ako postoji i najmanja sumnja da bi neka promjena mogla utjecati na kretanje – **NEMOJ JE RADITI**.
+
+---
+
+## 🧱 DIZAJN UPDATE – FINAL TWEAK (NO LIGHTING)
+
+Ovaj task je **isključivo vizualni polish** Classic Gallery prostora.
+
+⚠️ Rasvjeta se **NE dira u ovom tasku**.
+⚠️ Kretanje / kamera / raycast se **NE dira**.
+
+---
+
+## 🧠 KONTEKST (VAŽNO)
+
+* Editira se **Classic Gallery** u **Gallery Dashboardu**
+* Classic Gallery je **SINGLE SOURCE OF TRUTH**
+* Sve promjene se **automatski preslikavaju** na:
+
+  * Gallery Dashboard
+  * Artist Dashboard
+  * public gallery / exhibition view
+
+➡️ Zato su dozvoljene **samo vizualne promjene materijala, boja i svjetla**.
+
+---
+
+## 🎯 CILJ TASKA
+
+Učiniti Classic Gallery:
+
+* toplijom
+* prirodnijom
+* realističnijom
+* „gallery‑like“ (premium art space vibe)
+* vizualno konzistentnom (nema „bijelog outliera“ zida)
+
+⚠️ **Bez ikakvog utjecaja na ponašanje galerije.**
+
+---
+
+## ✅ DOZVOLJEN SCOPE (SAMO OVO)
+
+### 1️⃣ ZIDOVI (NAJBITNIJE)
+
+* SVI zidovi moraju imati **istu baznu boju** (nema izuzetaka)
+* Trenutno je jedan zid ostao bijel → **to treba ispraviti**
+
+Koristiti **toplu srednje‑svijetlu sivu** (gallery gray):
+
+* `#CFCFCB` (preporučeno)
+* ili vrlo bliska nijansa
+
+➡️ NEMA čistog bijelog zida.
+➡️ Samo `material.color`.
+➡️ Bez tekstura, bez normal maps.
+
+---
+
+### 2️⃣ POD
+
+* Trenutni crni pod djeluje previše "teško" i guta prostor
+* Zamijeniti s **tamnim toplim sivim tonom**
+
+**Primjeri:**
+
+* `#2B2B2B`
+* `#3A3A3A`
+
+Ako postoji parametar:
+
+* blagi roughness (diskretno)
+
+➡️ Ne dirati mesh.
+➡️ Ne dirati scale.
+
+---
+
+### 3️⃣ PLAFON / GREDE
+
+* Plafon **NE smije biti tamniji od zidova**
+* Plafon treba koristiti **svjetliju nijansu iste palete** kao zidovi
+
+Preporuka:
+
+* plafon = svijetlija verzija zidne boje (npr. `#E5E5E3`)
+* grede ostaju tamnije, ali ne čisto crne
+
+Grede:
+
+* `#1F1F1F` (charcoal)
+
+---
+
+### 4️⃣ OSVJETLJENJE (JAKO VAŽNO)
+
+* **NE MIJENJATI POZICIJE SVJETALA**
+* **NE MIJENJATI BROJ SVJETALA**
+
+Dozvoljeno:
+
+* pojačati intenzitet gornjih svjetiljki koje osvjetljavaju zidove sa slikama
+* blago zagrijati temperaturu svjetla
+
+Cilj:
+
+* da se **jasno i snažno vidi osvjetljenje koje pada NA SLIKE**
+* da zidovi s radovima budu vidljivo naglašeni
+
+Ako postoji light color:
+
+* koristiti blago topli ton (npr. `#FFF2E0`)
+* intenzitet max +15–20% (ne više)
+
+---
+
+### 5️⃣ OSTALO – KONAČNE ODLUKE
+
+#### Stupići / vaze
+
+* **NE koristiti RoomVibe Navy**
+* Zadržati **tamno-sivu / anthracite** boju
+* Cilj: neutralan galerijski element, bez brand naglaska
+
+Preporuka boje:
+
+* `#2E2E2E` do `#3A3A3A`
+
+---
+
+#### Klupice
+
+* Zadržati **TOČNO OVE 2 POSTOJEĆE klupice**
+* **NE dodavati nove klupice**
+* Ne mijenjati pozicije
+
+Cilj:
+
+* zadržati prozračnost prostora
+* izbjeći vizualni clutter
+
+---
+
+#### Strop
+
+* Trenutni strop je previše svijetao
+* Potrebno ga je zatamniti u **toplu svijetlo-sivu** nijansu
+
+Preporučene nijanse (odabrati jednu):
+
+* `#D5D2CC`
+* `#DAD8D3`
+
+➡️ Strop treba biti:
+
+* tamniji od sadašnjeg
+* svjetliji od greda
+* neutralan, bez dominantnog kontrasta
+
+---
+
+#### Ulaz / prolaz
+
+* Ulaz treba ostati minimalistički
+* Bez dodavanja vrata ili novih elemenata
+
+Dozvoljeno:
+
+* suptilno zatamniti frame otvora
+* povećati kontrast da ulaz / izlaz bude jasnije čitljiv
+
+---
+
+## ✅ ACCEPTANCE CHECK
+
+* Kretanje po galeriji identično kao prije taska
+* Klik na footsteps radi 100% pouzdano
+* Nema novih objekata koji bi mogli presresti raycast
+* Vizualno: prostor djeluje mirnije, toplije i fokusiranije na umjetnine
+
+---

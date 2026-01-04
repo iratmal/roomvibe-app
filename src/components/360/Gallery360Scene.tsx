@@ -66,9 +66,9 @@ function isValidArtworkUrl(url: string | undefined | null): boolean {
  * There are two floor meshes: outerEnclosureFloor and tiledFloorMain; both guarded by FloorGuard.
  */
 
-const GALLERY_WALL_COLOR = '#9A9792';
-const GALLERY_CEILING_COLOR = '#B5B3AE';
-const GALLERY_FLOOR_COLOR = '#D8D5D0';
+const GALLERY_WALL_COLOR = '#CFCFCB';
+const GALLERY_CEILING_COLOR = '#D5D2CC';
+const GALLERY_FLOOR_COLOR = '#3A3A3A';
 
 function DebugOverlay() {
   const { scene, gl } = useThree();
@@ -690,7 +690,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
           {/* Recessed ceiling panel - light warm grey */}
           <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
             <planeGeometry args={[panel.w, panel.d]} />
-            <SafeCeilingMaterial color="#B5B3AE" />
+            <SafeCeilingMaterial color="#D5D2CC" />
           </mesh>
         </group>
       ))}
@@ -706,7 +706,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       {/* Gallery walls - warm gallery grey */}
       <mesh position={[0, height / 2, -halfD]} receiveShadow>
         <planeGeometry args={[width, height]} />
-        <SafeWallMaterial color="#9A9792" />
+        <SafeWallMaterial color="#CFCFCB" />
       </mesh>
 
       {/* South wall with entrance opening */}
@@ -720,12 +720,12 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
 
       <mesh position={[halfW, height / 2, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
-        <SafeWallMaterial color="#9A9792" />
+        <SafeWallMaterial color="#CFCFCB" />
       </mesh>
 
       <mesh position={[-halfW, height / 2, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
-        <SafeWallMaterial color="#9A9792" />
+        <SafeWallMaterial color="#CFCFCB" />
       </mesh>
       
       {columnPositions.map((pos, i) => (
@@ -773,16 +773,16 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
             color="#FFF2E0"
           />
           
-          {/* Ceiling downlights - +15% intensity for visible wall lighting */}
-          <pointLight position={[-4, height - 0.3, -3]} intensity={3.0} color="#FFF5E8" distance={16} decay={1.5} />
-          <pointLight position={[4, height - 0.3, -3]} intensity={3.0} color="#FFF5E8" distance={16} decay={1.5} />
-          <pointLight position={[-4, height - 0.3, 3]} intensity={3.0} color="#FFF5E8" distance={16} decay={1.5} />
-          <pointLight position={[4, height - 0.3, 3]} intensity={3.0} color="#FFF5E8" distance={16} decay={1.5} />
-          <pointLight position={[0, height - 0.3, 0]} intensity={2.3} color="#FFF5E8" distance={18} decay={1.5} />
-          {/* Additional wall-focused spotlights - +15% */}
-          <pointLight position={[-6, height - 0.5, 0]} intensity={2.5} color="#FFF5E8" distance={12} decay={1.5} />
-          <pointLight position={[6, height - 0.5, 0]} intensity={2.5} color="#FFF5E8" distance={12} decay={1.5} />
-          <pointLight position={[0, height - 0.5, -5]} intensity={2.5} color="#FFF5E8" distance={12} decay={1.5} />
+          {/* Ceiling downlights - +20% intensity for visible wall lighting */}
+          <pointLight position={[-4, height - 0.3, -3]} intensity={3.5} color="#FFF2E0" distance={16} decay={1.5} />
+          <pointLight position={[4, height - 0.3, -3]} intensity={3.5} color="#FFF2E0" distance={16} decay={1.5} />
+          <pointLight position={[-4, height - 0.3, 3]} intensity={3.5} color="#FFF2E0" distance={16} decay={1.5} />
+          <pointLight position={[4, height - 0.3, 3]} intensity={3.5} color="#FFF2E0" distance={16} decay={1.5} />
+          <pointLight position={[0, height - 0.3, 0]} intensity={2.8} color="#FFF2E0" distance={18} decay={1.5} />
+          {/* Additional wall-focused spotlights - +20% */}
+          <pointLight position={[-6, height - 0.5, 0]} intensity={3.0} color="#FFF2E0" distance={12} decay={1.5} />
+          <pointLight position={[6, height - 0.5, 0]} intensity={3.0} color="#FFF2E0" distance={12} decay={1.5} />
+          <pointLight position={[0, height - 0.5, -5]} intensity={3.0} color="#FFF2E0" distance={12} decay={1.5} />
           
           {/* Designer benches with premium dark grey */}
           <GalleryBench position={[-3.0, 0, 0]} rotation={[0, Math.PI / 2, 0]} />
@@ -853,22 +853,22 @@ function DecorativeVase({ position }: { position: [number, number, number] }) {
 
   return (
     <group position={position}>
-      {/* Main body - dark grey */}
+      {/* Main body - anthracite */}
       <mesh position={[0, VASE_H / 2, 0]}>
         <cylinderGeometry args={[TOP_R, BASE_R, VASE_H, 32]} />
-        <meshBasicMaterial color="#4A4A4A" />
+        <meshBasicMaterial color="#2E2E2E" />
       </mesh>
       
       {/* Subtle inner shadow ring at top */}
       <mesh position={[0, VASE_H - 0.02, 0]}>
         <cylinderGeometry args={[TOP_R - 0.02, TOP_R, 0.04, 32]} />
-        <meshBasicMaterial color="#3A3A3A" />
+        <meshBasicMaterial color="#252525" />
       </mesh>
       
       {/* Base ring for grounding */}
       <mesh position={[0, 0.015, 0]}>
         <cylinderGeometry args={[BASE_R + 0.01, BASE_R + 0.02, 0.03, 32]} />
-        <meshBasicMaterial color="#404040" />
+        <meshBasicMaterial color="#2A2A2A" />
       </mesh>
     </group>
   );
@@ -884,22 +884,22 @@ function EntrancePortal({ position, rotation }: { position: [number, number, num
 
   return (
     <group position={position} rotation={rotation}>
-      {/* Portal Frame - dark grey */}
+      {/* Portal Frame - anthracite */}
       <group>
         {/* Left post */}
         <mesh position={[-(PORTAL_W / 2) - (FRAME_T / 2), PORTAL_H / 2, 0]} castShadow>
           <boxGeometry args={[FRAME_T, PORTAL_H, FRAME_T]} />
-          <meshBasicMaterial color="#4A4A4A" />
+          <meshBasicMaterial color="#2E2E2E" />
         </mesh>
         {/* Right post */}
         <mesh position={[(PORTAL_W / 2) + (FRAME_T / 2), PORTAL_H / 2, 0]} castShadow>
           <boxGeometry args={[FRAME_T, PORTAL_H, FRAME_T]} />
-          <meshBasicMaterial color="#4A4A4A" />
+          <meshBasicMaterial color="#2E2E2E" />
         </mesh>
         {/* Top lintel */}
         <mesh position={[0, PORTAL_H + (FRAME_T / 2), 0]} castShadow>
           <boxGeometry args={[PORTAL_W + FRAME_T * 2, FRAME_T, FRAME_T]} />
-          <meshBasicMaterial color="#4A4A4A" />
+          <meshBasicMaterial color="#2E2E2E" />
         </mesh>
       </group>
 
@@ -1027,19 +1027,19 @@ function SouthWallWithOpening({
       {/* Left section of wall */}
       <mesh position={[-(width / 2 - leftWidth / 2), height / 2, 0]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[leftWidth, height]} />
-        <SafeWallMaterial color="#9A9792" />
+        <SafeWallMaterial color="#CFCFCB" />
       </mesh>
 
       {/* Right section of wall */}
       <mesh position={[(width / 2 - rightWidth / 2), height / 2, 0]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[rightWidth, height]} />
-        <SafeWallMaterial color="#9A9792" />
+        <SafeWallMaterial color="#CFCFCB" />
       </mesh>
 
       {/* Top section above portal */}
       <mesh position={[0, portalH + topHeight / 2, 0]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[portalW, topHeight]} />
-        <SafeWallMaterial color="#9A9792" />
+        <SafeWallMaterial color="#CFCFCB" />
       </mesh>
     </group>
   );
