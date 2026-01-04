@@ -66,7 +66,7 @@ function isValidArtworkUrl(url: string | undefined | null): boolean {
  * There are two floor meshes: outerEnclosureFloor and tiledFloorMain; both guarded by FloorGuard.
  */
 
-const GALLERY_WALL_COLOR = '#E8E5DF';
+const GALLERY_WALL_COLOR = '#A8A5A0';
 const GALLERY_CEILING_COLOR = '#ECEBE7';
 const GALLERY_FLOOR_COLOR = '#E5E2DC';
 
@@ -703,10 +703,10 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         </mesh>
       ))}
 
-      {/* Gallery walls - warm off-white */}
+      {/* Gallery walls - warm grey */}
       <mesh position={[0, height / 2, -halfD]} receiveShadow>
         <planeGeometry args={[width, height]} />
-        <SafeWallMaterial color="#E8E5DF" />
+        <SafeWallMaterial color="#A8A5A0" />
       </mesh>
 
       {/* South wall with entrance opening */}
@@ -720,12 +720,12 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
 
       <mesh position={[halfW, height / 2, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
-        <SafeWallMaterial color="#E8E5DF" />
+        <SafeWallMaterial color="#A8A5A0" />
       </mesh>
 
       <mesh position={[-halfW, height / 2, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
-        <SafeWallMaterial color="#E8E5DF" />
+        <SafeWallMaterial color="#A8A5A0" />
       </mesh>
 
       {columnPositions.map((pos, i) => (
