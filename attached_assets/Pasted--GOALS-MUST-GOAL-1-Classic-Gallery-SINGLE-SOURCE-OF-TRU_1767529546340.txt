@@ -1,0 +1,166 @@
+🎯 GOALS (MUST)
+✅ GOAL 1 — Classic Gallery = SINGLE SOURCE OF TRUTH
+
+Postavke Classic Gallery moraju dolaziti ISKLJUČIVO iz:
+
+Gallery Dashboard → Classic Gallery configuration
+
+To uključuje:
+
+wall layout
+
+artwork real-world scaling
+
+spacing
+
+camera distance
+
+wall slot positions
+
+sve vizualne i matematičke postavke
+
+❗ Artist Exhibition Editor NE SMIJE imati vlastitu kopiju Classic Gallery configa.
+
+✅ GOAL 2 — Artist Exhibition koristi Gallery Classic preset
+
+Kad artist otvori:
+/gallery/exhibitions/:id/360-editor
+
+Editor mora:
+
+učitati Classic Gallery preset iz Gallery Dashboarda
+
+primijeniti taj preset
+
+samo mapirati artistove artworke na postojeće wall slotove
+
+➡️ Artist NE DEFINIRA galeriju
+➡️ Artist SAMO PUNI galeriju artworkima
+
+✅ GOAL 3 — Admin isolation (STRICT)
+
+U Admin / Gallery dashboardu:
+
+admin vidi SAMO Gallery exhibitions
+
+admin NE SMIJE vidjeti Artist exhibitions
+
+Artist exhibitions su drugi domain / druga tablica / drugi flag
+
+🛠 REQUIRED IMPLEMENTATION (konkretno)
+🔧 A) Classic Gallery config — centralizacija
+
+Napraviti jedan Classic Gallery config, npr.:
+
+classicGalleryConfig
+
+ili gallery_presets.classic
+
+I koristiti ga:
+
+u Gallery dashboardu
+
+u Artist Exhibition editoru
+
+❌ Zabranjeno:
+
+duplicirati vrijednosti
+
+hardcode u Artist editoru
+
+fallback na Modern Gallery
+
+🔧 B) Artist Exhibition Editor — način rada
+
+Artist editor mora raditi ovako:
+
+Load:
+
+Classic Gallery preset (iz gallery configa)
+
+Exhibition artworks (artist)
+
+Render:
+
+zidovi i slotovi iz Classic Gallery
+
+artwork scale = real-world dimensions
+
+Save:
+
+samo mapping wall_slot → artwork_id
+
+ne spremati gallery layout
+
+🔧 C) Admin dashboard filter (OBAVEZNO)
+
+U Admin / Gallery dashboard API:
+
+filtrirati exhibitions:
+
+type = 'gallery'
+
+ili owner_role = 'gallery'
+
+Artist exhibitions:
+
+type = 'artist'
+
+ili owner_role = 'artist'
+
+➡️ Admin ne vidi artist exhibitions
+➡️ Artist ne vidi gallery exhibitions
+
+✅ ACCEPTANCE CRITERIA (mora proći sve)
+Test 1 — Visual correctness
+
+Otvoriti Artist Exhibition Editor
+
+Artworki se prikazuju:
+
+u realnim dimenzijama
+
+s istim spacingom kao u Gallery Classic
+
+identično kao u admin Classic Gallery viewu
+
+Test 2 — Source of truth
+
+Promjena Classic Gallery postavki u Gallery dashboardu
+➡️ automatski se reflektira u Artist Exhibition editoru
+
+Test 3 — Admin isolation
+
+Admin dashboard:
+
+vidi samo gallery exhibitions
+
+NE vidi “Irena izložba” (artist)
+
+Test 4 — Role safety
+
+Artist nema nikakav UI za:
+
+mijenjanje gallery layouta
+
+presetova
+
+scaling pravila
+
+🚫 NON-SCOPE (ne dirati)
+
+Ne mijenjati Modern Gallery
+
+Ne mijenjati pricing / plan limits
+
+Ne refaktorirati cijeli editor, samo source of truth
+
+📌 OUTPUT (agent mora napisati)
+
+U task komentar:
+
+gdje je definiran Classic Gallery source of truth
+
+kako se koristi u Artist editoru
+
+kako je riješena admin izolacija
