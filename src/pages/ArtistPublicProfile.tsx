@@ -715,22 +715,19 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
             
             {/* Explore Exhibition CTA - only shown if artist has published exhibition */}
             {publishedExhibition && (
-              <div className="mt-12 flex justify-center">
+              <div className="mt-12">
                 <a
                   href={`#/embed/exhibitions/${publishedExhibition.id}`}
-                  className="group flex flex-col items-center gap-3 px-10 py-6 bg-gradient-to-br from-[#C9A24A] to-[#B8913A] text-white rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5"
+                  className="group w-full flex items-center justify-center gap-3 px-8 py-5 bg-[#C9A24A] text-white rounded-xl shadow-lg hover:bg-[#B8913A] hover:shadow-xl transition-all"
                 >
-                  <div className="flex items-center gap-3">
-                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                    <span className="text-lg font-semibold">View 360° Exhibition</span>
-                    <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                  <span className="text-sm text-white/80">Step into the artist's virtual gallery</span>
+                  <svg className="w-6 h-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  <span className="text-lg font-semibold">View Artist's 360° Exhibition</span>
+                  <svg className="w-5 h-5 flex-shrink-0 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
                 </a>
               </div>
             )}
