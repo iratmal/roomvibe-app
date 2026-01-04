@@ -757,39 +757,32 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       {/* Gallery Benches & Decorative Vases - only for Classic Gallery */}
       {preset.id === 'white-cube-v1' && (
         <>
-          {/* Neutral ambient lighting for gallery atmosphere */}
-          <ambientLight intensity={0.35} color="#FFFAF5" />
+          {/* Warm ambient lighting for gallery atmosphere - intensity +15% */}
+          <ambientLight intensity={0.4} color="#FFF2E0" />
           
-          {/* Hemisphere light - sky/ground - neutral warm */}
+          {/* Warm hemisphere light - sky/ground - intensity +15% */}
           <hemisphereLight 
-            args={['#FFFAF5', '#E0DDD8', 0.5]} 
+            args={['#FFF2E0', '#D8D5D0', 0.58]} 
             position={[0, height, 0]}
           />
           
-          {/* Directional fill light from above */}
+          {/* Warm directional fill light from above - intensity +15% */}
           <directionalLight
             position={[0, height + 5, 0]}
-            intensity={0.6}
-            color="#FFFAF5"
+            intensity={0.7}
+            color="#FFF2E0"
           />
           
-          {/* STRONG WALL SPOTLIGHTS - North wall (main artwork wall) */}
-          <pointLight position={[-6, height - 0.5, -4]} intensity={8.0} color="#FFFAF5" distance={12} decay={1.2} />
-          <pointLight position={[-3, height - 0.5, -4]} intensity={8.0} color="#FFFAF5" distance={12} decay={1.2} />
-          <pointLight position={[0, height - 0.5, -4]} intensity={8.0} color="#FFFAF5" distance={12} decay={1.2} />
-          <pointLight position={[3, height - 0.5, -4]} intensity={8.0} color="#FFFAF5" distance={12} decay={1.2} />
-          <pointLight position={[6, height - 0.5, -4]} intensity={8.0} color="#FFFAF5" distance={12} decay={1.2} />
-          
-          {/* STRONG WALL SPOTLIGHTS - East wall */}
-          <pointLight position={[6, height - 0.5, -3]} intensity={7.0} color="#FFFAF5" distance={12} decay={1.2} />
-          <pointLight position={[6, height - 0.5, 3]} intensity={7.0} color="#FFFAF5" distance={12} decay={1.2} />
-          
-          {/* STRONG WALL SPOTLIGHTS - West wall */}
-          <pointLight position={[-6, height - 0.5, -3]} intensity={7.0} color="#FFFAF5" distance={12} decay={1.2} />
-          <pointLight position={[-6, height - 0.5, 3]} intensity={7.0} color="#FFFAF5" distance={12} decay={1.2} />
-          
-          {/* Center ceiling downlights for general illumination */}
-          <pointLight position={[0, height - 0.3, 0]} intensity={4.0} color="#FFFAF5" distance={18} decay={1.3} />
+          {/* Ceiling downlights - +20% intensity for visible wall lighting */}
+          <pointLight position={[-4, height - 0.3, -3]} intensity={3.5} color="#FFF2E0" distance={16} decay={1.5} />
+          <pointLight position={[4, height - 0.3, -3]} intensity={3.5} color="#FFF2E0" distance={16} decay={1.5} />
+          <pointLight position={[-4, height - 0.3, 3]} intensity={3.5} color="#FFF2E0" distance={16} decay={1.5} />
+          <pointLight position={[4, height - 0.3, 3]} intensity={3.5} color="#FFF2E0" distance={16} decay={1.5} />
+          <pointLight position={[0, height - 0.3, 0]} intensity={2.8} color="#FFF2E0" distance={18} decay={1.5} />
+          {/* Additional wall-focused spotlights - +20% */}
+          <pointLight position={[-6, height - 0.5, 0]} intensity={3.0} color="#FFF2E0" distance={12} decay={1.5} />
+          <pointLight position={[6, height - 0.5, 0]} intensity={3.0} color="#FFF2E0" distance={12} decay={1.5} />
+          <pointLight position={[0, height - 0.5, -5]} intensity={3.0} color="#FFF2E0" distance={12} decay={1.5} />
           
           {/* Designer benches with premium dark grey */}
           <GalleryBench position={[-3.0, 0, 0]} rotation={[0, Math.PI / 2, 0]} />
