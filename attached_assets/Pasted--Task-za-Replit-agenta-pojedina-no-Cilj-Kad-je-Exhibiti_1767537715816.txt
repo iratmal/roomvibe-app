@@ -1,0 +1,97 @@
+# Task za Replit agenta (pojedinačno)
+
+## Cilj
+
+Kad je **Exhibition = Published**, svi linkovi na javnoj artist stranici moraju voditi na ispravan **published exhibition** (ne na crni ekran “Failed to fetch exhibition”), a UI link ispod Artworks mora biti vizualno kvalitetan (gumb/CTA). Također, publish/unpublish mora jasno komunicirati što se događa s embed kodom.
+
+---
+
+## 1) Fix: Linkovi na exhibition vode na “Failed to fetch exhibition”
+
+### Problem
+
+Nakon što kliknem **Publish** i zatim **View Exhibition** (ili drugi linkovi koji vode na exhibition), otvara se crni ekran i poruka: **“Failed to fetch exhibition”**.
+
+### Očekivano ponašanje
+
+Ako artist ima **published** exhibition:
+
+* **View Exhibition** gumb na public artist page vodi na ispravnu stranicu izložbe.
+* Svi povezani linkovi koji trebaju voditi na izložbu (header CTA, CTA ispod artworks, i sl.) moraju voditi na isti, ispravan URL.
+
+### Implementacijski hint (smjernice)
+
+* Provjeri kako se generira exhibition URL nakon publish-a.
+* Provjeri API/route za `/#/embed/exhibitions/:id` (ili odgovarajući route).
+* Provjeri da li fetch endpoint očekuje **published=true** i/ili da li se koristi pogrešan `exhibitionId`/tenant/owner.
+* Osiguraj da public route može dohvatiti exhibition bez auth-a (ako je published).
+
+### Acceptance criteria
+
+* Nakon publish-a, klik na **View Exhibition** otvara ispravnu izložbu.
+* Nijedan od linkova koji vode na exhibition ne smije završiti na “Failed to fetch exhibition”.
+
+---
+
+## 2) UI/UX: Uljepšaj CTA link ispod Artworks (public artist page)
+
+### Problem
+
+Na dnu public artist page (ispod Artworks) postoji link tipa **“Explore Artist’s 360° Exhibition”** koji izgleda kao običan tekst/link i ružno je.
+
+### Očekivano
+
+* Taj element treba biti jasno vidljiv **CTA gumb** ili lijepo stiliziran blok (npr. button + ikona).
+
+### Moj prijedlog (odaberi 1 i implementiraj)
+
+**Opcija A (preporuka):**
+
+* Button (gold) s ikoncom oka: **“View 360° Exhibition”**
+* Subtekst ispod (manji): “Step into the artist’s virtual gallery.”
+
+**Opcija B:**
+
+* Card/CTA blok: naslov “360° Exhibition”, kratki opis + gumb “Enter Exhibition”.
+
+### Acceptance criteria
+
+* CTA izgleda kao pravi button (ne kao običan link).
+* Na desktop i mobile izgleda uredno i u skladu s ostatkom dizajna.
+
+---
+
+## 3) Publish / Unpublish: Upozorenje za embed kod + stanje
+
+### Problem
+
+Korisnik može embedati izložbu na svoj website. Ako kasnije klikne **Unpublish**, embed više ne bi smio raditi, ali korisnik mora biti jasno upozoren.
+
+### Očekivano ponašanje
+
+* Kad klikne **Publish**:
+
+  * Prikaži modal/toast: “✅ Exhibition published. Your embed code is now live.”
+  * Embed blok prikazuje **copy-paste code** bez upozorenja.
+
+* Kad klikne **Unpublish**:
+
+  * Prije izvršenja: confirm modal
+
+    * Naslov: “Unpublish exhibition?”
+    * Tekst: “If you unpublish, the embed on your website will stop working until you publish again.”
+    * Gumbi: **Cancel** / **Unpublish**
+  * Nakon unpublish: info modal/toast “Exhibition unpublished. Embed is disabled.”
+  * Embed blok u dashboardu opet prikazuje upozorenje (npr. “Exhibition not published”) i sakriva/disabled code.
+
+### Acceptance criteria
+
+* Publish daje feedback korisniku (modal/toast) i aktivira embed.
+* Unpublish uvijek upozori korisnika prije akcije.
+* Nakon unpublish, embed route više ne prikazuje izložbu (ili prikazuje friendly poruku), a UI u dashboardu jasno kaže da embed neće raditi.
+
+---
+
+## Napomena
+
+Artist NE može mijenjati galeriju template (Classic/Modern itd.) – ovdje radimo samo publish/links/embed + UI.

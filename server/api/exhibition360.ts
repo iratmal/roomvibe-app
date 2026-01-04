@@ -189,7 +189,7 @@ router.get('/exhibitions/:id/360-public', optionalAuth, requireExhibitionPublicF
     }
 
     const artworksResult = await query(
-      `SELECT ga.id, ga.artwork_id, ga.title, ga.artist_name, ga.image_url, 
+      `SELECT ga.id, ga.source_artwork_id, ga.title, ga.artist_name, ga.image_url, 
               ga.width_value, ga.height_value, ga.dimension_unit,
               ga.price_amount, ga.price_currency, ga.buy_url, ga.description
        FROM gallery_artworks ga
@@ -207,7 +207,7 @@ router.get('/exhibitions/:id/360-public', optionalAuth, requireExhibitionPublicF
       let artwork = artworksResult.rows.find(a => String(a.id) === slot.artworkId);
       
       if (!artwork) {
-        artwork = artworksResult.rows.find(a => a.artwork_id && String(a.artwork_id) === slot.artworkId);
+        artwork = artworksResult.rows.find(a => a.source_artwork_id && String(a.source_artwork_id) === slot.artworkId);
       }
       
       if (!artwork) {

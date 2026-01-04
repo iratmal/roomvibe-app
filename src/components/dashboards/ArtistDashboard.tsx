@@ -139,6 +139,7 @@ export function ArtistDashboard() {
   const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
   const [uploadingCoverImage, setUploadingCoverImage] = useState(false);
   const [showPublishSuccessModal, setShowPublishSuccessModal] = useState(false);
+  const [showUnpublishConfirmModal, setShowUnpublishConfirmModal] = useState(false);
   
   const effectivePlan = viewerPlan || 'user';
   const isFreePlan = effectivePlan === 'user' || effectivePlan === 'free';
@@ -2007,7 +2008,7 @@ export function ArtistDashboard() {
                     </a>
                     {exhibition.status === 'published' ? (
                       <button
-                        onClick={handleUnpublishExhibition}
+                        onClick={() => setShowUnpublishConfirmModal(true)}
                         disabled={loading}
                         className="px-3 py-2 text-sm text-amber-600 border border-amber-200 rounded-rvMd hover:bg-amber-50 transition-all font-medium disabled:opacity-50"
                         title="Unpublish exhibition"
@@ -2534,7 +2535,7 @@ export function ArtistDashboard() {
                 </div>
                 <h3 className="text-xl font-bold text-rv-text mb-2">Exhibition Published!</h3>
                 <p className="text-rv-textMuted text-sm">
-                  Congratulations! Your exhibition is now live. You can copy the embed code and share it on your website.
+                  Your exhibition is now live. Your embed code is active and can be used on your website.
                 </p>
               </div>
               <div className="flex gap-3">
@@ -2551,6 +2552,43 @@ export function ArtistDashboard() {
                 >
                   View Exhibition
                 </a>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Unpublish Confirmation Modal */}
+        {showUnpublishConfirmModal && exhibition && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-rvLg p-6 max-w-md w-full">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-rv-text mb-2">Unpublish Exhibition?</h3>
+                <p className="text-rv-textMuted text-sm">
+                  If you unpublish, the embed on your website will stop working until you publish again.
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowUnpublishConfirmModal(false)}
+                  className="flex-1 px-4 py-2.5 border border-rv-neutral text-rv-text text-sm font-semibold rounded-rvMd hover:bg-rv-surface transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    setShowUnpublishConfirmModal(false);
+                    handleUnpublishExhibition();
+                  }}
+                  disabled={loading}
+                  className="flex-1 px-4 py-2.5 bg-amber-500 text-white text-sm font-semibold rounded-rvMd hover:bg-amber-600 transition-colors disabled:opacity-50"
+                >
+                  Unpublish
+                </button>
               </div>
             </div>
           </div>
