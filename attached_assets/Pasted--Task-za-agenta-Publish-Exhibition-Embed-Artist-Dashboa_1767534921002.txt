@@ -1,0 +1,83 @@
+# Task za agenta — Publish Exhibition + Embed (Artist Dashboard)
+
+## Kontekst
+
+U Artist Dashboardu unutar bloka **My Exhibition** imamo:
+
+* status oznaku **Draft** (gore desno)
+* gumb **Edit Exhibition**
+* sekciju **Embed this Exhibition** s iframe kodom
+* poruku ispod gumba **Copy Code**: **“Publish your exhibition first for the embed to work.”**
+
+Trenutno nemamo gumb **Publish Exhibition**, a embed je prikazan iako izložba nije publishana.
+
+## Cilj
+
+Uvesti jasan workflow:
+
+* Izložba je **Draft** → može se uređivati, ali embed ne radi i ne treba nuditi “finalni” embed kod
+* Izložba je **Published** → embed radi i korisnik može kopirati kod
+
+## Promjene (UI + logika)
+
+### 1) Dodaj gumb “Publish Exhibition” uz “Edit Exhibition”
+
+* U istu traku gdje je sada **Edit Exhibition** dodati **drugi gumb**: **Publish Exhibition**.
+* Layout prijedlog:
+
+  * Desktop: dva gumba jedan do drugoga (npr. 70/30 ili 60/40) + postojeći **Delete** ostaje desno.
+  * Mobile: stack (Edit → Publish → Delete) ili Edit/Publish u 2 reda, ovisno o širini.
+
+### 2) Status izložbe
+
+* Ako je `status = draft`:
+
+  * prikazati badge **Draft**
+  * prikazati gumb **Publish Exhibition** (enabled)
+* Ako je `status = published`:
+
+  * prikazati badge **Published**
+  * gumb **Publish Exhibition** zamijeniti s **Unpublish** ili **Published** (disabled) — minimalno: disabled state s tooltipom “Already published”.
+
+### 3) Embed sekcija — conditional render
+
+* Ako je `draft`:
+
+  * Embed sekcija može biti prikazana, ali **u disabled stanju**:
+
+    * textarea/code block je readonly i vizualno “dimmed”
+    * gumb **Copy Code** disabled
+    * poruka: “Publish your exhibition first for the embed to work.” (ostaje)
+  * Alternativa (još čišće): embed sekciju sakriti i prikazati info box + CTA “Publish Exhibition”.
+* Ako je `published`:
+
+  * Embed sekcija full enabled
+  * **Copy Code** enabled
+  * poruku ukloniti
+
+### 4) Backend / API
+
+* Dodati endpoint (ili postojeći) za publish:
+
+  * `POST /api/exhibitions/:id/publish`
+  * postavlja `status = 'published'` + `publishedAt = now()`
+* Ako već postoji publish logika na Gallery side, reuse-ati istu (shared service).
+
+### 5) Pravila pristupa
+
+* Samo owner artista može publishati svoju izložbu.
+* Artist plan limit: **1 aktivna izložba** (već imate limit) — publish ne smije omogućiti više od limita.
+
+## Acceptance criteria (test)
+
+1. Otvori My Exhibition (Draft): vidi **Edit Exhibition** + **Publish Exhibition**.
+2. U Draft stanju: **Copy Code disabled** (ili embed hidden) i jasna poruka da treba publish.
+3. Klik na **Publish Exhibition**:
+
+   * status se promijeni u **Published** bez refresha (optimistic ili refetch)
+   * embed postaje aktivan i **Copy Code radi**
+4. Refresh page: status ostaje Published.
+
+## Napomena
+
+Ovo je za **Artist Dashboard**. Artist ne smije uređivati preset galerije, samo publish/unpublish vlastite izložbe.

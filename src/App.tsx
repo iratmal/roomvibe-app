@@ -3839,16 +3839,17 @@ function Exhibition360EditorPage() {
           console.log('[360Editor] Received artworks:', artData.artworks?.length || 0);
           
           // Normalize artwork data - artist endpoint uses camelCase, gallery uses snake_case
+          // CRITICAL: Parse dimensions as numbers to ensure correct numeric comparison
           const normalizedArtworks = (artData.artworks || []).map((a: any) => ({
             id: a.id,
             artwork_id: a.sourceArtworkId || a.source_artwork_id || a.id,
             title: a.title,
             artist_name: a.artistName || a.artist_name,
             image_url: a.imageUrl || a.image_url,
-            width_value: a.widthValue || a.width_value,
-            height_value: a.heightValue || a.height_value,
-            width_cm: a.width_cm || a.widthValue || a.width_value,
-            height_cm: a.height_cm || a.heightValue || a.height_value,
+            width_value: Number(a.widthValue || a.width_value) || undefined,
+            height_value: Number(a.heightValue || a.height_value) || undefined,
+            width_cm: Number(a.width_cm || a.widthValue || a.width_value) || undefined,
+            height_cm: Number(a.height_cm || a.heightValue || a.height_value) || undefined,
             dimension_unit: a.dimensionUnit || a.dimension_unit || 'cm',
             price_amount: a.priceAmount || a.price_amount,
             price_currency: a.priceCurrency || a.price_currency,

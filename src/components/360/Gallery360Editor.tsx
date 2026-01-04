@@ -127,8 +127,10 @@ export function Gallery360Editor({
         );
         
         if (artwork) {
-          const widthCm = artwork.width_cm || artwork.width_value || artwork.width || assignment.width || 100;
-          const heightCm = artwork.height_cm || artwork.height_value || artwork.height || assignment.height || 70;
+          // CRITICAL: Parse to number to ensure correct numeric comparison (not string comparison)
+          // String "120.00" < "80.00" lexicographically, but number 120 > 80
+          const widthCm = Number(artwork.width_cm || artwork.width_value || artwork.width || assignment.width) || 100;
+          const heightCm = Number(artwork.height_cm || artwork.height_value || artwork.height || assignment.height) || 70;
           
           console.log('[HydrateAssignment]', artwork.title, {
             matchedId: artwork.id,
@@ -192,8 +194,9 @@ export function Gallery360Editor({
   const handleAssignArtwork = (slotId: string, artwork: Artwork | null) => {
     if (artwork) {
       // Priority: width_cm > width_value > width > fallback
-      const widthCm = artwork.width_cm || artwork.width_value || artwork.width || 100;
-      const heightCm = artwork.height_cm || artwork.height_value || artwork.height || 70;
+      // CRITICAL: Parse to number to ensure correct numeric comparison (not string comparison)
+      const widthCm = Number(artwork.width_cm || artwork.width_value || artwork.width) || 100;
+      const heightCm = Number(artwork.height_cm || artwork.height_value || artwork.height) || 70;
       
       console.log('[AssignArtwork]', artwork.title, { 
         width_cm: artwork.width_cm, 
@@ -202,7 +205,8 @@ export function Gallery360Editor({
         height_value: artwork.height_value,
         width: artwork.width,
         height: artwork.height,
-        resolved: { widthCm, heightCm }
+        resolved: { widthCm, heightCm },
+        orientation: heightCm > widthCm ? 'PORTRAIT' : 'LANDSCAPE'
       });
       
       assignArtwork(slotId, String(artwork.id), {
