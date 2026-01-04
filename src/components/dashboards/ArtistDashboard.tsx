@@ -481,6 +481,58 @@ export function ArtistDashboard() {
     }
   };
 
+  const handlePublishExhibition = async () => {
+    if (!exhibition) return;
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/artist/exhibition/${exhibition.id}/publish`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to publish exhibition');
+      }
+      
+      const data = await response.json();
+      setExhibition(data.exhibition);
+      setSuccess('Exhibition published! Your embed code is now active.');
+      setTimeout(() => setSuccess(''), 5000);
+    } catch (err: any) {
+      setError(err.message);
+      setTimeout(() => setError(''), 5000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUnpublishExhibition = async () => {
+    if (!exhibition) return;
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/artist/exhibition/${exhibition.id}/unpublish`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to unpublish exhibition');
+      }
+      
+      const data = await response.json();
+      setExhibition(data.exhibition);
+      setSuccess('Exhibition unpublished. Embed code is now inactive.');
+      setTimeout(() => setSuccess(''), 5000);
+    } catch (err: any) {
+      setError(err.message);
+      setTimeout(() => setError(''), 5000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleUpdateExhibition = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!exhibition) return;
@@ -1953,6 +2005,25 @@ export function ArtistDashboard() {
                     >
                       Edit Exhibition
                     </a>
+                    {exhibition.status === 'published' ? (
+                      <button
+                        onClick={handleUnpublishExhibition}
+                        disabled={loading}
+                        className="px-3 py-2 text-sm text-amber-600 border border-amber-200 rounded-rvMd hover:bg-amber-50 transition-all font-medium disabled:opacity-50"
+                        title="Unpublish exhibition"
+                      >
+                        Unpublish
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handlePublishExhibition}
+                        disabled={loading}
+                        className="px-3 py-2 text-sm bg-[#C9A24A] text-white rounded-rvMd hover:bg-[#B8913A] transition-all font-semibold disabled:opacity-50"
+                        title="Publish exhibition to make embed active"
+                      >
+                        Publish
+                      </button>
+                    )}
                     <button
                       onClick={() => setShowExhibitionDeleteConfirm(true)}
                       className="px-3 py-2 text-sm text-red-500 border border-red-200 rounded-rvMd hover:bg-red-50 transition-all font-medium"
@@ -1990,16 +2061,19 @@ export function ArtistDashboard() {
                       {/* Embed Exhibition Section */}
                       <div className="mt-5 pt-5 border-t border-rv-neutral">
                         <div className="flex items-center gap-2 mb-3">
-                          <svg className="w-4 h-4 text-rv-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className={`w-4 h-4 ${exhibition.status === 'published' ? 'text-rv-primary' : 'text-rv-textMuted'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                           </svg>
-                          <h4 className="text-sm font-semibold text-rv-text">Embed this Exhibition</h4>
+                          <h4 className={`text-sm font-semibold ${exhibition.status === 'published' ? 'text-rv-text' : 'text-rv-textMuted'}`}>Embed this Exhibition</h4>
                         </div>
-                        <p className="text-xs text-rv-textMuted mb-3">
-                          Copy this code into your website to display your 360° exhibition.
-                        </p>
-                        <div className="bg-slate-50 rounded-rvMd p-3 mb-3 overflow-x-auto">
-                          <pre className="text-xs text-slate-700 whitespace-pre-wrap break-all font-mono">
+                        
+                        {exhibition.status === 'published' ? (
+                          <>
+                            <p className="text-xs text-rv-textMuted mb-3">
+                              Copy this code into your website to display your 360° exhibition.
+                            </p>
+                            <div className="bg-slate-50 rounded-rvMd p-3 mb-3 overflow-x-auto">
+                              <pre className="text-xs text-slate-700 whitespace-pre-wrap break-all font-mono">
 {`<iframe
   src="${window.location.origin}/#/embed/exhibitions/${exhibition.id}"
   width="100%"
@@ -2008,11 +2082,11 @@ export function ArtistDashboard() {
   loading="lazy"
   allowfullscreen
 ></iframe>`}
-                          </pre>
-                        </div>
-                        <button
-                          onClick={async () => {
-                            const embedCode = `<iframe
+                              </pre>
+                            </div>
+                            <button
+                              onClick={async () => {
+                                const embedCode = `<iframe
   src="${window.location.origin}/#/embed/exhibitions/${exhibition.id}"
   width="100%"
   height="720"
@@ -2020,28 +2094,43 @@ export function ArtistDashboard() {
   loading="lazy"
   allowfullscreen
 ></iframe>`;
-                            try {
-                              await navigator.clipboard.writeText(embedCode);
-                              setSuccess('Embed code copied to clipboard!');
-                              setTimeout(() => setSuccess(''), 3000);
-                            } catch (err) {
-                              setError('Failed to copy embed code');
-                            }
-                          }}
-                          className="w-full px-3 py-2 text-sm border border-rv-primary text-rv-primary rounded-rvMd hover:bg-rv-primary hover:text-white transition-all font-medium flex items-center justify-center gap-2"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                          </svg>
-                          Copy Code
-                        </button>
-                        {exhibition.status !== 'published' && (
-                          <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                            Publish your exhibition first for the embed to work.
-                          </p>
+                                try {
+                                  await navigator.clipboard.writeText(embedCode);
+                                  setSuccess('Embed code copied to clipboard!');
+                                  setTimeout(() => setSuccess(''), 3000);
+                                } catch (err) {
+                                  setError('Failed to copy embed code');
+                                }
+                              }}
+                              className="w-full px-3 py-2 text-sm border border-rv-primary text-rv-primary rounded-rvMd hover:bg-rv-primary hover:text-white transition-all font-medium flex items-center justify-center gap-2"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                              Copy Code
+                            </button>
+                          </>
+                        ) : (
+                          <div className="bg-amber-50 border border-amber-200 rounded-rvMd p-4">
+                            <div className="flex items-start gap-3">
+                              <svg className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                              </svg>
+                              <div>
+                                <p className="text-sm font-medium text-amber-800 mb-1">Exhibition not published</p>
+                                <p className="text-xs text-amber-700 mb-3">
+                                  Publish your exhibition to get the embed code and share it on your website.
+                                </p>
+                                <button
+                                  onClick={handlePublishExhibition}
+                                  disabled={loading}
+                                  className="px-4 py-1.5 text-sm bg-[#C9A24A] text-white rounded-rvMd hover:bg-[#B8913A] transition-all font-semibold disabled:opacity-50"
+                                >
+                                  {loading ? 'Publishing...' : 'Publish Exhibition'}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
                         )}
                       </div>
                     </>
