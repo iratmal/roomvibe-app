@@ -589,6 +589,107 @@ router.post('/exhibition/:id/cover-image', authenticateToken, upload.single('ima
   }
 });
 
+router.post('/exhibition/:id/publish', authenticateToken, async (req: any, res) => {
+  try {
+    const exhibitionId = parseInt(req.params.id);
+
+    const checkResult = await query(
+      'SELECT * FROM gallery_collections WHERE id = $1 AND gallery_id = $2',
+      [exhibitionId, req.user.id]
+    );
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Exhibition not found' });
+    }
+
+    const exhibition = checkResult.rows[0];
+
+    if (exhibition.status === 'published') {
+      return res.status(400).json({ error: 'Exhibition is already published' });
+    }
+
+    const result = await query(
+      `UPDATE gallery_collections 
+       SET status = 'published', published_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $1
+       RETURNING *`,
+      [exhibitionId]
+    );
+
+    const artworkCountResult = await query(
+      'SELECT COUNT(*) as count FROM gallery_artworks WHERE collection_id = $1',
+      [exhibitionId]
+    );
+
+    res.json({ 
+      exhibition: {
+        id: result.rows[0].id,
+        title: result.rows[0].title,
+        subtitle: result.rows[0].subtitle,
+        status: result.rows[0].status,
+        artworkCount: parseInt(artworkCountResult.rows[0].count),
+        createdAt: result.rows[0].created_at,
+        publishedAt: result.rows[0].published_at,
+        coverImageUrl: result.rows[0].cover_image_url
+      },
+      message: 'Exhibition published successfully' 
+    });
+  } catch (error: any) {
+    console.error('Error publishing exhibition:', error);
+    res.status(500).json({ error: 'Failed to publish exhibition' });
+  }
+});
+
+router.post('/exhibition/:id/unpublish', authenticateToken, async (req: any, res) => {
+  try {
+    const exhibitionId = parseInt(req.params.id);
+
+    const checkResult = await query(
+      'SELECT * FROM gallery_collections WHERE id = $1 AND gallery_id = $2',
+      [exhibitionId, req.user.id]
+    );
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Exhibition not found' });
+    }
+
+    const exhibition = checkResult.rows[0];
+
+    if (exhibition.status === 'draft') {
+      return res.status(400).json({ error: 'Exhibition is already a draft' });
+    }
+
+    const result = await query(
+      `UPDATE gallery_collections 
+       SET status = 'draft', updated_at = CURRENT_TIMESTAMP
+       WHERE id = $1
+       RETURNING *`,
+      [exhibitionId]
+    );
+
+    const artworkCountResult = await query(
+      'SELECT COUNT(*) as count FROM gallery_artworks WHERE collection_id = $1',
+      [exhibitionId]
+    );
+
+    res.json({ 
+      exhibition: {
+        id: result.rows[0].id,
+        title: result.rows[0].title,
+        subtitle: result.rows[0].subtitle,
+        status: result.rows[0].status,
+        artworkCount: parseInt(artworkCountResult.rows[0].count),
+        createdAt: result.rows[0].created_at,
+        coverImageUrl: result.rows[0].cover_image_url
+      },
+      message: 'Exhibition unpublished successfully' 
+    });
+  } catch (error: any) {
+    console.error('Error unpublishing exhibition:', error);
+    res.status(500).json({ error: 'Failed to unpublish exhibition' });
+  }
+});
+
 router.get('/exhibition/:id/artworks', authenticateToken, async (req: any, res) => {
   try {
     const exhibitionId = parseInt(req.params.id);
