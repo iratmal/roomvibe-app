@@ -3769,6 +3769,11 @@ function Exhibition360EditorPage() {
   const match = hash.match(/^#\/gallery\/exhibitions\/(\d+)\/360-editor/);
   const collectionId = match ? match[1] : null;
   
+  const { user, hasEntitlement, loading: authLoading } = useAuth();
+  
+  // Determine if user is artist-only (has artist entitlement but NOT gallery entitlement)
+  const isArtistOnly = !authLoading && hasEntitlement?.('artist_access') && !hasEntitlement?.('gallery_access');
+  
   // Check for preset parameter in URL (e.g., ?preset=classic-gallery for artist exhibitions)
   const getUrlPreset = () => {
     const queryIndex = hash.indexOf('?');
@@ -3780,15 +3785,31 @@ function Exhibition360EditorPage() {
   };
   const urlPreset = getUrlPreset();
   
+  // Force classic-gallery for artists, regardless of URL parameter
+  const effectivePreset = isArtistOnly ? 'classic-gallery' : (urlPreset || 'modern-gallery-v2');
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [availableArtworks, setAvailableArtworks] = useState<any[]>([]);
   const [initialAssignments, setInitialAssignments] = useState<any[]>([]);
-  // Default to classic-gallery if specified in URL (for artist exhibitions), otherwise modern-gallery-v2
-  const [presetId, setPresetId] = useState(urlPreset || 'modern-gallery-v2');
+  const [presetId, setPresetId] = useState(effectivePreset);
   const [collectionTitle, setCollectionTitle] = useState('');
   
   const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
+  
+  // Force preset to classic-gallery when isArtistOnly becomes true
+  useEffect(() => {
+    if (isArtistOnly) {
+      setPresetId('classic-gallery');
+    }
+  }, [isArtistOnly]);
+  
+  // Redirect artist to canonical URL if needed
+  useEffect(() => {
+    if (isArtistOnly && urlPreset !== 'classic-gallery') {
+      window.location.hash = `#/gallery/exhibitions/${collectionId}/360-editor?preset=classic-gallery`;
+    }
+  }, [isArtistOnly, urlPreset, collectionId]);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
@@ -3813,12 +3834,13 @@ function Exhibition360EditorPage() {
           const sceneData = await sceneRes.json();
           setCollectionTitle(sceneData.title || '');
           if (sceneData.scene360Data) {
-            // Use saved preset if available, otherwise use URL preset, otherwise default
-            setPresetId(sceneData.scene360Data.presetId || urlPreset || 'modern-gallery-v2');
+            // For artists, always use classic-gallery regardless of saved preset
+            const savedPreset = sceneData.scene360Data.presetId || urlPreset || 'modern-gallery-v2';
+            setPresetId(isArtistOnly ? 'classic-gallery' : savedPreset);
             setInitialAssignments(sceneData.scene360Data.slots || []);
           } else if (urlPreset) {
-            // No saved data yet - use URL preset for new exhibitions
-            setPresetId(urlPreset);
+            // No saved data yet - use URL preset for new exhibitions (artist gets classic)
+            setPresetId(isArtistOnly ? 'classic-gallery' : urlPreset);
           }
         }
       } catch (err) {
@@ -3845,7 +3867,8 @@ function Exhibition360EditorPage() {
     }
   };
 
-  if (loading) {
+  // Wait for auth to resolve before rendering to ensure isArtistOnly is accurate
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
         <div className="text-center">
@@ -3875,7 +3898,8 @@ function Exhibition360EditorPage() {
         availableArtworks={availableArtworks}
         initialAssignments={initialAssignments}
         onSave={handleSave}
-        onBack={() => window.location.hash = '#/dashboard/gallery'}
+        onBack={() => window.location.hash = isArtistOnly ? '#/dashboard/artist' : '#/dashboard/gallery'}
+        hidePresetSelector={isArtistOnly}
       />
     </div>
   );

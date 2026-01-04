@@ -32,6 +32,7 @@ interface Gallery360EditorProps {
   className?: string;
   viewerMode?: boolean;
   embedMode?: boolean;
+  hidePresetSelector?: boolean;
 }
 
 export function Gallery360Editor({
@@ -43,7 +44,8 @@ export function Gallery360Editor({
   onBack,
   className = '',
   viewerMode = false,
-  embedMode = false
+  embedMode = false,
+  hidePresetSelector = false
 }: Gallery360EditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedPresetId, setSelectedPresetId] = useState(presetId);
@@ -179,6 +181,13 @@ export function Gallery360Editor({
       setPreviousPresetId(selectedPresetId);
     }
   }, [selectedPresetId, previousPresetId, preset.slots, resetToSlots]);
+
+  // Auto-switch to classic-gallery when hidePresetSelector becomes true (artist-only users)
+  useEffect(() => {
+    if (hidePresetSelector && selectedPresetId !== 'classic-gallery') {
+      setSelectedPresetId('classic-gallery');
+    }
+  }, [hidePresetSelector, selectedPresetId]);
 
   const handleAssignArtwork = (slotId: string, artwork: Artwork | null) => {
     if (artwork) {
@@ -384,15 +393,21 @@ export function Gallery360Editor({
             </div>
           </div>
           
-          <select
-            value={selectedPresetId}
-            onChange={(e) => setSelectedPresetId(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-          >
-            {gallery360Presets.map(p => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
+          {hidePresetSelector ? (
+            <div className="w-full p-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-700 font-medium">
+              Classic Gallery
+            </div>
+          ) : (
+            <select
+              value={selectedPresetId}
+              onChange={(e) => setSelectedPresetId(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded-lg text-sm"
+            >
+              {gallery360Presets.map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          )}
         </div>
 
         <div className="flex-1 overflow-y-auto p-4">

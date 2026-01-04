@@ -1,0 +1,67 @@
+✅ TASK (Canvas) — Artist: sakriti Gallery switch + force Classic (bez modern opcije)
+
+Context (što vidimo sad):
+Kad artist klikne Edit Exhibition, otvara se URL tipa:
+/#/gallery/exhibitions/2/360-editor?preset=classic-gallery
+U editoru se prikazuje dropdown s dvije opcije: Modern Gallery i Classic Gallery (kao na screenshotu).
+To ne smije postojati za artista.
+
+Goal
+
+Artist vidi samo Classic Gallery (bez switcha / dropdowna).
+
+Editor se uvijek učitava u Classic modu za artista (čak i ako netko ručno promijeni URL).
+
+Modern opcija se prikazuje samo u rolama koje imaju pravo (npr. admin / gallery account).
+
+Implementacija (napravi sve 3 stvari)
+1) UI: Sakriti dropdown / switch za artista
+
+U komponenti 360 editor headera gdje se rendera selector (Modern/Classic):
+
+Dodaj gate:
+
+ako je user.role === 'artist' → ne renderaj selector uopće
+
+umjesto toga prikaži statični label npr. “Classic Gallery”
+
+Acceptance: artist ne vidi nikakav izbor galerije.
+
+2) Force Classic: hard-set preset za artista
+
+Bez obzira na query param:
+
+Ako user.role === 'artist':
+
+preset mora biti "classic-gallery"
+
+ignoriraj "modern-gallery" i bilo koji drugi param
+
+To se mora dogoditi u samom editor page-u (ne samo na gumbu), da bude “bulletproof”.
+
+Acceptance: čak i ako artist ručno ode na URL s modern presetom, editor ga prebaci/učita classic.
+
+3) Router safety: redirect/replace na canonical classic URL
+
+Ako je artist i URL nije canonical:
+
+npr. nema preset=classic-gallery ili je preset=modern-gallery
+→ napravi navigate(..., { replace: true }) na canonical classic varijantu:
+
+/#/gallery/exhibitions/:id/360-editor?preset=classic-gallery
+
+Acceptance: URL se normalizira na classic.
+
+Extra (obavezno)
+
+Ukloni “Modern Gallery” iz bilo kakvog defaulta za artista.
+
+Ako postoji backend flag tipa allowedPresets ili galleryType, neka artist dobije samo classic.
+
+Test (agent mora odraditi)
+
+Login artist → otvoriti editor → nema dropdowna.
+
+Ručno otvoriti .../360-editor?preset=modern-gallery → mora završiti na classic (i UI bez dropdowna).
+
+Admin/Gallery user i dalje može vidjeti switch (ako je to planirano).
