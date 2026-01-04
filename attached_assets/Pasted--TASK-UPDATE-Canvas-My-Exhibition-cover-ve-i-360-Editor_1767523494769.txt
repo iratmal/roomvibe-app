@@ -1,0 +1,77 @@
+✅ TASK UPDATE (Canvas) — My Exhibition cover veći + 360 Editor → Classic Gallery + makni Preview + promijeni tekst
+1) Cover image (slika) — povećati / proširiti
+
+Problem: cover slika izgleda “zgnječeno” / previše usko i crop je loš.
+Rješenje (UI):
+
+Povećati visinu cover dijela na kartici: min-height ~ 220–260px desktop, 160–200px mobile.
+
+Postaviti sliku kao background ili <img> s:
+
+width: 100%
+
+object-fit: cover
+
+object-position: center (po potrebi center top)
+
+Zadržati rounded corners kao sada.
+
+Ako nema slike → placeholder ostaje.
+
+Acceptance: cover izgleda široko i “pro” (kao banner), bez čudnog cropa.
+
+2) “360° Editor” i dalje vodi krivo → mora ići na Classic Gallery
+
+Problem: gumb vodi na modern/krivu galeriju.
+Rješenje:
+
+Promijeni routing/link da otvara Classic Gallery editor (to je jedini ispravni editor za artist exhibition trenutno).
+
+Ako postoje dva editora, hard-link na classic rutu. Ako je jedan editor s mode parametrom, koristi mode=classic.
+
+Acceptance: klik otvara Classic Gallery editor 100% svaki put.
+
+3) Preview maknuti iz “My Exhibition” kartice
+
+Zašto: ne treba nam tu + često puca → ukloniti da ne zbunjuje.
+Rješenje:
+
+Ukloniti Preview CTA gumb kompletno iz UI-ja ove kartice.
+
+(Optional) Preview može ostati negdje drugdje kasnije, ali ovdje ne.
+
+Acceptance: u kartici više nema Preview gumba.
+
+4) Promijeniti tekst “360° Editor” u nešto ljudskije (i naslov/label)
+
+Zašto: “360° Editor” zvuči tehnički + ako je classic gallery, naziv ne odgovara.
+
+Predlog novih labela (izaberi 1, najpreporučeniji je #1):
+
+Edit Exhibition
+
+Edit Gallery
+
+Open Exhibition Editor
+
+Arrange Artworks
+
+Exhibition Setup
+
+Enter Gallery Editor
+
+Moj favorit za RoomVibe ton: Edit Exhibition (najjasnije, najkraće, netehnički)
+
+Acceptance: gumb više ne piše “360° Editor” nego odabrani tekst.
+
+Quick UI layout suggestion (da izgleda premium)
+
+Cover (banner) gore veći
+
+Ispod: Title + status badge (Draft)
+
+Ispod: mali meta (2 artworks, created date)
+
+Donji red: [Edit Exhibition] (primarni) + [Delete] (sekundarni / danger)
+
+Bez Preview gumba
