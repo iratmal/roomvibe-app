@@ -1,0 +1,123 @@
+# Task za Replit agenta: Embed galerija (Published Exhibition) ne povlači artworkove + styling gumba
+
+## Kontekst
+
+* Na **Public Artist Page** (npr. `/artist/irena`) sada imamo linkove koji vode na izložbu (View Exhibition), ali kada se otvori izložba/Embed, prikazuje se **prazna galerija** (bez artworkova), iako izložba ima **2 artworks**.
+* Također postoje UI/styling problemi:
+
+  1. gumb u narančastoj boji (Publish/Unpublish potvrda ili CTA) nije u **RoomVibe zlatnoj**.
+  2. gumb/CTA ispod sekcije Artworks (npr. “View 360° Exhibition” / “Explore Artist’s 360° Exhibition”) izgleda **ružnije / neusklađeno** i treba ga dizajnerski ujednačiti.
+
+---
+
+## A) BUG: Published Exhibition se otvara prazna (Embed/Viewer ne povlači slike)
+
+### Simptomi
+
+* Artist ima izložbu s 2 artworks (Energy + Pulse).
+* Klik na **View Exhibition** (na public profilu i/ili ispod Artworks) vodi na viewer/embedded rutu.
+* Viewer se otvori, ali je galerija prazna (nema slika na zidovima, samo prostor).
+
+### Što treba napraviti
+
+1. **Provjeriti izvor podataka za viewer**
+
+   * Viewer/Embed mora dohvatiti **objavljenu (published) izložbu** i njezine wall slotove + assignment artworka.
+   * Usporedi API/response između:
+
+     * Gallery Dashboard gdje se pravilno vidi (ako postoji)
+     * Artist Dashboard / Public Embed gdje je prazno
+
+2. **Osigurati da publish sprema sve što viewer treba**
+
+   * Kod publish-a provjeri da se spremi:
+
+     * `status: published` (ili ekvivalent)
+     * `publishedAt` / `isPublished`
+     * svi wall slots (npr. North Wall 1..n) + mapiranje **slot -> artworkId**
+     * svi metapodaci potrebni za render (dimensions, orientation, image URL)
+
+3. **Fix u embed fetch logici**
+
+   * Ako embed endpoint vraća izložbu bez `artworks`/`slots`, dodati include/join.
+   * Ako embed endpoint koristi krivi ID (npr. `exhibitionId` vs `publishedExhibitionId`), ispraviti da viewer dohvaća stvarno objavljenu verziju.
+   * Ako je problem u permission/filteru: embed/public fetch mora dozvoliti read published exhibition bez auth.
+
+### Debug koraci (obavezno)
+
+* U browseru otvoriti DevTools → Network:
+
+  * pronaći request koji viewer radi (npr. `GET /api/exhibitions/:id` ili `/api/embed/exhibitions/:id`).
+  * provjeriti response: ima li `wallSlots`, `placements`, `artworks`.
+* U bazi provjeriti ima li zapis u join tablici (npr. `exhibition_artworks`, `exhibition_slots`, `wall_slot_assignments`).
+* Usporediti jedan isti exhibition id u:
+
+  * Artist dashboard (edit exhibition)
+  * Embed viewer
+  * Gallery dashboard (ako postoji)
+
+### Acceptance criteria
+
+* Nakon publish-a, klik na **View Exhibition** na public profilu otvara viewer koji prikazuje iste artworkove kao u editoru (2/2).
+* Embed link (`/embed/exhibitions/:id`) radi i prikazuje artworkove.
+
+---
+
+## B) UI: gumbovi moraju koristiti RoomVibe zlatnu boju (ne narančasta)
+
+### Problem
+
+* U flowu publish/unpublish ili CTA-u postoji gumb koji izgleda **narančasto** (ne prati RoomVibe brand).
+
+### Rješenje
+
+* Zamijeniti styling da koristi isti token/klasu kao ostali RoomVibe “gold” gumbi.
+* Ne hardkodirati novu boju, nego koristiti postojeći dizajn sustav:
+
+  * npr. `btn--gold`, `bg-brand-gold`, `var(--rv-gold)` (što već postoji u projektu)
+
+### Acceptance criteria
+
+* Niti jedan CTA vezan uz Exhibition (Publish/Unpublish/Confirm) nije narančast, nego ujednačen s RoomVibe zlatnom.
+
+---
+
+## C) UI/UX: CTA ispod Artworks na Public Artist Page treba biti “pravi gumb” i ljepše pozicioniran
+
+### Trenutno
+
+* CTA ispod Artworks izgleda kao tekst/link ili mali element koji “bježi” u layoutu.
+
+### Predloženi dizajn (implementirati jedan od ova 2)
+
+**Opcija 1 (preporučena):**
+
+* Ispod grid-a Artworks staviti centrirani **primary gold button** širine npr. 320–360px:
+
+  * Label: **“View 360° Exhibition”**
+  * Subtext (manji): “Step into the artist’s virtual gallery”
+  * Ikona: eye/compass (ako već koristimo)
+* Hover/Focus states u skladu s ostalim buttonima.
+
+**Opcija 2:**
+
+* U hero/CTA zoni pored “Contact Artist” i “View Artworks” prikazati “View Exhibition” kao treći gumb **samo ako postoji published exhibition**.
+* Ispod Artworks onda ukloniti dodatni CTA (da ne duplamo).
+
+### Logika prikaza
+
+* CTA se prikazuje **samo ako postoji published exhibition**.
+* Ako nema published exhibition:
+
+  * ne prikazivati CTA, ili prikazati disabled state s tooltipom “No published exhibition yet.”
+
+### Acceptance criteria
+
+* CTA izgleda kao punokrvni RoomVibe gumb (gold), vizualno usklađen.
+* Ne duplamo nepotrebno CTA-e (ili hero-only ili artworks-only, prema implementiranoj opciji).
+
+---
+
+## Napomena
+
+* Artist **ne smije** uređivati Classic Gallery preset. Mi samo osiguravamo da public/embed i artist dashboard koriste isti ispravan izvor podataka za prikaz objavljene izložbe.

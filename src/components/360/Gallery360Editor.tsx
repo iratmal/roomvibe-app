@@ -113,54 +113,69 @@ export function Gallery360Editor({
   }, [slotAssignments, lastSavedAssignments]);
 
   useEffect(() => {
-    // Wait for both initialAssignments AND availableArtworks to be loaded
-    if (initialAssignments.length > 0 && availableArtworks.length > 0 && selectedPresetId === presetId) {
-      // Hydrate saved assignments with current artwork dimensions from database
-      const hydratedAssignments = initialAssignments.map(assignment => {
-        if (!assignment.artworkId) return assignment;
-        
-        // Find the artwork in availableArtworks - check both id and artwork_id for compatibility
-        // Saved scenes may use gallery_artworks.id while API may return different ID structure
-        const artwork = availableArtworks.find(a => 
-          String(a.id) === String(assignment.artworkId) || 
-          String(a.artwork_id) === String(assignment.artworkId)
-        );
-        
-        if (artwork) {
-          // CRITICAL: Parse to number to ensure correct numeric comparison (not string comparison)
-          // String "120.00" < "80.00" lexicographically, but number 120 > 80
-          const widthCm = Number(artwork.width_cm || artwork.width_value || artwork.width || assignment.width) || 100;
-          const heightCm = Number(artwork.height_cm || artwork.height_value || artwork.height || assignment.height) || 70;
-          
-          console.log('[HydrateAssignment]', artwork.title, {
-            matchedId: artwork.id,
-            assignmentId: assignment.artworkId,
-            savedDimensions: `${assignment.width}x${assignment.height}`,
-            freshDimensions: `${widthCm}x${heightCm}`,
-            orientation: heightCm > widthCm ? 'PORTRAIT' : 'LANDSCAPE'
-          });
-          
-          return {
-            ...assignment,
-            artworkUrl: artwork.image_url || assignment.artworkUrl,
-            artworkTitle: artwork.title || assignment.artworkTitle,
-            artistName: artwork.artist_name || assignment.artistName,
-            width: widthCm,
-            height: heightCm
-          };
-        } else {
-          console.warn('[HydrateAssignment] No match found for artworkId:', assignment.artworkId, 
-            'Available IDs:', availableArtworks.map(a => ({ id: a.id, artwork_id: a.artwork_id })));
-        }
-        
-        return assignment;
-      });
-      
+    if (initialAssignments.length === 0 || selectedPresetId !== presetId) return;
+    
+    // In viewer mode, slots come pre-hydrated from the API with artworkUrl, etc.
+    // Just load them directly without needing availableArtworks
+    if (viewerMode && initialAssignments.some(a => a.artworkUrl)) {
+      const hydratedAssignments = initialAssignments.map(assignment => ({
+        ...assignment,
+        width: Number(assignment.width) || 100,
+        height: Number(assignment.height) || 70
+      }));
       loadAssignments(hydratedAssignments);
-      // Track initial state as "saved" to detect changes
       setLastSavedAssignments(hydratedAssignments);
+      return;
     }
-  }, [initialAssignments, loadAssignments, selectedPresetId, presetId, availableArtworks]);
+    
+    // Editor mode: Wait for availableArtworks to be loaded for hydration
+    if (availableArtworks.length === 0) return;
+    
+    // Hydrate saved assignments with current artwork dimensions from database
+    const hydratedAssignments = initialAssignments.map(assignment => {
+      if (!assignment.artworkId) return assignment;
+      
+      // Find the artwork in availableArtworks - check both id and artwork_id for compatibility
+      // Saved scenes may use gallery_artworks.id while API may return different ID structure
+      const artwork = availableArtworks.find(a => 
+        String(a.id) === String(assignment.artworkId) || 
+        String(a.artwork_id) === String(assignment.artworkId)
+      );
+      
+      if (artwork) {
+        // CRITICAL: Parse to number to ensure correct numeric comparison (not string comparison)
+        // String "120.00" < "80.00" lexicographically, but number 120 > 80
+        const widthCm = Number(artwork.width_cm || artwork.width_value || artwork.width || assignment.width) || 100;
+        const heightCm = Number(artwork.height_cm || artwork.height_value || artwork.height || assignment.height) || 70;
+        
+        console.log('[HydrateAssignment]', artwork.title, {
+          matchedId: artwork.id,
+          assignmentId: assignment.artworkId,
+          savedDimensions: `${assignment.width}x${assignment.height}`,
+          freshDimensions: `${widthCm}x${heightCm}`,
+          orientation: heightCm > widthCm ? 'PORTRAIT' : 'LANDSCAPE'
+        });
+        
+        return {
+          ...assignment,
+          artworkUrl: artwork.image_url || assignment.artworkUrl,
+          artworkTitle: artwork.title || assignment.artworkTitle,
+          artistName: artwork.artist_name || assignment.artistName,
+          width: widthCm,
+          height: heightCm
+        };
+      } else {
+        console.warn('[HydrateAssignment] No match found for artworkId:', assignment.artworkId, 
+          'Available IDs:', availableArtworks.map(a => ({ id: a.id, artwork_id: a.artwork_id })));
+      }
+      
+      return assignment;
+    });
+    
+    loadAssignments(hydratedAssignments);
+    // Track initial state as "saved" to detect changes
+    setLastSavedAssignments(hydratedAssignments);
+  }, [initialAssignments, loadAssignments, selectedPresetId, presetId, availableArtworks, viewerMode]);
 
   // Browser navigation guard - warn user about unsaved changes
   useEffect(() => {

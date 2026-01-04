@@ -2010,7 +2010,7 @@ export function ArtistDashboard() {
                       <button
                         onClick={() => setShowUnpublishConfirmModal(true)}
                         disabled={loading}
-                        className="px-3 py-2 text-sm text-amber-600 border border-amber-200 rounded-rvMd hover:bg-amber-50 transition-all font-medium disabled:opacity-50"
+                        className="px-3 py-2 text-sm text-[#C9A24A] border border-[#C9A24A]/30 rounded-rvMd hover:bg-[#C9A24A]/10 transition-all font-medium disabled:opacity-50"
                         title="Unpublish exhibition"
                       >
                         Unpublish
@@ -2562,8 +2562,8 @@ export function ArtistDashboard() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-rvLg p-6 max-w-md w-full">
               <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="w-16 h-16 bg-[#C9A24A]/15 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-[#C9A24A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                 </div>
@@ -2585,7 +2585,7 @@ export function ArtistDashboard() {
                     handleUnpublishExhibition();
                   }}
                   disabled={loading}
-                  className="flex-1 px-4 py-2.5 bg-amber-500 text-white text-sm font-semibold rounded-rvMd hover:bg-amber-600 transition-colors disabled:opacity-50"
+                  className="flex-1 px-4 py-2.5 bg-[#C9A24A] text-white text-sm font-semibold rounded-rvMd hover:bg-[#B8913A] transition-colors disabled:opacity-50"
                 >
                   Unpublish
                 </button>
