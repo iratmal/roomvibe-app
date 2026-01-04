@@ -385,11 +385,11 @@ function WallSpotlight({ position, targetY }: {
       <spotLight
         ref={spotlightRef}
         position={[0, -0.08, 0]}
-        intensity={8}
+        intensity={25}
         angle={0.35}
-        penumbra={0.4}
-        distance={6}
-        decay={1.2}
+        penumbra={0.3}
+        distance={8}
+        decay={1.0}
         color="#FFF8E0"
         castShadow={false}
       />
