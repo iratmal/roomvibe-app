@@ -66,9 +66,9 @@ function isValidArtworkUrl(url: string | undefined | null): boolean {
  * There are two floor meshes: outerEnclosureFloor and tiledFloorMain; both guarded by FloorGuard.
  */
 
-const GALLERY_WALL_COLOR = '#f2f2f2';
-const GALLERY_CEILING_COLOR = '#f2f2f2';
-const GALLERY_FLOOR_COLOR = '#2a2a2a';
+const GALLERY_WALL_COLOR = '#E8E5DF';
+const GALLERY_CEILING_COLOR = '#ECEBE7';
+const GALLERY_FLOOR_COLOR = '#3A3A3A';
 
 function DebugOverlay() {
   const { scene, gl } = useThree();
@@ -344,8 +344,8 @@ function Skylight({ position, width, depth }: {
         position={[0, -0.1, 0]}
         width={width * 0.9}
         height={depth * 0.9}
-        intensity={2.5}
-        color="#fffef5"
+        intensity={2.8}
+        color="#FFF8E8"
       />
     </group>
   );
@@ -374,11 +374,11 @@ function WallSpotlight({ position, targetY }: {
     <group position={position}>
       <mesh>
         <cylinderGeometry args={[0.06, 0.10, 0.12, 16]} />
-        <meshBasicMaterial color="#2a2a2a" />
+        <meshBasicMaterial color="#1F1F1F" />
       </mesh>
       <mesh position={[0, -0.05, 0]}>
         <cylinderGeometry args={[0.04, 0.04, 0.02, 16]} />
-        <meshBasicMaterial color="#fff8e0" />
+        <meshBasicMaterial color="#FFF5E0" />
       </mesh>
     </group>
   );
@@ -643,18 +643,18 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       ))}
       
       {/* Coffered ceiling grid - 3x3 sections */}
-      {/* Main beams - premium dark grey */}
+      {/* Main beams - charcoal dark grey */}
       {[-depth/3, 0, depth/3].map((zPos, i) => (
         <mesh key={`beam-main-x-${i}`} position={[0, height - 0.12, zPos]}>
           <boxGeometry args={[width - 0.3, 0.24, 0.20]} />
-          <meshBasicMaterial color="#2F2F2F" />
+          <meshBasicMaterial color="#1F1F1F" />
         </mesh>
       ))}
-      {/* Cross beams - premium dark grey */}
+      {/* Cross beams - charcoal dark grey */}
       {[-width/3, 0, width/3].map((xPos, i) => (
         <mesh key={`beam-main-z-${i}`} position={[xPos, height - 0.12, 0]}>
           <boxGeometry args={[0.20, 0.24, depth - 0.3]} />
-          <meshBasicMaterial color="#2F2F2F" />
+          <meshBasicMaterial color="#1F1F1F" />
         </mesh>
       ))}
       
@@ -682,10 +682,10 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         </mesh>
       ))}
 
-      {/* Gallery walls - clean gallery white */}
+      {/* Gallery walls - warm off-white */}
       <mesh position={[0, height / 2, -halfD]} receiveShadow>
         <planeGeometry args={[width, height]} />
-        <SafeWallMaterial color="#F4F3EF" />
+        <SafeWallMaterial color="#E8E5DF" />
       </mesh>
 
       {/* South wall with entrance opening */}
@@ -699,12 +699,12 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
 
       <mesh position={[halfW, height / 2, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
-        <SafeWallMaterial color="#F4F3EF" />
+        <SafeWallMaterial color="#E8E5DF" />
       </mesh>
 
       <mesh position={[-halfW, height / 2, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
-        <SafeWallMaterial color="#F4F3EF" />
+        <SafeWallMaterial color="#E8E5DF" />
       </mesh>
 
       {columnPositions.map((pos, i) => (
@@ -738,7 +738,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         <>
           {/* Ceiling ambient light - illuminates ceiling beams and panels */}
           <hemisphereLight 
-            args={['#ffffff', '#e8e8e8', 0.6]} 
+            args={['#FFF8F0', '#E8E4DC', 0.7]} 
             position={[0, height + 2, 0]}
           />
           <rectAreaLight
@@ -746,8 +746,8 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
             rotation={[Math.PI / 2, 0, 0]}
             width={width * 0.8}
             height={depth * 0.8}
-            intensity={0.4}
-            color="#f5f5f5"
+            intensity={0.45}
+            color="#FFF5E8"
           />
           
           {/* Designer benches with premium dark grey */}
