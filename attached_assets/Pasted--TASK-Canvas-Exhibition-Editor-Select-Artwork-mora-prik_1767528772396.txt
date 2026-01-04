@@ -1,0 +1,156 @@
+✅ TASK (Canvas) — Exhibition Editor: “Select Artwork” mora prikazivati artworkove dodane u Exhibition
+🎯 GOAL
+
+U Classic Gallery Exhibition Editoru (360 editor), u svakom Wall Slot → Select Artwork dropdownu moraju se prikazivati svi artworkovi koji su dodani u tu Exhibition (iz Artist Dashboarda → “Add to My Exhibition”).
+
+Trenutno dropdown ne prikazuje ništa, iako exhibition ima artworkove.
+
+🧨 PROBLEM (current state)
+
+Artist:
+
+ima artworkove u dashboardu
+
+dodao ih je u My Exhibition (vidljivo na dashboardu)
+
+U editoru:
+
+wall slots (North Wall, East Wall, itd.) postoje
+
+ali Select Artwork dropdown je prazan
+
+To znači da editor ne povlači exhibition artworks, nego vjerojatno:
+
+gleda krivi endpoint
+
+ili gleda sve artworkove (ali s pogrešnim filterom)
+
+ili ne koristi exhibition → artwork relaciju
+
+✅ EXPECTED BEHAVIOR (MUST)
+
+Za svaki Wall Slot → Select Artwork dropdown:
+
+Prikazati samo artworkove koji su dodani u ovu Exhibition
+
+Ne prikazivati artworkove koji nisu u toj exhibition
+
+Artworkovi moraju biti:
+
+vidljivi po nazivu (title)
+
+opcionalno s thumbnailom (ako već postoji UI pattern)
+
+Nakon odabira artworka → artwork se prikaže na zidu (existing behavior)
+
+🔍 ROOT CAUSE – što agent mora provjeriti
+A) API / Data source
+
+Provjeri:
+
+postoji li endpoint tipa:
+
+GET /api/exhibitions/:id/artworks
+
+ili exhibition objekt već vraća artworks[]
+
+ako ne postoji, treba ga dodati
+
+Ne koristiti:
+
+globalni GET /api/artworks
+
+niti artworkove koji nisu povezani s exhibitionom
+
+B) Data flow u Editoru
+
+U editor page-u:
+
+kad se učitava exhibition:
+
+povući exhibition.artworks
+
+spremiti u state (npr. availableArtworks)
+
+Select Artwork dropdown mora koristiti taj state, a ne prazan array ili global artworks
+
+C) Relacija Exhibition ↔ Artwork
+
+Ako relacija postoji (many-to-many ili one-to-many):
+
+koristiti junction / relation table
+
+ako postoji flag tipa artwork.exhibitionId ili artwork.inExhibition === true → koristiti to
+
+Ako relacija ne postoji ispravno:
+
+popraviti backend logiku “Add to My Exhibition”
+
+osigurati da artwork stvarno bude povezan s exhibition ID-em
+
+🛠 IMPLEMENTATION REQUIREMENTS (konkretno)
+Backend (ako treba)
+
+Endpoint koji vraća:
+
+{
+  "id": 2,
+  "title": "Irena izložba",
+  "artworks": [
+    { "id": 12, "title": "Energy", "image": "..." },
+    { "id": 15, "title": "Pulse", "image": "..." }
+  ]
+}
+
+Frontend (Editor)
+
+On exhibition load:
+
+fetch exhibition + artworks
+
+Dropdown:
+
+mapirati exhibition.artworks
+
+value = artwork.id
+
+label = artwork.title
+
+Ako exhibition.artworks.length === 0:
+
+prikaži helper text:
+
+“No artworks added to this exhibition yet.”
+
+✅ ACCEPTANCE CRITERIA (obavezno testirati)
+
+Dodam 2 artworka u exhibition (Artist Dashboard)
+
+Otvorim Edit Exhibition (Classic Gallery)
+
+Kliknem North Wall → Select Artwork
+➡️ Vidim ta 2 artworka u dropdownu
+
+Odaberem jedan → artwork se pojavi na zidu
+
+Artwork koji nije u exhibitionu se ne prikazuje
+
+🚫 NON-SCOPE (ne dirati)
+
+Ne mijenjati Wall Slot strukturu
+
+Ne mijenjati UI layout editora
+
+Ne uvoditi nove gallery tipove
+
+📌 OUTPUT
+
+Navedi:
+
+koji endpoint koristiš
+
+koji state drži exhibition artworks
+
+Kratka napomena u tasku:
+
+“Editor now correctly uses exhibition.artworks as the source for wall slot selection.”

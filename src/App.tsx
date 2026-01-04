@@ -3816,18 +3816,49 @@ function Exhibition360EditorPage() {
   }, []);
 
   useEffect(() => {
-    if (!collectionId) return;
+    if (!collectionId || authLoading) return;
     
     const fetchData = async () => {
       try {
+        // Use different endpoint for artists vs galleries
+        // Artists use /api/artist/exhibition/:id/artworks
+        // Galleries use /api/gallery/collections/:id/artworks
+        const artworksEndpoint = isArtistOnly 
+          ? `${API_URL}/api/artist/exhibition/${collectionId}/artworks`
+          : `${API_URL}/api/gallery/collections/${collectionId}/artworks`;
+        
+        console.log('[360Editor] Fetching artworks from:', artworksEndpoint, { isArtistOnly });
+        
         const [sceneRes, artworksRes] = await Promise.all([
           fetch(`${API_URL}/api/gallery/collections/${collectionId}/360-scene`, { credentials: 'include' }),
-          fetch(`${API_URL}/api/gallery/collections/${collectionId}/artworks`, { credentials: 'include' })
+          fetch(artworksEndpoint, { credentials: 'include' })
         ]);
         
         if (artworksRes.ok) {
           const artData = await artworksRes.json();
-          setAvailableArtworks(artData.artworks || []);
+          console.log('[360Editor] Received artworks:', artData.artworks?.length || 0);
+          
+          // Normalize artwork data - artist endpoint uses camelCase, gallery uses snake_case
+          const normalizedArtworks = (artData.artworks || []).map((a: any) => ({
+            id: a.id,
+            artwork_id: a.sourceArtworkId || a.source_artwork_id || a.id,
+            title: a.title,
+            artist_name: a.artistName || a.artist_name,
+            image_url: a.imageUrl || a.image_url,
+            width_value: a.widthValue || a.width_value,
+            height_value: a.heightValue || a.height_value,
+            width_cm: a.width_cm || a.widthValue || a.width_value,
+            height_cm: a.height_cm || a.heightValue || a.height_value,
+            dimension_unit: a.dimensionUnit || a.dimension_unit || 'cm',
+            price_amount: a.priceAmount || a.price_amount,
+            price_currency: a.priceCurrency || a.price_currency,
+            buy_url: a.buyUrl || a.buy_url,
+            description: a.description
+          }));
+          
+          setAvailableArtworks(normalizedArtworks);
+        } else {
+          console.error('[360Editor] Failed to fetch artworks:', artworksRes.status);
         }
         
         if (sceneRes.ok) {
@@ -3852,7 +3883,7 @@ function Exhibition360EditorPage() {
     };
     
     fetchData();
-  }, [collectionId, API_URL]);
+  }, [collectionId, API_URL, isArtistOnly, authLoading]);
 
   const handleSave = async (newPresetId: string, slots: any[]) => {
     const res = await fetch(`${API_URL}/api/gallery/collections/${collectionId}/360-scene`, {
