@@ -67,7 +67,7 @@ function isValidArtworkUrl(url: string | undefined | null): boolean {
  */
 
 const GALLERY_WALL_COLOR = '#A8A5A0';
-const GALLERY_CEILING_COLOR = '#ECEBE7';
+const GALLERY_CEILING_COLOR = '#1A1A1A';
 const GALLERY_FLOOR_COLOR = '#E5E2DC';
 
 function DebugOverlay() {
@@ -687,10 +687,10 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         d: depth / 3 - 0.25
       }))).map((panel, i) => (
         <group key={`coffer-${i}`} position={[panel.x, height, panel.z]}>
-          {/* Recessed ceiling panel */}
+          {/* Recessed ceiling panel - dark grey */}
           <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
             <planeGeometry args={[panel.w, panel.d]} />
-            <SafeCeilingMaterial color="#ECEBE7" />
+            <SafeCeilingMaterial color="#2A2A2A" />
           </mesh>
         </group>
       ))}
@@ -757,19 +757,28 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       {/* Gallery Benches & Decorative Vases - only for Classic Gallery */}
       {preset.id === 'white-cube-v1' && (
         <>
-          {/* Ceiling ambient light - illuminates ceiling beams and panels */}
+          {/* Warm ambient lighting for gallery atmosphere */}
+          <ambientLight intensity={0.35} color="#FFF8F0" />
+          
+          {/* Warm hemisphere light - sky/ground */}
           <hemisphereLight 
-            args={['#FFF8F0', '#E8E4DC', 0.7]} 
-            position={[0, height + 2, 0]}
+            args={['#FFF0E0', '#C8C5C0', 0.5]} 
+            position={[0, height, 0]}
           />
-          <rectAreaLight
-            position={[0, height - 0.5, 0]}
-            rotation={[Math.PI / 2, 0, 0]}
-            width={width * 0.8}
-            height={depth * 0.8}
-            intensity={0.45}
+          
+          {/* Warm directional fill light from above */}
+          <directionalLight
+            position={[0, height + 5, 0]}
+            intensity={0.6}
             color="#FFF5E8"
           />
+          
+          {/* Ceiling downlights - warm spotlights */}
+          <pointLight position={[-4, height - 0.3, -3]} intensity={0.8} color="#FFE8D0" distance={12} decay={2} />
+          <pointLight position={[4, height - 0.3, -3]} intensity={0.8} color="#FFE8D0" distance={12} decay={2} />
+          <pointLight position={[-4, height - 0.3, 3]} intensity={0.8} color="#FFE8D0" distance={12} decay={2} />
+          <pointLight position={[4, height - 0.3, 3]} intensity={0.8} color="#FFE8D0" distance={12} decay={2} />
+          <pointLight position={[0, height - 0.3, 0]} intensity={0.6} color="#FFF0E0" distance={15} decay={2} />
           
           {/* Designer benches with premium dark grey */}
           <GalleryBench position={[-3.0, 0, 0]} rotation={[0, Math.PI / 2, 0]} />
