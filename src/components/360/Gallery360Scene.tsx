@@ -728,69 +728,6 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         <SafeWallMaterial color="#8A8782" />
       </mesh>
       
-      {/* Wall edge trims - dark lines where walls meet */}
-      {/* Vertical corner edges */}
-      <mesh position={[-halfW + 0.02, height / 2, -halfD + 0.02]}>
-        <boxGeometry args={[0.06, height, 0.06]} />
-        <meshBasicMaterial color="#1F1F1F" />
-      </mesh>
-      <mesh position={[halfW - 0.02, height / 2, -halfD + 0.02]}>
-        <boxGeometry args={[0.06, height, 0.06]} />
-        <meshBasicMaterial color="#1F1F1F" />
-      </mesh>
-      <mesh position={[-halfW + 0.02, height / 2, halfD - 0.02]}>
-        <boxGeometry args={[0.06, height, 0.06]} />
-        <meshBasicMaterial color="#1F1F1F" />
-      </mesh>
-      <mesh position={[halfW - 0.02, height / 2, halfD - 0.02]}>
-        <boxGeometry args={[0.06, height, 0.06]} />
-        <meshBasicMaterial color="#1F1F1F" />
-      </mesh>
-      
-      {/* Horizontal ceiling edges where walls meet ceiling */}
-      {/* North wall top edge */}
-      <mesh position={[0, height - 0.03, -halfD + 0.03]}>
-        <boxGeometry args={[width, 0.06, 0.06]} />
-        <meshBasicMaterial color="#1F1F1F" />
-      </mesh>
-      {/* South wall top edge */}
-      <mesh position={[0, height - 0.03, halfD - 0.03]}>
-        <boxGeometry args={[width, 0.06, 0.06]} />
-        <meshBasicMaterial color="#1F1F1F" />
-      </mesh>
-      {/* East wall top edge */}
-      <mesh position={[halfW - 0.03, height - 0.03, 0]}>
-        <boxGeometry args={[0.06, 0.06, depth]} />
-        <meshBasicMaterial color="#1F1F1F" />
-      </mesh>
-      {/* West wall top edge */}
-      <mesh position={[-halfW + 0.03, height - 0.03, 0]}>
-        <boxGeometry args={[0.06, 0.06, depth]} />
-        <meshBasicMaterial color="#1F1F1F" />
-      </mesh>
-      
-      {/* Floor edges where walls meet floor */}
-      {/* North wall floor edge */}
-      <mesh position={[0, 0.03, -halfD + 0.03]}>
-        <boxGeometry args={[width, 0.06, 0.06]} />
-        <meshBasicMaterial color="#1F1F1F" />
-      </mesh>
-      {/* South wall floor edge */}
-      <mesh position={[0, 0.03, halfD - 0.03]}>
-        <boxGeometry args={[width, 0.06, 0.06]} />
-        <meshBasicMaterial color="#1F1F1F" />
-      </mesh>
-      {/* East wall floor edge */}
-      <mesh position={[halfW - 0.03, 0.03, 0]}>
-        <boxGeometry args={[0.06, 0.06, depth]} />
-        <meshBasicMaterial color="#1F1F1F" />
-      </mesh>
-      {/* West wall floor edge */}
-      <mesh position={[-halfW + 0.03, 0.03, 0]}>
-        <boxGeometry args={[0.06, 0.06, depth]} />
-        <meshBasicMaterial color="#1F1F1F" />
-      </mesh>
-
       {columnPositions.map((pos, i) => (
         <Column
           key={`col-${i}`}
@@ -836,16 +773,16 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
             color="#FFF2E0"
           />
           
-          {/* Ceiling downlights - stronger spotlights illuminating artwork walls - intensity +40% */}
-          <pointLight position={[-4, height - 0.3, -3]} intensity={1.3} color="#FFF2E0" distance={14} decay={1.8} />
-          <pointLight position={[4, height - 0.3, -3]} intensity={1.3} color="#FFF2E0" distance={14} decay={1.8} />
-          <pointLight position={[-4, height - 0.3, 3]} intensity={1.3} color="#FFF2E0" distance={14} decay={1.8} />
-          <pointLight position={[4, height - 0.3, 3]} intensity={1.3} color="#FFF2E0" distance={14} decay={1.8} />
-          <pointLight position={[0, height - 0.3, 0]} intensity={1.0} color="#FFF2E0" distance={16} decay={1.8} />
-          {/* Additional wall-focused spotlights */}
-          <pointLight position={[-6, height - 0.5, 0]} intensity={1.1} color="#FFF2E0" distance={10} decay={2} />
-          <pointLight position={[6, height - 0.5, 0]} intensity={1.1} color="#FFF2E0" distance={10} decay={2} />
-          <pointLight position={[0, height - 0.5, -5]} intensity={1.1} color="#FFF2E0" distance={10} decay={2} />
+          {/* Ceiling downlights - doubled intensity for visible lighting */}
+          <pointLight position={[-4, height - 0.3, -3]} intensity={2.6} color="#FFF2E0" distance={16} decay={1.5} />
+          <pointLight position={[4, height - 0.3, -3]} intensity={2.6} color="#FFF2E0" distance={16} decay={1.5} />
+          <pointLight position={[-4, height - 0.3, 3]} intensity={2.6} color="#FFF2E0" distance={16} decay={1.5} />
+          <pointLight position={[4, height - 0.3, 3]} intensity={2.6} color="#FFF2E0" distance={16} decay={1.5} />
+          <pointLight position={[0, height - 0.3, 0]} intensity={2.0} color="#FFF2E0" distance={18} decay={1.5} />
+          {/* Additional wall-focused spotlights - doubled */}
+          <pointLight position={[-6, height - 0.5, 0]} intensity={2.2} color="#FFF2E0" distance={12} decay={1.5} />
+          <pointLight position={[6, height - 0.5, 0]} intensity={2.2} color="#FFF2E0" distance={12} decay={1.5} />
+          <pointLight position={[0, height - 0.5, -5]} intensity={2.2} color="#FFF2E0" distance={12} decay={1.5} />
           
           {/* Designer benches with premium dark grey */}
           <GalleryBench position={[-3.0, 0, 0]} rotation={[0, Math.PI / 2, 0]} />
@@ -875,10 +812,10 @@ function GalleryBench({ position, rotation }: { position: [number, number, numbe
 
   return (
     <group position={position} rotation={rotation}>
-      {/* Minimalist premium RoomVibe Navy bench - no legs, pure block form */}
+      {/* Minimalist premium black bench - no legs, pure block form */}
       <mesh position={[0, BENCH_H / 2, 0]} castShadow receiveShadow>
         <boxGeometry args={[BENCH_L, BENCH_H, BENCH_W]} />
-        <meshBasicMaterial color="#1E2A3B" />
+        <meshBasicMaterial color="#1A1A1A" />
       </mesh>
     </group>
   );
