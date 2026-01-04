@@ -1,6 +1,6 @@
 import express from 'express';
 import { query } from '../db/database.js';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticateToken, optionalAuth } from '../middleware/auth.js';
 import { gallery360Presets } from '../../src/config/gallery360Presets';
 import { requireGalleryFeature, requireExhibitionPublicFeature } from '../middleware/featureFlags.js';
 
@@ -158,12 +158,12 @@ router.put('/collections/:id/360-scene', authenticateToken, requireGalleryFeatur
   }
 });
 
-router.get('/exhibitions/:id/360-public', requireExhibitionPublicFeature, async (req, res) => {
+router.get('/exhibitions/:id/360-public', optionalAuth, requireExhibitionPublicFeature, async (req: any, res) => {
   try {
     const collectionId = req.params.id;
 
     const result = await query(
-      `SELECT c.id, c.title, c.description, c.scene_360_data, c.status,
+      `SELECT c.id, c.title, c.description, c.scene_360_data, c.status, c.gallery_id,
               u.display_name as gallery_name
        FROM gallery_collections c
        JOIN users u ON c.gallery_id = u.id
@@ -177,7 +177,10 @@ router.get('/exhibitions/:id/360-public', requireExhibitionPublicFeature, async 
 
     const collection = result.rows[0];
     
-    if (collection.status !== 'published') {
+    // Check if requesting user is the owner (allows draft preview)
+    const isOwner = req.user?.id === collection.gallery_id;
+    
+    if (collection.status !== 'published' && !isOwner) {
       return res.status(403).json({ error: 'Exhibition is not published' });
     }
 

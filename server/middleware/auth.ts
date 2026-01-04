@@ -210,3 +210,49 @@ export const requireAnyEntitlement = (...entitlements: Array<'artist_access' | '
     next();
   };
 };
+
+// Optional authentication - parses user if present but doesn't require it
+export const optionalAuth = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  const token = req.cookies?.token;
+
+  if (!token) {
+    return next();
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as {
+      id: number;
+      email: string;
+      role: string;
+    };
+    
+    const result = await query(
+      'SELECT id, email, role, is_admin, subscription_status, subscription_plan, artist_access, designer_access, gallery_access FROM users WHERE id = $1',
+      [decoded.id]
+    );
+    
+    if (result.rows.length > 0) {
+      const user = result.rows[0];
+      
+      const entitlements: UserEntitlements = {
+        artist_access: user.is_admin ? true : (user.artist_access || false),
+        designer_access: user.is_admin ? true : (user.designer_access || false),
+        gallery_access: user.is_admin ? true : (user.gallery_access || false),
+      };
+      
+      req.user = {
+        id: user.id,
+        email: user.email,
+        role: user.is_admin ? 'admin' : user.role,
+        is_admin: user.is_admin || false,
+        subscription_status: user.subscription_status || 'free',
+        subscription_plan: user.subscription_plan || 'user',
+        entitlements,
+      };
+    }
+    
+    next();
+  } catch (error) {
+    next();
+  }
+};

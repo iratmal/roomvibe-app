@@ -3,6 +3,7 @@ import multer from 'multer';
 import path from 'path';
 import { query } from '../db/database.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { ObjectStorageService } from '../objectStorage.js';
 
 const router = express.Router();
 
@@ -399,7 +400,7 @@ router.get('/profile/connect-stats', authenticateToken, async (req: any, res) =>
 router.get('/exhibition', authenticateToken, async (req: any, res) => {
   try {
     const result = await query(
-      `SELECT c.id, c.title, c.subtitle, c.status, c.created_at,
+      `SELECT c.id, c.title, c.subtitle, c.status, c.created_at, c.cover_image_url,
         (SELECT COUNT(*) FROM gallery_artworks WHERE collection_id = c.id) as artwork_count
        FROM gallery_collections c
        WHERE c.gallery_id = $1
@@ -420,7 +421,8 @@ router.get('/exhibition', authenticateToken, async (req: any, res) => {
         subtitle: exhibition.subtitle,
         status: exhibition.status,
         artworkCount: parseInt(exhibition.artwork_count),
-        createdAt: exhibition.created_at
+        createdAt: exhibition.created_at,
+        coverImageUrl: exhibition.cover_image_url
       }
     });
   } catch (error: any) {
@@ -537,13 +539,53 @@ router.put('/exhibition/:id', authenticateToken, async (req: any, res) => {
         subtitle: result.rows[0].subtitle,
         status: result.rows[0].status,
         artworkCount: parseInt(artworkCountResult.rows[0].count),
-        createdAt: result.rows[0].created_at
+        createdAt: result.rows[0].created_at,
+        coverImageUrl: result.rows[0].cover_image_url
       },
       message: 'Exhibition updated successfully' 
     });
   } catch (error: any) {
     console.error('Error updating artist exhibition:', error);
     res.status(500).json({ error: 'Failed to update exhibition' });
+  }
+});
+
+router.post('/exhibition/:id/cover-image', authenticateToken, upload.single('image'), async (req: any, res) => {
+  try {
+    const exhibitionId = parseInt(req.params.id);
+
+    const checkResult = await query(
+      'SELECT * FROM gallery_collections WHERE id = $1 AND gallery_id = $2',
+      [exhibitionId, req.user.id]
+    );
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Exhibition not found' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'Cover image is required' });
+    }
+
+    const objectStorage = new ObjectStorageService();
+    const imageUrl = await objectStorage.uploadBuffer(
+      req.file.buffer,
+      `exhibition-cover-${exhibitionId}-${Date.now()}.${req.file.mimetype.split('/')[1] || 'jpg'}`,
+      req.file.mimetype
+    );
+
+    await query(
+      'UPDATE gallery_collections SET cover_image_url = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+      [imageUrl, exhibitionId]
+    );
+
+    res.json({ 
+      coverImageUrl: imageUrl,
+      message: 'Cover image uploaded successfully' 
+    });
+  } catch (error: any) {
+    console.error('Error uploading exhibition cover image:', error);
+    res.status(500).json({ error: 'Failed to upload cover image' });
   }
 });
 

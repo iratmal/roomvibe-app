@@ -3905,7 +3905,9 @@ function Exhibition360Viewer() {
     
     const fetchData = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/gallery/exhibitions/${exhibitionId}/360-public`);
+        const res = await fetch(`${API_URL}/api/gallery/exhibitions/${exhibitionId}/360-public`, {
+          credentials: 'include'
+        });
         if (!res.ok) {
           const errData = await res.json();
           setError(errData.error || 'Exhibition not found');
@@ -4062,7 +4064,9 @@ function PublicExhibition360Viewer() {
     
     const fetchData = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/gallery/exhibitions/${exhibitionId}/360-public`);
+        const res = await fetch(`${API_URL}/api/gallery/exhibitions/${exhibitionId}/360-public`, {
+          credentials: 'include'
+        });
         if (!res.ok) {
           const errData = await res.json();
           setError(errData.error || 'Exhibition not found');

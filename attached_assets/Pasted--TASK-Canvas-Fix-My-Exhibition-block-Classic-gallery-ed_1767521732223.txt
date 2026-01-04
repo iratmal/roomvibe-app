@@ -1,0 +1,123 @@
+✅ TASK (Canvas) — Fix “My Exhibition” block + Classic gallery editor + Preview + Cover image upload
+
+Goal (što treba raditi):
+U Artist Dashboardu popraviti “My Exhibition” blok tako da:
+
+360° Editor NE vodi na Modern Gallery, nego vodi na Classic Gallery editor.
+
+Dodati Edit gumb za izložbu (cijeli taj dio) koji otvara edit formu i omogućuje upload cover slike (thumbnail/banner) za exhibition.
+
+Popraviti Preview da radi (trenutno “Exhibition Not Available / Failed to load exhibition”).
+
+Context (trenutno stanje):
+
+Na Artist Dashboardu, u bloku My Exhibition, imamo exhibition “modern”.
+
+Klik na 360° Editor baca u “modern” galeriju/editor, ali treba ići u classic gallery editor/view.
+
+Klik na Preview puca: “Exhibition Not Available – Failed to load exhibition” (vidi screenshot 2).
+
+Trebamo mogućnost da artist upload-a sliku izložbe (cover image) koja se prikazuje u My Exhibition kartici umjesto placeholder ikone.
+
+Design / UI notes (ne mijenjati stil aplikacije):
+
+Zadržati postojeći RoomVibe UI look (minimal, clean). Primarna boja branda je Indigo Deep Navy #283593. 
+
+Novi gumbovi moraju izgledati kao postojeći CTA gumbi (isti radius, tipografija Inter, spacing).
+
+Scope (napravi samo ovo)
+A) “360° Editor” button — preusmjeriti na CLASSIC editor
+
+U “My Exhibition” kartici, gumb 360° Editor trenutno vodi na modern editor.
+
+Promijeni routing/link tako da vodi na Classic Gallery editor rutu (ili classic editor mode koji već postoji u projektu).
+
+Ako trenutno imamo samo jedan editor, dodaj parametar mode=classic ili novu rutu koja jasno otvara classic editor.
+
+Acceptance: klik na “360° Editor” otvara classic editor bez greške.
+
+B) Preview — popraviti da radi (public ili internal preview)
+
+Klik na Preview mora otvoriti preview stranice izložbe (classic preview) i mora učitati exhibition po ID/slug-u.
+
+Trenutno se otvara staging.roomvibe.app/#/exhibition/2 i vraća “Failed to load exhibition”.
+
+Potrebno:
+
+Provjeriti koja je točna API ruta za dohvat exhibitiona (npr. GET /api/exhibitions/:id ili slično).
+
+Provjeriti da frontend preview page koristi isti identifikator (id vs slug) kao backend.
+
+Popraviti mismatch (najčešći uzrok: route param id je string/slug, backend očekuje numeric id, ili obrnuto).
+
+Dodati bolji error handling: ako exhibition ne postoji → jasna poruka + “Back to Dashboard”.
+
+Acceptance: klik na Preview otvara izložbu i prikazuje sadržaj (artworks / scene / basic layout), bez “Failed to load exhibition”.
+
+C) Dodati “Edit exhibition” UI + upload cover image
+
+U “My Exhibition” kartici dodati gumb (ili ikonu olovke) Edit koji otvara panel/modal ili dedicated page gdje se može:
+
+promijeniti: title (ako već postoji), status (draft/published) — samo ako to već imamo u modelu
+
+uploadati cover image (thumbnail/banner za exhibition)
+
+Za cover image:
+
+Backend: spremi sliku u postojeći storage (isti sustav kao artwork upload), i spremi coverImageKey ili coverImageUrl u Exhibition modelu.
+
+Frontend: u My Exhibition kartici prikazati cover sliku na vrhu kartice (mjesto placeholder ikone).
+
+Ako nema cover slike → ostavi placeholder.
+
+Acceptance:
+
+Upload radi (200), slika se vidi odmah nakon refresha, i prikazuje se u My Exhibition kartici.
+
+Files / areas to focus (Agent: ne skeniraj cijeli repo)
+
+Ako ne znaš točne putanje, prvo brzo “grepaj” po: My Exhibition, Exhibition Not Available, #/exhibition/, 360 Editor.
+
+Vjerojatne lokacije:
+
+src/pages/dashboard/artist/* (Artist dashboard page)
+
+src/components/exhibitions/* (Exhibition card / MyExhibition komponenta)
+
+src/pages/exhibition/* (preview page / viewer)
+
+server/routes/*exhibition* (API)
+
+server/controllers/*exhibition*
+
+server/models/*Exhibition* (dodati coverImage field)
+
+Non-scope (VAŽNO — ne dirati)
+
+Ne raditi refactor cijelog exhibition sistema.
+
+Ne mijenjati Stripe, auth, deploy, staging/live.
+
+Ne dodavati nove 360/3D feature-e. Samo routing + preview + cover upload.
+
+Stop condition (kad staneš)
+
+“360° Editor” vodi u classic editor i radi.
+
+“Preview” radi i učitava exhibition bez errora.
+
+“Edit” postoji i cover image upload radi + prikazuje se u My Exhibition kartici.
+
+Navedi sve promijenjene fileove + kratko kako testirati (3 koraka).
+
+Test steps (koje agent mora napraviti)
+
+Login kao artist → Dashboard → My Exhibition → klik 360° Editor → mora otvoriti classic editor.
+
+Klik Preview → mora otvoriti preview i učitati exhibition.
+
+Klik Edit → upload cover → save → refresh → cover slika prikazana.
+
+Napomena o “Fast Mode”
+
+Ovo je fokusirani bugfix + UI upgrade. Ako postoji, koristi Fast Mode. 
