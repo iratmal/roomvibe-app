@@ -102,9 +102,9 @@ export const gallery360Presets: Gallery360Preset[] = [
     name: 'Classic Gallery',
     description: 'Contemporary museum space with gallery lighting and tiled floor',
     dimensions: { width: 20, height: 4.5, depth: 16 },
-    wallColor: '#CFCFCB',
+    wallColor: '#9A9792',
     floorColor: '#3A3A3A',
-    ceilingColor: '#D5D2CC',
+    ceilingColor: '#CFCFCB',
     floorType: 'tile',
     viewpoints: [
       {

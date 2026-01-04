@@ -66,8 +66,8 @@ function isValidArtworkUrl(url: string | undefined | null): boolean {
  * There are two floor meshes: outerEnclosureFloor and tiledFloorMain; both guarded by FloorGuard.
  */
 
-const GALLERY_WALL_COLOR = '#CFCFCB';
-const GALLERY_CEILING_COLOR = '#D5D2CC';
+const GALLERY_WALL_COLOR = '#9A9792';
+const GALLERY_CEILING_COLOR = '#CFCFCB';
 const GALLERY_FLOOR_COLOR = '#3A3A3A';
 
 function DebugOverlay() {
@@ -690,7 +690,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
           {/* Recessed ceiling panel - light warm grey */}
           <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
             <planeGeometry args={[panel.w, panel.d]} />
-            <SafeCeilingMaterial color="#D5D2CC" />
+            <SafeCeilingMaterial color="#CFCFCB" />
           </mesh>
         </group>
       ))}
@@ -706,7 +706,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       {/* Gallery walls - warm gallery grey */}
       <mesh position={[0, height / 2, -halfD]} receiveShadow>
         <planeGeometry args={[width, height]} />
-        <SafeWallMaterial color="#CFCFCB" />
+        <SafeWallMaterial color="#9A9792" />
       </mesh>
 
       {/* South wall with entrance opening */}
@@ -720,12 +720,12 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
 
       <mesh position={[halfW, height / 2, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
-        <SafeWallMaterial color="#CFCFCB" />
+        <SafeWallMaterial color="#9A9792" />
       </mesh>
 
       <mesh position={[-halfW, height / 2, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
-        <SafeWallMaterial color="#CFCFCB" />
+        <SafeWallMaterial color="#9A9792" />
       </mesh>
       
       {columnPositions.map((pos, i) => (
@@ -1027,19 +1027,19 @@ function SouthWallWithOpening({
       {/* Left section of wall */}
       <mesh position={[-(width / 2 - leftWidth / 2), height / 2, 0]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[leftWidth, height]} />
-        <SafeWallMaterial color="#CFCFCB" />
+        <SafeWallMaterial color="#9A9792" />
       </mesh>
 
       {/* Right section of wall */}
       <mesh position={[(width / 2 - rightWidth / 2), height / 2, 0]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[rightWidth, height]} />
-        <SafeWallMaterial color="#CFCFCB" />
+        <SafeWallMaterial color="#9A9792" />
       </mesh>
 
       {/* Top section above portal */}
       <mesh position={[0, portalH + topHeight / 2, 0]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[portalW, topHeight]} />
-        <SafeWallMaterial color="#CFCFCB" />
+        <SafeWallMaterial color="#9A9792" />
       </mesh>
     </group>
   );
