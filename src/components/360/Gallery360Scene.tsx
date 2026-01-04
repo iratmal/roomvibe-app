@@ -172,7 +172,7 @@ function DebugOverlay() {
 
 function SafeWallMaterial({ color }: { color?: string }) {
   const safeColor = (color && color !== '#000000' && color !== '#000' && color !== 'black') ? color : GALLERY_WALL_COLOR;
-  return <meshBasicMaterial color={safeColor} side={THREE.DoubleSide} />;
+  return <meshLambertMaterial color={safeColor} side={THREE.DoubleSide} />;
 }
 
 function SafeCeilingMaterial({ color }: { color?: string }) {
@@ -773,16 +773,16 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
             color="#FFF2E0"
           />
           
-          {/* Ceiling downlights - doubled intensity for visible lighting */}
-          <pointLight position={[-4, height - 0.3, -3]} intensity={2.6} color="#FFF2E0" distance={16} decay={1.5} />
-          <pointLight position={[4, height - 0.3, -3]} intensity={2.6} color="#FFF2E0" distance={16} decay={1.5} />
-          <pointLight position={[-4, height - 0.3, 3]} intensity={2.6} color="#FFF2E0" distance={16} decay={1.5} />
-          <pointLight position={[4, height - 0.3, 3]} intensity={2.6} color="#FFF2E0" distance={16} decay={1.5} />
-          <pointLight position={[0, height - 0.3, 0]} intensity={2.0} color="#FFF2E0" distance={18} decay={1.5} />
-          {/* Additional wall-focused spotlights - doubled */}
-          <pointLight position={[-6, height - 0.5, 0]} intensity={2.2} color="#FFF2E0" distance={12} decay={1.5} />
-          <pointLight position={[6, height - 0.5, 0]} intensity={2.2} color="#FFF2E0" distance={12} decay={1.5} />
-          <pointLight position={[0, height - 0.5, -5]} intensity={2.2} color="#FFF2E0" distance={12} decay={1.5} />
+          {/* Ceiling downlights - +15% intensity for visible wall lighting */}
+          <pointLight position={[-4, height - 0.3, -3]} intensity={3.0} color="#FFF5E8" distance={16} decay={1.5} />
+          <pointLight position={[4, height - 0.3, -3]} intensity={3.0} color="#FFF5E8" distance={16} decay={1.5} />
+          <pointLight position={[-4, height - 0.3, 3]} intensity={3.0} color="#FFF5E8" distance={16} decay={1.5} />
+          <pointLight position={[4, height - 0.3, 3]} intensity={3.0} color="#FFF5E8" distance={16} decay={1.5} />
+          <pointLight position={[0, height - 0.3, 0]} intensity={2.3} color="#FFF5E8" distance={18} decay={1.5} />
+          {/* Additional wall-focused spotlights - +15% */}
+          <pointLight position={[-6, height - 0.5, 0]} intensity={2.5} color="#FFF5E8" distance={12} decay={1.5} />
+          <pointLight position={[6, height - 0.5, 0]} intensity={2.5} color="#FFF5E8" distance={12} decay={1.5} />
+          <pointLight position={[0, height - 0.5, -5]} intensity={2.5} color="#FFF5E8" distance={12} decay={1.5} />
           
           {/* Designer benches with premium dark grey */}
           <GalleryBench position={[-3.0, 0, 0]} rotation={[0, Math.PI / 2, 0]} />
