@@ -741,6 +741,16 @@ router.post('/exhibition/:id/artworks/link/:artworkId', authenticateToken, async
     }
 
     const artwork = artworkResult.rows[0];
+    
+    // CRITICAL: Use correct column names from artworks table (width/height, NOT width_value/height_value)
+    // Block add if dimensions are missing - never fallback to 50x50
+    if (!artwork.width || !artwork.height) {
+      return res.status(400).json({ 
+        error: 'Artwork dimensions missing',
+        message: 'Cannot add artwork to exhibition without dimensions. Please set width and height first.'
+      });
+    }
+    
     const userResult = await query('SELECT display_name, email FROM users WHERE id = $1', [exhibitionOwnerId]);
     const artistName = userResult.rows[0]?.display_name || userResult.rows[0]?.email || 'Artist';
 
@@ -751,7 +761,7 @@ router.post('/exhibition/:id/artworks/link/:artworkId', authenticateToken, async
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
       [exhibitionId, artwork.title, artistName, `/api/artwork-image/${sourceArtworkId}`,
-       artwork.width_value || 50, artwork.height_value || 50, artwork.dimension_unit || 'cm',
+       artwork.width, artwork.height, artwork.dimension_unit || 'cm',
        artwork.price_amount || null, artwork.price_currency || 'EUR', artwork.buy_url || null, 
        artwork.description || null, sourceArtworkId]
     );

@@ -1,0 +1,106 @@
+🚨 P0 BUGFIX (Canvas) — “Add to My Exhibition” ne smije izmišljati dimenzije (50×50). Mora preuzeti stvarne dimenzije artworka.
+Problem
+
+Kad artist klikne Add to My Exhibition / In Exhibition na artwork kartici, artwork se doda u “Exhibition Artworks” listu, ali tamo dimenzije postanu 50×50 cm za sve radove, iako original artwork ima npr. 120×80 cm.
+
+Zbog toga se u Classic Gallery editoru sve prikazuje krivo (scale & real-world size).
+
+Root cause (vjerojatno)
+
+Kod dodavanja artworka u exhibition se:
+
+kreira novi zapis (ExhibitionArtwork / join record / snapshot)
+
+ali width/height se ne kopiraju iz original artworka
+
+ili se defaulta na 50×50 kad su null
+
+ili se koristi krivi field (npr. displayWidth/Height default 50)
+
+ili se u frontend-u prikazuje fallback 50×50 jer API vraća null
+
+Goal
+
+Kad se artwork doda u exhibition:
+
+dimenzije moraju biti identične originalnom artworku
+
+u “Exhibition Artworks” sekciji moraju se prikazivati stvarne dimenzije
+
+360 editor mora čitati iste dimenzije (bez fallbacka 50×50)
+
+✅ Requirements (must)
+1) Backend: Add-to-exhibition mora kopirati dimenzije iz Artwork table
+
+U endpointu koji radi “add artwork to exhibition” (npr. POST /api/exhibitions/:id/artworks ili slično):
+
+Pronađi original Artwork po artworkId
+
+U join/snapshot zapis (ExhibitionArtwork) upiši:
+
+widthCm = artwork.widthCm
+
+heightCm = artwork.heightCm
+
+(ako postoji depth, orientation, ratio – kopirati i to)
+
+❌ Zabranjeno:
+
+default 50×50
+
+hardcode
+
+izračun “na pamet”
+
+kreiranje praznih dimenzija i kasniji fallback
+
+2) Data model guard
+
+Ako postoji schema default (npr. width/height default 50):
+
+ukloniti default ili ga postaviti na NULL
+
+i/ili dodati validaciju:
+
+ako artwork nema dimenzije → blokirati add i pokazati error “Artwork dimensions missing”
+
+3) Migration / fix existing wrong data
+
+U bazi već postoje exhibition artworks s 50×50 (krivo).
+
+Napraviti fix:
+
+za sve ExhibitionArtwork gdje su width=50 AND height=50 (ili gdje su null)
+→ sync iz original Artwork dimenzija po artworkId
+
+4) Frontend display
+
+U “Exhibition Artworks” listi (treći screenshot):
+
+prikazuj dimenzije iz original artworka ili iz join recorda (ali moraju biti iste)
+
+ako dimenzije nedostaju → jasno “Dimensions missing” (ne 50×50)
+
+✅ Acceptance criteria (test)
+
+Artwork “Energy” ima 120×80 cm na kartici.
+
+Klik “Add to My Exhibition”
+
+U “Exhibition Artworks” listi mora pisati 120×80 cm (ne 50×50).
+
+U Classic Gallery editoru scale izgleda realno (Energy veći od Pulse ako je veći).
+
+Postojeći exhibition artworks koji su bili 50×50 se poprave nakon migration/fixa.
+
+Output
+
+Agent mora u tasku napisati:
+
+koji endpoint je bio bugged
+
+gdje je bio default 50×50
+
+kako je napravljen migration/fix
+
+koji fileovi su promijenjeni
