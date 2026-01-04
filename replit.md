@@ -45,7 +45,7 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 - **Subscription Management**: Full Stripe integration for five plans (Free, Artist, Designer, Gallery, All-Access) handling checkout, customer portal, and webhook events to manage user roles and entitlements.
 - **Multi-Entitlement System**: Users can accumulate and retain access to multiple modules (Artist, Designer, Gallery) via additive subscriptions.
 - **Unified Widget System**: A single embeddable JavaScript widget adapts its functionality based on user entitlements (Artist, Designer, Gallery modes).
-- **Virtual Exhibition Editor**: MVP feature for Gallery plan users to create immersive virtual exhibitions. It includes preset selection, artwork placement via drag-and-drop, and scene persistence.
+- **Virtual Exhibition Editor**: MVP feature for Gallery and Artist plan users to create immersive virtual exhibitions. It includes preset selection, artwork placement via drag-and-drop, scene persistence, and cover image upload. Artists default to Classic Gallery preset while Galleries get Modern Gallery v2. Draft exhibitions can be previewed by owners via optionalAuth middleware.
 - **360° Virtual Exhibition**: Immersive 3D gallery experience using React Three Fiber (R3F) featuring:
   - Modern Gallery v2: High-realism museum space (24x6x18m) with white walls, wood floor, black columns, and skylights
   - Classic Gallery: Original warm-toned gallery space (18x4.2x14m) preserved for compatibility
