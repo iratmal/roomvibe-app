@@ -715,19 +715,19 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
             
             {/* Explore Exhibition CTA - only shown if artist has published exhibition */}
             {publishedExhibition && (
-              <div className="mt-12">
+              <div className="mt-16 mb-4">
+                <p className="text-center text-sm text-[#1E2A3B] mb-4">
+                  Experience the artist's work in a fully immersive virtual exhibition.
+                </p>
                 <a
                   href={`#/embed/exhibitions/${publishedExhibition.id}`}
-                  className="group w-full flex items-center justify-center gap-3 px-8 py-5 bg-[#C9A24A] text-white rounded-xl shadow-lg hover:bg-[#B8913A] hover:shadow-xl transition-all"
+                  className="group w-full flex items-center justify-center gap-3 px-8 py-4 bg-white border-2 border-[#1E2A3B] text-[#1E2A3B] rounded-rvMd hover:bg-[#1E2A3B] hover:text-white transition-all duration-150"
                 >
-                  <svg className="w-6 h-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-5 h-5 flex-shrink-0 transition-colors duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
-                  <span className="text-lg font-semibold">View Artist's 360° Exhibition</span>
-                  <svg className="w-5 h-5 flex-shrink-0 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                  </svg>
+                  <span className="font-semibold">View Artist's 360° Exhibition</span>
                 </a>
               </div>
             )}
