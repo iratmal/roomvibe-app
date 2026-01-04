@@ -751,6 +751,11 @@ export function ArtistDashboard() {
       setEditingArtwork(null);
       
       await fetchArtworks();
+      
+      // Also refresh exhibition artworks to sync dimensions (if an exhibition exists)
+      if (exhibition?.id) {
+        await fetchExhibitionArtworks(exhibition.id);
+      }
 
       setTimeout(() => setSuccess(''), 5000);
     } catch (err: any) {

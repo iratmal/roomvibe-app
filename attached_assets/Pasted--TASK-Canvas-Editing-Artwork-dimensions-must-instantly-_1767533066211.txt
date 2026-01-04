@@ -1,0 +1,109 @@
+✅ TASK (Canvas) — Editing Artwork dimensions must instantly reflect in Exhibition Artworks + 360 Editor (no stale snapshot)
+PRIORITY: P0
+🧨 Problem
+
+Kad artist u artwork kartici napravi Edit i promijeni dimenzije (npr. Energy sa 120×80), te promjene se moraju automatski reflektirati:
+
+u sekciji Exhibition Artworks (dolje, gdje su artworkovi dodani u izložbu)
+
+u 360 Exhibition Editoru (scale / real-world display)
+
+Trenutno se događa da “Exhibition Artworks” zadrži stare dimenzije ili neku krivu vrijednost → podaci se razilaze.
+
+🎯 Goal
+
+Dimenzije artworka moraju imati jedan izvor istine (Artwork record).
+Sve što prikazuje dimenzije (kartica, exhibition list, editor) mora koristiti iste vrijednosti.
+
+✅ Required behavior (MUST)
+A) Source of truth
+
+Artwork.widthCm i Artwork.heightCm su source of truth
+
+“ExhibitionArtwork” (join record) ne smije imati vlastite hardcoded dimenzije koje mogu zastarjeti
+
+Opcija 1 (preferirano):
+
+ExhibitionArtwork ne sprema width/height uopće, nego se uvijek čita preko relacije artwork.widthCm/heightCm
+
+Opcija 2 (ako morate imati snapshot):
+
+kad se artwork editira → automatski sync svih povezanih ExhibitionArtwork zapisa:
+
+update ExhibitionArtwork.widthCm/heightCm = Artwork.widthCm/heightCm
+
+nema više odstupanja
+
+B) Frontend refresh (instant)
+
+Kad user spremi edit artworka:
+
+refreshati state/listu:
+
+artworks grid (gore)
+
+exhibition artworks list (dolje)
+
+bez hard refresh stranice (ako je moguće)
+
+minimalno: invalidirati query/cache i ponovno fetchati exhibition artworks
+
+C) 360 Editor correctness
+
+360 editor kod učitavanja exhibition artworks mora dobiti dimenzije iz source of truth i scale ispravno.
+
+🛠 Implementation checklist
+1) API response must return correct dimensions
+
+Endpoint za exhibition (npr. GET /api/exhibitions/:id) mora vratiti exhibition artworks s dimenzijama koje dolaze iz Artwork-a, npr.:
+
+{
+  "artworks": [
+    { "id": 15, "title": "Energy", "widthCm": 120, "heightCm": 80 }
+  ]
+}
+
+
+Ako vraća join record, mora include-ati artwork i mapirati dimenzije iz njega.
+
+2) Update flow
+
+Na PUT /api/artworks/:id (edit artwork):
+
+nakon update-a:
+
+(ako snapshot postoji) update all ExhibitionArtwork records for that artworkId
+
+ili osigurati da UI nikad ne čita snapshot dimenzije
+
+3) UI state invalidation
+
+Nakon successful save:
+
+refetch GET /api/exhibitions/:id (ili query key invalidation)
+
+refetch GET /api/artworks (ako treba)
+
+✅ Acceptance criteria (test)
+
+Dodam artwork u exhibition (pojavi se dolje).
+
+Odem gore na karticu → Edit → promijenim dimenzije (npr. 120×80 → 80×120).
+
+Bez refresh:
+
+u Exhibition Artworks kartici dolje piše nove dimenzije
+
+u 360 editoru scale odgovara novim dimenzijama
+
+Nema više slučaja da exhibition list pokazuje stare ili default dimenzije.
+
+📌 Output
+
+Agent u task komentaru mora navesti:
+
+je li implementirao Option 1 (no snapshot) ili Option 2 (snapshot sync)
+
+koji endpoint/queries je refetchao
+
+koje fileove je mijenjao

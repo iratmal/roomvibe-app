@@ -345,6 +345,17 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
       [title, imageUrl, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability, artworkShowOnPublicProfile, artworkVariants, artworkId]
     );
 
+    // Sync dimensions to all linked gallery_artworks (exhibition artworks) for consistency
+    const syncResult = await query(
+      `UPDATE gallery_artworks 
+       SET width_value = $1, height_value = $2, dimension_unit = $3, title = $4, updated_at = CURRENT_TIMESTAMP
+       WHERE source_artwork_id = $5`,
+      [parseFloat(width), parseFloat(height), unit, title, artworkId]
+    );
+    if (syncResult.rowCount && syncResult.rowCount > 0) {
+      console.log(`[Sync] Updated ${syncResult.rowCount} exhibition artwork(s) with new dimensions for artwork ${artworkId}`);
+    }
+
     // Return the API endpoint URL for frontend compatibility (actual path is stored in DB)
     result.rows[0].image_url = `/api/artwork-image/${artworkId}`;
     res.json({ artwork: result.rows[0], message: 'Artwork updated successfully' });
