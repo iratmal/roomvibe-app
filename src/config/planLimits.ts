@@ -258,6 +258,7 @@ export function getEffectivePlan(user: {
     gallery_access?: boolean;
   };
 }): PlanType {
+  // Prefer server-computed effectivePlan if available
   if (user.effectivePlan) {
     return user.effectivePlan as PlanType;
   }
@@ -267,19 +268,33 @@ export function getEffectivePlan(user: {
   const status = user.subscriptionStatus || 'free';
   const plan = (user.subscriptionPlan || 'user') as PlanType;
 
+  // Check for cancelled/past_due - fallback to entitlements
   if (status !== 'active' && status !== 'free') {
+    if (user.entitlements?.artist_access && user.entitlements?.designer_access && user.entitlements?.gallery_access) {
+      return 'allaccess';
+    }
+    if (user.entitlements?.gallery_access) return 'gallery';
+    if (user.entitlements?.designer_access) return 'designer';
+    if (user.entitlements?.artist_access) return 'artist';
     return 'user';
   }
 
+  // All-access check
   if (user.entitlements?.artist_access && user.entitlements?.designer_access && user.entitlements?.gallery_access) {
     return 'allaccess';
   }
 
-  if (!['user', 'artist', 'designer', 'gallery', 'allaccess'].includes(plan)) {
-    return 'user';
+  // Single entitlement check
+  if (user.entitlements?.gallery_access) return 'gallery';
+  if (user.entitlements?.designer_access) return 'designer';
+  if (user.entitlements?.artist_access) return 'artist';
+
+  // Fall back to subscription_plan
+  if (['user', 'artist', 'designer', 'gallery', 'allaccess'].includes(plan)) {
+    return plan;
   }
 
-  return plan;
+  return 'user';
 }
 
 export function getPlanLimits(user: { 

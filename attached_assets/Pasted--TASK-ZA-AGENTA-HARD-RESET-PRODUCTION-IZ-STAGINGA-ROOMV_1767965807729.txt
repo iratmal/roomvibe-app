@@ -1,0 +1,84 @@
+# TASK ZA AGENTA: HARD RESET PRODUCTION IZ STAGINGA (ROOMVIBE)
+
+## KONTEKST
+
+* Staging (**branch: staging**) radi ispravno (Artist Dashboard, role routing, signup flow).
+* Production (**app.roomvibe.app**) je u nekonzistentnom stanju:
+
+  * Signup s rolom **Artist** uvijek redirecta na `/dashboard/user`
+  * Live ne reflektira promjene iz staginga
+* **NEMA live korisnika** → dozvoljen je **hard reset productiona** bez rizika.
+
+Cilj: Production mora biti **100% identičan stagingu** (kod + DB struktura + logika rola).
+
+---
+
+## ŠTO TREBA NAPRAVITI (OBAVEZNO REDOM)
+
+### 1️⃣ KOD (DEPLOY)
+
+* Production deploy **mora biti iz `staging` brancha**
+* Provjeri da je production deployan s istog commita koji je trenutno aktivan na stagingu
+
+---
+
+### 2️⃣ DATABASE – HARD RESET (DOZVOLJENO)
+
+* Slobodno napravi **reset production DB** (nema korisnika)
+* Opcije (odaberi jednu):
+
+  * Reset schema + run migrations
+  * Snapshot / export staging DB → restore u production
+
+➡️ BITNO:
+
+* DB schema + role logika moraju biti identični stagingu
+* Ako postoji seed, seedaj minimalne podatke (plans, roles, defaults)
+
+---
+
+### 3️⃣ MIGRACIJE & BACKEND LOGIKA
+
+Provjeri i potvrdi:
+
+* `role` se ispravno sprema pri signupu (artist / user / designer)
+* Nakon login-a routing ide prema:
+
+  * artist → `/dashboard/artist`
+  * user → `/dashboard/user`
+* NEMA fallbacka koji override-a rolu u `user`
+
+---
+
+### 4️⃣ ENV / DOMAIN CHECK
+
+* Production domain koji koristimo: **[https://app.roomvibe.app](https://app.roomvibe.app)**
+* Provjeri:
+
+  * CORS dopušta `app.roomvibe.app`
+  * Auth/session cookies nisu vezani za krivu domenu
+  * NEMA hardcode-anih redirecta na `roomvibe.app`
+
+---
+
+### 5️⃣ FINALNA VALIDACIJA (OBAVEZNO TESTIRATI)
+
+U incognito prozoru:
+
+1. Otvori `https://app.roomvibe.app`
+2. Sign up → odaberi **Artist**
+3. Nakon login-a:
+
+   * URL mora biti `/dashboard/artist`
+   * Artist Dashboard mora biti vidljiv
+
+Ako ovo radi → task je gotov.
+
+---
+
+## NAPOMENA
+
+Ako nešto nije jasno: **prioritet je da production ponašanje = staging ponašanje**.
+Slobodno idi agresivno (reset / rebuild) – nema live korisnika.
+
+Hvala 🙌

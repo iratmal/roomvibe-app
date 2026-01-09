@@ -51,11 +51,16 @@ router.post('/register', async (req: Request, res: Response) => {
     const tosVersion = '2025-12-13';
     const now = new Date();
 
+    // Set role-based access flags - grants dashboard access based on selected role
+    const artistAccess = role === 'artist';
+    const designerAccess = role === 'designer';
+    const galleryAccess = role === 'gallery';
+
     const result = await query(
-      `INSERT INTO users (email, password_hash, role, confirmation_token, email_confirmed, tos_accepted_at, privacy_accepted_at, tos_version, marketing_opt_in, marketing_opt_in_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-       RETURNING id, email, role, email_confirmed`,
-      [email.toLowerCase(), passwordHash, role, confirmationToken, true, now, now, tosVersion, marketingOptIn, marketingOptIn ? now : null]
+      `INSERT INTO users (email, password_hash, role, confirmation_token, email_confirmed, tos_accepted_at, privacy_accepted_at, tos_version, marketing_opt_in, marketing_opt_in_at, artist_access, designer_access, gallery_access)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+       RETURNING id, email, role, email_confirmed, artist_access, designer_access, gallery_access`,
+      [email.toLowerCase(), passwordHash, role, confirmationToken, true, now, now, tosVersion, marketingOptIn, marketingOptIn ? now : null, artistAccess, designerAccess, galleryAccess]
     );
 
     const user = result.rows[0];
@@ -78,13 +83,21 @@ router.post('/register', async (req: Request, res: Response) => {
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
+    // Build entitlements object for the response
+    const entitlements = {
+      artist_access: user.artist_access || false,
+      designer_access: user.designer_access || false,
+      gallery_access: user.gallery_access || false,
+    };
+
     res.status(201).json({
       message: 'Registration successful! You are now logged in.',
       user: {
         id: user.id,
         email: user.email,
         role: user.role,
-        emailConfirmed: user.email_confirmed
+        emailConfirmed: user.email_confirmed,
+        entitlements
       }
     });
   } catch (error) {
