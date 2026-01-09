@@ -1,0 +1,145 @@
+# 🎯 TASK (Replit Agent): Production ne povlači staging promjene (role routing + pricing tekst)
+
+## Kontekst (što vidim)
+
+* Na **staging** je ispravljeno:
+
+  * signup postavlja access flagove po roli (artist_access / designer_access / gallery_access)
+  * routing / getEffectivePlan prioritizira entitlemente → **artist ide na /dashboard/artist**
+  * Pricing tekst za Artist plan je duži (više bulletova)
+* Na **production (app.roomvibe.app)** i dalje:
+
+  * Artist signup/login završava na **/dashboard/user** (ne prebacuje na /dashboard/artist)
+  * Pricing page na production nema staging tekst
+* Merge preko GitHuba sam napravila, ali production i dalje izgleda kao da je na starom kodu.
+
+## Cilj
+
+1. Identificirati **koji repo + koja grana** se stvarno deploya na Production u Replitu.
+2. Osigurati da Production deploy koristi **najnoviji commit** (main grana koja sadrži staging promjene).
+3. Nakon deploya potvrditi:
+
+   * Artist signup → /dashboard/artist
+   * Pricing tekst na production = staging
+
+---
+
+## 1) Provjeri izvor istine: repo + branch + commit
+
+U Replitu (Production deploy):
+
+* Otvori Deployments / Published app settings.
+* Nađi info: **Repo URL**, **Branch**, **Commit/Deployment hash** (ako se vidi).
+
+U samom workspaceu:
+
+* U terminalu izvedi:
+
+  * `git remote -v`
+  * `git branch --show-current`
+  * `git log -1 --oneline`
+  * `git status`
+
+👉 Potvrdi da workspace koji publishamo na Production dolazi iz repo-a **iratmal/roomvibe-app** (ili drugog) i da je branch **main** (ne staging).
+
+> Sumnja: Production deploy možda gleda drugi repo (npr. iratmal/RoomVibe ili roomvibe-staging) ili drugi branch, pa zato ne povlači promjene.
+
+---
+
+## 2) Provjeri da je main stvarno ažuriran sa staging promjenama
+
+Na GitHubu:
+
+* U repo-u koji je povezan s productionom provjeri:
+
+  * da `main` sadrži commitove: "Grant dashboard access based on user role selection during registration" i promjene na pricingu
+* Usporedi HEAD:
+
+  * `main` HEAD commit SHA
+  * `staging` HEAD commit SHA
+
+Ako main NEMA te promjene → napravi merge staging → main (PR ili CLI).
+
+---
+
+## 3) Osiguraj da Replit Production deploy builda iz main
+
+Ako Replit Deployments dopušta izbor branch-a:
+
+* postavi Production deployment da prati **main**.
+* napravi **Rebuild/Republish**.
+
+Ako ne dopušta izbor branch-a:
+
+* u workspaceu se prebaci na main i povuci najnovije:
+
+  * `git checkout main`
+  * `git pull origin main`
+* tek onda klik **Deploy/Republish**.
+
+---
+
+## 4) Eliminiraj cache / service worker problem (često izgleda kao da nije deployano)
+
+U production webu:
+
+* U Incognito:
+
+  * hard refresh (Cmd+Shift+R)
+* Ako postoji service worker / PWA:
+
+  * u DevTools → Application → Service Workers → **Unregister**
+  * Clear storage → **Clear site data**
+
+👉 Nakon toga opet provjeri pricing tekst i routing.
+
+---
+
+## 5) Ako routing i dalje vraća na /dashboard/user: provjeri DB / schema / env
+
+Ovo može biti:
+
+* production DB nema iste kolone/entitlements ili se ne setaju jer je backend star
+* `getEffectivePlan` na production nije ista verzija
+
+Zadaci:
+
+1. U production backend logovima (Replit Logs) potvrdi da se poziva nova logika.
+2. Provjeri DB shemu za user (kolone):
+
+   * `artist_access`, `designer_access`, `gallery_access` (i kako se zovu)
+3. Nakon signupa (artist), pročitaj record korisnika u production DB:
+
+   * da li je `artist_access = true`?
+4. Ako nije:
+
+   * provjeri signup handler koji mapira rolu → entitlement
+   * provjeri da li request body šalje rolu kako očekujemo (npr. `role: "artist"`)
+
+---
+
+## 6) Brza verifikacija nakon popravka (obavezno)
+
+Nakon republish:
+
+1. Otvori Incognito: [https://app.roomvibe.app](https://app.roomvibe.app)
+2. Sign Up → odaberi Artist
+3. Login
+4. Očekivanje:
+
+   * URL: `/dashboard/artist`
+   * Artist Dashboard vidljiv
+5. Otvori `/pricing`:
+
+   * Artist plan ima isti dulji tekst kao na stagingu
+
+---
+
+## Output koji mi treba od agenta
+
+Molim pošalji mi kratko:
+
+* koji repo + branch production deploy koristi
+* koji je deployment commit SHA
+* što je bilo krivo (repo/branch/cache/DB) + što si promijenio
+* rezultat testova (✅/❌) za routing i pricing
