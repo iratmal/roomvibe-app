@@ -245,27 +245,27 @@ export function getEffectivePlan(user: UserSubscriptionInfo): PlanType {
   const status = user.subscription_status || 'free';
   const plan = (user.subscription_plan || 'user') as PlanType;
 
+  // Calculate effective entitlements (DB flags OR role-based)
+  const hasArtist = user.artist_access || user.role === 'artist';
+  const hasDesigner = user.designer_access || user.role === 'designer';
+  const hasGallery = user.gallery_access || user.role === 'gallery';
+
   // Check for cancelled/past_due subscriptions - fallback to checking entitlements
   if (status !== 'active' && status !== 'free') {
-    // Still check if user has entitlements (e.g., from registration role selection)
-    if (user.artist_access && user.designer_access && user.gallery_access) {
-      return 'allaccess';
-    }
-    if (user.gallery_access) return 'gallery';
-    if (user.designer_access) return 'designer';
-    if (user.artist_access) return 'artist';
+    if (hasArtist && hasDesigner && hasGallery) return 'allaccess';
+    if (hasGallery) return 'gallery';
+    if (hasDesigner) return 'designer';
+    if (hasArtist) return 'artist';
     return 'user';
   }
 
   // All-access check: has all three entitlements
-  if (user.artist_access && user.designer_access && user.gallery_access) {
-    return 'allaccess';
-  }
+  if (hasArtist && hasDesigner && hasGallery) return 'allaccess';
 
   // Single entitlement check - prioritize gallery > designer > artist
-  if (user.gallery_access) return 'gallery';
-  if (user.designer_access) return 'designer';
-  if (user.artist_access) return 'artist';
+  if (hasGallery) return 'gallery';
+  if (hasDesigner) return 'designer';
+  if (hasArtist) return 'artist';
 
   // Fall back to subscription_plan if set
   if (['user', 'artist', 'designer', 'gallery', 'allaccess'].includes(plan)) {

@@ -1,0 +1,72 @@
+TASK: Production (app.roomvibe.app) i dalje routa Artist u /dashboard/user — debug & fix
+
+Kontekst:
+
+GitHub: staging -> main je merged (PR #3), main ima commit za role routing + entitlement prioritizaciju.
+
+Replit workspace je na main i clean.
+
+Na live-u: Artist signup/login i dalje završava na /dashboard/user. Pricing page također ne izgleda 1:1 kao staging.
+
+Cilj:
+
+Production mora nakon Artist signupa/login-a završiti na /dashboard/artist (i analogno za designer/gallery).
+
+Production mora servirati isti build kao main.
+
+Koraci (moraš napraviti redom):
+
+VERIFY DEPLOY SOURCE
+
+U Replit Deployments / Published App provjeri koji branch/source se deploya.
+
+Mora biti main. Ako nije, promijeni ili republish iz main.
+
+Napravi fresh republish.
+
+CACHE / SERVICE WORKER CHECK
+
+Provjeri da li app koristi service worker / PWA caching.
+
+Ako da: privremeno disable/unregister u production build-u ili bump version/cache key tako da se force update bundle.
+
+Potvrdi da incognito dobiva novi bundle (npr. promijeni mali tekst u footer “build: <hash/date>” da vidimo).
+
+BACKEND DEBUG LOGGING (najvažnije)
+Dodaj privremeni logging (samo server-side) na production za:
+
+signup handler: log selected role i što upisuje u DB (role + entitlements/flags)
+
+login/session endpoint (gdje vraća user object): log user.role, entitlement flags, subscriptionPlan, effectivePlan
+
+getEffectivePlan: log input i output (što ga prebacuje na "user")
+
+Bez logova ne možemo znati da li je problem u DB upisu ili u izračunu.
+
+DB SCHEMA / MIGRATION CHECK
+
+U production DB provjeri da li postoje kolone/fieldovi: artist_access, designer_access, gallery_access (ili entitlemente koje koristi kod).
+
+Ako ne postoje → napravi migration ili fallback logiku.
+
+Provjeri da li stari useri imaju role="artist" ali entitlement=false pa zato effectivePlan pada na "user".
+
+FIX (ovisno o nalazu)
+
+Ako signup ne upisuje entitlement: popravi mapping role -> entitlement u signup.
+
+Ako getEffectivePlan u production i dalje prioritizira subscriptionPlan: osiguraj da je production stvarno na novom kodu (deploy + cache bust).
+
+Ako session endpoint vraća stari shape user objekta: uskladi API contract.
+
+ACCEPTANCE TEST
+
+U incognito na app.roomvibe.app: Sign Up -> Artist -> login
+
+URL mora biti /dashboard/artist
+
+Na /pricing: Artist plan tekst mora matchati staging.
+
+Output:
+
+Napiši mi točno: deploy source/branch, postoji li service worker, logove za 1 signup + 1 login (role, entitlements, effectivePlan), i što je konkretno popravljeno.
