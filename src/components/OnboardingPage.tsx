@@ -78,27 +78,70 @@ function CheckIcon({ className = "w-5 h-5" }: { className?: string }) {
 
 export function OnboardingPage({ onComplete }: OnboardingPageProps) {
   const [currentStep, setCurrentStep] = useState(0);
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { completeOnboarding, hasEntitlement } = useAuth();
 
   const handleNext = () => {
+    console.log('[Onboarding] Next clicked, currentStep:', currentStep);
+    setError(null);
     if (currentStep < 2) {
       setCurrentStep(currentStep + 1);
     }
   };
 
   const handleSkip = async () => {
-    await completeOnboarding();
-    onComplete();
+    console.log('[Onboarding] Skip clicked, isCompleting:', isCompleting);
+    if (isCompleting) return;
+    setIsCompleting(true);
+    setError(null);
+    // Set session flag BEFORE API call to prevent redirect loop
+    sessionStorage.setItem('rv_skip_onboarding', '1');
+    try {
+      console.log('[Onboarding] Calling completeOnboarding...');
+      await completeOnboarding();
+      console.log('[Onboarding] completeOnboarding done');
+    } catch (err) {
+      console.warn('[Onboarding] Onboarding completion failed, continuing anyway:', err);
+    } finally {
+      window.location.hash = '#/dashboard';
+    }
   };
 
   const handleFinish = async () => {
-    await completeOnboarding();
-    onComplete();
+    console.log('[Onboarding] Go to Dashboard clicked, isCompleting:', isCompleting);
+    if (isCompleting) return;
+    setIsCompleting(true);
+    setError(null);
+    // Set session flag BEFORE API call to prevent redirect loop
+    sessionStorage.setItem('rv_skip_onboarding', '1');
+    try {
+      console.log('[Onboarding] Calling completeOnboarding...');
+      await completeOnboarding();
+      console.log('[Onboarding] completeOnboarding done');
+    } catch (err) {
+      console.warn('[Onboarding] Onboarding completion failed, continuing anyway:', err);
+    } finally {
+      window.location.hash = '#/dashboard';
+    }
   };
 
   const handleGoToStudio = async () => {
-    await completeOnboarding();
-    window.location.hash = '#/studio';
+    console.log('[Onboarding] Open Studio clicked, isCompleting:', isCompleting);
+    if (isCompleting) return;
+    setIsCompleting(true);
+    setError(null);
+    // Set session flag BEFORE API call to prevent redirect loop
+    sessionStorage.setItem('rv_skip_onboarding', '1');
+    try {
+      console.log('[Onboarding] Calling completeOnboarding...');
+      await completeOnboarding();
+      console.log('[Onboarding] completeOnboarding done');
+    } catch (err) {
+      console.warn('[Onboarding] Onboarding completion failed, continuing anyway:', err);
+    } finally {
+      window.location.hash = '#/studio';
+    }
   };
 
   const hasLockedModules = !hasEntitlement('artist_access') || !hasEntitlement('designer_access') || !hasEntitlement('gallery_access');
@@ -128,10 +171,17 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
           )}
           
           <div className="px-6 pb-6">
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                {error}
+              </div>
+            )}
+            
             {currentStep < 2 ? (
               <button
                 onClick={handleNext}
-                className="w-full py-3 text-white font-medium rounded-lg transition-colors"
+                disabled={isCompleting}
+                className="w-full py-3 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
                 style={{ backgroundColor: '#264C61' }}
               >
                 Next →
@@ -140,14 +190,16 @@ export function OnboardingPage({ onComplete }: OnboardingPageProps) {
               <div className="flex flex-col gap-3">
                 <button
                   onClick={handleFinish}
-                  className="w-full py-3 text-white font-medium rounded-lg transition-colors"
+                  disabled={isCompleting}
+                  className="w-full py-3 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
                   style={{ backgroundColor: '#264C61' }}
                 >
-                  Go to Dashboard
+                  {isCompleting ? 'Loading...' : 'Go to Dashboard'}
                 </button>
                 <button
                   onClick={handleGoToStudio}
-                  className="w-full py-2 font-medium transition-colors text-center"
+                  disabled={isCompleting}
+                  className="w-full py-2 font-medium transition-colors text-center disabled:opacity-50"
                   style={{ color: '#264C61' }}
                 >
                   Open Studio →

@@ -13,10 +13,16 @@ interface ArtistProfile {
   profileImageUrl: string;
   websiteUrl: string;
   instagramUrl: string;
+  facebookUrl: string;
+  tiktokUrl: string;
+  linkedinUrl: string;
+  pinterestUrl: string;
+  etsyUrl: string;
   languages: string[];
   visibleToDesigners: boolean;
   visibleToGalleries: boolean;
   artistAccess: boolean;
+  slug: string;
 }
 
 const STYLE_TAG_OPTIONS = [
@@ -38,11 +44,120 @@ const LANGUAGE_OPTIONS = [
 ];
 
 const COUNTRY_OPTIONS = [
-  'United States', 'United Kingdom', 'Germany', 'France', 'Italy',
-  'Spain', 'Netherlands', 'Belgium', 'Austria', 'Switzerland',
-  'Poland', 'Czech Republic', 'Slovakia', 'Canada', 'Australia',
-  'Japan', 'South Korea', 'China', 'Brazil', 'Mexico', 'Other'
+  'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia', 'Australia', 'Austria',
+  'Azerbaijan', 'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium', 'Belize', 'Benin', 'Bhutan',
+  'Bolivia', 'Bosnia and Herzegovina', 'Botswana', 'Brazil', 'Brunei', 'Bulgaria', 'Burkina Faso', 'Burundi', 'Cabo Verde', 'Cambodia',
+  'Cameroon', 'Canada', 'Central African Republic', 'Chad', 'Chile', 'China', 'Colombia', 'Comoros', 'Congo (Brazzaville)', 'Congo (Kinshasa)',
+  'Costa Rica', 'Croatia', 'Cuba', 'Cyprus', 'Czech Republic', 'Denmark', 'Djibouti', 'Dominica', 'Dominican Republic', 'Ecuador',
+  'Egypt', 'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Eswatini', 'Ethiopia', 'Fiji', 'Finland', 'France',
+  'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Grenada', 'Guatemala', 'Guinea', 'Guinea-Bissau',
+  'Guyana', 'Haiti', 'Honduras', 'Hungary', 'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland',
+  'Israel', 'Italy', 'Jamaica', 'Japan', 'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Kosovo', 'Kuwait',
+  'Kyrgyzstan', 'Laos', 'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 'Lithuania', 'Luxembourg',
+  'Madagascar', 'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Malta', 'Marshall Islands', 'Mauritania', 'Mauritius', 'Mexico',
+  'Micronesia', 'Moldova', 'Monaco', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique', 'Myanmar', 'Namibia', 'Nauru',
+  'Nepal', 'Netherlands', 'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea', 'North Macedonia', 'Norway', 'Oman',
+  'Pakistan', 'Palau', 'Palestine', 'Panama', 'Papua New Guinea', 'Paraguay', 'Peru', 'Philippines', 'Poland', 'Portugal',
+  'Qatar', 'Romania', 'Russia', 'Rwanda', 'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa', 'San Marino', 'Sao Tome and Principe',
+  'Saudi Arabia', 'Senegal', 'Serbia', 'Seychelles', 'Sierra Leone', 'Singapore', 'Slovakia', 'Slovenia', 'Solomon Islands', 'Somalia',
+  'South Africa', 'South Korea', 'South Sudan', 'Spain', 'Sri Lanka', 'Sudan', 'Suriname', 'Sweden', 'Switzerland', 'Syria',
+  'Taiwan', 'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Togo', 'Tonga', 'Trinidad and Tobago', 'Tunisia', 'Turkey',
+  'Turkmenistan', 'Tuvalu', 'Uganda', 'Ukraine', 'United Arab Emirates', 'United Kingdom', 'United States', 'Uruguay', 'Uzbekistan', 'Vanuatu',
+  'Vatican City', 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe'
 ];
+
+function SearchableCountrySelect({ 
+  value, 
+  onChange 
+}: { 
+  value: string; 
+  onChange: (value: string) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  const filteredCountries = COUNTRY_OPTIONS.filter(country =>
+    country.toLowerCase().includes(search.toLowerCase())
+  );
+
+  React.useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSelect = (country: string) => {
+    onChange(country);
+    setIsOpen(false);
+    setSearch('');
+  };
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary bg-white text-left flex items-center justify-between"
+      >
+        <span className={value ? 'text-rv-text' : 'text-rv-textMuted'}>
+          {value || 'Select country'}
+        </span>
+        <svg className={`w-5 h-5 text-rv-textMuted transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div className="absolute z-50 w-full mt-1 bg-white border border-rv-neutral rounded-rvMd shadow-rvElevated max-h-60 overflow-hidden">
+          <div className="p-2 border-b border-rv-neutral">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search countries..."
+              className="w-full px-3 py-2 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary text-sm"
+              autoFocus
+            />
+          </div>
+          <div className="max-h-48 overflow-y-auto">
+            {value && (
+              <button
+                type="button"
+                onClick={() => handleSelect('')}
+                className="w-full px-4 py-2 text-left text-sm text-rv-textMuted hover:bg-rv-surface"
+              >
+                Clear selection
+              </button>
+            )}
+            {filteredCountries.length === 0 ? (
+              <div className="px-4 py-3 text-sm text-rv-textMuted text-center">
+                No countries found
+              </div>
+            ) : (
+              filteredCountries.map(country => (
+                <button
+                  key={country}
+                  type="button"
+                  onClick={() => handleSelect(country)}
+                  className={`w-full px-4 py-2 text-left text-sm hover:bg-rv-primary/10 transition-colors ${
+                    value === country ? 'bg-rv-primary/10 text-rv-primary font-medium' : 'text-rv-text'
+                  }`}
+                >
+                  {country}
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function ArtistProfileForm() {
   const { user } = useAuth();
@@ -62,10 +177,16 @@ export function ArtistProfileForm() {
     profileImageUrl: '',
     websiteUrl: '',
     instagramUrl: '',
+    facebookUrl: '',
+    tiktokUrl: '',
+    linkedinUrl: '',
+    pinterestUrl: '',
+    etsyUrl: '',
     languages: [],
     visibleToDesigners: false,
     visibleToGalleries: false,
-    artistAccess: false
+    artistAccess: false,
+    slug: ''
   });
 
   useEffect(() => {
@@ -171,7 +292,8 @@ export function ArtistProfileForm() {
       }
 
       const data = await response.json();
-      setProfile(prev => ({ ...prev, profileImageUrl: data.profileImageUrl }));
+      const cacheBustUrl = `${data.profileImageUrl}?t=${Date.now()}`;
+      setProfile(prev => ({ ...prev, profileImageUrl: cacheBustUrl }));
       setSuccess('Profile image updated!');
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
@@ -202,12 +324,19 @@ export function ArtistProfileForm() {
           primaryMedium: profile.primaryMedium,
           websiteUrl: profile.websiteUrl,
           instagramUrl: profile.instagramUrl,
+          facebookUrl: profile.facebookUrl,
+          tiktokUrl: profile.tiktokUrl,
           languages: profile.languages
         })
       });
 
       if (!response.ok) {
         throw new Error('Failed to save profile');
+      }
+
+      const data = await response.json();
+      if (data.profile?.slug) {
+        setProfile(prev => ({ ...prev, slug: data.profile.slug }));
       }
 
       setSuccess('Profile saved successfully!');
@@ -219,6 +348,31 @@ export function ArtistProfileForm() {
       setSaving(false);
     }
   };
+
+  const calculateProfileCompleteness = () => {
+    const fields = [
+      { name: 'displayName', value: profile.displayName },
+      { name: 'city', value: profile.locationCity },
+      { name: 'country', value: profile.locationCountry },
+      { name: 'bio', value: profile.bio },
+      { name: 'primaryMedium', value: profile.primaryMedium },
+      { name: 'profilePhoto', value: profile.profileImageUrl },
+      { name: 'styleTags', value: profile.primaryStyleTags?.length > 0 },
+      { name: 'languages', value: profile.languages?.length > 0 },
+      { name: 'website', value: profile.websiteUrl },
+      { name: 'instagram', value: profile.instagramUrl },
+    ];
+    
+    const filledCount = fields.filter(f => {
+      if (typeof f.value === 'boolean') return f.value;
+      if (typeof f.value === 'string') return f.value?.trim().length > 0;
+      return false;
+    }).length;
+    
+    return Math.round((filledCount / fields.length) * 100);
+  };
+
+  const profileCompleteness = calculateProfileCompleteness();
 
   if (loading) {
     return (
@@ -237,22 +391,99 @@ export function ArtistProfileForm() {
       )}
 
       {success && (
-        <div className="p-4 bg-green-50 border border-green-200 rounded-rvMd text-green-700">
+        <div className="p-4 bg-[#C9A24A]/10 border border-[#C9A24A]/30 rounded-rvMd text-[#8B7033]">
           {success}
         </div>
       )}
 
-      <div className="p-6 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-rvLg border border-purple-200">
+      <div className="p-4 bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <svg className="w-5 h-5 text-[#C9A24A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="font-semibold text-rv-text">Profile Completeness</span>
+          </div>
+          <span className={`text-sm font-bold ${profileCompleteness >= 80 ? 'text-[#C9A24A]' : profileCompleteness >= 50 ? 'text-[#C9A24A]/70' : 'text-rv-textMuted'}`}>
+            {profileCompleteness}%
+          </span>
+        </div>
+        <div className="w-full h-2 bg-rv-neutral rounded-full overflow-hidden">
+          <div 
+            className="h-full transition-all duration-500 rounded-full bg-[#C9A24A]"
+            style={{ width: `${profileCompleteness}%` }}
+          />
+        </div>
+        <p className="text-xs text-rv-textMuted mt-2">
+          Profiles with 100% completeness get more visibility
+        </p>
+      </div>
+
+      {profile.slug && (
+        <div className="p-5 bg-gradient-to-r from-[#C9A24A]/10 to-[#C9A24A]/5 rounded-rvLg border-2 border-[#C9A24A]/30 shadow-md">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-full bg-[#C9A24A]/20 flex items-center justify-center flex-shrink-0">
+              <svg className="w-6 h-6 text-[#C9A24A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h4 className="text-lg font-bold text-[#C9A24A] mb-1">Your Public Artist Page</h4>
+              <p className="text-sm text-rv-textMuted mb-1">
+                Share this page with collectors, designers and galleries
+              </p>
+              <p className="text-xs text-rv-textMuted mb-3">
+                This is your main RoomVibe artist link.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={`${window.location.origin}/#/artist/${profile.slug}`}
+                  className="flex-1 px-3 py-2 bg-white border border-rv-neutral rounded-rvMd text-sm text-rv-text font-mono"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/#/artist/${profile.slug}`);
+                    setSuccess('Link copied to clipboard!');
+                    setTimeout(() => setSuccess(''), 3000);
+                  }}
+                  className="px-4 py-2 bg-[#C9A24A] text-white rounded-rvMd hover:bg-[#B8913A] transition-colors font-semibold text-sm whitespace-nowrap flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                  Copy Link
+                </button>
+              </div>
+              <a 
+                href={`#/artist/${profile.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 mt-3 text-sm text-[#C9A24A] hover:underline font-medium"
+              >
+                View your page
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="p-6 bg-rv-primary/5 rounded-rvLg border border-rv-primary/20">
         <div className="flex items-start gap-4 mb-4">
-          <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
-            <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="w-10 h-10 rounded-full bg-rv-primary/10 flex items-center justify-center flex-shrink-0">
+            <svg className="w-5 h-5 text-rv-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-bold text-purple-800">Artist Connect Visibility</h3>
-            <p className="text-sm text-purple-600 mt-1">
-              Control who can discover your profile and reach out to you.
+            <h3 className="text-lg font-bold text-rv-primary">Artist Connect Visibility</h3>
+            <p className="text-sm text-rv-textMuted mt-1">
+              Control who can discover your profile and reach out to you. Visible artists receive more inquiries.
             </p>
           </div>
         </div>
@@ -268,7 +499,7 @@ export function ArtistProfileForm() {
         <div className="grid gap-4 md:grid-cols-2">
           <label className={`flex items-center gap-3 p-4 rounded-rvMd border-2 transition-all cursor-pointer ${
             profile.visibleToDesigners 
-              ? 'bg-white border-purple-400 shadow-sm' 
+              ? 'bg-white border-rv-primary shadow-sm' 
               : 'bg-white/50 border-gray-200'
           } ${!profile.artistAccess ? 'opacity-60 cursor-not-allowed' : ''}`}>
             <input
@@ -276,7 +507,7 @@ export function ArtistProfileForm() {
               checked={profile.visibleToDesigners}
               onChange={(e) => handleVisibilityChange('visibleToDesigners', e.target.checked)}
               disabled={!profile.artistAccess}
-              className="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+              className="w-5 h-5 rounded border-gray-300 text-rv-primary focus:ring-rv-primary accent-rv-primary"
             />
             <div>
               <span className="font-semibold text-rv-text">Visible to Designers</span>
@@ -286,7 +517,7 @@ export function ArtistProfileForm() {
 
           <label className={`flex items-center gap-3 p-4 rounded-rvMd border-2 transition-all cursor-pointer ${
             profile.visibleToGalleries 
-              ? 'bg-white border-purple-400 shadow-sm' 
+              ? 'bg-white border-rv-primary shadow-sm' 
               : 'bg-white/50 border-gray-200'
           } ${!profile.artistAccess ? 'opacity-60 cursor-not-allowed' : ''}`}>
             <input
@@ -294,7 +525,7 @@ export function ArtistProfileForm() {
               checked={profile.visibleToGalleries}
               onChange={(e) => handleVisibilityChange('visibleToGalleries', e.target.checked)}
               disabled={!profile.artistAccess}
-              className="w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+              className="w-5 h-5 rounded border-gray-300 text-rv-primary focus:ring-rv-primary accent-rv-primary"
             />
             <div>
               <span className="font-semibold text-rv-text">Visible to Galleries</span>
@@ -389,17 +620,10 @@ export function ArtistProfileForm() {
               <label className="block text-sm font-semibold mb-2 text-rv-text">
                 Country
               </label>
-              <select
-                name="locationCountry"
+              <SearchableCountrySelect
                 value={profile.locationCountry}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary bg-white"
-              >
-                <option value="">Select country</option>
-                {COUNTRY_OPTIONS.map(country => (
-                  <option key={country} value={country}>{country}</option>
-                ))}
-              </select>
+                onChange={(value) => setProfile(prev => ({ ...prev, locationCountry: value }))}
+              />
             </div>
 
             <div className="md:col-span-2">
@@ -495,6 +719,76 @@ export function ArtistProfileForm() {
                 onChange={handleInputChange}
                 className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
                 placeholder="@yourusername"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-rv-text">
+                Facebook
+              </label>
+              <input
+                type="text"
+                name="facebookUrl"
+                value={profile.facebookUrl}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                placeholder="https://facebook.com/yourpage"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-rv-text">
+                TikTok
+              </label>
+              <input
+                type="text"
+                name="tiktokUrl"
+                value={profile.tiktokUrl}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                placeholder="@yourusername"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-rv-text">
+                LinkedIn
+              </label>
+              <input
+                type="text"
+                name="linkedinUrl"
+                value={profile.linkedinUrl}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                placeholder="https://linkedin.com/in/yourprofile"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-rv-text">
+                Pinterest
+              </label>
+              <input
+                type="text"
+                name="pinterestUrl"
+                value={profile.pinterestUrl}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                placeholder="https://pinterest.com/yourusername"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-rv-text">
+                Etsy Shop
+              </label>
+              <input
+                type="text"
+                name="etsyUrl"
+                value={profile.etsyUrl}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                placeholder="https://etsy.com/shop/yourshop"
               />
             </div>
           </div>

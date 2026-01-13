@@ -25,7 +25,7 @@ function getPlanDisplayName(effectivePlan: string | undefined): string {
 
 function getPlanBadgeColor(effectivePlan: string | undefined): string {
   switch (effectivePlan) {
-    case 'artist': return 'bg-purple-100 text-purple-700';
+    case 'artist': return 'bg-rv-primary/10 text-rv-primary';
     case 'designer': return 'bg-indigo-100 text-indigo-700';
     case 'gallery': return 'bg-green-100 text-green-700';
     case 'all-access': return 'bg-amber-100 text-amber-700';
@@ -40,9 +40,11 @@ interface SiteHeaderProps {
 
 export function SiteHeader({ showPlanBadge = false }: SiteHeaderProps) {
   const [open, setOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout, impersonatedRole } = useAuth();
   
-  const effectivePlan = user?.effectivePlan || user?.role || 'free';
+  const effectivePlan = impersonatedRole 
+    ? (impersonatedRole === 'allin' ? 'all-access' : impersonatedRole)
+    : (user?.effectivePlan || user?.role || 'free');
   const planName = getPlanDisplayName(effectivePlan);
   const badgeColor = getPlanBadgeColor(effectivePlan);
 

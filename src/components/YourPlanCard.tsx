@@ -38,7 +38,7 @@ const PLAN_DISPLAYS: Record<string, PlanDisplay> = {
   },
   designer: {
     badge: 'Designer',
-    badgeColor: 'bg-purple-100 text-purple-800',
+    badgeColor: 'bg-blue-100 text-blue-800',
     description: 'For interior designers presenting concepts to clients.',
     bullets: [
       'Up to 100 artworks',
@@ -67,6 +67,8 @@ const PLAN_DISPLAYS: Record<string, PlanDisplay> = {
 
 export function YourPlanCard() {
   const { user } = useAuth();
+  const isImpersonating = false;
+  const effectivePlan = user?.effectivePlan || user?.role || 'user';
   const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -123,18 +125,25 @@ export function YourPlanCard() {
     );
   }
 
-  const plan = subscription?.subscription_plan || user?.role || 'user';
-  const status = subscription?.subscription_status || 'free';
+  // Use effectivePlan from useViewer (which derives from entitlements)
+  const plan = effectivePlan || 'user';
+  
+  // For status, check subscription first, but treat entitlement-based plans as "active"
+  const hasEntitlementBasedPlan = plan !== 'user' && plan !== 'free';
+  const status = hasEntitlementBasedPlan 
+    ? 'active' 
+    : (subscription?.subscription_status || 'free');
   const planDisplay = PLAN_DISPLAYS[plan] || PLAN_DISPLAYS.user;
 
   const isFree = plan === 'user' && status === 'free';
   const isActive = status === 'active' && plan !== 'user';
   const isCanceledOrExpired = status === 'canceled' || status === 'expired';
+  const hasBillingConfigured = subscription?.has_stripe_customer || false;
 
   const getStatusDisplay = () => {
     switch (status) {
       case 'active':
-        return { text: 'Active', color: 'text-green-600' };
+        return { text: 'Active', color: 'text-[#C9A24A]' };
       case 'canceled':
         return { text: 'Canceled', color: 'text-red-600' };
       case 'expired':
@@ -174,7 +183,7 @@ export function YourPlanCard() {
           <ul className="mb-4 space-y-2">
             {planDisplay.bullets.map((bullet, i) => (
               <li key={i} className="flex items-center text-sm text-rv-textMuted">
-                <svg className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 mr-2 text-[#C9A24A] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
                 {bullet}
@@ -190,8 +199,14 @@ export function YourPlanCard() {
         )}
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-            {error}
+          <div className={`mb-4 p-3 rounded-lg text-sm ${
+            error.includes('No billing account') || error.includes('billing')
+              ? 'bg-blue-50 border border-blue-200 text-blue-700'
+              : 'bg-red-50 border border-red-200 text-red-700'
+          }`}>
+            {error.includes('No billing account') 
+              ? 'Billing is not configured for this environment. Your plan is managed by entitlements.'
+              : error}
           </div>
         )}
 
@@ -214,13 +229,15 @@ export function YourPlanCard() {
             </a>
           ) : isActive ? (
             <>
-              <button
-                onClick={handleManageBilling}
-                disabled={actionLoading}
-                className="flex-1 py-2.5 px-4 rounded-rvMd font-semibold text-sm bg-rv-primary text-white hover:bg-rv-primaryHover transition-colors disabled:opacity-50"
-              >
-                {actionLoading ? 'Loading...' : 'Manage billing'}
-              </button>
+              {hasBillingConfigured && (
+                <button
+                  onClick={handleManageBilling}
+                  disabled={actionLoading}
+                  className="flex-1 py-2.5 px-4 rounded-rvMd font-semibold text-sm bg-rv-primary text-white hover:bg-rv-primaryHover transition-colors disabled:opacity-50"
+                >
+                  {actionLoading ? 'Loading...' : 'Manage billing'}
+                </button>
+              )}
               <a
                 href="#/pricing"
                 className="flex-1 text-center py-2.5 px-4 rounded-rvMd font-semibold text-sm border-2 border-rv-neutral text-rv-text hover:border-rv-primary hover:text-rv-primary transition-colors"
