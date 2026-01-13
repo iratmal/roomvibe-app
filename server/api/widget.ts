@@ -163,6 +163,7 @@ router.get('/config', async (req: Request, res: Response) => {
       userType,
       entitlements,
       capabilities,
+      isFreePlan: effectivePlan === 'user',
       data: {
         artworks,
         rooms,

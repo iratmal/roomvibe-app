@@ -105,6 +105,7 @@ REPLIT_OBJECT_STORAGE_BUCKET_ID = "replit-objstore-eccb0d8c-0651-436f-beb0-6e166
 [userenv.production]
 APP_ENV = "production"
 NODE_ENV = "production"
+STAGING_ENVIRONMENT = "false"
 
 [objectStorage]
 defaultBucketID = "replit-objstore-eccb0d8c-0651-436f-beb0-6e166d88c4e6"

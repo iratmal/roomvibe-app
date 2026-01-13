@@ -1,0 +1,151 @@
+# 🎯 TASK FOR REPLIT AGENT (STAGING ONLY)
+
+## Context
+
+We are working **ONLY on STAGING** (`staging.roomvibe.app`).
+Goal: Finalize **User (Free plan)** logic, UI copy, pricing table, and widget branding.
+After this task is completed and verified on staging, we will **synchronize to LIVE**.
+
+---
+
+## 1️⃣ Free Plan Logic – Artworks (CORE)
+
+### Upload limits
+
+* Free plan allows:
+
+  * ✅ **3 clean artworks** (no branding)
+  * ➕ **Up to 7 additional artworks WITH RoomVibe branding**
+  * 🔢 **Total max artworks = 10**
+
+### UI requirements
+
+* Clearly distinguish between:
+
+  * Clean artworks (first 3)
+  * Branded artworks (additional 7)
+* Artwork usage indicator example:
+
+  * `Clean: 1 / 3`
+  * `RoomVibe Powered: 0 / 7`
+  * `Total: 1 / 10`
+
+### Enforcement
+
+* Upload logic must:
+
+  * Block uploads beyond 10
+  * Apply branding automatically to artworks #4–#10
+
+---
+
+## 2️⃣ User Dashboard – "Your Plan" Card (Free)
+
+### Replace existing Artist copy with the following:
+
+**Title (top right badge):**
+
+* `Free`
+
+**Status:**
+
+* `Free`
+
+**Description text:**
+
+* `For people trying RoomVibe for the first time.`
+
+**Feature list (exact copy):**
+
+* Upload up to **3 artworks**
+* Preview artworks in mockup rooms
+* Embed Studio widget on your website
+* Buy button integration
+* Add up to **7 additional artworks with RoomVibe branding**
+
+**CTA button:**
+
+* `View all plans`
+
+---
+
+## 3️⃣ Widget Embed – RoomVibe Branding (NEW)
+
+### Requirement
+
+All **Free plan widgets** must show RoomVibe branding **below the embedded widget**.
+
+### Branding text (EXACT COPY – Variant A)
+
+**Powered by RoomVibe — preview art on real walls.**
+
+### Behavior
+
+* `RoomVibe` is a clickable link
+* URL: `https://roomvibe.app`
+* Opens in a new tab (`target="_blank"`)
+* Visible on:
+
+  * Public Studio link
+  * Embedded iframe widget
+* Only shown for **Free plan** (not paid plans)
+
+---
+
+## 4️⃣ Pricing Page – Free Plan Corrections
+
+### Artwork uploads row
+
+Change from:
+
+* `3`
+
+To:
+
+* `3 + up to 7 branded`
+
+(or similar short wording that clearly communicates branded extension)
+
+### Feature availability fixes (Free column)
+
+Set the following to ✅ (checkmark):
+
+* Widget embed
+* Buy button integration
+
+### Remove feature entirely
+
+* ❌ **Multi-art wall presentations**
+
+  * Remove this row from the pricing table for **ALL plans** (not offered in Phase 1)
+
+---
+
+## 5️⃣ Scope & Rules
+
+* ✅ STAGING ONLY
+* ❌ DO NOT deploy to live
+* ❌ DO NOT change Artist / Designer / Gallery logic unless directly affected by row removal
+* ❌ No Stripe / billing logic changes
+
+---
+
+## 6️⃣ Acceptance Checklist (Agent must verify)
+
+* [ ] Free user can upload 3 clean artworks
+* [ ] Free user can upload +7 branded artworks (with visible RoomVibe branding)
+* [ ] Upload blocked at 10 total
+* [ ] Widget embed works and shows branding text
+* [ ] Branding link opens roomvibe.app in new tab
+* [ ] User Dashboard shows correct Free plan copy
+* [ ] Pricing page reflects new Free plan rules
+* [ ] Multi-art wall presentations removed everywhere
+
+---
+
+## 🔚 After Completion
+
+Once all items above are verified on **staging**, notify us.
+Next step will be **staging → live synchronization**, followed by Shopify (IrenaArt) live testing.
+
+🚀

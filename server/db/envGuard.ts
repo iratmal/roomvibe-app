@@ -25,11 +25,27 @@ function maskConnectionString(url: string): string {
   }
 }
 
+function isProdDomainAtStartup(): boolean {
+  const domains = (process.env.REPLIT_DOMAINS || '').toLowerCase();
+  const devDomain = (process.env.REPLIT_DEV_DOMAIN || '').toLowerCase();
+  return domains.includes('app.roomvibe.app') || devDomain.includes('app.roomvibe.app');
+}
+
+function isStagingDomainAtStartup(): boolean {
+  const domains = (process.env.REPLIT_DOMAINS || '').toLowerCase();
+  const devDomain = (process.env.REPLIT_DEV_DOMAIN || '').toLowerCase();
+  return domains.includes('staging.roomvibe.app') || devDomain.includes('staging.roomvibe.app');
+}
+
 export function validateDatabaseEnvironment(): DatabaseConfig {
-  const isStaging = process.env.STAGING_ENVIRONMENT === 'true';
+  const isProdHost = isProdDomainAtStartup();
+  const isStagingHost = isStagingDomainAtStartup();
+  const isStaging = isStagingHost || (!isProdHost && process.env.STAGING_ENVIRONMENT === 'true');
   const isLocalDev = process.env.NODE_ENV !== 'production';
   const bypassGuard = process.env.DB_GUARD_BYPASS === 'true';
-  const environment = isStaging ? 'staging' : 'production';
+  const environment = (isProdHost || !isStaging) ? 'production' : 'staging';
+  
+  console.log(`[DB Guard] Host detection: isProdHost=${isProdHost}, isStagingHost=${isStagingHost}`);
   
   const stagingUrl = process.env.DATABASE_URL_STAGING;
   const productionUrl = process.env.DATABASE_URL_PRODUCTION;

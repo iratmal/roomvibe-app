@@ -30,7 +30,7 @@ export interface PlanLimits {
 
 export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
   free: {
-    maxArtworks: 3,
+    maxArtworks: 10,
     maxWallPhotos: 1,
     maxProjects: 1,
     maxMockupRooms: 10,
@@ -55,7 +55,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     earlyAccess: false,
   },
   user: {
-    maxArtworks: 3,
+    maxArtworks: 10,
     maxWallPhotos: 1,
     maxProjects: 1,
     maxMockupRooms: 10,

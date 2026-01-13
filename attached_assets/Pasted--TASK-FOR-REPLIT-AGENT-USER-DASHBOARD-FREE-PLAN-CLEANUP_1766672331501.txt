@@ -1,0 +1,121 @@
+# 🎯 TASK FOR REPLIT AGENT – USER DASHBOARD & FREE PLAN CLEANUP
+
+**Environment:** STAGING ONLY (staging.roomvibe.app)
+
+---
+
+## 1️⃣ USER DASHBOARD – PLAN SECTION FIX
+
+### Problem
+
+User Dashboard trenutno prikazuje **Artist plan content**, što je netočno i zbunjujuće za Free/User plan korisnike.
+
+### Required Fixes
+
+#### A. Plan Label (Top Right)
+
+* ❌ Currently: **Artist**
+* ✅ Change to: **User** or **Free Plan**
+
+---
+
+#### B. Plan Status
+
+* ❌ Currently: **Status: Active**
+* ✅ Change to: **Status: Free**
+
+---
+
+#### C. Plan Description Text
+
+* ❌ Remove Artist-specific copy:
+
+  > "For artists who want professional mockups and high-quality exports"
+
+* ✅ Replace with Free plan description:
+
+  > **For people trying RoomVibe for the first time.**
+
+---
+
+#### D. Feature List (MOST IMPORTANT)
+
+❌ Remove all Artist plan features:
+
+* Up to 50 artworks
+* Premium mockup rooms
+* Any mention of high-resolution exports
+
+✅ Replace with EXACT Free plan feature list:
+
+* ✔️ Upload up to **3 artworks** *(no branding)*
+* ✔️ Preview artworks in mockup rooms
+* ✔️ Embed Studio widget on your website
+* ✔️ Buy button integration
+* ✔️ **Add up to 7 additional artworks with RoomVibe branding**
+
+👉 IMPORTANT: This wording must be **exact** and unambiguous.
+
+---
+
+#### E. Buttons
+
+* ❌ Remove / hide:
+
+  * “Manage billing”
+
+* ✅ Keep:
+
+  * “View all plans”
+
+---
+
+## 2️⃣ CONSISTENCY CHECKS
+
+Ensure consistency across User Dashboard:
+
+* Account Information → **Plan: Free** (already correct, keep as-is)
+* Widget Embed section remains ENABLED for Free users
+* Buy Button Integration remains ENABLED for Free users
+
+---
+
+## 3️⃣ NO FUNCTIONAL CHANGES REQUIRED
+
+This task is **UI + copy-only**:
+
+* ❌ No backend changes
+* ❌ No database changes
+* ❌ No plan logic changes
+
+---
+
+## 4️⃣ ACCEPTANCE CRITERIA
+
+✅ User Dashboard clearly shows **Free / User plan**
+✅ No Artist features visible to User plan
+✅ Free plan limits are crystal clear:
+
+* 3 artworks (clean)
+* +7 artworks (RoomVibe branded)
+
+---
+
+## 5️⃣ DEPLOYMENT RULE
+
+⚠️ **DO NOT deploy to production**
+✔️ Apply changes ONLY to **staging**
+
+---
+
+✅ Once completed, notify for review before moving to Artist Dashboard tasks.
+
+---
+
+🧠 Product intent reminder:
+This clarity is critical for trust, onboarding, and conversion.
+No hidden limitations, no confusion.
+
+---
+
+**End of task.**

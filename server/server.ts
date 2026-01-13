@@ -19,11 +19,12 @@ import messagesRoutes from './api/messages.js';
 import designerConnectRoutes from './api/designerConnect.js';
 import galleryConnectRoutes from './api/galleryConnect.js';
 import { initializeDatabase } from './db/init.js';
-import { query } from './db/database.js';
-import { ObjectStorageService, ObjectNotFoundError } from './objectStorage.js';
+import { query, getDbIdentity } from './db/database.js';
+import { ObjectStorageService, ObjectNotFoundError, getStorageConfig, getStorageBackend, isStorageConfigured } from './objectStorage.js';
 import { requireGalleryFeature, requireStripeFeature } from './middleware/featureFlags.js';
 import { authenticateToken } from './middleware/auth.js';
 import { envBool, envBoolDefaultTrue } from './utils/envBool.js';
+import { getAppEnv, getRequestHost, isProdHost, isStagingHost } from './utils/envDetection.js';
 
 dotenv.config();
 
@@ -39,6 +40,23 @@ const PORT = parseInt(
   10
 );
 
+// Canonical domain redirect middleware (301 permanent)
+// Redirects roomvibe.app and www.roomvibe.app to app.roomvibe.app
+const CANONICAL_HOST = 'app.roomvibe.app';
+const REDIRECT_HOSTS = ['roomvibe.app', 'www.roomvibe.app'];
+
+app.use((req, res, next) => {
+  const host = (req.headers['x-forwarded-host'] || req.headers.host || '').toString().toLowerCase().split(':')[0];
+  
+  if (REDIRECT_HOSTS.includes(host)) {
+    const redirectUrl = `https://${CANONICAL_HOST}${req.originalUrl}`;
+    console.log(`[Redirect] 301: ${host}${req.originalUrl} → ${redirectUrl}`);
+    return res.redirect(301, redirectUrl);
+  }
+  
+  next();
+});
+
 // Get Replit domain for CORS
 const replitDomain = process.env.REPLIT_DOMAINS?.split(',')[0];
 const allowedOrigins = process.env.NODE_ENV === 'production'
@@ -46,6 +64,8 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
       process.env.FRONTEND_URL,
       'https://app.roomvibe.app',
       'https://staging.roomvibe.app',
+      'https://roomvibe.app',
+      'https://www.roomvibe.app',
       replitDomain ? `https://${replitDomain}` : null,
     ].filter(Boolean) as string[]
   : ['http://localhost:5000', 'http://127.0.0.1:5000'];
@@ -128,11 +148,21 @@ app.get('/api/feature-flags', (req, res) => {
 });
 
 app.get('/api/health', (req, res) => {
+  const storageConfig = getStorageConfig();
+  const storageConfigured = isStorageConfigured();
+  const dbIdentity = getDbIdentity();
+  
   res.status(200).json({ 
     status: 'ok', 
     message: 'RoomVibe API server running',
     ready: isServerReady,
-    dbReady: isServerReady
+    dbReady: isServerReady,
+    dbHost: dbIdentity.host,
+    dbName: dbIdentity.name,
+    dbEnv: dbIdentity.environment,
+    dbUrlHash: dbIdentity.urlHash,
+    storageConfigured,
+    storageBackend: storageConfig.backend
   });
 });
 
@@ -153,43 +183,66 @@ app.get('/api/health/db', (req, res) => {
 
 app.get('/api/version', (req, res) => {
   res.json({
-    version: '1.0.3',
-    build: '2025-12-14T15:40:00Z',
-    commit: 'fix-tags-column-migration',
+    version: '1.0.12',
+    build: '2025-12-26T11:10:00Z',
+    commit: 'remove-availability-guard-image-endpoint',
     features: {
       cookieAuth: true,
-      objectStorage: true
+      objectStorage: true,
+      hostBasedEnvDetection: true,
+      imageEndpointNoGuard: true
     }
   });
 });
 
 app.get('/api/health/env', (req, res) => {
+  const appEnv = getAppEnv(req);
+  const host = getRequestHost(req);
+  const storageConfig = getStorageConfig();
+  const dbIdentity = getDbIdentity();
+  
   res.json({
-    appEnv: process.env.APP_ENV || 'development',
+    appEnv,
+    hostDetected: host,
+    isProdHost: isProdHost(host),
+    isStagingHost: isStagingHost(host),
+    dbHost: dbIdentity.host,
+    dbName: dbIdentity.name,
+    dbEnv: dbIdentity.environment,
+    dbUrlHash: dbIdentity.urlHash,
     stripeMode: process.env.STRIPE_MODE || 'test',
     paymentsEnabled: envBool(process.env.PAYMENTS_ENABLED),
     stripeEnabled: envBool(process.env.STRIPE_ENABLED),
     paymentsAvailable: envBool(process.env.STRIPE_ENABLED) && envBool(process.env.PAYMENTS_ENABLED),
     analyticsEnabled: envBool(process.env.ENABLE_ANALYTICS),
     gdprEnabled: envBool(process.env.ENABLE_GDPR),
-    storageConfigured: !!process.env.PRIVATE_OBJECT_DIR,
-    privateObjectDir: process.env.PRIVATE_OBJECT_DIR ? process.env.PRIVATE_OBJECT_DIR.substring(0, 50) : null,
-    storageBackend: '@google-cloud/storage',
-    version: '1.0.7-gcs-direct',
-    buildTime: '2025-12-14T23:10:00Z'
+    storageConfigured: storageConfig.replitBucketId === 'SET' || storageConfig.privateObjectDir === 'SET',
+    storageBackend: storageConfig.backend,
+    storageSource: storageConfig.resolvedSource,
+    version: '1.0.12-availability-guard-removed',
+    buildTime: '2025-12-26T11:10:00Z'
   });
 });
 
 app.get('/api/health/storage', async (req, res) => {
+  const storageConfig = getStorageConfig();
+  const dbIdentity = getDbIdentity();
+  
   const results: Record<string, any> = {
-    version: '1.0.7-gcs-direct',
-    backend: '@google-cloud/storage',
-    replitBucketId: process.env.REPLIT_OBJECT_STORAGE_BUCKET_ID ? 'SET' : 'NOT_SET',
-    privateObjectDir: process.env.PRIVATE_OBJECT_DIR ? 'SET' : 'NOT_SET',
-    privateObjectDirValue: process.env.PRIVATE_OBJECT_DIR?.substring(0, 50) || 'EMPTY',
+    version: '1.0.11-db-identity',
+    backend: storageConfig.backend,
+    replitBucketId: storageConfig.replitBucketId,
+    replitBucketIdValue: storageConfig.replitBucketIdValue,
+    privateObjectDir: storageConfig.privateObjectDir,
+    privateObjectDirValue: storageConfig.privateObjectDirValue,
+    bucketSource: storageConfig.resolvedSource,
+    dbHost: dbIdentity.host,
+    dbName: dbIdentity.name,
+    dbEnv: dbIdentity.environment,
+    dbUrlHash: dbIdentity.urlHash,
     timestamp: new Date().toISOString(),
     nodeEnv: process.env.NODE_ENV,
-    appEnv: process.env.APP_ENV,
+    appEnv: getAppEnv(req),
   };
 
   // Test actual SDK connection
@@ -213,21 +266,73 @@ app.get('/api/health/storage', async (req, res) => {
   }
 
   const credentialOk = results.credentialStatus === 200 && results.credentialHasToken;
-  const storageConfigured = results.privateObjectDir === 'SET';
+  const storageConfigured = storageConfig.replitBucketId === 'SET' || storageConfig.privateObjectDir === 'SET';
+  const connectionOk = connectionTest.ok === true;
   
-  res.status(credentialOk && storageConfigured ? 200 : 500).json({
-    status: credentialOk && storageConfigured ? 'healthy' : 'unhealthy',
+  // For replit-object-storage, sidecar credentials are not needed
+  const isHealthy = storageConfig.backend === 'replit-object-storage' 
+    ? (storageConfigured && connectionOk)
+    : (credentialOk && storageConfigured && connectionOk);
+  
+  res.status(isHealthy ? 200 : 500).json({
+    status: isHealthy ? 'healthy' : 'unhealthy',
     credentialOk,
     storageConfigured,
+    connectionOk,
     ...results
   });
 });
 
+app.get('/api/health/storage/list', async (req, res) => {
+  const storageConfig = getStorageConfig();
+  console.log('[StorageList] Listing objects in storage...');
+  
+  try {
+    if (storageConfig.backend === 'replit-object-storage') {
+      const { Client } = await import('@replit/object-storage');
+      const client = new Client();
+      const { ok, value: objects, error } = await client.list();
+      
+      if (!ok) {
+        return res.json({ 
+          ok: false, 
+          backend: storageConfig.backend,
+          error: error?.message || 'List failed'
+        });
+      }
+      
+      const artworkObjects = (objects || [])
+        .filter((obj: any) => obj.name?.startsWith('artworks/'))
+        .slice(0, 20);
+      
+      return res.json({
+        ok: true,
+        backend: storageConfig.backend,
+        totalObjects: objects?.length || 0,
+        artworkObjects: artworkObjects.map((obj: any) => obj.name),
+        sampleAll: (objects || []).slice(0, 10).map((obj: any) => obj.name)
+      });
+    } else {
+      return res.json({
+        ok: false,
+        backend: storageConfig.backend,
+        message: 'List only supported for replit-object-storage'
+      });
+    }
+  } catch (err: any) {
+    console.error('[StorageList] Error:', err);
+    return res.status(500).json({
+      ok: false,
+      error: err.message
+    });
+  }
+});
+
 app.get('/api/health/storage/write-test', async (req, res) => {
+  const storageConfig = getStorageConfig();
   console.log('[StorageWriteTest] ====== STARTING WRITE TEST ======');
-  console.log('[StorageWriteTest] PRIVATE_OBJECT_DIR:', process.env.PRIVATE_OBJECT_DIR || 'NOT SET');
-  console.log('[StorageWriteTest] NODE_ENV:', process.env.NODE_ENV);
-  console.log('[StorageWriteTest] APP_ENV:', process.env.APP_ENV);
+  console.log('[StorageWriteTest] backend:', storageConfig.backend);
+  console.log('[StorageWriteTest] source:', storageConfig.resolvedSource);
   
   const objectStorage = new ObjectStorageService();
   try {
@@ -241,9 +346,9 @@ app.get('/api/health/storage/write-test', async (req, res) => {
       ok: true, 
       storedObjectName, 
       timestamp: new Date().toISOString(),
-      backend: '@replit/object-storage',
-      version: '1.0.6-storage-diag',
-      privateObjectDir: process.env.PRIVATE_OBJECT_DIR || 'NOT SET'
+      backend: storageConfig.backend,
+      version: '1.0.10-dual-backend',
+      source: storageConfig.resolvedSource
     });
   } catch (err: any) {
     console.error('[StorageWriteTest] FAILED:', err);
@@ -264,39 +369,213 @@ app.get('/api/health/storage/write-test', async (req, res) => {
   }
 });
 
+// Debug endpoint to test downloading a specific storage key
+app.get('/api/debug/storage-download', async (req, res) => {
+  const storageKey = req.query.key as string;
+  if (!storageKey) {
+    return res.status(400).json({ error: 'Missing key query parameter' });
+  }
+  const storageConfig = getStorageConfig();
+  
+  console.log(`[DebugStorage] Testing download of: ${storageKey}`);
+  
+  try {
+    if (storageConfig.backend === 'replit-object-storage') {
+      const { Client } = await import('@replit/object-storage');
+      const client = new Client();
+      
+      // First check if it exists
+      const existsResult = await client.exists(storageKey);
+      console.log(`[DebugStorage] exists() result:`, existsResult);
+      
+      if (!existsResult.ok) {
+        return res.json({
+          ok: false,
+          step: 'exists_check_failed',
+          storageKey,
+          backend: storageConfig.backend,
+          existsResult: { ok: existsResult.ok, error: existsResult.error?.message }
+        });
+      }
+      
+      if (!existsResult.value) {
+        return res.json({
+          ok: false,
+          step: 'object_not_found',
+          storageKey,
+          backend: storageConfig.backend,
+          existsValue: existsResult.value
+        });
+      }
+      
+      // Try to download
+      const downloadResult = await client.downloadAsStream(storageKey);
+      console.log(`[DebugStorage] downloadAsStream() result:`, { ok: downloadResult.ok, hasValue: !!downloadResult.value, error: downloadResult.error });
+      
+      if (!downloadResult.ok || !downloadResult.value) {
+        return res.json({
+          ok: false,
+          step: 'download_failed',
+          storageKey,
+          backend: storageConfig.backend,
+          downloadOk: downloadResult.ok ?? null,
+          downloadHasValue: !!downloadResult.value,
+          downloadError: downloadResult.error?.message ?? null,
+          downloadErrorFull: downloadResult.error ? JSON.stringify(downloadResult.error) : null
+        });
+      }
+      
+      // Success - return metadata only
+      return res.json({
+        ok: true,
+        storageKey,
+        backend: storageConfig.backend,
+        message: 'Download would succeed, stream ready'
+      });
+    } else {
+      return res.json({
+        ok: false,
+        message: 'Debug only supports replit-object-storage',
+        backend: storageConfig.backend
+      });
+    }
+  } catch (err: any) {
+    console.error(`[DebugStorage] Error:`, err);
+    return res.status(500).json({
+      ok: false,
+      step: 'exception',
+      storageKey,
+      error: err.message,
+      stack: err.stack?.split('\n').slice(0, 3)
+    });
+  }
+});
+
 app.get('/api/artwork-image/:id', async (req: any, res) => {
   try {
     const artworkId = parseInt(req.params.id);
+    const storageConfig = getStorageConfig();
+    const storageReady = isStorageConfigured();
+    const dbIdentity = getDbIdentity();
+    
+    console.log(`[artwork-image] Request for artwork ${artworkId}, backend=${storageConfig.backend}, configured=${storageReady}, dbHost=${dbIdentity.host}, dbName=${dbIdentity.name}, dbEnv=${dbIdentity.environment}`);
     
     if (isNaN(artworkId)) {
       return res.status(400).json({ error: 'Invalid artwork ID' });
     }
 
-    const result = await query('SELECT image_url FROM artworks WHERE id = $1', [artworkId]);
+    let result = await query('SELECT id, image_url, storage_key, title, artist_id, availability FROM artworks WHERE id = $1', [artworkId]);
+    console.log(`[artwork-image] DB lookup for id=${artworkId} → ${result.rows.length > 0 ? 'FOUND' : 'NOT FOUND'} (dbHost=${dbIdentity.host})`);
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Artwork not found', artworkId });
+      console.warn(`[artwork-image] Artwork ${artworkId} not found in DB (host=${dbIdentity.host}, db=${dbIdentity.name}, env=${dbIdentity.environment})`);
+      return res.status(404).json({ 
+        error: 'Artwork not found', 
+        artworkId
+      });
     }
 
-    const imageUrl = result.rows[0].image_url;
+    const { image_url: imageUrl, storage_key: storageKey, title, artist_id, availability } = result.rows[0];
+    
+    // NOTE: No availability guard here - image endpoint serves ALL artworks regardless of status
+    // Visibility rules belong to listing endpoints, not binary image delivery
+    // Dashboard users need to see their own draft/private artwork images
+    console.log(`[artwork-image] Artwork ${artworkId} (title="${title}", artist_id=${artist_id}, availability=${availability}): storage_key=${storageKey || 'NULL'}, image_url=${imageUrl || 'NULL'}`);
 
+    // Check if storage_key exists (required for proper image retrieval)
+    if (!storageKey || storageKey.trim() === '') {
+      // Check if there's a legacy image_url we can try to use
+      if (imageUrl && imageUrl.startsWith('/objects/')) {
+        console.log(`[artwork-image] Artwork ${artworkId} missing storage_key, attempting legacy image_url fallback`);
+        // Fall through to legacy handling below
+      } else if (imageUrl && imageUrl.startsWith('http')) {
+        // External URL - redirect directly
+        return res.redirect(imageUrl);
+      } else {
+        // No valid image reference
+        console.warn(`[artwork-image] Artwork ${artworkId} missing storage_key, no valid fallback`);
+        return res.status(404).json({ 
+          error: 'storage_key missing',
+          message: 'Image data is missing. Please re-upload the artwork image.',
+          artworkId,
+          requiresReupload: true
+        });
+      }
+    }
+
+    // Prefer storage_key if available (direct object key)
+    if (storageKey && storageKey.trim() !== '') {
+      // Check if storage is configured before attempting to fetch
+      if (!storageReady) {
+        console.error(`[artwork-image] Storage not configured, cannot serve artwork ${artworkId}`);
+        return res.status(503).json({ 
+          error: 'Image storage is not configured. Please set up object storage.',
+          artworkId,
+          storageKey
+        });
+      }
+      
+      console.log(`[artwork-image] Using storage_key directly: ${storageKey}`);
+      try {
+        const objectStorageService = new ObjectStorageService();
+        // Use storage_key directly - no path reconstruction
+        const objectFile = await objectStorageService.getObjectByStorageKey(storageKey);
+        console.log(`[artwork-image] Object found via storage_key, streaming: ${objectFile.objectName}`);
+        objectStorageService.downloadObject(objectFile, res);
+        return;
+      } catch (storageError: any) {
+        console.error(`[artwork-image] Storage error for artwork ${artworkId} (via storage_key):`, {
+          error: storageError?.message || storageError,
+          storageKey,
+          backend: storageConfig.backend
+        });
+        return res.status(404).json({ 
+          error: 'Image file not found in storage', 
+          artworkId,
+          storageKey,
+          backend: storageConfig.backend
+        });
+      }
+    }
+    
+    // Fallback: try to use image_url if storage_key is missing
     if (!imageUrl) {
-      return res.status(404).json({ error: 'Artwork has no image', artworkId });
+      return res.status(404).json({ error: 'Artwork has no image (missing storage_key and image_url)', artworkId });
     }
     
     // If image is stored in Object Storage, serve from there
     if (imageUrl.startsWith('/objects/')) {
+      // Check if storage is configured before attempting to fetch
+      if (!storageReady) {
+        console.error(`[artwork-image] Storage not configured, cannot serve artwork ${artworkId}`);
+        return res.status(503).json({ 
+          error: 'Image storage is not configured. Please set up object storage.',
+          artworkId,
+          imageUrl
+        });
+      }
+      
+      const objectKey = imageUrl.replace('/objects/', '');
+      console.log(`[artwork-image] Fallback to image_url: key=${objectKey}, backend=${storageConfig.backend}`);
+      
       try {
         const objectStorageService = new ObjectStorageService();
         const objectFile = await objectStorageService.getObjectFile(imageUrl);
+        console.log(`[artwork-image] Object found via image_url, streaming: ${objectFile.objectName}`);
         objectStorageService.downloadObject(objectFile, res);
         return;
-      } catch (storageError) {
-        console.error(`[artwork-image] Object storage error for artwork ${artworkId}:`, storageError);
+      } catch (storageError: any) {
+        console.error(`[artwork-image] Storage error for artwork ${artworkId} (via image_url):`, {
+          error: storageError?.message || storageError,
+          imageUrl,
+          objectKey,
+          backend: storageConfig.backend
+        });
         return res.status(404).json({ 
           error: 'Image file not found in storage', 
           artworkId,
-          storedPath: imageUrl 
+          storedPath: imageUrl,
+          backend: storageConfig.backend
         });
       }
     }
@@ -578,7 +857,11 @@ if (process.env.NODE_ENV === 'production') {
     etag: true
   }));
 
-  app.use((req, res) => {
+  // SPA catch-all - MUST exclude /api and /objects routes
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/api/') || req.path.startsWith('/objects/')) {
+      return next(); // Let API routes fall through to 404
+    }
     res.sendFile(path.join(__dirname, '../dist', 'index.html'));
   });
 }

@@ -1,0 +1,152 @@
+# 🎯 TASK FOR REPLIT AGENT – FREE PLAN: 3 CLEAN + 7 BRANDED ARTWORKS (UI LOGIC)
+
+**Environment:** STAGING ONLY (staging.roomvibe.app)
+
+---
+
+## 🎯 Goal
+
+For **User / Free plan**:
+
+* Allow **up to 10 artworks total**
+* First **3 artworks = CLEAN** (no RoomVibe branding)
+* Next **7 artworks = BRANDED** (RoomVibe attribution/link)
+
+This must be reflected in UI (Dashboard + Studio/Widget output).
+
+---
+
+# 1️⃣ FREE PLAN LIMITS & UI RULES
+
+## A) Upload / Add Artwork
+
+### Expected behavior
+
+* Free users can upload up to **10 artworks**.
+* When free user has **10/10**, the upload button is disabled and message shown.
+
+### Messaging
+
+When free user reaches 3 artworks:
+
+* Show a gentle info note:
+
+  > “You’ve used your 3 clean uploads. You can add up to 7 more artworks with RoomVibe branding.”
+
+When free user reaches 10 artworks:
+
+* Show:
+
+  > “Free plan limit reached (10 artworks). Upgrade to Artist to upload more and remove branding.”
+
+---
+
+## B) Labeling in Dashboard – My Artworks
+
+### Required UI changes
+
+* On each artwork card (Free users only):
+
+  * If artwork index (sorted by created_at asc) is **1–3** → show small label: **“Clean”**
+  * If artwork index is **4–10** → show small label: **“RoomVibe Powered”** (or “Branded”)
+
+> IMPORTANT: Use deterministic ordering (created_at asc) so the same artworks stay clean/branded.
+
+---
+
+## C) Usage Meter (Free users only)
+
+Add a small meter / summary near “My Artworks”:
+
+* **Clean uploads:** X / 3
+* **RoomVibe-powered bonus:** Y / 7
+* **Total:** (X+Y) / 10
+
+Where:
+
+* X = min(totalArtworks, 3)
+* Y = max(totalArtworks - 3, 0)
+
+---
+
+# 2️⃣ STUDIO + WIDGET BRANDING RULE
+
+## A) When to show branding
+
+Branding applies ONLY for Free users and ONLY when the currently displayed artwork is in slots **4–10**.
+
+### Clean artworks (1–3)
+
+* No RoomVibe badge/watermark
+
+### Branded artworks (4–10)
+
+* Add a subtle attribution element:
+
+  * A small badge or text in a corner (not intrusive)
+  * Clickable link to RoomVibe (open in new tab)
+
+**Recommended copy:**
+
+* “Visualized with RoomVibe”
+
+**Link target:**
+
+* RoomVibe homepage or pricing (choose simplest: homepage)
+
+> IMPORTANT: Do NOT put a large watermark across the artwork. Keep it elegant.
+
+---
+
+## B) Where to display branding
+
+Implement branding overlay in **both**:
+
+* Studio view
+* Embedded widget view (iframe)
+
+If the widget uses the same Studio renderer, reuse the same component.
+
+---
+
+# 3️⃣ PLAN DETECTION (What counts as Free?)
+
+Use existing plan/role detection already used in dashboard:
+
+* If user plan = Free/User
+* Apply this 3+7 logic
+
+Do NOT affect Artist / Designer / Gallery plans.
+
+---
+
+# 4️⃣ NO BACKEND CHANGES (Preferred)
+
+Try to implement as:
+
+* UI logic + rendering rules
+
+However, if backend currently hard-limits Free to 3 artworks, update the limit to 10 for Free (minimal change), while keeping branding purely UI-side.
+
+---
+
+# 5️⃣ ACCEPTANCE CRITERIA (Smoke Test)
+
+✅ Free user can upload 1–10 artworks
+✅ Dashboard shows meter: clean (≤3) + bonus (≤7)
+✅ Artwork cards show “Clean” for first 3 and “RoomVibe Powered” for next 7
+✅ In Studio/widget:
+
+* Clean artworks show NO branding
+* Branded artworks show subtle “Visualized with RoomVibe” badge/link
+  ✅ Paid plans (Artist/Designer/Gallery) are unchanged and never show branding
+
+---
+
+# 6️⃣ DEPLOYMENT RULE
+
+⚠️ STAGING ONLY. Do NOT deploy to production.
+
+---
+
+**End of task.**
