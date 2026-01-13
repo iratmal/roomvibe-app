@@ -1,0 +1,73 @@
+Cilj: Production (app.roomvibe.app) mora deployati MAIN branch i mora biti na istom commitu kao GitHub main (zadnji je 8aefe73 – “Merge pull request #3 from iratmal/staging”). Staging nije relevantan za production deploy.
+
+Zadatak:
+
+Potvrdi izvor deploya
+
+Provjeri u Replit Deployments/Settings (ili gdje se u Replitu bira “Deploy from”) da je deploy branch = main (ne staging).
+
+Ako postoji opcija “Production uses … branch” ili “Git branch for deployment”, postavi na main.
+
+Sync lokalni workspace s origin/main (bez konflikata i bez lock-a)
+
+Otvori Replit Shell/Terminal i pokreni ovo redom:
+
+# kill eventual stuck git processes + remove locks
+pkill -f git || true
+rm -f .git/index.lock .git/refs/remotes/origin/HEAD.lock
+
+# fetch + reset local main to match remote main
+git fetch origin --prune
+git checkout main
+git reset --hard origin/main
+git clean -fd
+
+# verify
+git status
+git rev-parse --short HEAD
+git log -1 --oneline
+
+
+Očekivanje: git log -1 treba pokazati commit koji odgovara GitHub main (npr. 8aefe73 Merge pull request #3...).
+
+Force clean rebuild + redeploy
+
+U Replitu pokreni Republish/Deploy iz main branch-a.
+
+Ako ima build cache, obavezno odradi clean install/rebuild prije deploya:
+
+obriši build output (ako postoji) i ponovo buildaj, npr.:
+
+npm ci
+npm run build
+
+
+zatim Deploy/Republish.
+
+Verifikacija da je production stvarno novi build
+
+Na productionu provjeri:
+
+pricing tekst (treba imati nove stavke kao na stagingu)
+
+login routing (artist ide na artist dashboard)
+
+Ako i dalje pokazuje staro, dodaj “build version marker” (npr. process.env.GIT_COMMIT ili hardcoded BUILD_ID) u footer ili u /api/health endpoint da točno vidimo koji commit je live.
+
+Ako sve gore prolazi, a production i dalje pokazuje staro
+
+Provjeri postoji li:
+
+CDN/cache layer (Cloudflare, proxy, sl.)
+
+servis worker cache u browseru
+
+Daj uputu za hard refresh + purge cache (ako se koristi CDN).
+
+Output koji želim od tebe:
+
+potvrda koja grana se deploya (main/staging)
+
+git log -1 --oneline rezultat
+
+je li republish odrađen i što se vidi na productionu nakon toga
