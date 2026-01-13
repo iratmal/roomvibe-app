@@ -83,12 +83,24 @@ router.post('/register', async (req: Request, res: Response) => {
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
-    // Build entitlements object for the response
+    // Build entitlements object for the response (with role fallback)
     const entitlements = {
-      artist_access: user.artist_access || false,
-      designer_access: user.designer_access || false,
-      gallery_access: user.gallery_access || false,
+      artist_access: user.artist_access || user.role === 'artist',
+      designer_access: user.designer_access || user.role === 'designer',
+      gallery_access: user.gallery_access || user.role === 'gallery',
     };
+
+    // Calculate effectivePlan based on entitlements
+    let effectivePlan = 'user';
+    if (entitlements.artist_access && entitlements.designer_access && entitlements.gallery_access) {
+      effectivePlan = 'allaccess';
+    } else if (entitlements.gallery_access) {
+      effectivePlan = 'gallery';
+    } else if (entitlements.designer_access) {
+      effectivePlan = 'designer';
+    } else if (entitlements.artist_access) {
+      effectivePlan = 'artist';
+    }
 
     res.status(201).json({
       message: 'Registration successful! You are now logged in.',
@@ -97,6 +109,7 @@ router.post('/register', async (req: Request, res: Response) => {
         email: user.email,
         role: user.role,
         emailConfirmed: user.email_confirmed,
+        effectivePlan,
         entitlements
       }
     });
@@ -139,6 +152,20 @@ router.post('/login', async (req: Request, res: Response) => {
       gallery_access: user.is_admin ? true : (user.gallery_access || user.role === 'gallery'),
     };
 
+    // Calculate effectivePlan based on entitlements
+    let effectivePlan = 'user';
+    if (user.is_admin) {
+      effectivePlan = 'admin';
+    } else if (entitlements.artist_access && entitlements.designer_access && entitlements.gallery_access) {
+      effectivePlan = 'allaccess';
+    } else if (entitlements.gallery_access) {
+      effectivePlan = 'gallery';
+    } else if (entitlements.designer_access) {
+      effectivePlan = 'designer';
+    } else if (entitlements.artist_access) {
+      effectivePlan = 'artist';
+    }
+
     const token = jwt.sign(
       { id: user.id, email: user.email, role: effectiveRole },
       JWT_SECRET,
@@ -162,6 +189,7 @@ router.post('/login', async (req: Request, res: Response) => {
         role: effectiveRole,
         isAdmin: user.is_admin || false,
         emailConfirmed: user.email_confirmed,
+        effectivePlan,
         entitlements
       }
     });
