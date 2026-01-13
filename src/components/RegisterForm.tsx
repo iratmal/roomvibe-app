@@ -47,11 +47,11 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
   };
 
   const roles = [
-    { value: 'user', label: 'User', description: 'Browse and visualize artwork' },
+    { value: 'user', label: 'User (Free)', description: 'Browse and visualize artwork' },
     { value: 'artist', label: 'Artist', description: 'Upload and manage your artwork' },
     { value: 'designer', label: 'Designer', description: 'Create custom room designs' },
     { value: 'gallery', label: 'Gallery', description: 'Manage gallery collections' },
-    { value: 'admin', label: 'All-Access', description: 'Full platform access' },
+    { value: 'allaccess', label: 'All-Access', description: 'Full platform access' },
   ];
 
   return (

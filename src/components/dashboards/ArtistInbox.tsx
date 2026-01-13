@@ -40,6 +40,12 @@ export function ArtistInbox({ onUnreadCountChange }: ArtistInboxProps) {
       });
       
       if (!response.ok) {
+        if (response.status === 403) {
+          console.log('Messages access issue - showing empty state');
+          setMessages([]);
+          onUnreadCountChange?.(0);
+          return;
+        }
         throw new Error('Failed to fetch messages');
       }
 
@@ -50,7 +56,8 @@ export function ArtistInbox({ onUnreadCountChange }: ArtistInboxProps) {
       onUnreadCountChange?.(unreadCount);
     } catch (err: any) {
       console.error('Error fetching messages:', err);
-      setError(err.message);
+      setMessages([]);
+      onUnreadCountChange?.(0);
     } finally {
       setLoading(false);
     }
@@ -136,7 +143,7 @@ export function ArtistInbox({ onUnreadCountChange }: ArtistInboxProps) {
   const getRoleBadge = (role: string) => {
     const styles: Record<string, string> = {
       designer: 'bg-blue-100 text-blue-700',
-      gallery: 'bg-purple-100 text-purple-700',
+      gallery: 'bg-rv-primary/10 text-rv-primary',
       user: 'bg-gray-100 text-gray-700'
     };
     
@@ -172,8 +179,11 @@ export function ArtistInbox({ onUnreadCountChange }: ArtistInboxProps) {
           </svg>
         </div>
         <h3 className="text-lg font-bold text-rv-text mb-2">No messages yet</h3>
-        <p className="text-rv-textMuted max-w-md mx-auto">
+        <p className="text-rv-textMuted max-w-md mx-auto mb-4">
           When designers or galleries reach out to you about your artwork, their messages will appear here.
+        </p>
+        <p className="text-sm text-rv-textMuted">
+          Tip: Enable visibility to designers and galleries in your profile to receive inquiries.
         </p>
       </div>
     );
