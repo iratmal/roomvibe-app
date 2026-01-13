@@ -183,14 +183,15 @@ app.get('/api/health/db', (req, res) => {
 
 app.get('/api/version', (req, res) => {
   res.json({
-    version: '1.0.12',
-    build: '2025-12-26T11:10:00Z',
-    commit: 'remove-availability-guard-image-endpoint',
+    version: '1.0.3',
+    build: '2026-01-13T09:30:00Z',
+    commit: 'fix-effective-plan-role-fallback',
     features: {
       cookieAuth: true,
       objectStorage: true,
       hostBasedEnvDetection: true,
-      imageEndpointNoGuard: true
+      imageEndpointNoGuard: true,
+      roleBasedEntitlements: true
     }
   });
 });
