@@ -1,0 +1,165 @@
+Konfiguracija novog tipa galerije: Daylight Atrium Gallery
+CILJ
+
+Dodati četvrti tip galerije u RoomVibe aplikaciju pod nazivom:
+
+Daylight Atrium Gallery
+
+Ovo je nova galerija, ne izmjena postojećih (Classic / Modern / Industrial).
+
+1️⃣ DROPDOWN / TYPE REGISTRATION
+
+Dodati novi gallery type u sve relevantne drop-down menije i konfiguracije:
+
+Gallery type name: Daylight Atrium Gallery
+
+Slug / internal key (ako treba): daylight_atrium
+
+Mora se pojavljivati:
+
+u gallery creation flowu
+
+u 360 editoru
+
+u svim mjestima gdje se bira tip galerije
+
+⚠️ Ovo nije hybrid gallery (za sada).
+Radi se kao standardna RoomVibe galerija.
+
+2️⃣ OSNOVNA PROSTORNA STRUKTURA (LAYOUT)
+
+Konfigurirati novu galeriju s naglaskom na otvoren, svijetao prostor.
+
+Prostor:
+
+veliki centralni prostor (open space)
+
+visoki strop
+
+simetričan, miran layout
+
+nema industrijskih elemenata (nema cigle, nema betonskih greda)
+
+3️⃣ ZIDOVI (WALL CONFIGURATION)
+
+Koristiti sličnu logiku kao kod Modern / Industrial, ali s ovim razlikama:
+
+Wall slots (primjer – možeš prilagoditi, ali zadrži logiku):
+
+North Wall – Far Left
+
+North Wall – Left
+
+North Wall – Right
+
+North Wall – Far Right
+
+East Wall – Upper
+
+East Wall – Center
+
+East Wall – Lower
+
+West Wall – Upper
+
+West Wall – Center
+
+West Wall – Lower
+
+1–2 floating partition walls (optional, ali poželjno)
+
+Materijal zidova:
+
+svijetla siva ili off-white
+
+minimalistički, čisti
+
+bez tekstura koje “šumaju”
+
+4️⃣ STROP (CEILING)
+
+⚠️ JAKO BITNO
+
+strop mora biti svijetao (bijeli / off-white)
+
+jednostavan, minimalistički
+
+bez tamnih elemenata
+
+bez agresivne rasvjete
+
+Za sada:
+
+bez skylighta
+
+bez spot rasvjete
+
+samo neutralan ceiling kao baza
+
+(Detaljni vizualni upgrade ide u sljedećem tasku)
+
+5️⃣ POD (FLOOR)
+
+svijetli drveni pod ILI
+
+svijetli beton s blagom teksturom
+
+bez sjaja
+
+bez refleksija koje bi smetale kretanju
+
+Cilj: prirodan, realističan osjećaj prostora
+
+6️⃣ RASVJETA (LIGHTING – MINIMAL)
+
+⚠️ KRITIČNO:
+
+ne koristiti dinamičku ili tešku rasvjetu
+
+ne koristiti spotlightove koji kvare kretanje
+
+zadržati vrlo jednostavno, neutralno osvjetljenje
+
+Prioritet:
+➡️ glatko kretanje u galeriji
+➡️ stabilan performance
+
+7️⃣ KRETANJE (NAVIGATION)
+
+koristiti postojeći RoomVibe navigation sistem
+
+Entrance / Center / Back Left / Back Right
+
+osigurati da:
+
+kretanje bude glatko
+
+nema trzanja
+
+nema problema kao kod industrial rasvjete
+
+8️⃣ ŠTO NE RADITI U OVOM TASKU ❌
+
+❌ ne dodavati hybrid / 360 panorame
+
+❌ ne dodavati skylight vizuale
+
+❌ ne ubacivati reference slike
+
+❌ ne pokušavati fotorealizam još
+
+👉 Ovo je čista, stabilna baza.
+
+9️⃣ OČEKIVANI REZULTAT
+
+Na kraju ovog taska moramo imati:
+
+novi gallery type: Daylight Atrium Gallery
+
+potpuno funkcionalan u aplikaciji
+
+vizualno svijetao, minimalistički
+
+tehnički stabilan
+
+spreman za drugi task (vizual + hybrid experiment)

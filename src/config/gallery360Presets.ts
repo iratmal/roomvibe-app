@@ -262,6 +262,83 @@ export const gallery360Presets: Gallery360Preset[] = [
       { id: 'wall-south-1', wallId: 'south', position: [-9, 2.4, 8.95], rotation: [0, Math.PI, 0], width: 1.0, height: 0.8, label: 'South Wall - Left' },
       { id: 'wall-south-2', wallId: 'south', position: [9, 2.4, 8.95], rotation: [0, Math.PI, 0], width: 1.0, height: 0.8, label: 'South Wall - Right' }
     ]
+  },
+  {
+    id: 'daylight-atrium',
+    name: 'Daylight Atrium Gallery',
+    description: 'Bright, minimalist gallery with high ceilings and natural daylight atmosphere',
+    dimensions: { width: 24, height: 6, depth: 18 },
+    wallColor: '#F0EDE8',
+    floorColor: '#E8E2D8',
+    ceilingColor: '#FAFAF8',
+    hasColumns: false,
+    hasSkylights: false,
+    floorType: 'wood',
+    wallType: 'standard',
+    hasPartitionWalls: true,
+    partitionWalls: [
+      { id: 'atrium-partition-left', position: [-5.5, 1.8, 0], rotation: 0, width: 3.5, height: 3.6 },
+      { id: 'atrium-partition-right', position: [5.5, 1.8, 0], rotation: 0, width: 3.5, height: 3.6 }
+    ],
+    partitionWallColor: '#F5F3F0',
+    viewpoints: [
+      {
+        id: 'entrance',
+        position: [0, 1.65, 8.5],
+        lookAt: [0, 1.8, -9],
+        label: 'Entrance'
+      },
+      {
+        id: 'center',
+        position: [0, 1.65, 2],
+        lookAt: [0, 1.65, -9],
+        label: 'Center'
+      },
+      {
+        id: 'back-left',
+        position: [-8, 1.65, -4],
+        lookAt: [-12, 1.65, -4],
+        label: 'Back Left'
+      },
+      {
+        id: 'back-right',
+        position: [8, 1.65, -4],
+        lookAt: [12, 1.65, -4],
+        label: 'Back Right'
+      }
+    ],
+    hotspots: [
+      { id: 'h1', position: [0, 0.1, 5], targetViewpoint: 'center', rotation: 0 },
+      { id: 'h2', position: [0, 0.1, -2], targetViewpoint: 'entrance', rotation: Math.PI },
+      { id: 'h3', position: [-6, 0.1, 3], targetViewpoint: 'back-left', rotation: -Math.PI / 4 },
+      { id: 'h4', position: [6, 0.1, 3], targetViewpoint: 'back-right', rotation: Math.PI / 4 },
+      { id: 'h5', position: [-4, 0.1, -3], targetViewpoint: 'back-left', rotation: Math.PI / 2 },
+      { id: 'h6', position: [4, 0.1, -3], targetViewpoint: 'back-right', rotation: -Math.PI / 2 }
+    ],
+    slots: [
+      // North Wall - 4 artworks with generous spacing
+      { id: 'wall-north-1', wallId: 'north', position: [-8, 2.2, -8.95], rotation: [0, 0, 0], width: 1.2, height: 0.9, label: 'North Wall - Far Left' },
+      { id: 'wall-north-2', wallId: 'north', position: [-3, 2.2, -8.95], rotation: [0, 0, 0], width: 1.4, height: 1.0, label: 'North Wall - Left' },
+      { id: 'wall-north-3', wallId: 'north', position: [3, 2.2, -8.95], rotation: [0, 0, 0], width: 1.4, height: 1.0, label: 'North Wall - Right' },
+      { id: 'wall-north-4', wallId: 'north', position: [8, 2.2, -8.95], rotation: [0, 0, 0], width: 1.2, height: 0.9, label: 'North Wall - Far Right' },
+      // East Wall - 3 artworks
+      { id: 'wall-east-1', wallId: 'east', position: [11.95, 2.2, -4], rotation: [0, -Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'East Wall - Upper' },
+      { id: 'wall-east-2', wallId: 'east', position: [11.95, 2.2, 1], rotation: [0, -Math.PI / 2, 0], width: 1.3, height: 1.0, label: 'East Wall - Center' },
+      { id: 'wall-east-3', wallId: 'east', position: [11.95, 2.2, 6], rotation: [0, -Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'East Wall - Lower' },
+      // West Wall - 3 artworks
+      { id: 'wall-west-1', wallId: 'west', position: [-11.95, 2.2, -4], rotation: [0, Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'West Wall - Upper' },
+      { id: 'wall-west-2', wallId: 'west', position: [-11.95, 2.2, 1], rotation: [0, Math.PI / 2, 0], width: 1.3, height: 1.0, label: 'West Wall - Center' },
+      { id: 'wall-west-3', wallId: 'west', position: [-11.95, 2.2, 6], rotation: [0, Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'West Wall - Lower' },
+      // Partition Wall Left - both sides
+      { id: 'atrium-partition-left-front', wallId: 'atrium-partition-left', position: [-5.5, 1.8, 0.12], rotation: [0, 0, 0], width: 1.0, height: 0.8, label: 'Left Partition - Front' },
+      { id: 'atrium-partition-left-back', wallId: 'atrium-partition-left', position: [-5.5, 1.8, -0.12], rotation: [0, Math.PI, 0], width: 1.0, height: 0.8, label: 'Left Partition - Back' },
+      // Partition Wall Right - both sides
+      { id: 'atrium-partition-right-front', wallId: 'atrium-partition-right', position: [5.5, 1.8, 0.12], rotation: [0, 0, 0], width: 1.0, height: 0.8, label: 'Right Partition - Front' },
+      { id: 'atrium-partition-right-back', wallId: 'atrium-partition-right', position: [5.5, 1.8, -0.12], rotation: [0, Math.PI, 0], width: 1.0, height: 0.8, label: 'Right Partition - Back' },
+      // South Wall - avoiding entrance portal
+      { id: 'wall-south-1', wallId: 'south', position: [-8, 2.2, 8.95], rotation: [0, Math.PI, 0], width: 1.0, height: 0.8, label: 'South Wall - Left' },
+      { id: 'wall-south-2', wallId: 'south', position: [8, 2.2, 8.95], rotation: [0, Math.PI, 0], width: 1.0, height: 0.8, label: 'South Wall - Right' }
+    ]
   }
 ];
 
