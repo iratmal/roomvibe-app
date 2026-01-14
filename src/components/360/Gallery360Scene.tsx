@@ -885,15 +885,15 @@ function EntrancePortal({ position, rotation }: { position: [number, number, num
 
       {/* Entrance corridor */}
       <group>
-        {/* Corridor left wall */}
+        {/* Corridor left wall - warm gallery color */}
         <mesh position={[-(PORTAL_W / 2) - (FRAME_T / 2), PORTAL_H / 2, -CORRIDOR_DEPTH / 2]}>
           <boxGeometry args={[FRAME_T, PORTAL_H, CORRIDOR_DEPTH]} />
-          <meshBasicMaterial color="#e8e5e0" />
+          <SafeWallMaterial color={GALLERY_WALL_COLOR} />
         </mesh>
-        {/* Corridor right wall */}
+        {/* Corridor right wall - warm gallery color */}
         <mesh position={[(PORTAL_W / 2) + (FRAME_T / 2), PORTAL_H / 2, -CORRIDOR_DEPTH / 2]}>
           <boxGeometry args={[FRAME_T, PORTAL_H, CORRIDOR_DEPTH]} />
-          <meshBasicMaterial color="#e8e5e0" />
+          <SafeWallMaterial color={GALLERY_WALL_COLOR} />
         </mesh>
         {/* Corridor ceiling */}
         <mesh position={[0, PORTAL_H, -CORRIDOR_DEPTH / 2]}>
@@ -903,7 +903,7 @@ function EntrancePortal({ position, rotation }: { position: [number, number, num
         {/* Corridor floor - matching gallery tiles */}
         <mesh name="corridorFloor" position={[0, 0.005, -CORRIDOR_DEPTH / 2]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[PORTAL_W, CORRIDOR_DEPTH]} />
-          <SafeFloorMaterial color="#e8e4dc" />
+          <SafeFloorMaterial color={GALLERY_FLOOR_COLOR} />
         </mesh>
       </group>
 
