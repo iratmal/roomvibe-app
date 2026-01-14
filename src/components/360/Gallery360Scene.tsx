@@ -442,6 +442,54 @@ function TiledFloor({ width, depth, color }: { width: number; depth: number; col
   );
 }
 
+function ConcreteFloor({ width, depth, color }: { width: number; depth: number; color: string }) {
+  const concreteData = useMemo(() => {
+    const seededRandom = (seed: number) => {
+      const x = Math.sin(seed * 12.9898 + seed * 78.233) * 43758.5453;
+      return x - Math.floor(x);
+    };
+    
+    const patches: Array<{ x: number; z: number; shade: number; size: number }> = [];
+    for (let i = 0; i < 40; i++) {
+      patches.push({
+        x: (seededRandom(i * 3) - 0.5) * width * 0.9,
+        z: (seededRandom(i * 5 + 1) - 0.5) * depth * 0.9,
+        shade: 0.96 + seededRandom(i * 7 + 2) * 0.08,
+        size: 1.5 + seededRandom(i * 11) * 2
+      });
+    }
+    return patches;
+  }, [width, depth]);
+
+  const baseColor = useMemo(() => new THREE.Color(color), [color]);
+
+  return (
+    <group position={[0, 0.001, 0]}>
+      <mesh name="concreteFloorMain" rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[width, depth]} />
+        <meshStandardMaterial color={color} roughness={0.75} metalness={0.05} />
+      </mesh>
+      {concreteData.map((patch, i) => {
+        const patchColor = baseColor.clone().multiplyScalar(patch.shade);
+        return (
+          <mesh
+            key={i}
+            position={[patch.x, 0.002, patch.z]}
+            rotation={[-Math.PI / 2, 0, 0]}
+          >
+            <circleGeometry args={[patch.size, 8]} />
+            <meshBasicMaterial color={patchColor} transparent opacity={0.15} />
+          </mesh>
+        );
+      })}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.003, 0]}>
+        <planeGeometry args={[width, depth]} />
+        <meshBasicMaterial color="#888888" transparent opacity={0.08} />
+      </mesh>
+    </group>
+  );
+}
+
 /**
  * OuterEnclosure creates TWO floor meshes:
  * 1. outerEnclosureFloor - large plane below gallery (-0.8 Y offset)
@@ -628,6 +676,8 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         <WoodFloor width={width} depth={depth} color={preset.floorColor} />
       ) : preset.floorType === 'tile' ? (
         <TiledFloor width={width} depth={depth} color={preset.floorColor} />
+      ) : preset.floorType === 'concrete' ? (
+        <ConcreteFloor width={width} depth={depth} color={preset.floorColor} />
       ) : (
         <mesh name="defaultFloorMain" position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
           <planeGeometry args={[width, depth]} />
@@ -645,69 +695,142 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         <meshBasicMaterial transparent opacity={0} />
       </mesh>
 
-      {/* Main ceiling plane - light warm off-white */}
-      <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[width, depth]} />
-        <SafeCeilingMaterial color={GALLERY_CEILING_COLOR} />
-      </mesh>
-      
-      {/* Cove edge - lighter dark grey for contrast */}
-      {[
-        { pos: [0, height - 0.12, -halfD + 0.12] as [number, number, number], size: [width - 0.24, 0.24, 0.24] as [number, number, number] },
-        { pos: [0, height - 0.12, halfD - 0.12] as [number, number, number], size: [width - 0.24, 0.24, 0.24] as [number, number, number] },
-        { pos: [-halfW + 0.12, height - 0.12, 0] as [number, number, number], size: [0.24, 0.24, depth - 0.48] as [number, number, number] },
-        { pos: [halfW - 0.12, height - 0.12, 0] as [number, number, number], size: [0.24, 0.24, depth - 0.48] as [number, number, number] },
-      ].map((cove, i) => (
-        <mesh key={`cove-${i}`} position={cove.pos}>
-          <boxGeometry args={cove.size} />
-          <meshBasicMaterial color="#3A3A3A" />
-        </mesh>
-      ))}
-      
-      {/* Coffered ceiling grid - 3x3 sections */}
-      {/* Main beams - premium dark grey */}
-      {[-depth/3, 0, depth/3].map((zPos, i) => (
-        <mesh key={`beam-main-x-${i}`} position={[0, height - 0.12, zPos]}>
-          <boxGeometry args={[width - 0.3, 0.24, 0.20]} />
-          <meshBasicMaterial color="#2F2F2F" />
-        </mesh>
-      ))}
-      {/* Cross beams - premium dark grey */}
-      {[-width/3, 0, width/3].map((xPos, i) => (
-        <mesh key={`beam-main-z-${i}`} position={[xPos, height - 0.12, 0]}>
-          <boxGeometry args={[0.20, 0.24, depth - 0.3]} />
-          <meshBasicMaterial color="#2F2F2F" />
-        </mesh>
-      ))}
-      
-      {/* Recessed coffer panels - 9 sections - light warm off-white */}
-      {[-1, 0, 1].flatMap(xi => [-1, 0, 1].map(zi => ({
-        x: xi * (width / 3),
-        z: zi * (depth / 3),
-        w: width / 3 - 0.25,
-        d: depth / 3 - 0.25
-      }))).map((panel, i) => (
-        <group key={`coffer-${i}`} position={[panel.x, height, panel.z]}>
-          {/* Recessed ceiling panel */}
-          <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
-            <planeGeometry args={[panel.w, panel.d]} />
+      {/* Ceiling - different style based on preset */}
+      {preset.id === 'modern-gallery-v2' ? (
+        <>
+          {/* MODERN GALLERY: Industrial black ceiling with exposed beams */}
+          <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[width, depth]} />
+            <meshStandardMaterial color={preset.ceilingColor} roughness={0.9} metalness={0.1} />
+          </mesh>
+          
+          {/* Exposed industrial I-beams running lengthwise */}
+          {[-depth/4, 0, depth/4].map((zPos, i) => (
+            <group key={`ibeam-${i}`} position={[0, height - 0.15, zPos]}>
+              {/* I-beam top flange */}
+              <mesh>
+                <boxGeometry args={[width - 1, 0.04, 0.25]} />
+                <meshStandardMaterial color="#1A1A1A" roughness={0.7} metalness={0.3} />
+              </mesh>
+              {/* I-beam web */}
+              <mesh position={[0, -0.12, 0]}>
+                <boxGeometry args={[width - 1, 0.20, 0.06]} />
+                <meshStandardMaterial color="#1A1A1A" roughness={0.7} metalness={0.3} />
+              </mesh>
+              {/* I-beam bottom flange */}
+              <mesh position={[0, -0.24, 0]}>
+                <boxGeometry args={[width - 1, 0.04, 0.20]} />
+                <meshStandardMaterial color="#1A1A1A" roughness={0.7} metalness={0.3} />
+              </mesh>
+            </group>
+          ))}
+          
+          {/* Track lighting rails - 4 parallel tracks */}
+          {[-halfW + 3, -halfW/2, halfW/2, halfW - 3].map((xPos, i) => (
+            <group key={`track-rail-${i}`} position={[xPos, height - 0.45, 0]}>
+              {/* Track rail */}
+              <mesh>
+                <boxGeometry args={[0.08, 0.05, depth - 2]} />
+                <meshBasicMaterial color="#2A2A2A" />
+              </mesh>
+              {/* Track light fixtures along rail */}
+              {[-depth/3, 0, depth/3].map((zPos, j) => (
+                <group key={`fixture-${i}-${j}`} position={[0, -0.08, zPos]}>
+                  <mesh>
+                    <cylinderGeometry args={[0.06, 0.08, 0.12, 16]} />
+                    <meshBasicMaterial color="#1A1A1A" />
+                  </mesh>
+                  {/* Light emission disc */}
+                  <mesh position={[0, -0.07, 0]} rotation={[Math.PI, 0, 0]}>
+                    <circleGeometry args={[0.05, 16]} />
+                    <meshBasicMaterial color="#FFF8E8" />
+                  </mesh>
+                  {/* Point light for illumination */}
+                  <pointLight
+                    position={[0, -0.15, 0]}
+                    intensity={0.4}
+                    distance={6}
+                    color="#FFF5E5"
+                  />
+                </group>
+              ))}
+            </group>
+          ))}
+          
+          {/* Ambient fill light for modern gallery */}
+          <hemisphereLight args={['#FFFAF0', '#606060', 0.5]} position={[0, height, 0]} />
+        </>
+      ) : (
+        <>
+          {/* CLASSIC GALLERY: Warm coffered ceiling */}
+          <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[width, depth]} />
             <SafeCeilingMaterial color={GALLERY_CEILING_COLOR} />
           </mesh>
-        </group>
-      ))}
-      
-      {/* Track lines - lighter dark grey */}
-      {[-width/3 - width/6, -width/6, width/6, width/3 + width/6].map((xPos, i) => (
-        <mesh key={`track-${i}`} position={[xPos, height - 0.01, 0]}>
-          <boxGeometry args={[0.03, 0.03, depth - 0.8]} />
-          <meshBasicMaterial color="#3A3A3A" />
-        </mesh>
-      ))}
+          
+          {/* Cove edge - lighter dark grey for contrast */}
+          {[
+            { pos: [0, height - 0.12, -halfD + 0.12] as [number, number, number], size: [width - 0.24, 0.24, 0.24] as [number, number, number] },
+            { pos: [0, height - 0.12, halfD - 0.12] as [number, number, number], size: [width - 0.24, 0.24, 0.24] as [number, number, number] },
+            { pos: [-halfW + 0.12, height - 0.12, 0] as [number, number, number], size: [0.24, 0.24, depth - 0.48] as [number, number, number] },
+            { pos: [halfW - 0.12, height - 0.12, 0] as [number, number, number], size: [0.24, 0.24, depth - 0.48] as [number, number, number] },
+          ].map((cove, i) => (
+            <mesh key={`cove-${i}`} position={cove.pos}>
+              <boxGeometry args={cove.size} />
+              <meshBasicMaterial color="#3A3A3A" />
+            </mesh>
+          ))}
+          
+          {/* Coffered ceiling grid - 3x3 sections */}
+          {/* Main beams - premium dark grey */}
+          {[-depth/3, 0, depth/3].map((zPos, i) => (
+            <mesh key={`beam-main-x-${i}`} position={[0, height - 0.12, zPos]}>
+              <boxGeometry args={[width - 0.3, 0.24, 0.20]} />
+              <meshBasicMaterial color="#2F2F2F" />
+            </mesh>
+          ))}
+          {/* Cross beams - premium dark grey */}
+          {[-width/3, 0, width/3].map((xPos, i) => (
+            <mesh key={`beam-main-z-${i}`} position={[xPos, height - 0.12, 0]}>
+              <boxGeometry args={[0.20, 0.24, depth - 0.3]} />
+              <meshBasicMaterial color="#2F2F2F" />
+            </mesh>
+          ))}
+          
+          {/* Recessed coffer panels - 9 sections - light warm off-white */}
+          {[-1, 0, 1].flatMap(xi => [-1, 0, 1].map(zi => ({
+            x: xi * (width / 3),
+            z: zi * (depth / 3),
+            w: width / 3 - 0.25,
+            d: depth / 3 - 0.25
+          }))).map((panel, i) => (
+            <group key={`coffer-${i}`} position={[panel.x, height, panel.z]}>
+              {/* Recessed ceiling panel */}
+              <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
+                <planeGeometry args={[panel.w, panel.d]} />
+                <SafeCeilingMaterial color={GALLERY_CEILING_COLOR} />
+              </mesh>
+            </group>
+          ))}
+          
+          {/* Track lines - lighter dark grey */}
+          {[-width/3 - width/6, -width/6, width/6, width/3 + width/6].map((xPos, i) => (
+            <mesh key={`track-${i}`} position={[xPos, height - 0.01, 0]}>
+              <boxGeometry args={[0.03, 0.03, depth - 0.8]} />
+              <meshBasicMaterial color="#3A3A3A" />
+            </mesh>
+          ))}
+        </>
+      )}
 
-      {/* Gallery walls - warm elegant gallery color */}
+      {/* Gallery walls - use preset color for Modern, warm color for Classic */}
       <mesh position={[0, height / 2, -halfD]} receiveShadow>
         <planeGeometry args={[width, height]} />
-        <SafeWallMaterial color={GALLERY_WALL_COLOR} />
+        {preset.id === 'modern-gallery-v2' ? (
+          <meshStandardMaterial color={preset.wallColor} roughness={0.85} metalness={0} />
+        ) : (
+          <SafeWallMaterial color={GALLERY_WALL_COLOR} />
+        )}
       </mesh>
 
       {/* South wall with entrance opening */}
@@ -717,16 +840,26 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         halfD={halfD}
         portalW={3.5}
         portalH={3.5}
+        wallColor={preset.id === 'modern-gallery-v2' ? preset.wallColor : GALLERY_WALL_COLOR}
+        isModern={preset.id === 'modern-gallery-v2'}
       />
 
       <mesh position={[halfW, height / 2, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
-        <SafeWallMaterial color={GALLERY_WALL_COLOR} />
+        {preset.id === 'modern-gallery-v2' ? (
+          <meshStandardMaterial color={preset.wallColor} roughness={0.85} metalness={0} />
+        ) : (
+          <SafeWallMaterial color={GALLERY_WALL_COLOR} />
+        )}
       </mesh>
 
       <mesh position={[-halfW, height / 2, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
-        <SafeWallMaterial color={GALLERY_WALL_COLOR} />
+        {preset.id === 'modern-gallery-v2' ? (
+          <meshStandardMaterial color={preset.wallColor} roughness={0.85} metalness={0} />
+        ) : (
+          <SafeWallMaterial color={GALLERY_WALL_COLOR} />
+        )}
       </mesh>
 
       {columnPositions.map((pos, i) => (
@@ -976,13 +1109,17 @@ function SouthWallWithOpening({
   height, 
   halfD,
   portalW,
-  portalH
+  portalH,
+  wallColor,
+  isModern
 }: { 
   width: number; 
   height: number; 
   halfD: number;
   portalW: number;
   portalH: number;
+  wallColor: string;
+  isModern: boolean;
 }) {
   const leftWidth = (width - portalW) / 2;
   const rightWidth = (width - portalW) / 2;
@@ -993,19 +1130,31 @@ function SouthWallWithOpening({
       {/* Left section of wall */}
       <mesh position={[-(width / 2 - leftWidth / 2), height / 2, 0]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[leftWidth, height]} />
-        <SafeWallMaterial color={GALLERY_WALL_COLOR} />
+        {isModern ? (
+          <meshStandardMaterial color={wallColor} roughness={0.85} metalness={0} />
+        ) : (
+          <SafeWallMaterial color={wallColor} />
+        )}
       </mesh>
 
       {/* Right section of wall */}
       <mesh position={[(width / 2 - rightWidth / 2), height / 2, 0]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[rightWidth, height]} />
-        <SafeWallMaterial color={GALLERY_WALL_COLOR} />
+        {isModern ? (
+          <meshStandardMaterial color={wallColor} roughness={0.85} metalness={0} />
+        ) : (
+          <SafeWallMaterial color={wallColor} />
+        )}
       </mesh>
 
       {/* Top section above portal */}
       <mesh position={[0, portalH + topHeight / 2, 0]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[portalW, topHeight]} />
-        <SafeWallMaterial color={GALLERY_WALL_COLOR} />
+        {isModern ? (
+          <meshStandardMaterial color={wallColor} roughness={0.85} metalness={0} />
+        ) : (
+          <SafeWallMaterial color={wallColor} />
+        )}
       </mesh>
     </group>
   );

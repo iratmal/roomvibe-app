@@ -1,0 +1,176 @@
+Goal
+
+Dizajnirati i implementirati novi Modern Gallery preset za 360° Exhibition koji vizualno odgovara modernom / industrial loft galerijskom prostoru, inspiriran referencom (Artplacer-style modern gallery).
+
+Classic Gallery ne dirati.
+
+Context
+
+Projekt: RoomVibe
+
+Trenutno stanje:
+
+Classic Gallery preset je završen i zaključan
+
+Postoji “preview modern gallery” s previše poprečnih stupova i vizualnog šuma
+
+Referenca za dizajn:
+
+Treći screenshot (Artplacer / modern loft gallery stil)
+
+Cilj: dobiti čist, otvoren, moderan galerijski prostor koji izgleda premium i profesionalno.
+
+Scope – OVO TOČNO NAPRAVITI
+1️⃣ Struktura prostora (najbitnije)
+
+UKLONITI poprečne stupove koji presijecaju prostor i zidove
+
+Dozvoljeni su:
+
+vanjski nosivi stupovi uz zidove (ako trebaju za “loft feel”)
+
+ali ništa što blokira pogled na zidove s umjetninama
+
+Prostor mora djelovati:
+
+otvoreno
+
+prozračno
+
+“gallery first”, ne arhitektura first
+
+2️⃣ Stil & arhitektura (modern / industrial gallery)
+
+Implementirati:
+
+Zidovi
+
+svijetli neutralni ton (off-white / very light warm grey)
+
+bez tekstura koje odvlače pažnju
+
+Pod
+
+beton ili polished concrete look
+
+lagana tekstura, NE sjajna
+
+Strop
+
+vidljive grede ili crni nosači (minimalno)
+
+linearne ili track rasvjete
+
+Opći dojam
+
+minimalistički
+
+suvremen
+
+profesionalna galerija / loft
+
+3️⃣ Rasvjeta (ključna razlika vs Classic)
+
+Dodati modernu gallery lighting logiku:
+
+track lights ili linear lights
+
+blagi spotlight na zidove s artworkovima
+
+Svjetlo mora:
+
+istaknuti umjetnine
+
+ne stvarati dramatične sjene
+
+ne potamniti prostor
+
+Cilj: “art-first lighting”
+
+4️⃣ Zidni slotovi (kompatibilnost)
+
+Zadržati postojeći Wall Slot system
+
+Slotovi trebaju biti:
+
+ravnomjerno raspoređeni
+
+vizualno čisti (bez stupova između)
+
+Editor mora jasno prikazivati:
+
+North / East / South / West wall slotove
+
+Ne mijenjati API / DB strukturu
+
+5️⃣ Kamera & osjećaj kretanja
+
+Kamera:
+
+stabilna
+
+bez “zapinjenja” o objekte
+
+Viewpointi:
+
+Entrance
+
+Center
+
+Back Left
+
+Back Right
+
+Ni u jednom viewu:
+
+stup ne smije prekriti artwork
+
+kamera ne smije “gledati u stup”
+
+Vizualna referenca (obavezno pratiti)
+
+Treći screenshot:
+
+open space
+
+centralni stupovi samo ako ne blokiraju zidove
+
+čiste linije
+
+galerijski, ne skladišni izgled
+
+Ne raditi (strogo)
+
+❌ Ne dirati Classic Gallery
+
+❌ Ne dodavati dekoracije (biljke, klupe, skulpture)
+
+❌ Ne uvoditi nove feature-e
+
+❌ Ne refaktorirati postojeći 360 engine
+
+❌ Ne mijenjati slot naming ili editor logiku
+
+Stop condition
+
+Task je gotov kada:
+
+Postoji novi “Modern Gallery” preset
+
+NEMA poprečnih stupova koji blokiraju zidove
+
+Prostor izgleda:
+
+modernije od Classic Gallery
+
+bliže Artplacer / Artsteps modern loft galerijama
+
+360 editor i public viewer rade bez bugova
+
+Classic Gallery ostaje netaknut
+
+Priority & Mode
+
+FAST MODE
+
+Fokus na dizajn + layout, ne na eksperimentiranje

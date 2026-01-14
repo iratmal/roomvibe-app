@@ -33,7 +33,7 @@ export interface Gallery360Preset {
   hasColumns?: boolean;
   columnColor?: string;
   hasSkylights?: boolean;
-  floorType?: 'solid' | 'wood' | 'tile';
+  floorType?: 'solid' | 'wood' | 'tile' | 'concrete';
   viewpoints: Viewpoint[];
   hotspots: Hotspot[];
   slots: Slot[];
@@ -43,15 +43,15 @@ export const gallery360Presets: Gallery360Preset[] = [
   {
     id: 'modern-gallery-v2',
     name: 'Modern Gallery',
-    description: 'High-realism museum space with skylights, columns, and wood floor',
-    dimensions: { width: 24, height: 6.5, depth: 18 },
-    wallColor: '#f5f5f5',
-    floorColor: '#8B7355',
-    ceilingColor: '#fafafa',
-    hasColumns: true,
-    columnColor: '#383838',
-    hasSkylights: true,
-    floorType: 'wood',
+    description: 'Open industrial loft gallery with polished concrete and track lighting',
+    dimensions: { width: 24, height: 5.5, depth: 18 },
+    wallColor: '#F0EDE8',
+    floorColor: '#9A9590',
+    ceilingColor: '#1A1A1A',
+    hasColumns: false,
+    columnColor: '#2A2A2A',
+    hasSkylights: false,
+    floorType: 'concrete',
     viewpoints: [
       {
         id: 'entrance',
