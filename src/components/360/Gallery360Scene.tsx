@@ -187,6 +187,33 @@ function SafeFloorMaterial({ color }: { color?: string }) {
   return <meshStandardMaterial color={safeColor} roughness={0.7} metalness={0} />;
 }
 
+// Hybrid Studio Gallery Materials - Subtle procedural textures for visual depth
+// Uses meshStandardMaterial with carefully tuned roughness for subtle depth without texture tiling
+
+// Creates gallery-grade plaster wall look using material properties only (no texture map)
+// This avoids any seam issues while providing subtle visual depth through roughness variation
+function HybridPlasterWallMaterial({ color = '#F5F3F0' }: { color?: string }) {
+  return (
+    <meshStandardMaterial 
+      color={color}
+      roughness={0.88}
+      metalness={0}
+      side={THREE.DoubleSide}
+    />
+  );
+}
+
+// Creates matte concrete floor look - subtle depth, no reflections, no seams
+function HybridMatteFloorMaterial({ color = '#E0DCD8' }: { color?: string }) {
+  return (
+    <meshStandardMaterial 
+      color={color}
+      roughness={0.82}
+      metalness={0.03}
+    />
+  );
+}
+
 const FLOOR_MESH_NAMES = [
   'tiledFloorMain',
   'woodFloorMain', 
@@ -808,6 +835,11 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         <TiledFloor width={width} depth={depth} color={preset.floorColor} />
       ) : preset.floorType === 'concrete' ? (
         <ConcreteFloor width={width} depth={depth} color={preset.floorColor} />
+      ) : preset.id === 'hybrid-studio' ? (
+        <mesh name="hybridFloorMain" position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[width, depth]} />
+          <HybridMatteFloorMaterial color={preset.floorColor} />
+        </mesh>
       ) : (
         <mesh name="defaultFloorMain" position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
           <planeGeometry args={[width, depth]} />
@@ -1215,6 +1247,8 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
             <planeGeometry args={[width, height]} />
             {preset.id === 'modern-gallery-v2' ? (
               <meshStandardMaterial color={preset.wallColor} roughness={0.85} metalness={0} side={THREE.DoubleSide} />
+            ) : preset.id === 'hybrid-studio' ? (
+              <HybridPlasterWallMaterial color={preset.wallColor} />
             ) : (
               <SafeWallMaterial color={GALLERY_WALL_COLOR} />
             )}
@@ -1223,6 +1257,8 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
             <planeGeometry args={[depth, height]} />
             {preset.id === 'modern-gallery-v2' ? (
               <meshStandardMaterial color={preset.wallColor} roughness={0.85} metalness={0} side={THREE.DoubleSide} />
+            ) : preset.id === 'hybrid-studio' ? (
+              <HybridPlasterWallMaterial color={preset.wallColor} />
             ) : (
               <SafeWallMaterial color={GALLERY_WALL_COLOR} />
             )}
@@ -1231,6 +1267,8 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
             <planeGeometry args={[depth, height]} />
             {preset.id === 'modern-gallery-v2' ? (
               <meshStandardMaterial color={preset.wallColor} roughness={0.85} metalness={0} side={THREE.DoubleSide} />
+            ) : preset.id === 'hybrid-studio' ? (
+              <HybridPlasterWallMaterial color={preset.wallColor} />
             ) : (
               <SafeWallMaterial color={GALLERY_WALL_COLOR} />
             )}
@@ -1245,8 +1283,9 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         halfD={halfD}
         portalW={3.5}
         portalH={3.5}
-        wallColor={preset.wallType === 'brick' ? '#8B4513' : (preset.id === 'modern-gallery-v2' ? preset.wallColor : GALLERY_WALL_COLOR)}
+        wallColor={preset.wallType === 'brick' ? '#8B4513' : (preset.id === 'modern-gallery-v2' ? preset.wallColor : (preset.id === 'hybrid-studio' ? preset.wallColor : GALLERY_WALL_COLOR))}
         isModern={preset.id === 'modern-gallery-v2'}
+        isHybrid={preset.id === 'hybrid-studio'}
         isBrick={preset.wallType === 'brick'}
       />
 
@@ -1512,6 +1551,7 @@ function SouthWallWithOpening({
   portalH,
   wallColor,
   isModern,
+  isHybrid = false,
   isBrick = false
 }: { 
   width: number; 
@@ -1521,6 +1561,7 @@ function SouthWallWithOpening({
   portalH: number;
   wallColor: string;
   isModern: boolean;
+  isHybrid?: boolean;
   isBrick?: boolean;
 }) {
   const leftWidth = (width - portalW) / 2;
@@ -1537,36 +1578,31 @@ function SouthWallWithOpening({
     );
   }
 
+  // Select material based on gallery type
+  const WallMaterialComponent = isModern 
+    ? ({ color }: { color: string }) => <meshStandardMaterial color={color} roughness={0.85} metalness={0} side={THREE.DoubleSide} />
+    : isHybrid 
+    ? HybridPlasterWallMaterial
+    : SafeWallMaterial;
+
   return (
     <group position={[0, 0, halfD]}>
       {/* Left section of wall */}
       <mesh position={[-(width / 2 - leftWidth / 2), height / 2, 0]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[leftWidth, height]} />
-        {isModern ? (
-          <meshStandardMaterial color={wallColor} roughness={0.85} metalness={0} side={THREE.DoubleSide} />
-        ) : (
-          <SafeWallMaterial color={wallColor} />
-        )}
+        <WallMaterialComponent color={wallColor} />
       </mesh>
 
       {/* Right section of wall */}
       <mesh position={[(width / 2 - rightWidth / 2), height / 2, 0]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[rightWidth, height]} />
-        {isModern ? (
-          <meshStandardMaterial color={wallColor} roughness={0.85} metalness={0} side={THREE.DoubleSide} />
-        ) : (
-          <SafeWallMaterial color={wallColor} />
-        )}
+        <WallMaterialComponent color={wallColor} />
       </mesh>
 
       {/* Top section above portal */}
       <mesh position={[0, portalH + topHeight / 2, 0]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[portalW, topHeight]} />
-        {isModern ? (
-          <meshStandardMaterial color={wallColor} roughness={0.85} metalness={0} side={THREE.DoubleSide} />
-        ) : (
-          <SafeWallMaterial color={wallColor} />
-        )}
+        <WallMaterialComponent color={wallColor} />
       </mesh>
     </group>
   );
