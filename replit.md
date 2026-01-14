@@ -40,8 +40,12 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
 - **Unified Widget System**: A single embeddable JavaScript widget adapts its functionality based on user entitlements (Artist, Designer, Gallery modes).
 - **Virtual Exhibition Editor**: MVP feature for Gallery plan users to create immersive virtual exhibitions. It includes preset selection, artwork placement via drag-and-drop, and scene persistence.
 - **360° Virtual Exhibition**: Immersive 3D gallery experience using React Three Fiber (R3F) featuring:
+  - Five gallery presets ordered: Classic Gallery (default) → Modern Gallery → Industrial Loft → Daylight Atrium → Hybrid Studio
+  - Classic Gallery: White-cube gallery space (18x4.2x14m) - default for new exhibitions
   - Modern Gallery v2: High-realism museum space (24x6x18m) with white walls, wood floor, black columns, and skylights
-  - Classic Gallery: Original warm-toned gallery space (18x4.2x14m) preserved for compatibility
+  - Industrial Loft: PBR materials with semi-transparent windows, steel frames, and daylight simulation
+  - Daylight Atrium: Optimized artwork scaling with increased North wall dimensions
+  - Hybrid Studio: Experimental testing gallery with Classic geometry and unique slot IDs (hybrid-north-1, etc.)
   - Artwork textures use meshBasicMaterial (lighting-independent) for reliable rendering
   - Image proxy endpoint (`/api/image-proxy`) handles CORS for external artwork URLs with SSRF protection
   - Advanced lighting: Skylights with rect area lights, wall spotlights, hemisphere and directional lights
