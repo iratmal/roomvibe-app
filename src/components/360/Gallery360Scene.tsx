@@ -187,29 +187,128 @@ function SafeFloorMaterial({ color }: { color?: string }) {
   return <meshStandardMaterial color={safeColor} roughness={0.7} metalness={0} />;
 }
 
-// Hybrid Studio Gallery Materials - Subtle procedural textures for visual depth
-// Uses meshStandardMaterial with carefully tuned roughness for subtle depth without texture tiling
+// Hybrid Studio Gallery Materials - Subtle procedural textures for physical depth
+// Uses MirroredRepeatWrapping to eliminate seams in tiled textures
 
-// Creates gallery-grade plaster wall look using material properties only (no texture map)
-// This avoids any seam issues while providing subtle visual depth through roughness variation
+// Creates seamless plaster wall texture using mirrored tiling
 function HybridPlasterWallMaterial({ color = '#F5F3F0' }: { color?: string }) {
+  const texture = useMemo(() => {
+    const size = 256;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d')!;
+    
+    // Base warm off-white / light grey-beige
+    ctx.fillStyle = '#F8F6F3';
+    ctx.fillRect(0, 0, size, size);
+    
+    // Very subtle lime plaster grain - minimal noise
+    const imageData = ctx.getImageData(0, 0, size, size);
+    const data = imageData.data;
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const i = (y * size + x) * 4;
+        // Subtle warm-tinted noise (±2 levels)
+        const noise = (Math.random() - 0.5) * 4;
+        data[i] = Math.min(255, Math.max(0, data[i] + noise));
+        data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + noise * 0.95));
+        data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + noise * 0.9));
+      }
+    }
+    ctx.putImageData(imageData, 0, 0);
+    
+    // Add extremely subtle mineral grain spots
+    ctx.globalAlpha = 0.012;
+    for (let i = 0; i < 80; i++) {
+      const x = Math.random() * size;
+      const y = Math.random() * size;
+      const r = Math.random() * 2 + 0.5;
+      ctx.fillStyle = Math.random() > 0.5 ? '#EAE7E2' : '#FDFCFA';
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
+    const tex = new THREE.CanvasTexture(canvas);
+    // MirroredRepeatWrapping eliminates visible seams
+    tex.wrapS = THREE.MirroredRepeatWrapping;
+    tex.wrapT = THREE.MirroredRepeatWrapping;
+    tex.repeat.set(3, 3);
+    tex.minFilter = THREE.LinearMipmapLinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    tex.anisotropy = 4;
+    return tex;
+  }, []);
+
   return (
     <meshStandardMaterial 
       color={color}
-      roughness={0.88}
+      map={texture}
+      roughness={0.91}
       metalness={0}
       side={THREE.DoubleSide}
     />
   );
 }
 
-// Creates matte concrete floor look - subtle depth, no reflections, no seams
+// Creates seamless matte concrete floor texture - no reflections, no gloss
 function HybridMatteFloorMaterial({ color = '#E0DCD8' }: { color?: string }) {
+  const texture = useMemo(() => {
+    const size = 256;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d')!;
+    
+    // Base light grey-beige concrete
+    ctx.fillStyle = '#E8E5E0';
+    ctx.fillRect(0, 0, size, size);
+    
+    // Subtle concrete grain
+    const imageData = ctx.getImageData(0, 0, size, size);
+    const data = imageData.data;
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const i = (y * size + x) * 4;
+        // Subtle variation (±3 levels)
+        const noise = (Math.random() - 0.5) * 6;
+        data[i] = Math.min(255, Math.max(0, data[i] + noise));
+        data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + noise));
+        data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + noise * 0.95));
+      }
+    }
+    ctx.putImageData(imageData, 0, 0);
+    
+    // Very subtle aggregate spots for polished concrete look
+    ctx.globalAlpha = 0.015;
+    for (let i = 0; i < 60; i++) {
+      const x = Math.random() * size;
+      const y = Math.random() * size;
+      const r = Math.random() * 2.5 + 0.5;
+      ctx.fillStyle = Math.random() > 0.5 ? '#D8D4CE' : '#F2EFEA';
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
+    const tex = new THREE.CanvasTexture(canvas);
+    // MirroredRepeatWrapping eliminates visible seams
+    tex.wrapS = THREE.MirroredRepeatWrapping;
+    tex.wrapT = THREE.MirroredRepeatWrapping;
+    tex.repeat.set(4, 4);
+    tex.minFilter = THREE.LinearMipmapLinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    tex.anisotropy = 4;
+    return tex;
+  }, []);
+
   return (
     <meshStandardMaterial 
       color={color}
-      roughness={0.82}
-      metalness={0.03}
+      map={texture}
+      roughness={0.88}
+      metalness={0}
     />
   );
 }
