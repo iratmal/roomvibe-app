@@ -1,0 +1,158 @@
+Modern Gallery (Smooth Movement + Daylight)
+Goal
+
+Zadržati realističan, svijetao moderni izgled, ali VRATITI GLATKO KRETANJE po galeriji
+kao u Classic Gallery (bez trzanja, bez zapinjanja).
+
+1️⃣ STROP — DODATI PROZOR / SKYLIGHT (OBAVEZNO)
+Trenutno:
+
+strop izgleda dobro
+
+ali nema jasan izvor dnevnog svjetla
+
+OBAVEZNO:
+
+dodati stropni prozor / skylight
+
+jednostavan pravokutni ili blago uvučeni otvor
+
+kroz koji dolazi meko dnevno svjetlo
+
+nema komplicirane geometrije
+
+nema refleksija koje opterećuju render
+
+👉 cilj:
+realističan izvor svjetla, bez performanskog udara
+
+2️⃣ RASVJETA — UKLONITI PROBLEMATIČNU (KRITIČNO)
+Trenutni problem:
+
+spot / track rasvjeta:
+
+kvari smooth kretanje
+
+uzrokuje trzanje / loš UX
+
+galerija se više ne “klizi” kao prije
+
+OBAVEZNO:
+
+ukloniti svu rasvjetu koja utječe na kretanje
+
+spotlights
+
+dynamic lights
+
+zadržati:
+
+jednostavno, uniformno ambient svjetlo
+
+slično kao u Classic Gallery
+
+👉 PRIORITET:
+smooth navigation > fancy lighting
+
+Ako se mora birati → uvijek performance.
+
+3️⃣ POVRATAK POPREČNIH ZIDOVA (OBAVEZNO)
+Zahtjev:
+
+vratiti poprečne zidove u Modern Gallery
+
+ali:
+
+kraći nego u Industrial Loft
+
+lagani, minimalistički
+
+boja:
+
+svijetla siva
+
+vrlo neutralna
+
+bez teksture
+
+Funkcija:
+
+razbijaju monotoniju prostora
+
+omogućuju dodatne artwork slotove
+
+NE smiju blokirati pogled ni kretanje
+
+4️⃣ BOJE — LOCKED
+
+strop: bijeli / off-white
+
+zidovi:
+
+very light grey
+
+minimalistički
+
+pod:
+
+neutralan
+
+bez sjaja
+
+bez promjena
+
+5️⃣ KRETANJE & KAMERA — OBAVEZNO TESTIRATI
+
+kretanje mora biti:
+
+jednako glatko kao u Classic Gallery
+
+nema:
+
+trzanja
+
+zapinjanja
+
+frame dropova
+
+testirati:
+
+Entrance
+
+Center
+
+Back Left
+
+Back Right
+
+Ako kretanje nije smooth → task NIJE gotov.
+
+6️⃣ ŠTO NE RADITI (strogo)
+
+❌ Ne dodavati novu rasvjetu
+
+❌ Ne vraćati spotlights
+
+❌ Ne dodavati refleksije
+
+❌ Ne dirati Classic Gallery
+
+❌ Ne dirati Industrial Loft Gallery
+
+7️⃣ STOP CONDITION (JASNO)
+
+Task je završen kada:
+
+Modern Gallery ima stropni prozor / skylight
+
+Galerija je svijetla i realistična
+
+Kretanje je glatko kao u Classic Gallery
+
+Poprečni zidovi su vraćeni i funkcionalni
+
+Nema UX regresije
+
+🎯 PRIORITY
+
+CRITICAL — UX & PERFORMANCE FIRST

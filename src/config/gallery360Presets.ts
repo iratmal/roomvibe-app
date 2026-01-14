@@ -64,6 +64,12 @@ export const gallery360Presets: Gallery360Preset[] = [
     columnColor: '#D0CCC8',
     hasSkylights: true,
     floorType: 'concrete',
+    hasPartitionWalls: true,
+    partitionWalls: [
+      { id: 'modern-partition-left', position: [-6, 1.6, 0], rotation: 0, width: 4, height: 3.2 },
+      { id: 'modern-partition-right', position: [6, 1.6, 0], rotation: 0, width: 4, height: 3.2 },
+    ],
+    partitionWallColor: '#E0DCD8',
     viewpoints: [
       {
         id: 'entrance',
@@ -106,7 +112,11 @@ export const gallery360Presets: Gallery360Preset[] = [
       { id: 'wall-east-1', wallId: 'east', position: [11.95, 1.6, -4], rotation: [0, -Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'East Wall - Upper' },
       { id: 'wall-east-2', wallId: 'east', position: [11.95, 1.6, 4], rotation: [0, -Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'East Wall - Lower' },
       { id: 'wall-west-1', wallId: 'west', position: [-11.95, 1.6, -4], rotation: [0, Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'West Wall - Upper' },
-      { id: 'wall-west-2', wallId: 'west', position: [-11.95, 1.6, 4], rotation: [0, Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'West Wall - Lower' }
+      { id: 'wall-west-2', wallId: 'west', position: [-11.95, 1.6, 4], rotation: [0, Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'West Wall - Lower' },
+      { id: 'partition-left-front', wallId: 'modern-partition-left', position: [-6, 1.6, 0.12], rotation: [0, 0, 0], width: 1.0, height: 0.8, label: 'Left Partition - Front' },
+      { id: 'partition-left-back', wallId: 'modern-partition-left', position: [-6, 1.6, -0.12], rotation: [0, Math.PI, 0], width: 1.0, height: 0.8, label: 'Left Partition - Back' },
+      { id: 'partition-right-front', wallId: 'modern-partition-right', position: [6, 1.6, 0.12], rotation: [0, 0, 0], width: 1.0, height: 0.8, label: 'Right Partition - Front' },
+      { id: 'partition-right-back', wallId: 'modern-partition-right', position: [6, 1.6, -0.12], rotation: [0, Math.PI, 0], width: 1.0, height: 0.8, label: 'Right Partition - Back' }
     ]
   },
   {
