@@ -55,14 +55,14 @@ export const gallery360Presets: Gallery360Preset[] = [
   {
     id: 'modern-gallery-v2',
     name: 'Modern Gallery',
-    description: 'Open industrial loft gallery with polished concrete and track lighting',
+    description: 'Contemporary minimalist gallery with natural daylight and skylights',
     dimensions: { width: 24, height: 5.5, depth: 18 },
-    wallColor: '#F5F3F0',
-    floorColor: '#C8C4BC',
-    ceilingColor: '#2A2A2A',
+    wallColor: '#E8E4E0',
+    floorColor: '#B8B4AC',
+    ceilingColor: '#F8F6F4',
     hasColumns: false,
-    columnColor: '#2A2A2A',
-    hasSkylights: false,
+    columnColor: '#D0CCC8',
+    hasSkylights: true,
     floorType: 'concrete',
     viewpoints: [
       {

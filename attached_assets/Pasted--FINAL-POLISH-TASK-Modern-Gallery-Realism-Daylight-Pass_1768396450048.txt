@@ -1,0 +1,195 @@
+🎯 FINAL POLISH TASK — Modern Gallery (Realism & Daylight Pass)
+Goal
+
+Unaprijediti postojeći Modern Gallery preset tako da izgleda kao
+👉 realistična, minimalistička, moderna galerija s dnevnim svjetlom
+(ne studio, ne demo scena, ne “dark box”).
+
+1️⃣ STROP — NAJVEĆA PROMJENA (OBAVEZNO)
+❌ Trenutno stanje
+
+crni strop
+
+pretežak
+
+nerealan za modernu galeriju
+
+✅ NOVI ZAHTJEV (OBAVEZNO)
+
+strop mora biti SVIJETLE boje
+
+bijeli ili vrlo svijetli off-white
+
+bez crnog stropa
+
+Dopuštene opcije (odaberi JEDNU, ne sve):
+
+Stakleni strop / skylight
+
+kao veliki krovni prozor
+
+dolazi meko dnevno svjetlo odozgo
+
+Djelomična kupola / light well
+
+otvor na stropu kroz koji ulazi dnevno svjetlo
+
+Ravni bijeli strop + daylight opening
+
+minimalistički, ali realan
+
+👉 cilj:
+prostor mora izgledati kao prava galerija s prirodnim svjetlom
+
+2️⃣ SVJETLO — dnevno + galerijsko
+OBAVEZNO:
+
+kombinirati:
+
+meko dnevno svjetlo odozgo (glavni izvor)
+
+diskretna gallery rasvjeta (sekundarna)
+
+Pravila:
+
+nema dramatičnih kontrasta
+
+nema tamnih kutova
+
+zidovi moraju biti:
+
+ravnomjerno osvijetljeni
+
+ali ne flat
+
+👉 osjećaj:
+mirno, prozračno, premium
+
+3️⃣ ZIDOVI — minimalistički moderni
+Boja:
+
+lagano siva
+
+very light warm grey
+
+NE čisto bijelo
+
+NE bež
+
+bez vidljive teksture
+
+ali:
+
+mikro varijacija u svjetlu (da ne izgleda kao karton)
+
+Zidovi moraju:
+
+reflektirati dnevno svjetlo
+
+izgledati čisto, moderno, galerijski
+
+4️⃣ POD — ostaje moderan, ali realan
+
+polished concrete / modern gallery floor
+
+blaga tekstura
+
+lagani reflection (minimalno)
+
+NE sjaj
+
+NE flat color
+
+Pod mora “uzemljiti” prostor.
+
+5️⃣ SJENE & DUBINA
+
+dodati:
+
+meke sjene na spoju:
+
+zid–pod
+
+zid–strop
+
+sjene moraju biti:
+
+suptilne
+
+realne
+
+nenametljive
+
+Bez:
+
+oštrih shadowa
+
+dramatike
+
+6️⃣ KAMERA & SKALA
+
+kamera na eye-level (~1.6–1.7 m)
+
+niti jedan preset view:
+
+ne smije gledati u prazni strop
+
+ne smije gledati samo u pod
+
+prostor mora djelovati:
+
+prozračan
+
+realnih proporcija
+
+7️⃣ ŠTO NE RADITI (strogo)
+
+❌ NEMA crnog stropa
+
+❌ NEMA tamne atmosfere
+
+❌ NEMA dekoracija
+
+❌ NEMA novih zidova
+
+❌ NEMA eksperimentiranja s bojama
+
+❌ Ne dirati Classic i Industrial Loft
+
+8️⃣ REFERENTNI CILJ
+
+Modern Gallery treba izgledati kao:
+
+prava suvremena galerija
+
+s dnevnim svjetlom
+
+minimalistička
+
+profesionalna
+
+realistična
+
+Ako izgleda kao:
+
+3D demo
+
+render bez atmosfere
+→ task NIJE gotov.
+
+9️⃣ STOP CONDITION
+
+Task je završen kada:
+
+Strop je svijetao i realističan
+2.B. Dnevno svjetlo jasno definira prostor
+
+Zidovi su lagano sivi, minimalistički
+
+Prostor djeluje prozračno i “živ”
+
+Modern Gallery izgleda premium i uvjerljivo
+
+🎯 PRIORITY
+
+HIGH — REALISM & DAYLIGHT PASS

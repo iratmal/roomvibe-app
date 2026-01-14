@@ -844,72 +844,80 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         </>
       ) : preset.id === 'modern-gallery-v2' ? (
         <>
-          {/* MODERN GALLERY: Industrial dark ceiling */}
+          {/* MODERN GALLERY: Light minimalist ceiling with skylights */}
+          {/* Main ceiling - light off-white */}
           <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
             <planeGeometry args={[width, depth]} />
-            <meshStandardMaterial color="#2A2A2A" roughness={0.95} metalness={0.05} />
+            <meshStandardMaterial color={preset.ceilingColor} roughness={0.85} metalness={0} />
           </mesh>
           
-          {/* Grid pattern exposed beams - dark grey steel look */}
-          {/* Beams running along X axis (left-right) */}
-          {[-depth/3, 0, depth/3].map((zPos, i) => (
-            <mesh key={`beam-x-${i}`} position={[0, height - 0.2, zPos]}>
-              <boxGeometry args={[width + 0.5, 0.35, 0.25]} />
-              <meshStandardMaterial color="#3A3A3A" roughness={0.6} metalness={0.4} />
-            </mesh>
-          ))}
-          {/* Beams running along Z axis (front-back) */}
-          {[-width/3, 0, width/3].map((xPos, i) => (
-            <mesh key={`beam-z-${i}`} position={[xPos, height - 0.2, 0]}>
-              <boxGeometry args={[0.25, 0.35, depth + 0.5]} />
-              <meshStandardMaterial color="#3A3A3A" roughness={0.6} metalness={0.4} />
-            </mesh>
-          ))}
-          
-          {/* Structural columns at corners and mid-walls - grey concrete look */}
+          {/* Subtle ceiling edge trim - slightly darker than ceiling */}
           {[
-            [-halfW + 0.4, halfD - 0.4],   // Back left corner
-            [halfW - 0.4, halfD - 0.4],    // Back right corner
-            [-halfW + 0.4, -halfD + 0.4],  // Front left corner
-            [halfW - 0.4, -halfD + 0.4],   // Front right corner
-            [-halfW + 0.4, 0],             // Mid left
-            [halfW - 0.4, 0],              // Mid right
-          ].map(([x, z], i) => (
-            <mesh key={`column-${i}`} position={[x, height / 2, z]}>
-              <boxGeometry args={[0.5, height, 0.5]} />
-              <meshStandardMaterial color="#B0B0B0" roughness={0.8} metalness={0.1} />
+            { pos: [0, height - 0.05, -halfD + 0.1] as [number, number, number], size: [width, 0.1, 0.2] as [number, number, number] },
+            { pos: [0, height - 0.05, halfD - 0.1] as [number, number, number], size: [width, 0.1, 0.2] as [number, number, number] },
+            { pos: [-halfW + 0.1, height - 0.05, 0] as [number, number, number], size: [0.2, 0.1, depth] as [number, number, number] },
+            { pos: [halfW - 0.1, height - 0.05, 0] as [number, number, number], size: [0.2, 0.1, depth] as [number, number, number] },
+          ].map((trim, i) => (
+            <mesh key={`ceil-trim-${i}`} position={trim.pos}>
+              <boxGeometry args={trim.size} />
+              <meshStandardMaterial color="#E0DCD8" roughness={0.9} metalness={0} />
             </mesh>
           ))}
           
-          {/* Track lighting with visible black fixtures */}
-          {[-halfW + 4, -2, 2, halfW - 4].map((xPos, i) => (
-            <group key={`track-${i}`}>
-              {/* Track rail mounted to ceiling */}
-              <mesh position={[xPos, height - 0.08, 0]}>
-                <boxGeometry args={[0.06, 0.08, depth - 3]} />
-                <meshBasicMaterial color="#1A1A1A" />
+          {/* Large rectangular skylights - 3 running length of gallery */}
+          {[-depth/3, 0, depth/3].map((zPos, i) => (
+            <group key={`skylight-${i}`}>
+              {/* Skylight frame - subtle light grey */}
+              <mesh position={[0, height - 0.02, zPos]}>
+                <boxGeometry args={[width * 0.55, 0.08, 3.2]} />
+                <meshStandardMaterial color="#D8D4D0" roughness={0.7} metalness={0.1} />
               </mesh>
-              {/* Track light fixtures - visible spotlight housings */}
-              {[-depth/3 + 1, -1, 1, depth/3 - 1].map((zPos, j) => (
-                <group key={`light-${i}-${j}`} position={[xPos, height - 0.2, zPos]}>
-                  {/* Fixture housing - cylindrical */}
-                  <mesh rotation={[0, 0, 0]}>
-                    <cylinderGeometry args={[0.08, 0.12, 0.18, 12]} />
-                    <meshStandardMaterial color="#1A1A1A" roughness={0.3} metalness={0.7} />
+              {/* Skylight glass - glowing white emissive for daylight effect */}
+              <mesh position={[0, height - 0.01, zPos]} rotation={[Math.PI / 2, 0, 0]}>
+                <planeGeometry args={[width * 0.52, 2.8]} />
+                <meshBasicMaterial color="#FFFFFF" />
+              </mesh>
+              {/* Strong directional light from each skylight */}
+              <directionalLight
+                position={[0, height + 1, zPos]}
+                intensity={0.6}
+                color="#FAFCFF"
+              />
+              {/* Additional point light for soft spread */}
+              <pointLight
+                position={[0, height - 0.5, zPos]}
+                intensity={0.8}
+                distance={12}
+                decay={2}
+                color="#FAFCFF"
+              />
+            </group>
+          ))}
+          
+          {/* Minimal discrete track lighting for artwork - thin black rails */}
+          {[-halfW + 3, halfW - 3].map((xPos, i) => (
+            <group key={`modern-track-${i}`}>
+              {/* Ultra-thin track rail */}
+              <mesh position={[xPos, height - 0.03, 0]}>
+                <boxGeometry args={[0.03, 0.03, depth - 4]} />
+                <meshBasicMaterial color="#2A2A2A" />
+              </mesh>
+              {/* Small discrete spotlights - 4 per track */}
+              {[-depth/3, -depth/6, depth/6, depth/3].map((zPos, j) => (
+                <group key={`modern-spot-${i}-${j}`} position={[xPos, height - 0.08, zPos]}>
+                  {/* Tiny fixture */}
+                  <mesh>
+                    <cylinderGeometry args={[0.04, 0.05, 0.06, 8]} />
+                    <meshStandardMaterial color="#1A1A1A" roughness={0.4} metalness={0.5} />
                   </mesh>
-                  {/* Light lens */}
-                  <mesh position={[0, -0.1, 0]} rotation={[Math.PI, 0, 0]}>
-                    <circleGeometry args={[0.07, 12]} />
-                    <meshBasicMaterial color="#FFFAE5" />
-                  </mesh>
-                  {/* Spotlight cone */}
+                  {/* Accent spotlight - subtle, for artwork */}
                   <spotLight
-                    position={[0, -0.12, 0]}
-                    angle={0.5}
-                    penumbra={0.5}
-                    intensity={0.8}
-                    distance={8}
-                    color="#FFF8E8"
+                    position={[0, -0.05, 0]}
+                    angle={0.4}
+                    penumbra={0.7}
+                    intensity={0.35}
+                    distance={6}
+                    color="#FFF8F0"
                     castShadow={false}
                   />
                 </group>
@@ -917,9 +925,30 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
             </group>
           ))}
           
-          {/* Ambient and directional lighting for modern gallery */}
-          <hemisphereLight args={['#FFFFFF', '#808080', 0.6]} position={[0, height, 0]} />
-          <directionalLight position={[5, height - 1, 5]} intensity={0.3} color="#FFFFFF" />
+          {/* Soft wall-washing from ceiling edge - subtle */}
+          {[
+            { pos: [-halfW + 1, height - 0.5, 0], target: [-halfW, 2, 0] },
+            { pos: [halfW - 1, height - 0.5, 0], target: [halfW, 2, 0] },
+            { pos: [0, height - 0.5, -halfD + 1], target: [0, 2, -halfD] },
+          ].map((wash, i) => (
+            <spotLight
+              key={`wall-wash-${i}`}
+              position={wash.pos as [number, number, number]}
+              target-position={wash.target as [number, number, number]}
+              angle={0.8}
+              penumbra={1}
+              intensity={0.2}
+              distance={8}
+              color="#FFFAF5"
+              castShadow={false}
+            />
+          ))}
+          
+          {/* Main ambient lighting - bright, airy, daylight feel */}
+          <hemisphereLight args={['#FAFCFF', '#E8E4E0', 0.75]} position={[0, height, 0]} />
+          <ambientLight intensity={0.35} color="#FAFAFA" />
+          {/* Soft directional fill from skylights */}
+          <directionalLight position={[0, height + 2, 0]} intensity={0.4} color="#FAFCFF" />
         </>
       ) : (
         <>
