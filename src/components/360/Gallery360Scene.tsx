@@ -313,6 +313,99 @@ function HybridMatteFloorMaterial({ color = '#E0DCD8' }: { color?: string }) {
   );
 }
 
+// Hybrid Studio Micro Depth Shading - Phase 1B
+// Extremely subtle gradients for grounded, physical feeling without lights/shadows
+
+// Vertical wall gradient overlay - darker at bottom, lighter at top
+// Creates grounded feeling without being consciously noticeable
+function HybridWallGradientOverlay({ 
+  width, 
+  height, 
+  position, 
+  rotation = [0, 0, 0] 
+}: { 
+  width: number; 
+  height: number; 
+  position: [number, number, number]; 
+  rotation?: [number, number, number];
+}) {
+  const gradientTexture = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 4;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d')!;
+    
+    // Extremely subtle vertical gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, 64);
+    gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');      // Top - transparent
+    gradient.addColorStop(0.7, 'rgba(0, 0, 0, 0.008)'); // Mid - barely visible
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0.025)');   // Bottom - very subtle darkening
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 4, 64);
+    
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.ClampToEdgeWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    return tex;
+  }, []);
+
+  return (
+    <mesh position={position} rotation={rotation}>
+      <planeGeometry args={[width, height]} />
+      <meshBasicMaterial 
+        map={gradientTexture}
+        transparent
+        opacity={1}
+        depthWrite={false}
+        side={THREE.DoubleSide}
+      />
+    </mesh>
+  );
+}
+
+// Floor edge grounding - soft darkening where floor meets walls
+// Removes "paper cutout" feeling with micro depth
+function HybridFloorEdgeGrounding({ width, depth }: { width: number; depth: number }) {
+  const edgeTexture = useMemo(() => {
+    const size = 64;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d')!;
+    
+    // Transparent center, very subtle darkening at edges
+    const gradient = ctx.createRadialGradient(
+      size / 2, size / 2, size * 0.35,  // Inner circle (transparent)
+      size / 2, size / 2, size / 2       // Outer circle (subtle dark)
+    );
+    gradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    gradient.addColorStop(0.6, 'rgba(0, 0, 0, 0)');
+    gradient.addColorStop(0.85, 'rgba(0, 0, 0, 0.012)');
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0.028)');
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, size, size);
+    
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.ClampToEdgeWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    return tex;
+  }, []);
+
+  return (
+    <mesh position={[0, 0.003, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <planeGeometry args={[width, depth]} />
+      <meshBasicMaterial 
+        map={edgeTexture}
+        transparent
+        opacity={1}
+        depthWrite={false}
+      />
+    </mesh>
+  );
+}
+
 const FLOOR_MESH_NAMES = [
   'tiledFloorMain',
   'woodFloorMain', 
@@ -1387,6 +1480,38 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         isHybrid={preset.id === 'hybrid-studio'}
         isBrick={preset.wallType === 'brick'}
       />
+
+      {/* Hybrid Studio Micro Depth Shading - Phase 1B */}
+      {preset.id === 'hybrid-studio' && (
+        <>
+          {/* Vertical wall gradients - darker at bottom, lighter at top */}
+          <HybridWallGradientOverlay 
+            width={width} 
+            height={height} 
+            position={[0, height / 2, -halfD + 0.01]} 
+          />
+          <HybridWallGradientOverlay 
+            width={depth} 
+            height={height} 
+            position={[halfW - 0.01, height / 2, 0]} 
+            rotation={[0, -Math.PI / 2, 0]}
+          />
+          <HybridWallGradientOverlay 
+            width={depth} 
+            height={height} 
+            position={[-halfW + 0.01, height / 2, 0]} 
+            rotation={[0, Math.PI / 2, 0]}
+          />
+          <HybridWallGradientOverlay 
+            width={width} 
+            height={height} 
+            position={[0, height / 2, halfD - 0.01]} 
+            rotation={[0, Math.PI, 0]}
+          />
+          {/* Floor edge grounding - soft darkening at wall/floor junction */}
+          <HybridFloorEdgeGrounding width={width} depth={depth} />
+        </>
+      )}
 
       {/* Partition walls for Industrial Loft */}
       {preset.hasPartitionWalls && preset.partitionWalls?.map((wall) => (
