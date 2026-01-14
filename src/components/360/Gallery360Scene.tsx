@@ -68,7 +68,7 @@ function isValidArtworkUrl(url: string | undefined | null): boolean {
 
 const GALLERY_WALL_COLOR = '#f5f2ed';
 const GALLERY_CEILING_COLOR = '#f5f5f5';
-const GALLERY_FLOOR_COLOR = '#e8e4dc';
+const GALLERY_FLOOR_COLOR = '#c8c4bc';
 
 function DebugOverlay() {
   const { scene, gl } = useThree();
