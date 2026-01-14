@@ -66,9 +66,9 @@ function isValidArtworkUrl(url: string | undefined | null): boolean {
  * There are two floor meshes: outerEnclosureFloor and tiledFloorMain; both guarded by FloorGuard.
  */
 
-const GALLERY_WALL_COLOR = '#b5b0a8';
-const GALLERY_CEILING_COLOR = '#f5f5f5';
-const GALLERY_FLOOR_COLOR = '#d8d4cc';
+const GALLERY_WALL_COLOR = '#CFC6BA';
+const GALLERY_CEILING_COLOR = '#F2F2EE';
+const GALLERY_FLOOR_COLOR = '#E6E4DE';
 
 function DebugOverlay() {
   const { scene, gl } = useThree();
@@ -385,37 +385,57 @@ function WallSpotlight({ position, targetY }: {
 }
 
 function TiledFloor({ width, depth, color }: { width: number; depth: number; color: string }) {
-  const tiles = useMemo(() => {
-    const tileSize = 0.6;
-    const groutWidth = 0.015;
+  const tileData = useMemo(() => {
+    const tileSize = 0.8;
+    const groutWidth = 0.02;
     const tileActual = tileSize - groutWidth;
     const rows = Math.ceil(depth / tileSize);
     const cols = Math.ceil(width / tileSize);
-    const result: Array<{ x: number; z: number; shade: number; roughnessVar: number }> = [];
+    const tiles: Array<{ x: number; z: number; shade: number }> = [];
+    
+    const seededRandom = (seed: number) => {
+      const x = Math.sin(seed * 12.9898 + seed * 78.233) * 43758.5453;
+      return x - Math.floor(x);
+    };
     
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
+        const seed = row * 1000 + col;
         const x = -width / 2 + col * tileSize + tileSize / 2;
         const z = -depth / 2 + row * tileSize + tileSize / 2;
         if (x < width / 2 && x > -width / 2 && z < depth / 2 && z > -depth / 2) {
-          const shade = 0.96 + Math.random() * 0.08;
-          const roughnessVar = 0.55 + Math.random() * 0.15;
-          result.push({ x, z, shade, roughnessVar });
+          const shade = 0.97 + seededRandom(seed) * 0.06;
+          tiles.push({ x, z, shade });
         }
       }
     }
-    return { tiles: result, tileActual };
+    return { tiles, tileActual, tileSize };
   }, [width, depth]);
 
-  const baseColor = new THREE.Color(color);
-  const groutColor = baseColor.clone().multiplyScalar(0.85);
+  const baseColor = useMemo(() => new THREE.Color(GALLERY_FLOOR_COLOR), []);
+  const groutColor = useMemo(() => new THREE.Color(GALLERY_FLOOR_COLOR).multiplyScalar(0.88), []);
 
   return (
     <group position={[0, 0.001, 0]}>
+      {/* Grout base layer */}
       <mesh name="tiledFloorMain" rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
-        <meshBasicMaterial color={GALLERY_FLOOR_COLOR} />
+        <meshBasicMaterial color={groutColor} />
       </mesh>
+      {/* Individual tiles with subtle shade variation */}
+      {tileData.tiles.slice(0, 800).map((tile, i) => {
+        const tileColor = baseColor.clone().multiplyScalar(tile.shade);
+        return (
+          <mesh
+            key={i}
+            position={[tile.x, 0.002, tile.z]}
+            rotation={[-Math.PI / 2, 0, 0]}
+          >
+            <planeGeometry args={[tileData.tileActual, tileData.tileActual]} />
+            <meshBasicMaterial color={tileColor} />
+          </mesh>
+        );
+      })}
     </group>
   );
 }
@@ -626,7 +646,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       {/* Main ceiling plane - light warm off-white */}
       <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[width, depth]} />
-        <SafeCeilingMaterial color="#ECEBE7" />
+        <SafeCeilingMaterial color={GALLERY_CEILING_COLOR} />
       </mesh>
       
       {/* Cove edge - lighter dark grey for contrast */}
@@ -669,7 +689,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
           {/* Recessed ceiling panel */}
           <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
             <planeGeometry args={[panel.w, panel.d]} />
-            <SafeCeilingMaterial color="#ECEBE7" />
+            <SafeCeilingMaterial color={GALLERY_CEILING_COLOR} />
           </mesh>
         </group>
       ))}
@@ -859,7 +879,7 @@ function EntrancePortal({ position, rotation }: { position: [number, number, num
         {/* Corridor ceiling */}
         <mesh position={[0, PORTAL_H, -CORRIDOR_DEPTH / 2]}>
           <boxGeometry args={[PORTAL_W + FRAME_T * 2, 0.08, CORRIDOR_DEPTH]} />
-          <SafeCeilingMaterial color="#ebe8e3" />
+          <SafeCeilingMaterial color={GALLERY_CEILING_COLOR} />
         </mesh>
         {/* Corridor floor - matching gallery tiles */}
         <mesh name="corridorFloor" position={[0, 0.005, -CORRIDOR_DEPTH / 2]} rotation={[-Math.PI / 2, 0, 0]}>
@@ -897,7 +917,7 @@ function EntrancePortal({ position, rotation }: { position: [number, number, num
         {/* Secondary gallery ceiling */}
         <mesh position={[0, PORTAL_H + 0.2, -SECONDARY_D / 2]}>
           <boxGeometry args={[SECONDARY_W, 0.1, SECONDARY_D]} />
-          <SafeCeilingMaterial color="#e0ddd8" />
+          <SafeCeilingMaterial color={GALLERY_CEILING_COLOR} />
         </mesh>
 
         {/* Dimmer ambient lighting in secondary space */}
