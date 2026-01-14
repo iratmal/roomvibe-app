@@ -316,11 +316,11 @@ export const gallery360Presets: Gallery360Preset[] = [
       { id: 'h6', position: [4, 0.1, -3], targetViewpoint: 'back-right', rotation: -Math.PI / 2 }
     ],
     slots: [
-      // North Wall - 4 artworks with generous spacing
-      { id: 'wall-north-1', wallId: 'north', position: [-8, 2.2, -8.95], rotation: [0, 0, 0], width: 1.2, height: 0.9, label: 'North Wall - Far Left' },
-      { id: 'wall-north-2', wallId: 'north', position: [-3, 2.2, -8.95], rotation: [0, 0, 0], width: 1.4, height: 1.0, label: 'North Wall - Left' },
-      { id: 'wall-north-3', wallId: 'north', position: [3, 2.2, -8.95], rotation: [0, 0, 0], width: 1.4, height: 1.0, label: 'North Wall - Right' },
-      { id: 'wall-north-4', wallId: 'north', position: [8, 2.2, -8.95], rotation: [0, 0, 0], width: 1.2, height: 0.9, label: 'North Wall - Far Right' },
+      // North Wall (far/back wall) - 4 artworks with tighter spacing, larger scale for readability
+      { id: 'wall-north-1', wallId: 'north', position: [-6, 2.2, -8.95], rotation: [0, 0, 0], width: 1.5, height: 1.1, label: 'North Wall - Far Left' },
+      { id: 'wall-north-2', wallId: 'north', position: [-2, 2.2, -8.95], rotation: [0, 0, 0], width: 1.75, height: 1.25, label: 'North Wall - Left' },
+      { id: 'wall-north-3', wallId: 'north', position: [2, 2.2, -8.95], rotation: [0, 0, 0], width: 1.75, height: 1.25, label: 'North Wall - Right' },
+      { id: 'wall-north-4', wallId: 'north', position: [6, 2.2, -8.95], rotation: [0, 0, 0], width: 1.5, height: 1.1, label: 'North Wall - Far Right' },
       // East Wall - 3 artworks
       { id: 'wall-east-1', wallId: 'east', position: [11.95, 2.2, -4], rotation: [0, -Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'East Wall - Upper' },
       { id: 'wall-east-2', wallId: 'east', position: [11.95, 2.2, 1], rotation: [0, -Math.PI / 2, 0], width: 1.3, height: 1.0, label: 'East Wall - Center' },
