@@ -698,67 +698,82 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       {/* Ceiling - different style based on preset */}
       {preset.id === 'modern-gallery-v2' ? (
         <>
-          {/* MODERN GALLERY: Industrial black ceiling with exposed beams */}
+          {/* MODERN GALLERY: Industrial dark ceiling */}
           <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
             <planeGeometry args={[width, depth]} />
-            <meshStandardMaterial color={preset.ceilingColor} roughness={0.9} metalness={0.1} />
+            <meshStandardMaterial color="#2A2A2A" roughness={0.95} metalness={0.05} />
           </mesh>
           
-          {/* Exposed industrial I-beams running lengthwise */}
-          {[-depth/4, 0, depth/4].map((zPos, i) => (
-            <group key={`ibeam-${i}`} position={[0, height - 0.15, zPos]}>
-              {/* I-beam top flange */}
-              <mesh>
-                <boxGeometry args={[width - 1, 0.04, 0.25]} />
-                <meshStandardMaterial color="#1A1A1A" roughness={0.7} metalness={0.3} />
-              </mesh>
-              {/* I-beam web */}
-              <mesh position={[0, -0.12, 0]}>
-                <boxGeometry args={[width - 1, 0.20, 0.06]} />
-                <meshStandardMaterial color="#1A1A1A" roughness={0.7} metalness={0.3} />
-              </mesh>
-              {/* I-beam bottom flange */}
-              <mesh position={[0, -0.24, 0]}>
-                <boxGeometry args={[width - 1, 0.04, 0.20]} />
-                <meshStandardMaterial color="#1A1A1A" roughness={0.7} metalness={0.3} />
-              </mesh>
-            </group>
+          {/* Grid pattern exposed beams - dark grey steel look */}
+          {/* Beams running along X axis (left-right) */}
+          {[-depth/3, 0, depth/3].map((zPos, i) => (
+            <mesh key={`beam-x-${i}`} position={[0, height - 0.2, zPos]}>
+              <boxGeometry args={[width + 0.5, 0.35, 0.25]} />
+              <meshStandardMaterial color="#3A3A3A" roughness={0.6} metalness={0.4} />
+            </mesh>
+          ))}
+          {/* Beams running along Z axis (front-back) */}
+          {[-width/3, 0, width/3].map((xPos, i) => (
+            <mesh key={`beam-z-${i}`} position={[xPos, height - 0.2, 0]}>
+              <boxGeometry args={[0.25, 0.35, depth + 0.5]} />
+              <meshStandardMaterial color="#3A3A3A" roughness={0.6} metalness={0.4} />
+            </mesh>
           ))}
           
-          {/* Track lighting rails - 4 parallel tracks */}
-          {[-halfW + 3, -halfW/2, halfW/2, halfW - 3].map((xPos, i) => (
-            <group key={`track-rail-${i}`} position={[xPos, height - 0.45, 0]}>
-              {/* Track rail */}
-              <mesh>
-                <boxGeometry args={[0.08, 0.05, depth - 2]} />
-                <meshBasicMaterial color="#2A2A2A" />
+          {/* Structural columns at corners and mid-walls - grey concrete look */}
+          {[
+            [-halfW + 0.4, halfD - 0.4],   // Back left corner
+            [halfW - 0.4, halfD - 0.4],    // Back right corner
+            [-halfW + 0.4, -halfD + 0.4],  // Front left corner
+            [halfW - 0.4, -halfD + 0.4],   // Front right corner
+            [-halfW + 0.4, 0],             // Mid left
+            [halfW - 0.4, 0],              // Mid right
+          ].map(([x, z], i) => (
+            <mesh key={`column-${i}`} position={[x, height / 2, z]}>
+              <boxGeometry args={[0.5, height, 0.5]} />
+              <meshStandardMaterial color="#B0B0B0" roughness={0.8} metalness={0.1} />
+            </mesh>
+          ))}
+          
+          {/* Track lighting with visible black fixtures */}
+          {[-halfW + 4, -2, 2, halfW - 4].map((xPos, i) => (
+            <group key={`track-${i}`}>
+              {/* Track rail mounted to ceiling */}
+              <mesh position={[xPos, height - 0.08, 0]}>
+                <boxGeometry args={[0.06, 0.08, depth - 3]} />
+                <meshBasicMaterial color="#1A1A1A" />
               </mesh>
-              {/* Track light fixtures along rail */}
-              {[-depth/3, 0, depth/3].map((zPos, j) => (
-                <group key={`fixture-${i}-${j}`} position={[0, -0.08, zPos]}>
-                  <mesh>
-                    <cylinderGeometry args={[0.06, 0.08, 0.12, 16]} />
-                    <meshBasicMaterial color="#1A1A1A" />
+              {/* Track light fixtures - visible spotlight housings */}
+              {[-depth/3 + 1, -1, 1, depth/3 - 1].map((zPos, j) => (
+                <group key={`light-${i}-${j}`} position={[xPos, height - 0.2, zPos]}>
+                  {/* Fixture housing - cylindrical */}
+                  <mesh rotation={[0, 0, 0]}>
+                    <cylinderGeometry args={[0.08, 0.12, 0.18, 12]} />
+                    <meshStandardMaterial color="#1A1A1A" roughness={0.3} metalness={0.7} />
                   </mesh>
-                  {/* Light emission disc */}
-                  <mesh position={[0, -0.07, 0]} rotation={[Math.PI, 0, 0]}>
-                    <circleGeometry args={[0.05, 16]} />
-                    <meshBasicMaterial color="#FFF8E8" />
+                  {/* Light lens */}
+                  <mesh position={[0, -0.1, 0]} rotation={[Math.PI, 0, 0]}>
+                    <circleGeometry args={[0.07, 12]} />
+                    <meshBasicMaterial color="#FFFAE5" />
                   </mesh>
-                  {/* Point light for illumination */}
-                  <pointLight
-                    position={[0, -0.15, 0]}
-                    intensity={0.4}
-                    distance={6}
-                    color="#FFF5E5"
+                  {/* Spotlight cone */}
+                  <spotLight
+                    position={[0, -0.12, 0]}
+                    angle={0.5}
+                    penumbra={0.5}
+                    intensity={0.8}
+                    distance={8}
+                    color="#FFF8E8"
+                    castShadow={false}
                   />
                 </group>
               ))}
             </group>
           ))}
           
-          {/* Ambient fill light for modern gallery */}
-          <hemisphereLight args={['#FFFAF0', '#606060', 0.5]} position={[0, height, 0]} />
+          {/* Ambient and directional lighting for modern gallery */}
+          <hemisphereLight args={['#FFFFFF', '#808080', 0.6]} position={[0, height, 0]} />
+          <directionalLight position={[5, height - 1, 5]} intensity={0.3} color="#FFFFFF" />
         </>
       ) : (
         <>
