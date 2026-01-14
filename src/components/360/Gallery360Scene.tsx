@@ -523,8 +523,8 @@ function BrickWall({
         const x = -width / 2 + col * (brickW + mortarGap) + offset + brickW / 2;
         const y = row * (brickH + mortarGap) + brickH / 2;
         if (x < width / 2 && x > -width / 2 && y < height) {
-          const shade = 0.7 + seededRandom(seed) * 0.45;
-          const hueShift = seededRandom(seed + 500) * 0.15;
+          const shade = 0.88 + seededRandom(seed) * 0.18;
+          const hueShift = seededRandom(seed + 500) * 0.05;
           bricks.push({ x, y, shade, hueShift });
         }
       }
@@ -533,7 +533,7 @@ function BrickWall({
   }, [width, height]);
 
   const baseBrickColor = useMemo(() => new THREE.Color(color), [color]);
-  const mortarColor = useMemo(() => new THREE.Color('#D4C8B8'), []);
+  const mortarColor = useMemo(() => new THREE.Color('#E0DAD0'), []);
 
   return (
     <group position={position} rotation={rotation}>
@@ -801,127 +801,99 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
             <meshBasicMaterial color={preset.ceilingColor} />
           </mesh>
           
-          {/* Triangular steel trusses - like reference image */}
+          {/* Refined triangular steel trusses - thinner, dark grey steel */}
           {[-depth/3, 0, depth/3].map((zPos, i) => (
             <group key={`truss-${i}`}>
-              {/* Bottom chord of truss (horizontal beam) */}
-              <mesh position={[0, height - 0.7, zPos]}>
-                <boxGeometry args={[width + 0.4, 0.1, 0.1]} />
-                <meshBasicMaterial color="#505050" />
+              {/* Bottom chord of truss (horizontal beam) - thinner */}
+              <mesh position={[0, height - 0.55, zPos]}>
+                <boxGeometry args={[width + 0.3, 0.06, 0.06]} />
+                <meshBasicMaterial color="#606060" />
               </mesh>
-              {/* Top chord sections connecting to ceiling */}
-              <mesh position={[-width/4, height - 0.05, zPos]}>
-                <boxGeometry args={[width/2 + 0.2, 0.08, 0.08]} />
-                <meshBasicMaterial color="#505050" />
+              {/* Top chord at ceiling */}
+              <mesh position={[0, height - 0.03, zPos]}>
+                <boxGeometry args={[width + 0.3, 0.04, 0.04]} />
+                <meshBasicMaterial color="#606060" />
               </mesh>
-              <mesh position={[width/4, height - 0.05, zPos]}>
-                <boxGeometry args={[width/2 + 0.2, 0.08, 0.08]} />
-                <meshBasicMaterial color="#505050" />
-              </mesh>
-              {/* Diagonal members forming V-shapes */}
-              {Array.from({ length: 9 }, (_, j) => {
-                const xStart = -width/2 + (j + 0.5) * (width / 9);
+              {/* Diagonal members forming subtle V-shapes - thinner */}
+              {Array.from({ length: 7 }, (_, j) => {
+                const xStart = -width/2 + (j + 0.5) * (width / 7);
                 const isUp = j % 2 === 0;
                 return (
                   <mesh 
                     key={`v-diag-${i}-${j}`} 
-                    position={[xStart, height - 0.38, zPos]} 
-                    rotation={[0, 0, isUp ? 0.65 : -0.65]}
+                    position={[xStart, height - 0.29, zPos]} 
+                    rotation={[0, 0, isUp ? 0.55 : -0.55]}
                   >
-                    <boxGeometry args={[0.06, 0.75, 0.06]} />
-                    <meshBasicMaterial color="#505050" />
+                    <boxGeometry args={[0.04, 0.58, 0.04]} />
+                    <meshBasicMaterial color="#606060" />
                   </mesh>
                 );
               })}
-              {/* Vertical posts at truss intersections */}
-              {[-width/2 + 1.5, -width/4, 0, width/4, width/2 - 1.5].map((xPos, k) => (
-                <mesh key={`vert-${i}-${k}`} position={[xPos, height - 0.38, zPos]}>
-                  <boxGeometry args={[0.06, 0.65, 0.06]} />
-                  <meshBasicMaterial color="#505050" />
+              {/* Vertical posts - fewer, thinner */}
+              {[-width/3, 0, width/3].map((xPos, k) => (
+                <mesh key={`vert-${i}-${k}`} position={[xPos, height - 0.29, zPos]}>
+                  <boxGeometry args={[0.04, 0.52, 0.04]} />
+                  <meshBasicMaterial color="#606060" />
                 </mesh>
               ))}
             </group>
           ))}
           
-          {/* Cross braces connecting trusses */}
+          {/* Cross braces connecting trusses - thinner */}
           {[-width/3, 0, width/3].map((xPos, i) => (
-            <mesh key={`cross-brace-${i}`} position={[xPos, height - 0.65, 0]}>
-              <boxGeometry args={[0.08, 0.08, depth - 2]} />
-              <meshBasicMaterial color="#505050" />
+            <mesh key={`cross-brace-${i}`} position={[xPos, height - 0.5, 0]}>
+              <boxGeometry args={[0.05, 0.05, depth - 3]} />
+              <meshBasicMaterial color="#606060" />
             </mesh>
           ))}
           
-          {/* Industrial Windows - light-emitting planes on North wall */}
+          {/* Soft daylight windows - minimal frames, just light glow */}
           {[-6, 6].map((xPos, i) => (
-            <group key={`window-north-${i}`} position={[xPos, height * 0.65, -halfD + 0.15]}>
-              {/* Window frame - dark steel */}
+            <group key={`window-north-${i}`} position={[xPos, height * 0.62, -halfD + 0.08]}>
+              {/* Window glass - soft daylight glow only */}
               <mesh>
-                <boxGeometry args={[3.2, 3.5, 0.12]} />
-                <meshBasicMaterial color="#3A3A3A" />
+                <planeGeometry args={[3, 3.2]} />
+                <meshBasicMaterial color="#F0EDE8" />
               </mesh>
-              {/* Window glass - bright daylight glow */}
-              <mesh position={[0, 0, 0.02]}>
-                <planeGeometry args={[2.8, 3.1]} />
-                <meshBasicMaterial color="#E8E6E0" />
+              {/* Subtle thin mullions - light grey, not black */}
+              <mesh position={[0, 0, 0.01]}>
+                <boxGeometry args={[0.03, 3.2, 0.02]} />
+                <meshBasicMaterial color="#888888" />
               </mesh>
-              {/* Window mullions (grid) */}
-              <mesh position={[0, 0, 0.08]}>
-                <boxGeometry args={[0.06, 3.2, 0.04]} />
-                <meshBasicMaterial color="#3A3A3A" />
+              <mesh position={[0, 0, 0.01]}>
+                <boxGeometry args={[3, 0.03, 0.02]} />
+                <meshBasicMaterial color="#888888" />
               </mesh>
-              <mesh position={[0, 0, 0.08]}>
-                <boxGeometry args={[2.9, 0.06, 0.04]} />
-                <meshBasicMaterial color="#3A3A3A" />
-              </mesh>
-              {/* Horizontal dividers */}
-              {[-0.9, 0.9].map((yOff, j) => (
-                <mesh key={`hmull-${i}-${j}`} position={[0, yOff, 0.08]}>
-                  <boxGeometry args={[2.9, 0.05, 0.04]} />
-                  <meshBasicMaterial color="#3A3A3A" />
-                </mesh>
-              ))}
-              {/* Vertical dividers */}
-              {[-0.7, 0.7].map((xOff, j) => (
-                <mesh key={`vmull-${i}-${j}`} position={[xOff, 0, 0.08]}>
-                  <boxGeometry args={[0.05, 3.2, 0.04]} />
-                  <meshBasicMaterial color="#3A3A3A" />
-                </mesh>
-              ))}
             </group>
           ))}
           
-          {/* Industrial Windows - light-emitting planes on East/West walls */}
-          {[-halfW + 0.15, halfW - 0.15].map((xPos, i) => (
+          {/* Side windows - subtle daylight impression */}
+          {[-halfW + 0.08, halfW - 0.08].map((xPos, i) => (
             <group key={`window-side-${i}`}>
-              {[-3, 3].map((zPos, j) => (
-                <group key={`window-${i}-${j}`} position={[xPos, height * 0.65, zPos]} rotation={[0, i === 0 ? Math.PI / 2 : -Math.PI / 2, 0]}>
-                  {/* Window frame */}
+              {[-4, 4].map((zPos, j) => (
+                <group key={`window-${i}-${j}`} position={[xPos, height * 0.62, zPos]} rotation={[0, i === 0 ? Math.PI / 2 : -Math.PI / 2, 0]}>
+                  {/* Window glass - soft glow */}
                   <mesh>
-                    <boxGeometry args={[2.8, 3.2, 0.12]} />
-                    <meshBasicMaterial color="#3A3A3A" />
+                    <planeGeometry args={[2.6, 3]} />
+                    <meshBasicMaterial color="#F0EDE8" />
                   </mesh>
-                  {/* Window glass */}
-                  <mesh position={[0, 0, 0.02]}>
-                    <planeGeometry args={[2.4, 2.8]} />
-                    <meshBasicMaterial color="#E8E6E0" />
+                  {/* Subtle thin mullions */}
+                  <mesh position={[0, 0, 0.01]}>
+                    <boxGeometry args={[0.03, 3, 0.02]} />
+                    <meshBasicMaterial color="#888888" />
                   </mesh>
-                  {/* Window grid */}
-                  <mesh position={[0, 0, 0.08]}>
-                    <boxGeometry args={[0.05, 2.9, 0.04]} />
-                    <meshBasicMaterial color="#3A3A3A" />
-                  </mesh>
-                  <mesh position={[0, 0, 0.08]}>
-                    <boxGeometry args={[2.5, 0.05, 0.04]} />
-                    <meshBasicMaterial color="#3A3A3A" />
+                  <mesh position={[0, 0, 0.01]}>
+                    <boxGeometry args={[2.6, 0.03, 0.02]} />
+                    <meshBasicMaterial color="#888888" />
                   </mesh>
                 </group>
               ))}
             </group>
           ))}
           
-          {/* Simple uniform lighting - like Classic Gallery for smooth performance */}
-          <hemisphereLight args={['#FAFCFF', '#D8D4CC', 0.9]} position={[0, height, 0]} />
-          <ambientLight intensity={0.55} color="#FAFAFA" />
+          {/* Soft ambient lighting - airy, calm feel */}
+          <hemisphereLight args={['#FAFCFF', '#E0DCD4', 0.95]} position={[0, height, 0]} />
+          <ambientLight intensity={0.5} color="#FAFAF8" />
         </>
       ) : preset.id === 'modern-gallery-v2' ? (
         <>
