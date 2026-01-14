@@ -1,0 +1,104 @@
+✅ TASK ZA REPLIT AGENTA (LIVE APP)
+
+Context:
+We are now working ONLY in the LIVE RoomVibe Replit app (app.roomvibe.app).
+Do NOT use staging. Do NOT publish staging.
+Goal is to visually match the gallery look that previously existed in staging.
+
+🎯 Objective
+
+Update the Classic Gallery (360 Editor) in the LIVE app so that its visual appearance matches the staging version shown in screenshots.
+
+🖼️ Visual Requirements (IMPORTANT)
+
+Please adjust the gallery preset so that:
+
+Floor
+
+REMOVE the black/dark floor
+
+Use a light / neutral / tiled / white floor (same as staging look)
+
+Walls
+
+Use light beige / warm neutral walls
+
+No dark or high-contrast tones
+
+Overall Lighting
+
+Bright, clean, neutral lighting
+
+No dramatic / dark / moody lighting
+
+Similar to a clean white-cube gallery feeling
+
+Ceiling & Structure
+
+Keep existing ceiling structure
+
+Match staging proportions and spacing
+
+Consistency
+
+The LIVE gallery should visually match the staging screenshots:
+
+same color balance
+
+same floor/wall contrast
+
+same clean exhibition feel
+
+🚶‍♂️ VERY IMPORTANT – DO NOT TOUCH NAVIGATION
+
+⚠️ DO NOT MODIFY GALLERY MOVEMENT / NAVIGATION
+
+Do NOT change:
+
+camera movement
+
+Street View–style navigation
+
+entrance / center / back-left / back-right controls
+
+movement logic or interaction code
+
+Current navigation works perfectly and must remain 100% unchanged
+
+👉 Only visual styling (materials, colors, lighting) is allowed.
+
+🔧 Technical Notes
+
+Work directly in LIVE Replit environment
+
+Update the gallery preset / configuration used by:
+
+/gallery/exhibitions/*/360-editor
+
+If gallery styles are defined in config / preset files:
+
+update the LIVE preset only
+
+This is a visual / preset update, not logic refactor
+
+✅ Acceptance Criteria
+
+When opening 360 Editor in LIVE, the gallery:
+
+has NO black floor
+
+visually matches staging screenshots
+
+artworks are clearly visible on a light background
+
+Navigation behaves exactly the same as before
+
+🚫 Do NOT
+
+Do not touch staging app
+
+Do not change navigation or camera logic
+
+Do not migrate content from staging
+
+Do not refactor movement code

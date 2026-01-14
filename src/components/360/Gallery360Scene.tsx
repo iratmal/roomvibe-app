@@ -66,9 +66,9 @@ function isValidArtworkUrl(url: string | undefined | null): boolean {
  * There are two floor meshes: outerEnclosureFloor and tiledFloorMain; both guarded by FloorGuard.
  */
 
-const GALLERY_WALL_COLOR = '#f2f2f2';
-const GALLERY_CEILING_COLOR = '#f2f2f2';
-const GALLERY_FLOOR_COLOR = '#2a2a2a';
+const GALLERY_WALL_COLOR = '#f5f2ed';
+const GALLERY_CEILING_COLOR = '#f5f5f5';
+const GALLERY_FLOOR_COLOR = '#e8e4dc';
 
 function DebugOverlay() {
   const { scene, gl } = useThree();
@@ -435,7 +435,7 @@ function OuterEnclosure({ width, height, depth }: { width: number; height: numbe
     <group>
       <mesh name="outerEnclosureBox">
         <boxGeometry args={[size, verticalSize, size]} />
-        <meshBasicMaterial color="#1a1a1a" side={THREE.BackSide} />
+        <meshBasicMaterial color="#c0c0c0" side={THREE.BackSide} />
       </mesh>
       <mesh name="outerEnclosureFloor" position={[0, -0.8, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[size, size]} />
