@@ -191,22 +191,21 @@ export const gallery360Presets: Gallery360Preset[] = [
   {
     id: 'industrial-loft',
     name: 'Industrial Loft Gallery',
-    description: 'Warm industrial space with exposed brick, wooden floors and partition walls',
+    description: 'Industrial gallery with exposed brick, polished concrete and white partitions',
     dimensions: { width: 22, height: 5, depth: 16 },
-    wallColor: '#8B4513',
-    floorColor: '#5C4033',
-    ceilingColor: '#F5F0E8',
+    wallColor: '#9A7B5A',
+    floorColor: '#C8C4BC',
+    ceilingColor: '#FAFAFA',
     hasColumns: false,
     hasSkylights: false,
-    floorType: 'wood',
+    floorType: 'concrete',
     wallType: 'brick',
     hasPartitionWalls: true,
     partitionWalls: [
-      { id: 'partition-1', position: [-5, 2.5, 0], rotation: 0, width: 5, height: 4.5 },
-      { id: 'partition-2', position: [5, 2.5, 0], rotation: 0, width: 5, height: 4.5 },
-      { id: 'partition-3', position: [0, 2.5, -4], rotation: Math.PI / 2, width: 4, height: 4.5 }
+      { id: 'partition-1', position: [-5, 1.8, 0], rotation: 0, width: 3.5, height: 3.6 },
+      { id: 'partition-2', position: [5, 1.8, 0], rotation: 0, width: 3.5, height: 3.6 }
     ],
-    partitionWallColor: '#E8E0D5',
+    partitionWallColor: '#F2F2F2',
     viewpoints: [
       {
         id: 'entrance',
@@ -253,14 +252,11 @@ export const gallery360Presets: Gallery360Preset[] = [
       { id: 'wall-west-2', wallId: 'west', position: [-10.95, 2.2, 0], rotation: [0, Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'West Wall - Center' },
       { id: 'wall-west-3', wallId: 'west', position: [-10.95, 2.2, 4], rotation: [0, Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'West Wall - Lower' },
       // Partition Wall 1 (left) - both sides
-      { id: 'partition-1-front', wallId: 'partition-1', position: [-5, 2.2, 0.12], rotation: [0, 0, 0], width: 1.0, height: 0.75, label: 'Left Partition - Front' },
-      { id: 'partition-1-back', wallId: 'partition-1', position: [-5, 2.2, -0.12], rotation: [0, Math.PI, 0], width: 1.0, height: 0.75, label: 'Left Partition - Back' },
+      { id: 'partition-1-front', wallId: 'partition-1', position: [-5, 1.8, 0.12], rotation: [0, 0, 0], width: 1.0, height: 0.75, label: 'Left Partition - Front' },
+      { id: 'partition-1-back', wallId: 'partition-1', position: [-5, 1.8, -0.12], rotation: [0, Math.PI, 0], width: 1.0, height: 0.75, label: 'Left Partition - Back' },
       // Partition Wall 2 (right) - both sides  
-      { id: 'partition-2-front', wallId: 'partition-2', position: [5, 2.2, 0.12], rotation: [0, 0, 0], width: 1.0, height: 0.75, label: 'Right Partition - Front' },
-      { id: 'partition-2-back', wallId: 'partition-2', position: [5, 2.2, -0.12], rotation: [0, Math.PI, 0], width: 1.0, height: 0.75, label: 'Right Partition - Back' },
-      // Partition Wall 3 (center, rotated) - both sides
-      { id: 'partition-3-front', wallId: 'partition-3', position: [0.12, 2.2, -4], rotation: [0, -Math.PI / 2, 0], width: 1.0, height: 0.75, label: 'Center Partition - Front' },
-      { id: 'partition-3-back', wallId: 'partition-3', position: [-0.12, 2.2, -4], rotation: [0, Math.PI / 2, 0], width: 1.0, height: 0.75, label: 'Center Partition - Back' },
+      { id: 'partition-2-front', wallId: 'partition-2', position: [5, 1.8, 0.12], rotation: [0, 0, 0], width: 1.0, height: 0.75, label: 'Right Partition - Front' },
+      { id: 'partition-2-back', wallId: 'partition-2', position: [5, 1.8, -0.12], rotation: [0, Math.PI, 0], width: 1.0, height: 0.75, label: 'Right Partition - Back' },
       // South Wall - avoiding entrance portal
       { id: 'wall-south-1', wallId: 'south', position: [-7, 2.2, 7.95], rotation: [0, Math.PI, 0], width: 1.0, height: 0.75, label: 'South Wall - Left' },
       { id: 'wall-south-2', wallId: 'south', position: [7, 2.2, 7.95], rotation: [0, Math.PI, 0], width: 1.0, height: 0.75, label: 'South Wall - Right' }

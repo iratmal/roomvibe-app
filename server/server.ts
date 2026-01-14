@@ -183,9 +183,9 @@ app.get('/api/health/db', (req, res) => {
 
 app.get('/api/version', (req, res) => {
   res.json({
-    version: '1.0.19',
-    build: '2026-01-14T14:30:00Z',
-    commit: 'modern-gallery-smooth-partitions',
+    version: '1.0.20',
+    build: '2026-01-14T20:00:00Z',
+    commit: 'industrial-loft-finalize',
     features: {
       cookieAuth: true,
       objectStorage: true,

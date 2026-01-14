@@ -494,12 +494,14 @@ function BrickWall({
   width, 
   height, 
   position, 
-  rotation = [0, 0, 0] 
+  rotation = [0, 0, 0],
+  color = '#9A7B5A'
 }: { 
   width: number; 
   height: number; 
   position: [number, number, number]; 
   rotation?: [number, number, number];
+  color?: string;
 }) {
   const brickData = useMemo(() => {
     const brickW = 0.22;
@@ -530,7 +532,7 @@ function BrickWall({
     return { bricks, brickW, brickH };
   }, [width, height]);
 
-  const baseBrickColor = useMemo(() => new THREE.Color('#8B4513'), []);
+  const baseBrickColor = useMemo(() => new THREE.Color(color), [color]);
   const mortarColor = useMemo(() => new THREE.Color('#D4C8B8'), []);
 
   return (
@@ -793,54 +795,62 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       {/* Ceiling - different style based on preset */}
       {preset.id === 'industrial-loft' ? (
         <>
-          {/* INDUSTRIAL LOFT: Warm ceiling with exposed wooden beams */}
+          {/* INDUSTRIAL LOFT: White ceiling with dark metal truss beams - PERFORMANCE OPTIMIZED */}
           <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
             <planeGeometry args={[width, depth]} />
-            <meshStandardMaterial color={preset.ceilingColor} roughness={0.9} metalness={0} />
+            <meshBasicMaterial color={preset.ceilingColor} />
           </mesh>
           
-          {/* Exposed wooden beams - warm brown */}
+          {/* Main steel truss beams - dark grey metal */}
           {[-depth/4, 0, depth/4].map((zPos, i) => (
-            <mesh key={`wood-beam-${i}`} position={[0, height - 0.2, zPos]}>
-              <boxGeometry args={[width + 0.3, 0.35, 0.22]} />
-              <meshStandardMaterial color="#4A3520" roughness={0.85} metalness={0} />
-            </mesh>
-          ))}
-          
-          {/* Black metal track lighting rails */}
-          {[-halfW + 3, 0, halfW - 3].map((xPos, i) => (
-            <group key={`loft-track-${i}`}>
-              <mesh position={[xPos, height - 0.06, 0]}>
-                <boxGeometry args={[0.05, 0.06, depth - 2]} />
-                <meshBasicMaterial color="#1A1A1A" />
+            <group key={`truss-${i}`}>
+              {/* Bottom chord of truss */}
+              <mesh position={[0, height - 0.45, zPos]}>
+                <boxGeometry args={[width + 0.2, 0.12, 0.12]} />
+                <meshBasicMaterial color="#4A4A4A" />
               </mesh>
-              {[-depth/3, 0, depth/3].map((zPos, j) => (
-                <group key={`loft-light-${i}-${j}`} position={[xPos, height - 0.15, zPos]}>
-                  <mesh>
-                    <cylinderGeometry args={[0.06, 0.08, 0.12, 12]} />
-                    <meshStandardMaterial color="#1A1A1A" roughness={0.4} metalness={0.6} />
-                  </mesh>
-                  <mesh position={[0, -0.07, 0]} rotation={[Math.PI, 0, 0]}>
-                    <circleGeometry args={[0.05, 12]} />
-                    <meshBasicMaterial color="#FFE8C8" />
-                  </mesh>
-                  <spotLight
-                    position={[0, -0.1, 0]}
-                    angle={0.6}
-                    penumbra={0.6}
-                    intensity={0.7}
-                    distance={7}
-                    color="#FFE5C0"
-                    castShadow={false}
-                  />
-                </group>
+              {/* Top chord of truss */}
+              <mesh position={[0, height - 0.08, zPos]}>
+                <boxGeometry args={[width + 0.2, 0.08, 0.08]} />
+                <meshBasicMaterial color="#4A4A4A" />
+              </mesh>
+              {/* Diagonal web members */}
+              {[-width/3, -width/6, 0, width/6, width/3].map((xPos, j) => (
+                <mesh key={`diag-${i}-${j}`} position={[xPos, height - 0.26, zPos]} rotation={[0, 0, j % 2 === 0 ? 0.4 : -0.4]}>
+                  <boxGeometry args={[0.06, 0.42, 0.06]} />
+                  <meshBasicMaterial color="#4A4A4A" />
+                </mesh>
               ))}
             </group>
           ))}
           
-          {/* Warm ambient lighting for industrial loft */}
-          <hemisphereLight args={['#FFF8E8', '#8B7355', 0.55]} position={[0, height, 0]} />
-          <directionalLight position={[3, height - 1, 3]} intensity={0.25} color="#FFE8D0" />
+          {/* Cross beams connecting trusses */}
+          {[-width/3, 0, width/3].map((xPos, i) => (
+            <mesh key={`cross-beam-${i}`} position={[xPos, height - 0.3, 0]}>
+              <boxGeometry args={[0.1, 0.1, depth]} />
+              <meshBasicMaterial color="#4A4A4A" />
+            </mesh>
+          ))}
+          
+          {/* Minimal track fixtures - visual only, NO dynamic lights */}
+          {[-halfW + 4, halfW - 4].map((xPos, i) => (
+            <group key={`loft-track-${i}`}>
+              <mesh position={[xPos, height - 0.52, 0]}>
+                <boxGeometry args={[0.02, 0.02, depth - 3]} />
+                <meshBasicMaterial color="#3A3A3A" />
+              </mesh>
+              {[-depth/3, 0, depth/3].map((zPos, j) => (
+                <mesh key={`loft-fixture-${i}-${j}`} position={[xPos, height - 0.56, zPos]}>
+                  <cylinderGeometry args={[0.03, 0.04, 0.05, 6]} />
+                  <meshBasicMaterial color="#2A2A2A" />
+                </mesh>
+              ))}
+            </group>
+          ))}
+          
+          {/* Simple uniform lighting - like Classic Gallery for smooth performance */}
+          <hemisphereLight args={['#FAFCFF', '#D0CCC8', 0.85]} position={[0, height, 0]} />
+          <ambientLight intensity={0.45} color="#FAFAFA" />
         </>
       ) : preset.id === 'modern-gallery-v2' ? (
         <>
@@ -965,11 +975,11 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       {preset.wallType === 'brick' ? (
         <>
           {/* North wall - brick */}
-          <BrickWall width={width} height={height} position={[0, height / 2, -halfD]} />
+          <BrickWall width={width} height={height} position={[0, height / 2, -halfD]} color={preset.wallColor} />
           {/* East wall - brick */}
-          <BrickWall width={depth} height={height} position={[halfW, height / 2, 0]} rotation={[0, -Math.PI / 2, 0]} />
+          <BrickWall width={depth} height={height} position={[halfW, height / 2, 0]} rotation={[0, -Math.PI / 2, 0]} color={preset.wallColor} />
           {/* West wall - brick */}
-          <BrickWall width={depth} height={height} position={[-halfW, height / 2, 0]} rotation={[0, Math.PI / 2, 0]} />
+          <BrickWall width={depth} height={height} position={[-halfW, height / 2, 0]} rotation={[0, Math.PI / 2, 0]} color={preset.wallColor} />
         </>
       ) : (
         <>
@@ -1292,9 +1302,9 @@ function SouthWallWithOpening({
   if (isBrick) {
     return (
       <group position={[0, 0, halfD]}>
-        <BrickWall width={leftWidth} height={height} position={[-(width / 2 - leftWidth / 2), height / 2, 0]} rotation={[0, Math.PI, 0]} />
-        <BrickWall width={rightWidth} height={height} position={[(width / 2 - rightWidth / 2), height / 2, 0]} rotation={[0, Math.PI, 0]} />
-        <BrickWall width={portalW} height={topHeight} position={[0, portalH + topHeight / 2, 0]} rotation={[0, Math.PI, 0]} />
+        <BrickWall width={leftWidth} height={height} position={[-(width / 2 - leftWidth / 2), height / 2, 0]} rotation={[0, Math.PI, 0]} color={wallColor} />
+        <BrickWall width={rightWidth} height={height} position={[(width / 2 - rightWidth / 2), height / 2, 0]} rotation={[0, Math.PI, 0]} color={wallColor} />
+        <BrickWall width={portalW} height={topHeight} position={[0, portalH + topHeight / 2, 0]} rotation={[0, Math.PI, 0]} color={wallColor} />
       </group>
     );
   }
