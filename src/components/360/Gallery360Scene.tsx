@@ -66,10 +66,11 @@ function isValidArtworkUrl(url: string | undefined | null): boolean {
  * There are two floor meshes: outerEnclosureFloor and tiledFloorMain; both guarded by FloorGuard.
  */
 
-const GALLERY_WALL_COLOR = '#BFB6A8';
-const GALLERY_CEILING_COLOR = '#E6E6E2';
-const GALLERY_FLOOR_COLOR = '#D6D4CC';
-const GALLERY_LIGHT_COLOR = '#FFF3E0';
+const GALLERY_WALL_COLOR = '#D5CFC5';     // Lighter warm beige for artwork walls
+const GALLERY_CEILING_COLOR = '#E6E6E2'; // Warm light cream ceiling
+const GALLERY_FLOOR_COLOR = '#D6D4CC';   // Warm light gray floor
+const GALLERY_LIGHT_COLOR = '#FFF3E0';   // Warm light temperature
+const ANTHRACITE_COLOR = '#3A3A3A';      // Premium anthracite for frames/accents
 
 function DebugOverlay() {
   const { scene, gl } = useThree();
@@ -809,28 +810,35 @@ function GalleryBench({ position, rotation }: { position: [number, number, numbe
 }
 
 function DecorativeVase({ position }: { position: [number, number, number] }) {
-  const VASE_H = 2.0;     // 200cm height
-  const BASE_R = 0.20;    // base radius
-  const TOP_R = 0.15;     // top radius (slightly tapered)
+  const VASE_H = 1.8;     // 180cm height - elegant proportions
+  const BASE_R = 0.18;    // base radius
+  const MID_R = 0.22;     // widest point
+  const TOP_R = 0.12;     // narrow neck
 
   return (
     <group position={position}>
-      {/* Main body - RoomVibe gold */}
-      <mesh position={[0, VASE_H / 2, 0]}>
-        <cylinderGeometry args={[TOP_R, BASE_R, VASE_H, 32]} />
-        <meshBasicMaterial color="#D4AF37" />
+      {/* Main body - premium anthracite ceramic */}
+      <mesh position={[0, VASE_H * 0.4, 0]}>
+        <cylinderGeometry args={[MID_R, BASE_R, VASE_H * 0.8, 32]} />
+        <meshStandardMaterial color={ANTHRACITE_COLOR} roughness={0.4} metalness={0.1} />
       </mesh>
       
-      {/* Subtle inner shadow ring at top */}
-      <mesh position={[0, VASE_H - 0.02, 0]}>
-        <cylinderGeometry args={[TOP_R - 0.02, TOP_R, 0.04, 32]} />
-        <meshBasicMaterial color="#b8962e" />
+      {/* Neck - tapered top section */}
+      <mesh position={[0, VASE_H * 0.85, 0]}>
+        <cylinderGeometry args={[TOP_R, MID_R, VASE_H * 0.3, 32]} />
+        <meshStandardMaterial color={ANTHRACITE_COLOR} roughness={0.4} metalness={0.1} />
+      </mesh>
+      
+      {/* Rim at top */}
+      <mesh position={[0, VASE_H, 0]}>
+        <torusGeometry args={[TOP_R, 0.015, 16, 32]} />
+        <meshStandardMaterial color="#2A2A2A" roughness={0.3} metalness={0.15} />
       </mesh>
       
       {/* Base ring for grounding */}
-      <mesh position={[0, 0.015, 0]}>
-        <cylinderGeometry args={[BASE_R + 0.01, BASE_R + 0.02, 0.03, 32]} />
-        <meshBasicMaterial color="#c4a030" />
+      <mesh position={[0, 0.01, 0]}>
+        <cylinderGeometry args={[BASE_R, BASE_R + 0.02, 0.02, 32]} />
+        <meshStandardMaterial color="#2A2A2A" roughness={0.35} metalness={0.1} />
       </mesh>
     </group>
   );
@@ -846,22 +854,32 @@ function EntrancePortal({ position, rotation }: { position: [number, number, num
 
   return (
     <group position={position} rotation={rotation}>
-      {/* Portal Frame - warm light concrete/paint */}
+      {/* Portal Frame - premium anthracite architectural frame */}
       <group>
-        {/* Left post */}
+        {/* Left post - wider for realism */}
         <mesh position={[-(PORTAL_W / 2) - (FRAME_T / 2), PORTAL_H / 2, 0]} castShadow>
-          <boxGeometry args={[FRAME_T, PORTAL_H, FRAME_T]} />
-          <meshBasicMaterial color="#d7d4cf" />
+          <boxGeometry args={[FRAME_T * 1.5, PORTAL_H, FRAME_T * 1.5]} />
+          <meshStandardMaterial color={ANTHRACITE_COLOR} roughness={0.6} metalness={0.05} />
         </mesh>
         {/* Right post */}
         <mesh position={[(PORTAL_W / 2) + (FRAME_T / 2), PORTAL_H / 2, 0]} castShadow>
-          <boxGeometry args={[FRAME_T, PORTAL_H, FRAME_T]} />
-          <meshBasicMaterial color="#d7d4cf" />
+          <boxGeometry args={[FRAME_T * 1.5, PORTAL_H, FRAME_T * 1.5]} />
+          <meshStandardMaterial color={ANTHRACITE_COLOR} roughness={0.6} metalness={0.05} />
         </mesh>
-        {/* Top lintel */}
-        <mesh position={[0, PORTAL_H + (FRAME_T / 2), 0]} castShadow>
-          <boxGeometry args={[PORTAL_W + FRAME_T * 2, FRAME_T, FRAME_T]} />
-          <meshBasicMaterial color="#d7d4cf" />
+        {/* Top lintel - thicker header */}
+        <mesh position={[0, PORTAL_H + (FRAME_T * 0.75), 0]} castShadow>
+          <boxGeometry args={[PORTAL_W + FRAME_T * 3, FRAME_T * 1.5, FRAME_T * 1.5]} />
+          <meshStandardMaterial color={ANTHRACITE_COLOR} roughness={0.6} metalness={0.05} />
+        </mesh>
+        {/* Inner chamfer/reveal on left */}
+        <mesh position={[-(PORTAL_W / 2) + 0.02, PORTAL_H / 2, -0.03]}>
+          <boxGeometry args={[0.04, PORTAL_H, 0.06]} />
+          <meshStandardMaterial color="#2F2F2F" roughness={0.5} metalness={0.05} />
+        </mesh>
+        {/* Inner chamfer/reveal on right */}
+        <mesh position={[(PORTAL_W / 2) - 0.02, PORTAL_H / 2, -0.03]}>
+          <boxGeometry args={[0.04, PORTAL_H, 0.06]} />
+          <meshStandardMaterial color="#2F2F2F" roughness={0.5} metalness={0.05} />
         </mesh>
       </group>
 
