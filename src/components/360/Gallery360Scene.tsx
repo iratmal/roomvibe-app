@@ -450,12 +450,12 @@ function ConcreteFloor({ width, depth, color }: { width: number; depth: number; 
     };
     
     const patches: Array<{ x: number; z: number; shade: number; size: number }> = [];
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 60; i++) {
       patches.push({
-        x: (seededRandom(i * 3) - 0.5) * width * 0.9,
-        z: (seededRandom(i * 5 + 1) - 0.5) * depth * 0.9,
-        shade: 0.96 + seededRandom(i * 7 + 2) * 0.08,
-        size: 1.5 + seededRandom(i * 11) * 2
+        x: (seededRandom(i * 3) - 0.5) * width * 0.95,
+        z: (seededRandom(i * 5 + 1) - 0.5) * depth * 0.95,
+        shade: 0.94 + seededRandom(i * 7 + 2) * 0.10,
+        size: 1.2 + seededRandom(i * 11) * 2.5
       });
     }
     return patches;
@@ -465,10 +465,17 @@ function ConcreteFloor({ width, depth, color }: { width: number; depth: number; 
 
   return (
     <group position={[0, 0.001, 0]}>
-      <mesh name="concreteFloorMain" rotation={[-Math.PI / 2, 0, 0]}>
+      {/* Main concrete floor - enhanced PBR */}
+      <mesh name="concreteFloorMain" rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[width, depth]} />
-        <meshStandardMaterial color={color} roughness={0.75} metalness={0.05} />
+        <meshStandardMaterial 
+          color={color} 
+          roughness={0.72} 
+          metalness={0.08}
+          envMapIntensity={0.3}
+        />
       </mesh>
+      {/* Concrete variation patches - subtle texture */}
       {concreteData.map((patch, i) => {
         const patchColor = baseColor.clone().multiplyScalar(patch.shade);
         return (
@@ -477,12 +484,25 @@ function ConcreteFloor({ width, depth, color }: { width: number; depth: number; 
             position={[patch.x, 0.002, patch.z]}
             rotation={[-Math.PI / 2, 0, 0]}
           >
-            <circleGeometry args={[patch.size, 8]} />
-            <meshBasicMaterial color={patchColor} transparent opacity={0.15} />
+            <circleGeometry args={[patch.size, 12]} />
+            <meshStandardMaterial color={patchColor} transparent opacity={0.12} roughness={0.8} metalness={0.05} />
           </mesh>
         );
       })}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.003, 0]}>
+      {/* Subtle floor joints/seams - polished concrete look */}
+      {Array.from({ length: 5 }, (_, i) => (
+        <mesh key={`joint-x-${i}`} position={[(i - 2) * (width / 4), 0.003, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[0.02, depth * 0.9]} />
+          <meshBasicMaterial color="#A0A0A0" transparent opacity={0.25} />
+        </mesh>
+      ))}
+      {Array.from({ length: 4 }, (_, i) => (
+        <mesh key={`joint-z-${i}`} position={[0, 0.003, (i - 1.5) * (depth / 3)]} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[width * 0.9, 0.02]} />
+          <meshBasicMaterial color="#A0A0A0" transparent opacity={0.25} />
+        </mesh>
+      ))}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.004, 0]}>
         <planeGeometry args={[width, depth]} />
         <meshBasicMaterial color="#888888" transparent opacity={0.08} />
       </mesh>
@@ -571,17 +591,30 @@ function PartitionWall({
   height: number;
   color: string;
 }) {
-  const thickness = 0.2;
+  const thickness = 0.18;
   
   return (
     <group position={position} rotation={[0, rotation, 0]}>
-      <mesh>
+      {/* Main partition wall - enhanced PBR with shadows */}
+      <mesh castShadow receiveShadow>
         <boxGeometry args={[width, height, thickness]} />
-        <meshStandardMaterial color={color} roughness={0.9} metalness={0} side={THREE.DoubleSide} />
+        <meshStandardMaterial 
+          color={color} 
+          roughness={0.92} 
+          metalness={0.02} 
+          side={THREE.DoubleSide}
+          envMapIntensity={0.15}
+        />
       </mesh>
-      <mesh position={[0, height / 2 + 0.02, 0]}>
+      {/* Subtle base shadow/ambient occlusion */}
+      <mesh position={[0, -height / 2 + 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[width + 0.3, thickness + 0.4]} />
+        <meshBasicMaterial color="#888888" transparent opacity={0.15} />
+      </mesh>
+      {/* Top cap - subtle edge */}
+      <mesh position={[0, height / 2 + 0.02, 0]} castShadow>
         <boxGeometry args={[width + 0.04, 0.04, thickness + 0.04]} />
-        <meshBasicMaterial color="#3A3530" />
+        <meshStandardMaterial color="#4A4640" roughness={0.5} metalness={0.3} />
       </mesh>
     </group>
   );
@@ -795,180 +828,257 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       {/* Ceiling - different style based on preset */}
       {preset.id === 'industrial-loft' ? (
         <>
-          {/* INDUSTRIAL LOFT: White ceiling with triangular truss beams - PERFORMANCE OPTIMIZED */}
-          <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
+          {/* INDUSTRIAL LOFT: Enhanced PBR ceiling with panels and ambient occlusion */}
+          {/* Main ceiling with subtle concrete texture */}
+          <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]} receiveShadow>
             <planeGeometry args={[width, depth]} />
-            <meshBasicMaterial color={preset.ceilingColor} />
+            <meshStandardMaterial 
+              color="#F5F3EF" 
+              roughness={0.85} 
+              metalness={0.02}
+            />
           </mesh>
           
-          {/* Refined triangular steel trusses - thinner, dark grey steel */}
+          {/* Ceiling panel grid - subtle depth and ambient occlusion effect */}
+          {Array.from({ length: 5 }, (_, xi) => 
+            Array.from({ length: 4 }, (_, zi) => ({
+              x: (xi - 2) * (width / 5),
+              z: (zi - 1.5) * (depth / 4),
+              key: `panel-${xi}-${zi}`
+            }))
+          ).flat().map((panel) => (
+            <group key={panel.key} position={[panel.x, height - 0.01, panel.z]}>
+              {/* Panel recess - creates depth */}
+              <mesh rotation={[Math.PI / 2, 0, 0]}>
+                <planeGeometry args={[width / 5.5, depth / 4.5]} />
+                <meshStandardMaterial color="#EFEDE8" roughness={0.9} metalness={0} />
+              </mesh>
+              {/* Panel edge shadow - ambient occlusion simulation */}
+              <mesh position={[0, 0.005, 0]} rotation={[Math.PI / 2, 0, 0]}>
+                <planeGeometry args={[width / 5.2, depth / 4.2]} />
+                <meshBasicMaterial color="#E8E5E0" transparent opacity={0.4} />
+              </mesh>
+            </group>
+          ))}
+          
+          {/* Steel trusses with PBR material */}
           {[-depth/3, 0, depth/3].map((zPos, i) => (
             <group key={`truss-${i}`}>
-              {/* Bottom chord of truss (horizontal beam) - thinner */}
-              <mesh position={[0, height - 0.55, zPos]}>
-                <boxGeometry args={[width + 0.3, 0.06, 0.06]} />
-                <meshBasicMaterial color="#606060" />
+              {/* Bottom chord - PBR steel */}
+              <mesh position={[0, height - 0.55, zPos]} castShadow>
+                <boxGeometry args={[width + 0.3, 0.08, 0.08]} />
+                <meshStandardMaterial color="#4A4A4A" roughness={0.4} metalness={0.7} />
               </mesh>
-              {/* Top chord at ceiling */}
-              <mesh position={[0, height - 0.03, zPos]}>
-                <boxGeometry args={[width + 0.3, 0.04, 0.04]} />
-                <meshBasicMaterial color="#606060" />
+              {/* Top chord */}
+              <mesh position={[0, height - 0.05, zPos]} castShadow>
+                <boxGeometry args={[width + 0.3, 0.05, 0.05]} />
+                <meshStandardMaterial color="#4A4A4A" roughness={0.4} metalness={0.7} />
               </mesh>
-              {/* Diagonal members forming subtle V-shapes - thinner */}
+              {/* Diagonal V-members */}
               {Array.from({ length: 7 }, (_, j) => {
                 const xStart = -width/2 + (j + 0.5) * (width / 7);
                 const isUp = j % 2 === 0;
                 return (
                   <mesh 
                     key={`v-diag-${i}-${j}`} 
-                    position={[xStart, height - 0.29, zPos]} 
+                    position={[xStart, height - 0.30, zPos]} 
                     rotation={[0, 0, isUp ? 0.55 : -0.55]}
+                    castShadow
                   >
-                    <boxGeometry args={[0.04, 0.58, 0.04]} />
-                    <meshBasicMaterial color="#606060" />
+                    <boxGeometry args={[0.05, 0.55, 0.05]} />
+                    <meshStandardMaterial color="#4A4A4A" roughness={0.4} metalness={0.7} />
                   </mesh>
                 );
               })}
-              {/* Vertical posts - fewer, thinner */}
+              {/* Vertical posts */}
               {[-width/3, 0, width/3].map((xPos, k) => (
-                <mesh key={`vert-${i}-${k}`} position={[xPos, height - 0.29, zPos]}>
-                  <boxGeometry args={[0.04, 0.52, 0.04]} />
-                  <meshBasicMaterial color="#606060" />
+                <mesh key={`vert-${i}-${k}`} position={[xPos, height - 0.30, zPos]} castShadow>
+                  <boxGeometry args={[0.05, 0.50, 0.05]} />
+                  <meshStandardMaterial color="#4A4A4A" roughness={0.4} metalness={0.7} />
                 </mesh>
               ))}
             </group>
           ))}
           
-          {/* Cross braces connecting trusses - thinner */}
+          {/* Cross braces */}
           {[-width/3, 0, width/3].map((xPos, i) => (
-            <mesh key={`cross-brace-${i}`} position={[xPos, height - 0.5, 0]}>
-              <boxGeometry args={[0.05, 0.05, depth - 3]} />
-              <meshBasicMaterial color="#606060" />
+            <mesh key={`cross-brace-${i}`} position={[xPos, height - 0.5, 0]} castShadow>
+              <boxGeometry args={[0.06, 0.06, depth - 3]} />
+              <meshStandardMaterial color="#4A4A4A" roughness={0.4} metalness={0.7} />
             </mesh>
           ))}
           
-          {/* Realistic recessed windows on North wall with daylight */}
+          {/* ENHANCED WINDOWS - North wall with realistic glass and external light */}
           {[-6, 6].map((xPos, i) => (
-            <group key={`window-north-${i}`} position={[xPos, height * 0.58, -halfD]}>
-              {/* Window recess - depth into wall */}
-              <mesh position={[0, 0, 0.25]}>
-                <boxGeometry args={[3.2, 3.6, 0.5]} />
-                <meshBasicMaterial color="#4A4642" />
+            <group key={`window-north-${i}`} position={[xPos, height * 0.55, -halfD]}>
+              {/* Deep window recess - concrete/brick jamb */}
+              <mesh position={[0, 0, 0.30]}>
+                <boxGeometry args={[3.4, 3.8, 0.6]} />
+                <meshStandardMaterial color="#5A5652" roughness={0.85} metalness={0.1} />
               </mesh>
-              {/* Inner frame - dark steel */}
-              <mesh position={[0, 0, 0.08]}>
-                <boxGeometry args={[3.0, 3.4, 0.08]} />
-                <meshBasicMaterial color="#3A3836" />
+              {/* Window sill */}
+              <mesh position={[0, -1.7, 0.35]}>
+                <boxGeometry args={[3.2, 0.12, 0.5]} />
+                <meshStandardMaterial color="#6A6662" roughness={0.75} metalness={0.15} />
               </mesh>
-              {/* Glass pane - semi-transparent blue/grey tint */}
-              <mesh position={[0, 0, 0.13]}>
-                <planeGeometry args={[2.8, 3.2]} />
+              {/* Steel window frame - outer */}
+              <mesh position={[0, 0, 0.12]}>
+                <boxGeometry args={[3.1, 3.5, 0.1]} />
+                <meshStandardMaterial color="#2A2826" roughness={0.35} metalness={0.8} />
+              </mesh>
+              {/* Glass pane - realistic with reflection */}
+              <mesh position={[0, 0, 0.18]}>
+                <planeGeometry args={[2.9, 3.3]} />
                 <meshStandardMaterial 
-                  color="#D8E4EC" 
+                  color="#C8D8E4" 
                   transparent 
-                  opacity={0.35} 
-                  roughness={0.1} 
-                  metalness={0.2}
+                  opacity={0.25} 
+                  roughness={0.05} 
+                  metalness={0.4}
+                  envMapIntensity={0.8}
                 />
               </mesh>
-              {/* Bright daylight behind glass */}
-              <mesh position={[0, 0, 0.02]}>
-                <planeGeometry args={[2.9, 3.3]} />
-                <meshBasicMaterial color="#F8F6F0" />
+              {/* Sky/daylight behind glass - bright gradient */}
+              <mesh position={[0, 0.3, 0.02]}>
+                <planeGeometry args={[3.0, 3.4]} />
+                <meshBasicMaterial color="#E8F0F8" />
               </mesh>
-              {/* Metal mullions - dark steel grid */}
-              <mesh position={[0, 0, 0.15]}>
-                <boxGeometry args={[0.05, 3.3, 0.03]} />
-                <meshBasicMaterial color="#3A3836" />
+              <mesh position={[0, -0.8, 0.025]}>
+                <planeGeometry args={[3.0, 1.8]} />
+                <meshBasicMaterial color="#F0F4F8" />
               </mesh>
-              <mesh position={[0, 0, 0.15]}>
-                <boxGeometry args={[2.9, 0.05, 0.03]} />
-                <meshBasicMaterial color="#3A3836" />
+              {/* Steel mullions - industrial grid */}
+              <mesh position={[0, 0, 0.20]}>
+                <boxGeometry args={[0.06, 3.4, 0.04]} />
+                <meshStandardMaterial color="#2A2826" roughness={0.35} metalness={0.8} />
               </mesh>
-              {[-0.9, 0.9].map((yOff, j) => (
-                <mesh key={`hmull-n-${i}-${j}`} position={[0, yOff, 0.15]}>
-                  <boxGeometry args={[2.9, 0.04, 0.03]} />
-                  <meshBasicMaterial color="#3A3836" />
+              <mesh position={[0, 0, 0.20]}>
+                <boxGeometry args={[3.0, 0.06, 0.04]} />
+                <meshStandardMaterial color="#2A2826" roughness={0.35} metalness={0.8} />
+              </mesh>
+              {[-1.0, 1.0].map((yOff, j) => (
+                <mesh key={`hmull-n-${i}-${j}`} position={[0, yOff, 0.20]}>
+                  <boxGeometry args={[3.0, 0.05, 0.04]} />
+                  <meshStandardMaterial color="#2A2826" roughness={0.35} metalness={0.8} />
                 </mesh>
               ))}
-              {[-0.7, 0.7].map((xOff, j) => (
-                <mesh key={`vmull-n-${i}-${j}`} position={[xOff, 0, 0.15]}>
-                  <boxGeometry args={[0.04, 3.3, 0.03]} />
-                  <meshBasicMaterial color="#3A3836" />
+              {[-0.75, 0.75].map((xOff, j) => (
+                <mesh key={`vmull-n-${i}-${j}`} position={[xOff, 0, 0.20]}>
+                  <boxGeometry args={[0.05, 3.4, 0.04]} />
+                  <meshStandardMaterial color="#2A2826" roughness={0.35} metalness={0.8} />
                 </mesh>
               ))}
             </group>
           ))}
           
-          {/* Daylight floor patches from North windows - subtle brightness gradient */}
+          {/* Daylight patches on floor from North windows - realistic falloff */}
           {[-6, 6].map((xPos, i) => (
-            <mesh key={`daylight-north-${i}`} position={[xPos, 0.005, -halfD + 4]} rotation={[-Math.PI / 2, 0, 0]}>
-              <planeGeometry args={[4, 6]} />
-              <meshBasicMaterial color="#F8F6F0" transparent opacity={0.12} />
-            </mesh>
+            <group key={`daylight-north-${i}`}>
+              {/* Main light patch */}
+              <mesh position={[xPos, 0.008, -halfD + 3.5]} rotation={[-Math.PI / 2, 0, 0]}>
+                <planeGeometry args={[3.5, 5]} />
+                <meshBasicMaterial color="#FFFEF8" transparent opacity={0.18} />
+              </mesh>
+              {/* Gradient falloff */}
+              <mesh position={[xPos, 0.006, -halfD + 6]} rotation={[-Math.PI / 2, 0, 0]}>
+                <planeGeometry args={[4.5, 4]} />
+                <meshBasicMaterial color="#FAFAF4" transparent opacity={0.10} />
+              </mesh>
+            </group>
           ))}
           
-          {/* Realistic recessed windows on side walls */}
+          {/* ENHANCED WINDOWS - Side walls */}
           {[-halfW, halfW].map((xPos, wallIdx) => (
             <group key={`window-side-${wallIdx}`}>
               {[-4, 4].map((zPos, j) => (
-                <group key={`window-${wallIdx}-${j}`} position={[xPos, height * 0.58, zPos]} rotation={[0, wallIdx === 0 ? Math.PI / 2 : -Math.PI / 2, 0]}>
-                  {/* Window recess - depth into wall */}
-                  <mesh position={[0, 0, 0.25]}>
-                    <boxGeometry args={[2.8, 3.4, 0.5]} />
-                    <meshBasicMaterial color="#4A4642" />
+                <group key={`window-${wallIdx}-${j}`} position={[xPos, height * 0.55, zPos]} rotation={[0, wallIdx === 0 ? Math.PI / 2 : -Math.PI / 2, 0]}>
+                  {/* Deep window recess */}
+                  <mesh position={[0, 0, 0.30]}>
+                    <boxGeometry args={[3.0, 3.6, 0.6]} />
+                    <meshStandardMaterial color="#5A5652" roughness={0.85} metalness={0.1} />
                   </mesh>
-                  {/* Inner frame - dark steel */}
-                  <mesh position={[0, 0, 0.08]}>
-                    <boxGeometry args={[2.6, 3.2, 0.08]} />
-                    <meshBasicMaterial color="#3A3836" />
+                  {/* Window sill */}
+                  <mesh position={[0, -1.6, 0.35]}>
+                    <boxGeometry args={[2.8, 0.12, 0.5]} />
+                    <meshStandardMaterial color="#6A6662" roughness={0.75} metalness={0.15} />
                   </mesh>
-                  {/* Glass pane - semi-transparent */}
-                  <mesh position={[0, 0, 0.13]}>
-                    <planeGeometry args={[2.4, 3.0]} />
+                  {/* Steel frame */}
+                  <mesh position={[0, 0, 0.12]}>
+                    <boxGeometry args={[2.7, 3.3, 0.1]} />
+                    <meshStandardMaterial color="#2A2826" roughness={0.35} metalness={0.8} />
+                  </mesh>
+                  {/* Glass pane */}
+                  <mesh position={[0, 0, 0.18]}>
+                    <planeGeometry args={[2.5, 3.1]} />
                     <meshStandardMaterial 
-                      color="#D8E4EC" 
+                      color="#C8D8E4" 
                       transparent 
-                      opacity={0.35} 
-                      roughness={0.1} 
-                      metalness={0.2}
+                      opacity={0.25} 
+                      roughness={0.05} 
+                      metalness={0.4}
+                      envMapIntensity={0.8}
                     />
                   </mesh>
-                  {/* Bright daylight behind glass */}
-                  <mesh position={[0, 0, 0.02]}>
-                    <planeGeometry args={[2.5, 3.1]} />
-                    <meshBasicMaterial color="#F8F6F0" />
+                  {/* Daylight behind */}
+                  <mesh position={[0, 0.2, 0.02]}>
+                    <planeGeometry args={[2.6, 3.2]} />
+                    <meshBasicMaterial color="#E8F0F8" />
                   </mesh>
-                  {/* Metal mullions */}
-                  <mesh position={[0, 0, 0.15]}>
-                    <boxGeometry args={[0.04, 3.1, 0.03]} />
-                    <meshBasicMaterial color="#3A3836" />
+                  {/* Mullions */}
+                  <mesh position={[0, 0, 0.20]}>
+                    <boxGeometry args={[0.05, 3.2, 0.04]} />
+                    <meshStandardMaterial color="#2A2826" roughness={0.35} metalness={0.8} />
                   </mesh>
-                  <mesh position={[0, 0, 0.15]}>
-                    <boxGeometry args={[2.5, 0.04, 0.03]} />
-                    <meshBasicMaterial color="#3A3836" />
+                  <mesh position={[0, 0, 0.20]}>
+                    <boxGeometry args={[2.6, 0.05, 0.04]} />
+                    <meshStandardMaterial color="#2A2826" roughness={0.35} metalness={0.8} />
                   </mesh>
                 </group>
               ))}
             </group>
           ))}
           
-          {/* Daylight floor patches from side windows */}
+          {/* Side window daylight patches with falloff */}
           {[
-            { x: -halfW + 3, z: -4 },
-            { x: -halfW + 3, z: 4 },
-            { x: halfW - 3, z: -4 },
-            { x: halfW - 3, z: 4 }
+            { x: -halfW + 2.5, z: -4, dir: 1 },
+            { x: -halfW + 2.5, z: 4, dir: 1 },
+            { x: halfW - 2.5, z: -4, dir: -1 },
+            { x: halfW - 2.5, z: 4, dir: -1 }
           ].map((pos, i) => (
-            <mesh key={`daylight-side-${i}`} position={[pos.x, 0.005, pos.z]} rotation={[-Math.PI / 2, 0, 0]}>
-              <planeGeometry args={[4, 3.5]} />
-              <meshBasicMaterial color="#F8F6F0" transparent opacity={0.1} />
-            </mesh>
+            <group key={`daylight-side-${i}`}>
+              <mesh position={[pos.x, 0.008, pos.z]} rotation={[-Math.PI / 2, 0, 0]}>
+                <planeGeometry args={[3.5, 3]} />
+                <meshBasicMaterial color="#FFFEF8" transparent opacity={0.15} />
+              </mesh>
+              <mesh position={[pos.x + pos.dir * 1.5, 0.006, pos.z]} rotation={[-Math.PI / 2, 0, 0]}>
+                <planeGeometry args={[3, 3.5]} />
+                <meshBasicMaterial color="#FAFAF4" transparent opacity={0.08} />
+              </mesh>
+            </group>
           ))}
           
-          {/* Soft ambient lighting - airy, calm feel */}
-          <hemisphereLight args={['#FAFCFF', '#E0DCD4', 0.95]} position={[0, height, 0]} />
-          <ambientLight intensity={0.5} color="#FAFAF8" />
+          {/* ENHANCED LIGHTING SYSTEM */}
+          {/* Ambient - low intensity base */}
+          <ambientLight intensity={0.35} color="#F8F6F0" />
+          {/* Hemisphere - sky/ground gradient */}
+          <hemisphereLight args={['#E8F0F8', '#D0CCC4', 0.7]} position={[0, height, 0]} />
+          {/* Directional daylight from windows - soft shadows */}
+          <directionalLight
+            position={[0, height * 0.8, -halfD + 2]}
+            intensity={0.6}
+            color="#FFF8F0"
+            castShadow
+            shadow-mapSize-width={1024}
+            shadow-mapSize-height={1024}
+            shadow-camera-near={0.5}
+            shadow-camera-far={50}
+            shadow-camera-left={-15}
+            shadow-camera-right={15}
+            shadow-camera-top={10}
+            shadow-camera-bottom={-2}
+            shadow-bias={-0.0005}
+            shadow-radius={4}
+          />
         </>
       ) : preset.id === 'modern-gallery-v2' ? (
         <>
