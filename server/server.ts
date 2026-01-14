@@ -183,9 +183,9 @@ app.get('/api/health/db', (req, res) => {
 
 app.get('/api/version', (req, res) => {
   res.json({
-    version: '1.0.10',
-    build: '2026-01-14T10:45:00Z',
-    commit: 'gallery-lighting-materials-fix',
+    version: '1.0.11',
+    build: '2026-01-14T11:05:00Z',
+    commit: 'gallery-walls-warm-colors',
     features: {
       cookieAuth: true,
       objectStorage: true,
