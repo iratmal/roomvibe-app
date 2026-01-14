@@ -827,7 +827,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       <mesh position={[0, height / 2, -halfD]} receiveShadow>
         <planeGeometry args={[width, height]} />
         {preset.id === 'modern-gallery-v2' ? (
-          <meshStandardMaterial color={preset.wallColor} roughness={0.85} metalness={0} />
+          <meshStandardMaterial color={preset.wallColor} roughness={0.85} metalness={0} side={THREE.DoubleSide} />
         ) : (
           <SafeWallMaterial color={GALLERY_WALL_COLOR} />
         )}
@@ -847,7 +847,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       <mesh position={[halfW, height / 2, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
         {preset.id === 'modern-gallery-v2' ? (
-          <meshStandardMaterial color={preset.wallColor} roughness={0.85} metalness={0} />
+          <meshStandardMaterial color={preset.wallColor} roughness={0.85} metalness={0} side={THREE.DoubleSide} />
         ) : (
           <SafeWallMaterial color={GALLERY_WALL_COLOR} />
         )}
@@ -856,7 +856,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       <mesh position={[-halfW, height / 2, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
         <planeGeometry args={[depth, height]} />
         {preset.id === 'modern-gallery-v2' ? (
-          <meshStandardMaterial color={preset.wallColor} roughness={0.85} metalness={0} />
+          <meshStandardMaterial color={preset.wallColor} roughness={0.85} metalness={0} side={THREE.DoubleSide} />
         ) : (
           <SafeWallMaterial color={GALLERY_WALL_COLOR} />
         )}
@@ -1131,7 +1131,7 @@ function SouthWallWithOpening({
       <mesh position={[-(width / 2 - leftWidth / 2), height / 2, 0]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[leftWidth, height]} />
         {isModern ? (
-          <meshStandardMaterial color={wallColor} roughness={0.85} metalness={0} />
+          <meshStandardMaterial color={wallColor} roughness={0.85} metalness={0} side={THREE.DoubleSide} />
         ) : (
           <SafeWallMaterial color={wallColor} />
         )}
@@ -1141,7 +1141,7 @@ function SouthWallWithOpening({
       <mesh position={[(width / 2 - rightWidth / 2), height / 2, 0]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[rightWidth, height]} />
         {isModern ? (
-          <meshStandardMaterial color={wallColor} roughness={0.85} metalness={0} />
+          <meshStandardMaterial color={wallColor} roughness={0.85} metalness={0} side={THREE.DoubleSide} />
         ) : (
           <SafeWallMaterial color={wallColor} />
         )}
@@ -1151,7 +1151,7 @@ function SouthWallWithOpening({
       <mesh position={[0, portalH + topHeight / 2, 0]} rotation={[0, Math.PI, 0]} receiveShadow>
         <planeGeometry args={[portalW, topHeight]} />
         {isModern ? (
-          <meshStandardMaterial color={wallColor} roughness={0.85} metalness={0} />
+          <meshStandardMaterial color={wallColor} roughness={0.85} metalness={0} side={THREE.DoubleSide} />
         ) : (
           <SafeWallMaterial color={wallColor} />
         )}
