@@ -192,9 +192,9 @@ export const gallery360Presets: Gallery360Preset[] = [
     id: 'industrial-loft',
     name: 'Industrial Loft Gallery',
     description: 'Industrial gallery with exposed brick, polished concrete and white partitions',
-    dimensions: { width: 22, height: 5, depth: 16 },
-    wallColor: '#9A7B5A',
-    floorColor: '#C8C4BC',
+    dimensions: { width: 26, height: 6, depth: 18 },
+    wallColor: '#B08860',
+    floorColor: '#D0CCC8',
     ceilingColor: '#FAFAFA',
     hasColumns: false,
     hasSkylights: false,
@@ -202,64 +202,65 @@ export const gallery360Presets: Gallery360Preset[] = [
     wallType: 'brick',
     hasPartitionWalls: true,
     partitionWalls: [
-      { id: 'partition-1', position: [-5, 1.8, 0], rotation: 0, width: 3.5, height: 3.6 },
-      { id: 'partition-2', position: [5, 1.8, 0], rotation: 0, width: 3.5, height: 3.6 }
+      { id: 'partition-1', position: [-5.5, 1.9, -1], rotation: 0, width: 4, height: 3.8 },
+      { id: 'partition-2', position: [5.5, 1.9, -1], rotation: 0, width: 4, height: 3.8 }
     ],
-    partitionWallColor: '#F2F2F2',
+    partitionWallColor: '#FFFFFF',
     viewpoints: [
       {
         id: 'entrance',
-        position: [0, 1.65, 7.5],
-        lookAt: [0, 1.8, -8],
+        position: [0, 1.65, 8.5],
+        lookAt: [0, 1.8, -9],
         label: 'Entrance'
       },
       {
         id: 'center',
         position: [0, 1.65, 2],
-        lookAt: [0, 1.65, -8],
+        lookAt: [0, 1.65, -9],
         label: 'Center'
       },
       {
         id: 'back-left',
-        position: [-8, 1.65, -3],
-        lookAt: [-11, 1.65, -3],
+        position: [-9, 1.65, -4],
+        lookAt: [-13, 1.65, -4],
         label: 'Back Left'
       },
       {
         id: 'back-right',
-        position: [8, 1.65, -3],
-        lookAt: [11, 1.65, -3],
+        position: [9, 1.65, -4],
+        lookAt: [13, 1.65, -4],
         label: 'Back Right'
       }
     ],
     hotspots: [
-      { id: 'h1', position: [0, 0.1, 4], targetViewpoint: 'center', rotation: 0 },
+      { id: 'h1', position: [0, 0.1, 5], targetViewpoint: 'center', rotation: 0 },
       { id: 'h2', position: [0, 0.1, -2], targetViewpoint: 'entrance', rotation: Math.PI },
-      { id: 'h3', position: [-6, 0.1, 3], targetViewpoint: 'back-left', rotation: -Math.PI / 4 },
-      { id: 'h4', position: [6, 0.1, 3], targetViewpoint: 'back-right', rotation: Math.PI / 4 }
+      { id: 'h3', position: [-7, 0.1, 3], targetViewpoint: 'back-left', rotation: -Math.PI / 4 },
+      { id: 'h4', position: [7, 0.1, 3], targetViewpoint: 'back-right', rotation: Math.PI / 4 }
     ],
     slots: [
-      // North Wall (brick) - 3 artworks
-      { id: 'wall-north-1', wallId: 'north', position: [-6, 2.2, -7.95], rotation: [0, 0, 0], width: 1.2, height: 0.9, label: 'North Wall - Left' },
-      { id: 'wall-north-2', wallId: 'north', position: [0, 2.2, -7.95], rotation: [0, 0, 0], width: 1.4, height: 1.0, label: 'North Wall - Center' },
-      { id: 'wall-north-3', wallId: 'north', position: [6, 2.2, -7.95], rotation: [0, 0, 0], width: 1.2, height: 0.9, label: 'North Wall - Right' },
-      // East Wall (brick) - 3 artworks
-      { id: 'wall-east-1', wallId: 'east', position: [10.95, 2.2, -4], rotation: [0, -Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'East Wall - Upper' },
-      { id: 'wall-east-2', wallId: 'east', position: [10.95, 2.2, 0], rotation: [0, -Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'East Wall - Center' },
-      { id: 'wall-east-3', wallId: 'east', position: [10.95, 2.2, 4], rotation: [0, -Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'East Wall - Lower' },
-      // West Wall (brick) - 3 artworks
-      { id: 'wall-west-1', wallId: 'west', position: [-10.95, 2.2, -4], rotation: [0, Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'West Wall - Upper' },
-      { id: 'wall-west-2', wallId: 'west', position: [-10.95, 2.2, 0], rotation: [0, Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'West Wall - Center' },
-      { id: 'wall-west-3', wallId: 'west', position: [-10.95, 2.2, 4], rotation: [0, Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'West Wall - Lower' },
+      // North Wall (brick) - 4 artworks with windows between
+      { id: 'wall-north-1', wallId: 'north', position: [-9, 2.4, -8.95], rotation: [0, 0, 0], width: 1.2, height: 0.9, label: 'North Wall - Far Left' },
+      { id: 'wall-north-2', wallId: 'north', position: [-3, 2.4, -8.95], rotation: [0, 0, 0], width: 1.4, height: 1.0, label: 'North Wall - Left' },
+      { id: 'wall-north-3', wallId: 'north', position: [3, 2.4, -8.95], rotation: [0, 0, 0], width: 1.4, height: 1.0, label: 'North Wall - Right' },
+      { id: 'wall-north-4', wallId: 'north', position: [9, 2.4, -8.95], rotation: [0, 0, 0], width: 1.2, height: 0.9, label: 'North Wall - Far Right' },
+      // East Wall (brick) - 3 artworks between windows
+      { id: 'wall-east-1', wallId: 'east', position: [12.95, 2.4, -5], rotation: [0, -Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'East Wall - Upper' },
+      { id: 'wall-east-2', wallId: 'east', position: [12.95, 2.4, 0], rotation: [0, -Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'East Wall - Center' },
+      { id: 'wall-east-3', wallId: 'east', position: [12.95, 2.4, 5], rotation: [0, -Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'East Wall - Lower' },
+      // West Wall (brick) - 3 artworks between windows
+      { id: 'wall-west-1', wallId: 'west', position: [-12.95, 2.4, -5], rotation: [0, Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'West Wall - Upper' },
+      { id: 'wall-west-2', wallId: 'west', position: [-12.95, 2.4, 0], rotation: [0, Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'West Wall - Center' },
+      { id: 'wall-west-3', wallId: 'west', position: [-12.95, 2.4, 5], rotation: [0, Math.PI / 2, 0], width: 1.2, height: 0.9, label: 'West Wall - Lower' },
       // Partition Wall 1 (left) - both sides
-      { id: 'partition-1-front', wallId: 'partition-1', position: [-5, 1.8, 0.12], rotation: [0, 0, 0], width: 1.0, height: 0.75, label: 'Left Partition - Front' },
-      { id: 'partition-1-back', wallId: 'partition-1', position: [-5, 1.8, -0.12], rotation: [0, Math.PI, 0], width: 1.0, height: 0.75, label: 'Left Partition - Back' },
+      { id: 'partition-1-front', wallId: 'partition-1', position: [-5.5, 1.9, -0.88], rotation: [0, 0, 0], width: 1.0, height: 0.8, label: 'Left Partition - Front' },
+      { id: 'partition-1-back', wallId: 'partition-1', position: [-5.5, 1.9, -1.12], rotation: [0, Math.PI, 0], width: 1.0, height: 0.8, label: 'Left Partition - Back' },
       // Partition Wall 2 (right) - both sides  
-      { id: 'partition-2-front', wallId: 'partition-2', position: [5, 1.8, 0.12], rotation: [0, 0, 0], width: 1.0, height: 0.75, label: 'Right Partition - Front' },
-      { id: 'partition-2-back', wallId: 'partition-2', position: [5, 1.8, -0.12], rotation: [0, Math.PI, 0], width: 1.0, height: 0.75, label: 'Right Partition - Back' },
+      { id: 'partition-2-front', wallId: 'partition-2', position: [5.5, 1.9, -0.88], rotation: [0, 0, 0], width: 1.0, height: 0.8, label: 'Right Partition - Front' },
+      { id: 'partition-2-back', wallId: 'partition-2', position: [5.5, 1.9, -1.12], rotation: [0, Math.PI, 0], width: 1.0, height: 0.8, label: 'Right Partition - Back' },
       // South Wall - avoiding entrance portal
-      { id: 'wall-south-1', wallId: 'south', position: [-7, 2.2, 7.95], rotation: [0, Math.PI, 0], width: 1.0, height: 0.75, label: 'South Wall - Left' },
-      { id: 'wall-south-2', wallId: 'south', position: [7, 2.2, 7.95], rotation: [0, Math.PI, 0], width: 1.0, height: 0.75, label: 'South Wall - Right' }
+      { id: 'wall-south-1', wallId: 'south', position: [-9, 2.4, 8.95], rotation: [0, Math.PI, 0], width: 1.0, height: 0.8, label: 'South Wall - Left' },
+      { id: 'wall-south-2', wallId: 'south', position: [9, 2.4, 8.95], rotation: [0, Math.PI, 0], width: 1.0, height: 0.8, label: 'South Wall - Right' }
     ]
   }
 ];

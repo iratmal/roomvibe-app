@@ -1,0 +1,184 @@
+0. GOAL (OBAVEZNO PROČITATI)
+
+Cilj je postići vizualni realizam industrijskog lofta (kao referentne AI slike),
+ALI:
+
+bez image-based galerije
+
+bez rasvjete koja kvari kretanje
+
+sa potpuno glatkim movementom kao u Classic Gallery
+
+Ovo je production gallery, ne demo.
+
+1. PROSTOR & PROPORCIJE (KLJUČNO)
+Layout
+
+Veliki, otvoreni pravokutni prostor
+
+Bez dodatnih prostorija, bez hodnika
+
+Jedan glavni volumen (open loft feel)
+
+Dimenzije (smjernice, ne hard-code):
+
+Širina: +20–30% veća od Classic Gallery
+
+Visina stropa: značajno viša (industrial loft feel)
+
+Dubina: ista ili blago veća od postojeće
+
+👉 Fokus: prozračnost + simetrija
+
+2. STRO P (VRLO BITNO)
+OBAVEZNO:
+
+❌ NEMA crnog stropa
+
+❌ NEMA spotlights / track lights koji utječu na kretanje
+
+DOZVOLJENO / POŽELJNO:
+
+Svijetli strop (bijela / off-white / very light grey)
+
+Vidljive metalne grede (tamno siva / čelik)
+
+Industrijski grid / beams (low-poly, jednostavno)
+
+SVJETLO:
+
+Global ambient light
+
+very soft directional light (simulacija dnevnog svjetla)
+
+Bez pojedinačnih light source objekata koji utječu na FPS
+
+👉 Kretanje mora ostati jednako glatko kao Classic Gallery
+
+3. ZIDOVI – VANJSKI (BRICK WALLS)
+Brick walls:
+
+Realističnija tekstura cigle
+
+Manji brick pattern (ne overscaled)
+
+Topla industrijska nijansa (neutral brown / beige / light rust)
+
+Blagi roughness (ne sjajno)
+
+Važno:
+
+Cigle su samo perimeter walls
+
+Ne koristiti cigle na partition zidovima
+
+4. PARTITION ZIDOVI (IZLOŽBENI ZIDOVI)
+Oblik:
+
+2 ili 3 kraća poprečna zida
+
+Ne smiju blokirati pogled kroz prostor
+
+Razmaknuti, simetrični
+
+Boja:
+
+ČISTA BIJELA ili vrlo svijetla siva
+
+Ista boja kao klasični gallery walls
+
+Visina:
+
+Ne do samog stropa
+
+Ostaviti “zrak” iznad (loft feeling)
+
+👉 Ovo su glavni zidovi za art, moraju biti neutralni.
+
+5. POD
+
+Polirani beton
+
+Svijetlo siva
+
+Minimalni reflection (subtle)
+
+Bez uzoraka
+
+6. PROZORI (VAŽNO ZA REALIZAM)
+
+Ako je tehnički moguće bez FPS dropa:
+
+Veliki industrijski prozori na vanjskim zidovima
+
+Ne moraju biti “view-through”
+
+Mogu biti:
+
+light-emitting planes
+
+ili baked light texture
+
+Cilj: osjećaj dnevnog svjetla, ne pogled van.
+
+Ako nije moguće → preskočiti, ali pojačati ambient light.
+
+7. KRETANJE (HARD REQUIREMENT)
+
+Movement mora biti:
+
+smooth
+
+bez trzanja
+
+identičan Classic Gallery
+
+Ako postoji konflikt:
+👉 uvijek žrtvovati realizam prije kretanja
+
+8. ZABRANE (VAŽNO)
+
+❌ NEMA:
+
+spot lights
+
+dynamic shadows
+
+fancy lighting rigs
+
+volumetric lights
+
+reflektirajućih stropova
+
+crnih površina koje “gutaju” prostor
+
+RoomVibe = elegantni realizam, ne game demo.
+
+9. REFERENCA (KONCEPTUALNO)
+
+Vizualni cilj:
+
+Industrial loft art gallery
+
+Museum-grade prostor
+
+Minimal, premium, airy
+
+Fokus na art, ne na arhitekturu
+
+Ne pokušavati kopirati sliku 1:1,
+nego rekreirati osjećaj prostora.
+
+10. DEFINICIJA USPJEHA
+
+Galerija je gotova kada:
+
+izgleda kao industrijski loft
+
+art “diše” na zidovima
+
+kretanje je savršeno glatko
+
+nema distrakcija
+
+izgleda premium, ne “AI-ish”

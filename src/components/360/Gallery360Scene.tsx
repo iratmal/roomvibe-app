@@ -795,62 +795,133 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       {/* Ceiling - different style based on preset */}
       {preset.id === 'industrial-loft' ? (
         <>
-          {/* INDUSTRIAL LOFT: White ceiling with dark metal truss beams - PERFORMANCE OPTIMIZED */}
+          {/* INDUSTRIAL LOFT: White ceiling with triangular truss beams - PERFORMANCE OPTIMIZED */}
           <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
             <planeGeometry args={[width, depth]} />
             <meshBasicMaterial color={preset.ceilingColor} />
           </mesh>
           
-          {/* Main steel truss beams - dark grey metal */}
-          {[-depth/4, 0, depth/4].map((zPos, i) => (
+          {/* Triangular steel trusses - like reference image */}
+          {[-depth/3, 0, depth/3].map((zPos, i) => (
             <group key={`truss-${i}`}>
-              {/* Bottom chord of truss */}
-              <mesh position={[0, height - 0.45, zPos]}>
-                <boxGeometry args={[width + 0.2, 0.12, 0.12]} />
-                <meshBasicMaterial color="#4A4A4A" />
+              {/* Bottom chord of truss (horizontal beam) */}
+              <mesh position={[0, height - 0.7, zPos]}>
+                <boxGeometry args={[width + 0.4, 0.1, 0.1]} />
+                <meshBasicMaterial color="#505050" />
               </mesh>
-              {/* Top chord of truss */}
-              <mesh position={[0, height - 0.08, zPos]}>
-                <boxGeometry args={[width + 0.2, 0.08, 0.08]} />
-                <meshBasicMaterial color="#4A4A4A" />
+              {/* Top chord sections connecting to ceiling */}
+              <mesh position={[-width/4, height - 0.05, zPos]}>
+                <boxGeometry args={[width/2 + 0.2, 0.08, 0.08]} />
+                <meshBasicMaterial color="#505050" />
               </mesh>
-              {/* Diagonal web members */}
-              {[-width/3, -width/6, 0, width/6, width/3].map((xPos, j) => (
-                <mesh key={`diag-${i}-${j}`} position={[xPos, height - 0.26, zPos]} rotation={[0, 0, j % 2 === 0 ? 0.4 : -0.4]}>
-                  <boxGeometry args={[0.06, 0.42, 0.06]} />
-                  <meshBasicMaterial color="#4A4A4A" />
+              <mesh position={[width/4, height - 0.05, zPos]}>
+                <boxGeometry args={[width/2 + 0.2, 0.08, 0.08]} />
+                <meshBasicMaterial color="#505050" />
+              </mesh>
+              {/* Diagonal members forming V-shapes */}
+              {Array.from({ length: 9 }, (_, j) => {
+                const xStart = -width/2 + (j + 0.5) * (width / 9);
+                const isUp = j % 2 === 0;
+                return (
+                  <mesh 
+                    key={`v-diag-${i}-${j}`} 
+                    position={[xStart, height - 0.38, zPos]} 
+                    rotation={[0, 0, isUp ? 0.65 : -0.65]}
+                  >
+                    <boxGeometry args={[0.06, 0.75, 0.06]} />
+                    <meshBasicMaterial color="#505050" />
+                  </mesh>
+                );
+              })}
+              {/* Vertical posts at truss intersections */}
+              {[-width/2 + 1.5, -width/4, 0, width/4, width/2 - 1.5].map((xPos, k) => (
+                <mesh key={`vert-${i}-${k}`} position={[xPos, height - 0.38, zPos]}>
+                  <boxGeometry args={[0.06, 0.65, 0.06]} />
+                  <meshBasicMaterial color="#505050" />
                 </mesh>
               ))}
             </group>
           ))}
           
-          {/* Cross beams connecting trusses */}
+          {/* Cross braces connecting trusses */}
           {[-width/3, 0, width/3].map((xPos, i) => (
-            <mesh key={`cross-beam-${i}`} position={[xPos, height - 0.3, 0]}>
-              <boxGeometry args={[0.1, 0.1, depth]} />
-              <meshBasicMaterial color="#4A4A4A" />
+            <mesh key={`cross-brace-${i}`} position={[xPos, height - 0.65, 0]}>
+              <boxGeometry args={[0.08, 0.08, depth - 2]} />
+              <meshBasicMaterial color="#505050" />
             </mesh>
           ))}
           
-          {/* Minimal track fixtures - visual only, NO dynamic lights */}
-          {[-halfW + 4, halfW - 4].map((xPos, i) => (
-            <group key={`loft-track-${i}`}>
-              <mesh position={[xPos, height - 0.52, 0]}>
-                <boxGeometry args={[0.02, 0.02, depth - 3]} />
+          {/* Industrial Windows - light-emitting planes on North wall */}
+          {[-6, 6].map((xPos, i) => (
+            <group key={`window-north-${i}`} position={[xPos, height * 0.65, -halfD + 0.15]}>
+              {/* Window frame - dark steel */}
+              <mesh>
+                <boxGeometry args={[3.2, 3.5, 0.12]} />
                 <meshBasicMaterial color="#3A3A3A" />
               </mesh>
-              {[-depth/3, 0, depth/3].map((zPos, j) => (
-                <mesh key={`loft-fixture-${i}-${j}`} position={[xPos, height - 0.56, zPos]}>
-                  <cylinderGeometry args={[0.03, 0.04, 0.05, 6]} />
-                  <meshBasicMaterial color="#2A2A2A" />
+              {/* Window glass - bright daylight glow */}
+              <mesh position={[0, 0, 0.02]}>
+                <planeGeometry args={[2.8, 3.1]} />
+                <meshBasicMaterial color="#E8E6E0" />
+              </mesh>
+              {/* Window mullions (grid) */}
+              <mesh position={[0, 0, 0.08]}>
+                <boxGeometry args={[0.06, 3.2, 0.04]} />
+                <meshBasicMaterial color="#3A3A3A" />
+              </mesh>
+              <mesh position={[0, 0, 0.08]}>
+                <boxGeometry args={[2.9, 0.06, 0.04]} />
+                <meshBasicMaterial color="#3A3A3A" />
+              </mesh>
+              {/* Horizontal dividers */}
+              {[-0.9, 0.9].map((yOff, j) => (
+                <mesh key={`hmull-${i}-${j}`} position={[0, yOff, 0.08]}>
+                  <boxGeometry args={[2.9, 0.05, 0.04]} />
+                  <meshBasicMaterial color="#3A3A3A" />
                 </mesh>
+              ))}
+              {/* Vertical dividers */}
+              {[-0.7, 0.7].map((xOff, j) => (
+                <mesh key={`vmull-${i}-${j}`} position={[xOff, 0, 0.08]}>
+                  <boxGeometry args={[0.05, 3.2, 0.04]} />
+                  <meshBasicMaterial color="#3A3A3A" />
+                </mesh>
+              ))}
+            </group>
+          ))}
+          
+          {/* Industrial Windows - light-emitting planes on East/West walls */}
+          {[-halfW + 0.15, halfW - 0.15].map((xPos, i) => (
+            <group key={`window-side-${i}`}>
+              {[-3, 3].map((zPos, j) => (
+                <group key={`window-${i}-${j}`} position={[xPos, height * 0.65, zPos]} rotation={[0, i === 0 ? Math.PI / 2 : -Math.PI / 2, 0]}>
+                  {/* Window frame */}
+                  <mesh>
+                    <boxGeometry args={[2.8, 3.2, 0.12]} />
+                    <meshBasicMaterial color="#3A3A3A" />
+                  </mesh>
+                  {/* Window glass */}
+                  <mesh position={[0, 0, 0.02]}>
+                    <planeGeometry args={[2.4, 2.8]} />
+                    <meshBasicMaterial color="#E8E6E0" />
+                  </mesh>
+                  {/* Window grid */}
+                  <mesh position={[0, 0, 0.08]}>
+                    <boxGeometry args={[0.05, 2.9, 0.04]} />
+                    <meshBasicMaterial color="#3A3A3A" />
+                  </mesh>
+                  <mesh position={[0, 0, 0.08]}>
+                    <boxGeometry args={[2.5, 0.05, 0.04]} />
+                    <meshBasicMaterial color="#3A3A3A" />
+                  </mesh>
+                </group>
               ))}
             </group>
           ))}
           
           {/* Simple uniform lighting - like Classic Gallery for smooth performance */}
-          <hemisphereLight args={['#FAFCFF', '#D0CCC8', 0.85]} position={[0, height, 0]} />
-          <ambientLight intensity={0.45} color="#FAFAFA" />
+          <hemisphereLight args={['#FAFCFF', '#D8D4CC', 0.9]} position={[0, height, 0]} />
+          <ambientLight intensity={0.55} color="#FAFAFA" />
         </>
       ) : preset.id === 'modern-gallery-v2' ? (
         <>
