@@ -847,48 +847,123 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
             </mesh>
           ))}
           
-          {/* Soft daylight windows - minimal frames, just light glow */}
+          {/* Realistic recessed windows on North wall with daylight */}
           {[-6, 6].map((xPos, i) => (
-            <group key={`window-north-${i}`} position={[xPos, height * 0.62, -halfD + 0.08]}>
-              {/* Window glass - soft daylight glow only */}
-              <mesh>
-                <planeGeometry args={[3, 3.2]} />
-                <meshBasicMaterial color="#F0EDE8" />
+            <group key={`window-north-${i}`} position={[xPos, height * 0.58, -halfD]}>
+              {/* Window recess - depth into wall */}
+              <mesh position={[0, 0, 0.25]}>
+                <boxGeometry args={[3.2, 3.6, 0.5]} />
+                <meshBasicMaterial color="#4A4642" />
               </mesh>
-              {/* Subtle thin mullions - light grey, not black */}
-              <mesh position={[0, 0, 0.01]}>
-                <boxGeometry args={[0.03, 3.2, 0.02]} />
-                <meshBasicMaterial color="#888888" />
+              {/* Inner frame - dark steel */}
+              <mesh position={[0, 0, 0.08]}>
+                <boxGeometry args={[3.0, 3.4, 0.08]} />
+                <meshBasicMaterial color="#3A3836" />
               </mesh>
-              <mesh position={[0, 0, 0.01]}>
-                <boxGeometry args={[3, 0.03, 0.02]} />
-                <meshBasicMaterial color="#888888" />
+              {/* Glass pane - semi-transparent blue/grey tint */}
+              <mesh position={[0, 0, 0.13]}>
+                <planeGeometry args={[2.8, 3.2]} />
+                <meshStandardMaterial 
+                  color="#D8E4EC" 
+                  transparent 
+                  opacity={0.35} 
+                  roughness={0.1} 
+                  metalness={0.2}
+                />
               </mesh>
+              {/* Bright daylight behind glass */}
+              <mesh position={[0, 0, 0.02]}>
+                <planeGeometry args={[2.9, 3.3]} />
+                <meshBasicMaterial color="#F8F6F0" />
+              </mesh>
+              {/* Metal mullions - dark steel grid */}
+              <mesh position={[0, 0, 0.15]}>
+                <boxGeometry args={[0.05, 3.3, 0.03]} />
+                <meshBasicMaterial color="#3A3836" />
+              </mesh>
+              <mesh position={[0, 0, 0.15]}>
+                <boxGeometry args={[2.9, 0.05, 0.03]} />
+                <meshBasicMaterial color="#3A3836" />
+              </mesh>
+              {[-0.9, 0.9].map((yOff, j) => (
+                <mesh key={`hmull-n-${i}-${j}`} position={[0, yOff, 0.15]}>
+                  <boxGeometry args={[2.9, 0.04, 0.03]} />
+                  <meshBasicMaterial color="#3A3836" />
+                </mesh>
+              ))}
+              {[-0.7, 0.7].map((xOff, j) => (
+                <mesh key={`vmull-n-${i}-${j}`} position={[xOff, 0, 0.15]}>
+                  <boxGeometry args={[0.04, 3.3, 0.03]} />
+                  <meshBasicMaterial color="#3A3836" />
+                </mesh>
+              ))}
             </group>
           ))}
           
-          {/* Side windows - subtle daylight impression */}
-          {[-halfW + 0.08, halfW - 0.08].map((xPos, i) => (
-            <group key={`window-side-${i}`}>
+          {/* Daylight floor patches from North windows - subtle brightness gradient */}
+          {[-6, 6].map((xPos, i) => (
+            <mesh key={`daylight-north-${i}`} position={[xPos, 0.005, -halfD + 4]} rotation={[-Math.PI / 2, 0, 0]}>
+              <planeGeometry args={[4, 6]} />
+              <meshBasicMaterial color="#F8F6F0" transparent opacity={0.12} />
+            </mesh>
+          ))}
+          
+          {/* Realistic recessed windows on side walls */}
+          {[-halfW, halfW].map((xPos, wallIdx) => (
+            <group key={`window-side-${wallIdx}`}>
               {[-4, 4].map((zPos, j) => (
-                <group key={`window-${i}-${j}`} position={[xPos, height * 0.62, zPos]} rotation={[0, i === 0 ? Math.PI / 2 : -Math.PI / 2, 0]}>
-                  {/* Window glass - soft glow */}
-                  <mesh>
-                    <planeGeometry args={[2.6, 3]} />
-                    <meshBasicMaterial color="#F0EDE8" />
+                <group key={`window-${wallIdx}-${j}`} position={[xPos, height * 0.58, zPos]} rotation={[0, wallIdx === 0 ? Math.PI / 2 : -Math.PI / 2, 0]}>
+                  {/* Window recess - depth into wall */}
+                  <mesh position={[0, 0, 0.25]}>
+                    <boxGeometry args={[2.8, 3.4, 0.5]} />
+                    <meshBasicMaterial color="#4A4642" />
                   </mesh>
-                  {/* Subtle thin mullions */}
-                  <mesh position={[0, 0, 0.01]}>
-                    <boxGeometry args={[0.03, 3, 0.02]} />
-                    <meshBasicMaterial color="#888888" />
+                  {/* Inner frame - dark steel */}
+                  <mesh position={[0, 0, 0.08]}>
+                    <boxGeometry args={[2.6, 3.2, 0.08]} />
+                    <meshBasicMaterial color="#3A3836" />
                   </mesh>
-                  <mesh position={[0, 0, 0.01]}>
-                    <boxGeometry args={[2.6, 0.03, 0.02]} />
-                    <meshBasicMaterial color="#888888" />
+                  {/* Glass pane - semi-transparent */}
+                  <mesh position={[0, 0, 0.13]}>
+                    <planeGeometry args={[2.4, 3.0]} />
+                    <meshStandardMaterial 
+                      color="#D8E4EC" 
+                      transparent 
+                      opacity={0.35} 
+                      roughness={0.1} 
+                      metalness={0.2}
+                    />
+                  </mesh>
+                  {/* Bright daylight behind glass */}
+                  <mesh position={[0, 0, 0.02]}>
+                    <planeGeometry args={[2.5, 3.1]} />
+                    <meshBasicMaterial color="#F8F6F0" />
+                  </mesh>
+                  {/* Metal mullions */}
+                  <mesh position={[0, 0, 0.15]}>
+                    <boxGeometry args={[0.04, 3.1, 0.03]} />
+                    <meshBasicMaterial color="#3A3836" />
+                  </mesh>
+                  <mesh position={[0, 0, 0.15]}>
+                    <boxGeometry args={[2.5, 0.04, 0.03]} />
+                    <meshBasicMaterial color="#3A3836" />
                   </mesh>
                 </group>
               ))}
             </group>
+          ))}
+          
+          {/* Daylight floor patches from side windows */}
+          {[
+            { x: -halfW + 3, z: -4 },
+            { x: -halfW + 3, z: 4 },
+            { x: halfW - 3, z: -4 },
+            { x: halfW - 3, z: 4 }
+          ].map((pos, i) => (
+            <mesh key={`daylight-side-${i}`} position={[pos.x, 0.005, pos.z]} rotation={[-Math.PI / 2, 0, 0]}>
+              <planeGeometry args={[4, 3.5]} />
+              <meshBasicMaterial color="#F8F6F0" transparent opacity={0.1} />
+            </mesh>
           ))}
           
           {/* Soft ambient lighting - airy, calm feel */}
