@@ -66,9 +66,9 @@ function isValidArtworkUrl(url: string | undefined | null): boolean {
  * There are two floor meshes: outerEnclosureFloor and tiledFloorMain; both guarded by FloorGuard.
  */
 
-const GALLERY_WALL_COLOR = '#f5f2ed';
+const GALLERY_WALL_COLOR = '#b5b0a8';
 const GALLERY_CEILING_COLOR = '#f5f5f5';
-const GALLERY_FLOOR_COLOR = '#c8c4bc';
+const GALLERY_FLOOR_COLOR = '#d8d4cc';
 
 function DebugOverlay() {
   const { scene, gl } = useThree();
