@@ -66,9 +66,10 @@ function isValidArtworkUrl(url: string | undefined | null): boolean {
  * There are two floor meshes: outerEnclosureFloor and tiledFloorMain; both guarded by FloorGuard.
  */
 
-const GALLERY_WALL_COLOR = '#CFC6BA';
-const GALLERY_CEILING_COLOR = '#F2F2EE';
-const GALLERY_FLOOR_COLOR = '#E6E4DE';
+const GALLERY_WALL_COLOR = '#BFB6A8';
+const GALLERY_CEILING_COLOR = '#E6E6E2';
+const GALLERY_FLOOR_COLOR = '#D6D4CC';
+const GALLERY_LIGHT_COLOR = '#FFF3E0';
 
 function DebugOverlay() {
   const { scene, gl } = useThree();
@@ -172,17 +173,17 @@ function DebugOverlay() {
 
 function SafeWallMaterial({ color }: { color?: string }) {
   const safeColor = (color && color !== '#000000' && color !== '#000' && color !== 'black') ? color : GALLERY_WALL_COLOR;
-  return <meshBasicMaterial color={safeColor} side={THREE.DoubleSide} />;
+  return <meshStandardMaterial color={safeColor} roughness={0.8} metalness={0} side={THREE.DoubleSide} />;
 }
 
 function SafeCeilingMaterial({ color }: { color?: string }) {
   const safeColor = (color && color !== '#000000' && color !== '#000' && color !== 'black') ? color : GALLERY_CEILING_COLOR;
-  return <meshBasicMaterial color={safeColor} side={THREE.DoubleSide} />;
+  return <meshStandardMaterial color={safeColor} roughness={0.9} metalness={0} side={THREE.DoubleSide} />;
 }
 
 function SafeFloorMaterial({ color }: { color?: string }) {
   const safeColor = (color && color !== '#000000' && color !== '#000' && color !== 'black') ? color : GALLERY_FLOOR_COLOR;
-  return <meshBasicMaterial color={safeColor} />;
+  return <meshStandardMaterial color={safeColor} roughness={0.7} metalness={0} />;
 }
 
 const FLOOR_MESH_NAMES = [
@@ -344,8 +345,8 @@ function Skylight({ position, width, depth }: {
         position={[0, -0.1, 0]}
         width={width * 0.9}
         height={depth * 0.9}
-        intensity={2.5}
-        color="#fffef5"
+        intensity={1.75}
+        color={GALLERY_LIGHT_COLOR}
       />
     </group>
   );
@@ -758,7 +759,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         <>
           {/* Ceiling ambient light - illuminates ceiling beams and panels */}
           <hemisphereLight 
-            args={['#ffffff', '#e8e8e8', 0.6]} 
+            args={[GALLERY_LIGHT_COLOR, '#a09080', 0.4]} 
             position={[0, height + 2, 0]}
           />
           <rectAreaLight
@@ -766,8 +767,8 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
             rotation={[Math.PI / 2, 0, 0]}
             width={width * 0.8}
             height={depth * 0.8}
-            intensity={0.4}
-            color="#f5f5f5"
+            intensity={0.28}
+            color={GALLERY_LIGHT_COLOR}
           />
           
           {/* Designer benches with premium dark grey */}
@@ -923,30 +924,30 @@ function EntrancePortal({ position, rotation }: { position: [number, number, num
         {/* Dimmer ambient lighting in secondary space */}
         <pointLight 
           position={[0, PORTAL_H * 0.85, -SECONDARY_D * 0.4]} 
-          intensity={0.25} 
+          intensity={0.18} 
           distance={10} 
-          color="#f5f0e8"
+          color={GALLERY_LIGHT_COLOR}
         />
         <pointLight 
           position={[-2, PORTAL_H * 0.7, -SECONDARY_D * 0.6]} 
-          intensity={0.15} 
+          intensity={0.1} 
           distance={6} 
-          color="#f0ebe3"
+          color={GALLERY_LIGHT_COLOR}
         />
         <pointLight 
           position={[2, PORTAL_H * 0.7, -SECONDARY_D * 0.6]} 
-          intensity={0.15} 
+          intensity={0.1} 
           distance={6} 
-          color="#f0ebe3"
+          color={GALLERY_LIGHT_COLOR}
         />
       </group>
 
       {/* Corridor lighting - subtle */}
       <pointLight 
         position={[0, PORTAL_H * 0.8, -CORRIDOR_DEPTH * 0.3]} 
-        intensity={0.3} 
+        intensity={0.2} 
         distance={5} 
-        color="#fff8f2"
+        color={GALLERY_LIGHT_COLOR}
       />
     </group>
   );
@@ -1900,20 +1901,20 @@ export function Gallery360Scene({
       gl={{ 
         antialias: true,
         toneMapping: THREE.ACESFilmicToneMapping,
-        toneMappingExposure: 1.15
+        toneMappingExposure: 0.85
       }}
       onCreated={({ gl }) => {
         // Enable legacy lights for consistent intensity values
         (gl as any).useLegacyLights = true;
       }}
     >
-      <ambientLight intensity={0.6} color="#fff8f2" />
-      <hemisphereLight args={['#faf8f5', '#a09080', 0.8]} />
+      <ambientLight intensity={0.4} color={GALLERY_LIGHT_COLOR} />
+      <hemisphereLight args={[GALLERY_LIGHT_COLOR, '#a09080', 0.55]} />
       
       <directionalLight 
         position={[0, preset.dimensions.height + 8, 0]} 
-        intensity={1.0}
-        color="#fffcf8"
+        intensity={0.7}
+        color={GALLERY_LIGHT_COLOR}
         castShadow
         shadow-mapSize={[2048, 2048]}
         shadow-camera-far={60}
@@ -1925,8 +1926,8 @@ export function Gallery360Scene({
         shadow-radius={4}
       />
       
-      <directionalLight position={[12, 6, 6]} intensity={0.4} color="#fff5e8" />
-      <directionalLight position={[-12, 6, -6]} intensity={0.3} color="#f8f5ff" />
+      <directionalLight position={[12, 6, 6]} intensity={0.28} color={GALLERY_LIGHT_COLOR} />
+      <directionalLight position={[-12, 6, -6]} intensity={0.21} color={GALLERY_LIGHT_COLOR} />
 
       <GalleryRoom preset={preset} />
       <FloorGuard />
