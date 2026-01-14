@@ -36,7 +36,7 @@ interface Gallery360EditorProps {
 
 export function Gallery360Editor({
   exhibitionId,
-  presetId = 'modern-gallery-v2',
+  presetId = 'white-cube-v1',
   availableArtworks,
   initialAssignments = [],
   onSave,

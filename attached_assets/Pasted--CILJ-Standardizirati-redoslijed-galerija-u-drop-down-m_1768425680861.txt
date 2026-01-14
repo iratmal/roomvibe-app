@@ -1,0 +1,150 @@
+🎯 CILJ
+
+Standardizirati redoslijed galerija u drop-down meniju, definirati default galeriju, te dodati novu petu galeriju: Hybrid Studio Gallery (experimental) bez diranja postojećih galerija.
+
+1️⃣ DROP-DOWN REDOSLIJED GALERIJA (OBAVEZNO)
+
+U gallery type drop-down meniju redoslijed mora biti točno ovakav:
+
+Classic Gallery
+
+Modern Gallery
+
+Industrial Loft Gallery
+
+Daylight Atrium Gallery
+
+Hybrid Studio Gallery (experimental)
+
+👉 Ovo nije samo UI redoslijed, nego logički redoslijed koji se koristi svugdje gdje se galerije inicijaliziraju ili biraju.
+
+2️⃣ DEFAULT GALERIJA (VRLO BITNO)
+
+Kad korisnik:
+
+kreira novu exhibition
+
+ili prvi put ulazi u exhibition view
+
+➡️ mora se automatski učitati Classic Gallery
+
+Classic Gallery je:
+
+default
+
+fallback
+
+baseline
+
+Ako se gallery type ne učita iz nekog razloga → fallback = Classic Gallery
+
+3️⃣ POSTOJEĆE GALERIJE – NE DIRATI
+
+⚠️ Ne mijenjati postojeće galerije:
+
+Classic Gallery
+
+Modern Gallery
+
+Industrial Loft Gallery
+
+Daylight Atrium Gallery
+
+Ne dirati:
+
+njihovu geometriju
+
+postojeće wall slotove
+
+kretanje
+
+rasvjetu
+
+logiku
+
+4️⃣ NOVA GALERIJA – HYBRID STUDIO GALLERY (PETA GALERIJA)
+Naziv:
+
+Hybrid Studio Gallery
+
+Napomena: ovo je eksperimentalna galerija (interno), ali naziv ostaje ovakav.
+
+Početna konfiguracija (SVJESNO JEDNOSTAVNA):
+
+Hybrid Studio Gallery treba:
+
+preuzeti osnovnu geometriju Classic Gallery
+
+bez dodatne rasvjete
+
+bez kompleksnih efekata
+
+bez performance-heavy elemenata
+
+Cilj ove galerije trenutno NIJE realizam, nego:
+
+testiranje hibridnog approacha
+
+stabilno kretanje
+
+usporedba s ostalim galerijama
+
+Vizualni stil (minimalni):
+
+Zidovi: svijetlo neutralni (off-white / very light grey)
+
+Pod: neutralan, mat
+
+Strop: jednostavan, svijetao
+
+Bez spotlights
+
+Bez volumetric lighting
+
+Bez refleksija
+
+👉 UX i kretanje imaju apsolutni prioritet nad izgledom
+
+5️⃣ WALL SLOTS – DOSLJEDNOST
+
+Hybrid Studio Gallery mora imati:
+
+isti ili kompatibilan wall slot sistem kao Classic Gallery
+
+isti naming convention (North Wall, East Wall, itd.)
+
+kompatibilnost s postojećim artwork placement logicom
+
+6️⃣ BITNA NAPOMENA O PRISTUPU
+
+⚠️ NE RADITI:
+
+“AI magic”
+
+automatsko generiranje prostora
+
+eksperimentalne efekte
+
+miješanje s Industrial ili Daylight galerijama
+
+✔️ RADITI:
+
+čistu, stabilnu, predvidljivu galeriju
+
+kao izolirani sandbox za buduće testove
+
+7️⃣ CHECKLIST PRIJE MERGE-A
+
+Prije nego se task smatra završenim, provjeri:
+
+Drop-down redoslijed je točno kako je definirano
+
+Classic Gallery se uvijek prva učitava
+
+Hybrid Studio Gallery postoji kao peta opcija
+
+Existing galleries nisu promijenjene
+
+Kretanje u Hybrid galeriji je glatko
+
+Nema regresije u drugim galerijama

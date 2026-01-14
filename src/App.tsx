@@ -3501,7 +3501,7 @@ function Exhibition360EditorPage() {
   const [error, setError] = useState('');
   const [availableArtworks, setAvailableArtworks] = useState<any[]>([]);
   const [initialAssignments, setInitialAssignments] = useState<any[]>([]);
-  const [presetId, setPresetId] = useState('modern-gallery-v2');
+  const [presetId, setPresetId] = useState('white-cube-v1');
   const [collectionTitle, setCollectionTitle] = useState('');
   
   const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
@@ -3529,7 +3529,7 @@ function Exhibition360EditorPage() {
           const sceneData = await sceneRes.json();
           setCollectionTitle(sceneData.title || '');
           if (sceneData.scene360Data) {
-            setPresetId(sceneData.scene360Data.presetId || 'modern-gallery-v2');
+            setPresetId(sceneData.scene360Data.presetId || 'white-cube-v1');
             setInitialAssignments(sceneData.scene360Data.slots || []);
           }
         }
