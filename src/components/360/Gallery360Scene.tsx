@@ -490,6 +490,101 @@ function ConcreteFloor({ width, depth, color }: { width: number; depth: number; 
   );
 }
 
+function BrickWall({ 
+  width, 
+  height, 
+  position, 
+  rotation = [0, 0, 0] 
+}: { 
+  width: number; 
+  height: number; 
+  position: [number, number, number]; 
+  rotation?: [number, number, number];
+}) {
+  const brickData = useMemo(() => {
+    const brickW = 0.22;
+    const brickH = 0.065;
+    const mortarGap = 0.012;
+    const rows = Math.ceil(height / (brickH + mortarGap));
+    const cols = Math.ceil(width / (brickW + mortarGap)) + 1;
+    const bricks: Array<{ x: number; y: number; shade: number; hueShift: number }> = [];
+    
+    const seededRandom = (seed: number) => {
+      const x = Math.sin(seed * 12.9898 + seed * 78.233) * 43758.5453;
+      return x - Math.floor(x);
+    };
+    
+    for (let row = 0; row < rows; row++) {
+      const offset = (row % 2) * (brickW / 2 + mortarGap / 2);
+      for (let col = 0; col < cols; col++) {
+        const seed = row * 1000 + col;
+        const x = -width / 2 + col * (brickW + mortarGap) + offset + brickW / 2;
+        const y = row * (brickH + mortarGap) + brickH / 2;
+        if (x < width / 2 && x > -width / 2 && y < height) {
+          const shade = 0.7 + seededRandom(seed) * 0.45;
+          const hueShift = seededRandom(seed + 500) * 0.15;
+          bricks.push({ x, y, shade, hueShift });
+        }
+      }
+    }
+    return { bricks, brickW, brickH };
+  }, [width, height]);
+
+  const baseBrickColor = useMemo(() => new THREE.Color('#8B4513'), []);
+  const mortarColor = useMemo(() => new THREE.Color('#D4C8B8'), []);
+
+  return (
+    <group position={position} rotation={rotation}>
+      <mesh>
+        <planeGeometry args={[width, height]} />
+        <meshBasicMaterial color={mortarColor} side={THREE.DoubleSide} />
+      </mesh>
+      {brickData.bricks.map((brick, i) => {
+        const brickColor = baseBrickColor.clone().multiplyScalar(brick.shade);
+        brickColor.offsetHSL(brick.hueShift - 0.075, 0, 0);
+        return (
+          <mesh
+            key={i}
+            position={[brick.x, brick.y - height / 2, 0.002]}
+          >
+            <planeGeometry args={[brickData.brickW, brickData.brickH]} />
+            <meshBasicMaterial color={brickColor} side={THREE.DoubleSide} />
+          </mesh>
+        );
+      })}
+    </group>
+  );
+}
+
+function PartitionWall({
+  position,
+  rotation,
+  width,
+  height,
+  color
+}: {
+  position: [number, number, number];
+  rotation: number;
+  width: number;
+  height: number;
+  color: string;
+}) {
+  const thickness = 0.2;
+  
+  return (
+    <group position={position} rotation={[0, rotation, 0]}>
+      <mesh>
+        <boxGeometry args={[width, height, thickness]} />
+        <meshStandardMaterial color={color} roughness={0.9} metalness={0} side={THREE.DoubleSide} />
+      </mesh>
+      <mesh position={[0, height / 2 + 0.02, 0]}>
+        <boxGeometry args={[width + 0.04, 0.04, thickness + 0.04]} />
+        <meshBasicMaterial color="#3A3530" />
+      </mesh>
+    </group>
+  );
+}
+
 /**
  * OuterEnclosure creates TWO floor meshes:
  * 1. outerEnclosureFloor - large plane below gallery (-0.8 Y offset)
@@ -696,7 +791,58 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       </mesh>
 
       {/* Ceiling - different style based on preset */}
-      {preset.id === 'modern-gallery-v2' ? (
+      {preset.id === 'industrial-loft' ? (
+        <>
+          {/* INDUSTRIAL LOFT: Warm ceiling with exposed wooden beams */}
+          <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[width, depth]} />
+            <meshStandardMaterial color={preset.ceilingColor} roughness={0.9} metalness={0} />
+          </mesh>
+          
+          {/* Exposed wooden beams - warm brown */}
+          {[-depth/4, 0, depth/4].map((zPos, i) => (
+            <mesh key={`wood-beam-${i}`} position={[0, height - 0.2, zPos]}>
+              <boxGeometry args={[width + 0.3, 0.35, 0.22]} />
+              <meshStandardMaterial color="#4A3520" roughness={0.85} metalness={0} />
+            </mesh>
+          ))}
+          
+          {/* Black metal track lighting rails */}
+          {[-halfW + 3, 0, halfW - 3].map((xPos, i) => (
+            <group key={`loft-track-${i}`}>
+              <mesh position={[xPos, height - 0.06, 0]}>
+                <boxGeometry args={[0.05, 0.06, depth - 2]} />
+                <meshBasicMaterial color="#1A1A1A" />
+              </mesh>
+              {[-depth/3, 0, depth/3].map((zPos, j) => (
+                <group key={`loft-light-${i}-${j}`} position={[xPos, height - 0.15, zPos]}>
+                  <mesh>
+                    <cylinderGeometry args={[0.06, 0.08, 0.12, 12]} />
+                    <meshStandardMaterial color="#1A1A1A" roughness={0.4} metalness={0.6} />
+                  </mesh>
+                  <mesh position={[0, -0.07, 0]} rotation={[Math.PI, 0, 0]}>
+                    <circleGeometry args={[0.05, 12]} />
+                    <meshBasicMaterial color="#FFE8C8" />
+                  </mesh>
+                  <spotLight
+                    position={[0, -0.1, 0]}
+                    angle={0.6}
+                    penumbra={0.6}
+                    intensity={0.7}
+                    distance={7}
+                    color="#FFE5C0"
+                    castShadow={false}
+                  />
+                </group>
+              ))}
+            </group>
+          ))}
+          
+          {/* Warm ambient lighting for industrial loft */}
+          <hemisphereLight args={['#FFF8E8', '#8B7355', 0.55]} position={[0, height, 0]} />
+          <directionalLight position={[3, height - 1, 3]} intensity={0.25} color="#FFE8D0" />
+        </>
+      ) : preset.id === 'modern-gallery-v2' ? (
         <>
           {/* MODERN GALLERY: Industrial dark ceiling */}
           <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
@@ -838,15 +984,44 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         </>
       )}
 
-      {/* Gallery walls - use preset color for Modern, warm color for Classic */}
-      <mesh position={[0, height / 2, -halfD]} receiveShadow>
-        <planeGeometry args={[width, height]} />
-        {preset.id === 'modern-gallery-v2' ? (
-          <meshStandardMaterial color={preset.wallColor} roughness={0.85} metalness={0} side={THREE.DoubleSide} />
-        ) : (
-          <SafeWallMaterial color={GALLERY_WALL_COLOR} />
-        )}
-      </mesh>
+      {/* Gallery walls - different style per preset */}
+      {preset.wallType === 'brick' ? (
+        <>
+          {/* North wall - brick */}
+          <BrickWall width={width} height={height} position={[0, height / 2, -halfD]} />
+          {/* East wall - brick */}
+          <BrickWall width={depth} height={height} position={[halfW, height / 2, 0]} rotation={[0, -Math.PI / 2, 0]} />
+          {/* West wall - brick */}
+          <BrickWall width={depth} height={height} position={[-halfW, height / 2, 0]} rotation={[0, Math.PI / 2, 0]} />
+        </>
+      ) : (
+        <>
+          <mesh position={[0, height / 2, -halfD]} receiveShadow>
+            <planeGeometry args={[width, height]} />
+            {preset.id === 'modern-gallery-v2' ? (
+              <meshStandardMaterial color={preset.wallColor} roughness={0.85} metalness={0} side={THREE.DoubleSide} />
+            ) : (
+              <SafeWallMaterial color={GALLERY_WALL_COLOR} />
+            )}
+          </mesh>
+          <mesh position={[halfW, height / 2, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
+            <planeGeometry args={[depth, height]} />
+            {preset.id === 'modern-gallery-v2' ? (
+              <meshStandardMaterial color={preset.wallColor} roughness={0.85} metalness={0} side={THREE.DoubleSide} />
+            ) : (
+              <SafeWallMaterial color={GALLERY_WALL_COLOR} />
+            )}
+          </mesh>
+          <mesh position={[-halfW, height / 2, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
+            <planeGeometry args={[depth, height]} />
+            {preset.id === 'modern-gallery-v2' ? (
+              <meshStandardMaterial color={preset.wallColor} roughness={0.85} metalness={0} side={THREE.DoubleSide} />
+            ) : (
+              <SafeWallMaterial color={GALLERY_WALL_COLOR} />
+            )}
+          </mesh>
+        </>
+      )}
 
       {/* South wall with entrance opening */}
       <SouthWallWithOpening 
@@ -855,27 +1030,22 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         halfD={halfD}
         portalW={3.5}
         portalH={3.5}
-        wallColor={preset.id === 'modern-gallery-v2' ? preset.wallColor : GALLERY_WALL_COLOR}
+        wallColor={preset.wallType === 'brick' ? '#8B4513' : (preset.id === 'modern-gallery-v2' ? preset.wallColor : GALLERY_WALL_COLOR)}
         isModern={preset.id === 'modern-gallery-v2'}
+        isBrick={preset.wallType === 'brick'}
       />
 
-      <mesh position={[halfW, height / 2, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
-        <planeGeometry args={[depth, height]} />
-        {preset.id === 'modern-gallery-v2' ? (
-          <meshStandardMaterial color={preset.wallColor} roughness={0.85} metalness={0} side={THREE.DoubleSide} />
-        ) : (
-          <SafeWallMaterial color={GALLERY_WALL_COLOR} />
-        )}
-      </mesh>
-
-      <mesh position={[-halfW, height / 2, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
-        <planeGeometry args={[depth, height]} />
-        {preset.id === 'modern-gallery-v2' ? (
-          <meshStandardMaterial color={preset.wallColor} roughness={0.85} metalness={0} side={THREE.DoubleSide} />
-        ) : (
-          <SafeWallMaterial color={GALLERY_WALL_COLOR} />
-        )}
-      </mesh>
+      {/* Partition walls for Industrial Loft */}
+      {preset.hasPartitionWalls && preset.partitionWalls?.map((wall) => (
+        <PartitionWall
+          key={wall.id}
+          position={wall.position}
+          rotation={wall.rotation}
+          width={wall.width}
+          height={wall.height}
+          color={preset.partitionWallColor || '#E8E0D5'}
+        />
+      ))}
 
       {columnPositions.map((pos, i) => (
         <Column
@@ -1126,7 +1296,8 @@ function SouthWallWithOpening({
   portalW,
   portalH,
   wallColor,
-  isModern
+  isModern,
+  isBrick = false
 }: { 
   width: number; 
   height: number; 
@@ -1135,10 +1306,21 @@ function SouthWallWithOpening({
   portalH: number;
   wallColor: string;
   isModern: boolean;
+  isBrick?: boolean;
 }) {
   const leftWidth = (width - portalW) / 2;
   const rightWidth = (width - portalW) / 2;
   const topHeight = height - portalH;
+
+  if (isBrick) {
+    return (
+      <group position={[0, 0, halfD]}>
+        <BrickWall width={leftWidth} height={height} position={[-(width / 2 - leftWidth / 2), height / 2, 0]} rotation={[0, Math.PI, 0]} />
+        <BrickWall width={rightWidth} height={height} position={[(width / 2 - rightWidth / 2), height / 2, 0]} rotation={[0, Math.PI, 0]} />
+        <BrickWall width={portalW} height={topHeight} position={[0, portalH + topHeight / 2, 0]} rotation={[0, Math.PI, 0]} />
+      </group>
+    );
+  }
 
   return (
     <group position={[0, 0, halfD]}>

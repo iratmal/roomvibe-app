@@ -1,0 +1,197 @@
+Industrial Loft Gallery (New Preset)
+Goal
+
+Konfigurirati i implementirati novi 360° gallery preset pod nazivom
+👉 Industrial Loft Gallery
+koji se pojavljuje u Gallery Type dropdownu i radi u 360 Editoru i public vieweru.
+
+Naming (OBAVEZNO)
+
+Official preset name (UI):
+➡️ Industrial Loft Gallery
+
+Internal preset key (example):
+
+industrial_loft
+
+1️⃣ Gallery Type Dropdown – Update
+Trenutno stanje
+
+Dropdown sadrži:
+
+Classic Gallery
+
+Modern Gallery
+
+Novo stanje (OBAVEZNO)
+
+Dropdown mora sadržavati:
+
+Classic Gallery
+
+Modern Gallery
+
+Industrial Loft Gallery
+
+Pravila
+
+Promjena preseta:
+
+NE resetira wall slotove
+
+NE briše artworke
+
+Postojeći Classic i Modern exhibitioni moraju ostati netaknuti
+
+Backend koristi istu strukturu (samo nova galleryPreset vrijednost)
+
+2️⃣ Vizualni koncept – Industrial Loft Gallery
+Opći dojam
+
+veliki otvoreni industrial / loft prostor
+
+karakter, toplina, storytelling
+
+kontrast Modern i Classic galeriji
+
+3️⃣ Arhitektura prostora
+Zidovi
+
+Vanjski zidovi: exposed brick (cigla)
+
+svijetla do srednja cigla
+
+blago “washed / patina” look
+
+Unutarnji poprečni zidovi (OBAVEZNO):
+
+2–4 samostojeća zida unutar prostora
+
+služe za izlaganje slika s obje strane
+
+materijal:
+
+drveni paneli ILI
+
+glatki off-white / topli sivi zid
+
+Zidovi moraju:
+
+omogućiti kretanje oko njih
+
+stvarati galerijski ritam
+
+Pod
+
+drveni pod (reclaimed / dark oak look)
+
+mat, bez sjaja
+
+alternativno: beton + drvene zone
+
+Strop
+
+NE mora biti ravan
+
+dopušteno:
+
+vidljive drvene ili metalne grede
+
+industrijski strop
+
+lagano segmentiran / različite visine
+
+NEMA dekoracija koje odvlače pažnju
+
+4️⃣ Rasvjeta
+
+toplija nego u Modern Gallery
+
+kombinacija:
+
+track lights (crni metal)
+
+fokusirani spotlighti na artworke
+
+svjetlo:
+
+ističe slike
+
+ne baca agresivne sjene
+
+ne zatamnjuje prostor
+
+5️⃣ Wall Slot System (OBAVEZNO)
+
+koristiti postojeći slot system
+
+slotovi moraju postojati:
+
+na vanjskim zidovima
+
+na unutarnjim poprečnim zidovima (OBOSTRANO)
+
+slot naming logika ostaje konzistentna
+
+editor mora jasno pokazivati gdje se koji slot nalazi
+
+6️⃣ Kamera & kretanje
+
+kamera stabilna
+
+viewpointi:
+
+Entrance
+
+Center
+
+Back Left
+
+Back Right
+
+ni u jednom viewu:
+
+zid ili stup ne smije blokirati artwork
+
+omogućiti prirodno kretanje oko unutarnjih zidova
+
+7️⃣ Što NE raditi (strogo)
+
+❌ Ne dirati Classic Gallery
+
+❌ Ne dirati Modern Gallery
+
+❌ Ne dodavati dekoracije (biljke, klupe, skulpture)
+
+❌ Ne uvoditi nove featuree
+
+❌ Ne refaktorirati 360 engine
+
+❌ Ne mijenjati API / DB strukturu
+
+8️⃣ Stop Condition (task je gotov kada)
+
+Industrial Loft Gallery postoji u dropdownu
+
+Preset se ispravno učitava u editoru i public vieweru
+
+Prostor ima:
+
+ciglu
+
+drvo
+
+unutarnje poprečne zidove
+
+Artworki se mogu postavljati:
+
+na vanjske zidove
+
+na unutarnje zidove (s obje strane)
+
+Classic i Modern galerije ostaju netaknute
+
+🎯 Priority
+
+FAST MODE
+Fokus: layout, arhitektura, atmosfera – bez eksperimentiranja.
