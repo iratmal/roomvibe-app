@@ -1,0 +1,81 @@
+Goal: Implement “Hybrid Studio Gallery” as a panorama-based (Street-View style) gallery renderer, without impacting existing 4 galleries (Classic, Modern, Industrial Loft, Daylight Atrium).
+
+Hard safety requirements (must follow):
+
+Do NOT change or refactor existing renderers used by Classic/Modern/Industrial/Daylight.
+
+Hybrid must be isolated behind a new galleryType (or equivalent) and only used when galleryType === "hybrid_pano".
+
+If anything fails, fallback to existing renderer for non-hybrid galleries.
+
+What to build (step-by-step):
+
+Add new gallery type + dropdown order
+
+Ensure dropdown order is exactly:
+
+Classic Gallery (default selected when opening Exhibition)
+
+Modern Gallery
+
+Industrial Loft Gallery
+
+Daylight Atrium Gallery
+
+Hybrid Studio Gallery
+
+When user opens an Exhibition, it must always load Classic Gallery first by default.
+
+Hybrid renderer (new component)
+
+Create a new renderer component, e.g. HybridPanoramaGalleryRenderer.tsx
+
+Use a panorama viewer library (pick one):
+
+pannellum OR marzipano (preferred: marzipano for hotspots)
+
+The renderer must support:
+
+pan (drag), zoom in/out (mouse wheel), and smooth transitions between panoramas.
+
+switching between panoramas via existing bottom buttons: Entrance, Center, Back Left, Back Right.
+
+Hybrid data model / config
+
+Add a config object for Hybrid Studio Gallery:
+
+panoramas: { entrance: url, center: url, backLeft: url, backRight: url }
+
+hotspots: for each panorama, define clickable hotspots that jump to another panorama (optional if buttons are enough).
+
+wallSlotsMapping: for each panorama + each wall slot id, define screen-anchored placement:
+
+{ slotId, x, y, w, h } in normalized coordinates (0..1)
+
+For now, use placeholder panorama images (simple neutral test images) stored in public assets or object storage.
+
+Artwork placement in Hybrid
+
+In Hybrid renderer, render artworks as overlay layers positioned by wallSlotsMapping for the currently active panorama.
+
+Keep your existing “slot naming” model (North Wall - 1..5 etc.) so upload logic works the same.
+
+Artworks should scale consistently (no tiny far-wall issue): set default w/h so paintings look realistic.
+
+Isolation / regression safety
+
+Add a quick regression check:
+
+Open Classic/Modern/Industrial/Daylight and confirm their navigation + zoom still works exactly as before.
+
+Only Hybrid uses panorama viewer; other galleries must not load panorama dependencies if possible (lazy load).
+
+Acceptance criteria:
+
+Hybrid Studio Gallery shows a panorama background and supports pan/zoom smoothly.
+
+Entrance/Center/BackLeft/BackRight switches panoramas.
+
+Uploading artworks to wall slots shows them on the panorama via overlay mapping.
+
+No functional/visual changes to existing 4 galleries.

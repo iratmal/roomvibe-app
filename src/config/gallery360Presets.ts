@@ -49,6 +49,7 @@ export interface Gallery360Preset {
   viewpoints: Viewpoint[];
   hotspots: Hotspot[];
   slots: Slot[];
+  galleryType?: 'r3f' | 'hybrid_pano';
 }
 
 export const gallery360Presets: Gallery360Preset[] = [
@@ -344,11 +345,11 @@ export const gallery360Presets: Gallery360Preset[] = [
       { id: 'wall-south-2', wallId: 'south', position: [8, 2.2, 8.95], rotation: [0, Math.PI, 0], width: 1.0, height: 0.8, label: 'South Wall - Right' }
     ]
   },
-  // 5. Hybrid Studio Gallery (experimental) - based on Classic, minimal styling for testing
+  // 5. Hybrid Studio Gallery (experimental) - panorama-based Street-View style renderer
   {
     id: 'hybrid-studio',
     name: 'Hybrid Studio Gallery',
-    description: 'Experimental gallery for hybrid approach testing with minimal styling',
+    description: 'Immersive panorama gallery with Street-View style navigation',
     dimensions: { width: 20, height: 4.5, depth: 16 },
     wallColor: '#F5F3F0',
     floorColor: '#E0DCD8',
@@ -358,6 +359,7 @@ export const gallery360Presets: Gallery360Preset[] = [
     hasSkylights: false,
     hasColumns: false,
     hasPartitionWalls: false,
+    galleryType: 'hybrid_pano',
     viewpoints: [
       {
         id: 'entrance',

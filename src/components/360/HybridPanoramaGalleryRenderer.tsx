@@ -1,0 +1,323 @@
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import type { Gallery360Preset, Slot, Viewpoint } from '../../config/gallery360Presets';
+import type { SlotAssignment } from './useArtworkSlots';
+import { hybridPanoramaConfig, getSlotMappingsForViewpoint } from '../../config/hybridPanoramaConfig';
+
+const panoramaCache = new Map<string, string>();
+
+function generatePlaceholderPanorama(viewpointId: string): string {
+  if (panoramaCache.has(viewpointId)) {
+    return panoramaCache.get(viewpointId)!;
+  }
+  
+  const canvas = document.createElement('canvas');
+  canvas.width = 2048;
+  canvas.height = 1024;
+  const ctx = canvas.getContext('2d')!;
+  
+  const colors: Record<string, { wall: string; floor: string; ceiling: string }> = {
+    'entrance': { wall: '#F5F3F0', floor: '#E0DCD8', ceiling: '#FAFAF8' },
+    'center': { wall: '#F3F1EE', floor: '#DED9D5', ceiling: '#F8F8F6' },
+    'back-left': { wall: '#F1EFEC', floor: '#DCD7D3', ceiling: '#F6F6F4' },
+    'back-right': { wall: '#EFECEA', floor: '#DAD5D1', ceiling: '#F4F4F2' }
+  };
+  
+  const c = colors[viewpointId] || colors['entrance'];
+  
+  const ceilingHeight = canvas.height * 0.35;
+  ctx.fillStyle = c.ceiling;
+  ctx.fillRect(0, 0, canvas.width, ceilingHeight);
+  
+  const floorStart = canvas.height * 0.65;
+  ctx.fillStyle = c.floor;
+  ctx.fillRect(0, floorStart, canvas.width, canvas.height - floorStart);
+  
+  const wallGradient = ctx.createLinearGradient(0, ceilingHeight, 0, floorStart);
+  wallGradient.addColorStop(0, c.wall);
+  wallGradient.addColorStop(0.5, c.wall);
+  wallGradient.addColorStop(1, '#EAE7E3');
+  ctx.fillStyle = wallGradient;
+  ctx.fillRect(0, ceilingHeight, canvas.width, floorStart - ceilingHeight);
+  
+  ctx.strokeStyle = '#D8D4D0';
+  ctx.lineWidth = 2;
+  
+  const wallSections = 8;
+  for (let i = 0; i <= wallSections; i++) {
+    const x = (canvas.width / wallSections) * i;
+    ctx.beginPath();
+    ctx.moveTo(x, ceilingHeight);
+    ctx.lineTo(x, floorStart);
+    ctx.stroke();
+  }
+  
+  ctx.beginPath();
+  ctx.moveTo(0, ceilingHeight);
+  ctx.lineTo(canvas.width, ceilingHeight);
+  ctx.stroke();
+  
+  ctx.beginPath();
+  ctx.moveTo(0, floorStart);
+  ctx.lineTo(canvas.width, floorStart);
+  ctx.stroke();
+  
+  ctx.fillStyle = '#AAA';
+  ctx.font = '24px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(`Hybrid Studio - ${viewpointId.replace('-', ' ').toUpperCase()}`, canvas.width / 2, canvas.height / 2);
+  ctx.font = '16px sans-serif';
+  ctx.fillText('Placeholder Panorama', canvas.width / 2, canvas.height / 2 + 30);
+  
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+  panoramaCache.set(viewpointId, dataUrl);
+  return dataUrl;
+}
+
+interface HybridPanoramaGalleryRendererProps {
+  preset: Gallery360Preset;
+  slotAssignments: SlotAssignment[];
+  currentViewpoint: Viewpoint;
+  onNavigate: (viewpointId: string) => void;
+  onArtworkClick?: (slotId: string, assignment: SlotAssignment, slot: Slot) => void;
+  isEditor?: boolean;
+  selectedSlotId?: string;
+  onSlotSelect?: (slotId: string) => void;
+}
+
+interface MarzipanoViewer {
+  createScene: (options: any) => any;
+  scene: () => any;
+  switchScene: (scene: any, options?: any, done?: () => void) => void;
+  destroy: () => void;
+  updateSize: () => void;
+  controls: () => any;
+  view: () => any;
+}
+
+export function HybridPanoramaGalleryRenderer({
+  preset,
+  slotAssignments,
+  currentViewpoint,
+  onNavigate,
+  onArtworkClick,
+  isEditor = false,
+  selectedSlotId,
+  onSlotSelect
+}: HybridPanoramaGalleryRendererProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const viewerRef = useRef<MarzipanoViewer | null>(null);
+  const scenesRef = useRef<Map<string, any>>(new Map());
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [marzipanoLoaded, setMarzipanoLoaded] = useState(false);
+
+  const initializeMarzipano = useCallback(async () => {
+    if (!containerRef.current) return;
+
+    try {
+      const Marzipano = await import('marzipano');
+      setMarzipanoLoaded(true);
+
+      if (viewerRef.current) {
+        viewerRef.current.destroy();
+      }
+
+      const viewer = new Marzipano.Viewer(containerRef.current, {
+        controls: {
+          mouseViewMode: 'drag'
+        }
+      });
+      viewerRef.current = viewer;
+
+      for (const vpConfig of hybridPanoramaConfig.viewpoints) {
+        const panoramaDataUrl = generatePlaceholderPanorama(vpConfig.id);
+        const source = Marzipano.ImageUrlSource.fromString(panoramaDataUrl);
+        const geometry = new Marzipano.EquirectGeometry([{ width: 2048 }]);
+        
+        const limiter = Marzipano.RectilinearView.limit.traditional(
+          100 * Math.PI / 180,
+          120 * Math.PI / 180
+        );
+        
+        const view = new Marzipano.RectilinearView(
+          {
+            yaw: vpConfig.initialYaw,
+            pitch: vpConfig.initialPitch,
+            fov: vpConfig.initialFov
+          },
+          limiter
+        );
+
+        const scene = viewer.createScene({
+          source,
+          geometry,
+          view,
+          pinFirstLevel: true
+        });
+
+        scenesRef.current.set(vpConfig.id, scene);
+      }
+
+      const initialScene = scenesRef.current.get(currentViewpoint.id);
+      if (initialScene) {
+        initialScene.switchTo({ transitionDuration: 0 });
+      }
+
+      setIsLoading(false);
+    } catch (err) {
+      console.error('Failed to initialize Marzipano:', err);
+      setError('Failed to load panorama viewer. Please try refreshing the page.');
+      setIsLoading(false);
+    }
+  }, [currentViewpoint.id]);
+
+  useEffect(() => {
+    initializeMarzipano();
+
+    return () => {
+      if (viewerRef.current) {
+        viewerRef.current.destroy();
+        viewerRef.current = null;
+      }
+      scenesRef.current.clear();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!viewerRef.current || !marzipanoLoaded) return;
+
+    const scene = scenesRef.current.get(currentViewpoint.id);
+    if (scene) {
+      viewerRef.current.switchScene(scene, { transitionDuration: 800 });
+    }
+  }, [currentViewpoint.id, marzipanoLoaded]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (viewerRef.current) {
+        viewerRef.current.updateSize();
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const slotMappings = getSlotMappingsForViewpoint(currentViewpoint.id);
+
+  const handleSlotClick = (slotId: string) => {
+    const assignment = slotAssignments.find(sa => sa.slotId === slotId);
+    const slot = preset.slots.find(s => s.id === slotId);
+    
+    if (isEditor && onSlotSelect) {
+      onSlotSelect(slotId);
+    } else if (assignment && slot && onArtworkClick) {
+      onArtworkClick(slotId, assignment, slot);
+    }
+  };
+
+  if (error) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-gray-100">
+        <div className="text-center p-8">
+          <p className="text-red-600 mb-4">{error}</p>
+          <button
+            onClick={() => {
+              setError(null);
+              setIsLoading(true);
+              initializeMarzipano();
+            }}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative w-full h-full">
+      <div 
+        ref={containerRef} 
+        className="w-full h-full"
+        style={{ touchAction: 'none' }}
+      />
+      
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100/80 z-10">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
+            <p className="text-gray-600">Loading panorama...</p>
+          </div>
+        </div>
+      )}
+
+      {!isLoading && slotMappings.map(mapping => {
+        const assignment = slotAssignments.find(sa => sa.slotId === mapping.slotId);
+        const slot = preset.slots.find(s => s.id === mapping.slotId);
+        const isSelected = selectedSlotId === mapping.slotId;
+        
+        if (!slot) return null;
+
+        return (
+          <div
+            key={`${mapping.slotId}-${mapping.viewpointId}`}
+            className={`absolute cursor-pointer transition-all duration-200 ${
+              isSelected ? 'ring-2 ring-blue-500 ring-offset-2' : ''
+            } ${isEditor ? 'hover:ring-2 hover:ring-blue-300' : 'hover:scale-105'}`}
+            style={{
+              left: `${mapping.x * 100}%`,
+              top: `${mapping.y * 100}%`,
+              width: `${mapping.width * 100}%`,
+              height: `${mapping.height * 100}%`,
+              transform: 'translate(-50%, -50%)'
+            }}
+            onClick={() => handleSlotClick(mapping.slotId)}
+          >
+            {assignment?.artworkUrl ? (
+              <img
+                src={assignment.artworkUrl}
+                alt={assignment.artworkTitle || 'Artwork'}
+                className="w-full h-full object-contain bg-white shadow-lg"
+                style={{
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
+                }}
+              />
+            ) : isEditor ? (
+              <div 
+                className="w-full h-full border-2 border-dashed border-gray-400 bg-gray-200/50 flex items-center justify-center"
+              >
+                <span className="text-xs text-gray-500 text-center px-1">
+                  {slot.label}
+                </span>
+              </div>
+            ) : null}
+          </div>
+        );
+      })}
+
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-20">
+        {preset.viewpoints.map(vp => (
+          <button
+            key={vp.id}
+            onClick={() => onNavigate(vp.id)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              currentViewpoint.id === vp.id
+                ? 'bg-blue-600 text-white shadow-lg'
+                : 'bg-white/90 text-gray-700 hover:bg-white shadow'
+            }`}
+          >
+            {vp.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="absolute top-4 left-4 bg-white/90 px-3 py-1.5 rounded-lg text-xs text-gray-600 z-20">
+        Drag to look around • Scroll to zoom
+      </div>
+    </div>
+  );
+}
+
+export default HybridPanoramaGalleryRenderer;

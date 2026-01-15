@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { Gallery360Scene, ArtworkFocusTarget } from './Gallery360Scene';
 import { ArtworkInfoPanel, ArtworkPanelData } from './ArtworkInfoPanel';
 import { ShareEmbedModal } from './ShareEmbedModal';
@@ -6,6 +6,8 @@ import { useHotspots } from './useHotspots';
 import { useArtworkSlots, SlotAssignment } from './useArtworkSlots';
 import { useGalleryScrollLock } from './useGalleryScrollLock';
 import { gallery360Presets, getPresetById, Slot } from '../../config/gallery360Presets';
+
+const HybridPanoramaGalleryRenderer = lazy(() => import('./HybridPanoramaGalleryRenderer'));
 
 interface Artwork {
   id: number;
@@ -287,43 +289,64 @@ export function Gallery360Editor({
   const selectedSlot = preset.slots.find(s => s.id === selectedSlotId);
   const selectedAssignment = slotAssignments.find(sa => sa.slotId === selectedSlotId);
 
+  const isPanoramaGallery = preset.galleryType === 'hybrid_pano';
+
   if (viewerMode) {
     return (
       <div ref={containerRef} className={`h-full w-full relative ${className}`}>
-        <Gallery360Scene
-          preset={preset}
-          slotAssignments={slotAssignments}
-          currentViewpoint={currentViewpoint}
-          onNavigate={navigateToViewpoint}
-          isEditor={false}
-          onArtworkClick={handleArtworkClick}
-          focusTarget={focusTarget}
-          onFocusDismiss={handleCloseInfoPanel}
-        />
+        {isPanoramaGallery ? (
+          <Suspense fallback={
+            <div className="w-full h-full flex items-center justify-center bg-gray-100">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+            </div>
+          }>
+            <HybridPanoramaGalleryRenderer
+              preset={preset}
+              slotAssignments={slotAssignments}
+              currentViewpoint={currentViewpoint}
+              onNavigate={navigateToViewpoint}
+              isEditor={false}
+              onArtworkClick={handleArtworkClick}
+            />
+          </Suspense>
+        ) : (
+          <>
+            <Gallery360Scene
+              preset={preset}
+              slotAssignments={slotAssignments}
+              currentViewpoint={currentViewpoint}
+              onNavigate={navigateToViewpoint}
+              isEditor={false}
+              onArtworkClick={handleArtworkClick}
+              focusTarget={focusTarget}
+              onFocusDismiss={handleCloseInfoPanel}
+            />
+            
+            {!embedMode && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/50 rounded-lg px-3 py-2">
+                {preset.viewpoints.map(vp => (
+                  <button
+                    key={vp.id}
+                    onClick={() => navigateToViewpoint(vp.id)}
+                    className={`px-3 py-1 rounded text-sm transition-colors ${
+                      currentViewpoint.id === vp.id
+                        ? 'bg-[#C9A24A] text-white'
+                        : 'bg-white/20 text-white hover:bg-white/30'
+                    }`}
+                  >
+                    {vp.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
+        )}
         
         <ArtworkInfoPanel
           artwork={activeArtwork}
           open={infoPanelOpen}
           onClose={handleCloseInfoPanel}
         />
-
-        {!embedMode && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/50 rounded-lg px-3 py-2">
-            {preset.viewpoints.map(vp => (
-              <button
-                key={vp.id}
-                onClick={() => navigateToViewpoint(vp.id)}
-                className={`px-3 py-1 rounded text-sm transition-colors ${
-                  currentViewpoint.id === vp.id
-                    ? 'bg-[#C9A24A] text-white'
-                    : 'bg-white/20 text-white hover:bg-white/30'
-                }`}
-              >
-                {vp.label}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
     );
   }
@@ -489,40 +512,61 @@ export function Gallery360Editor({
       </div>
 
       <div className="flex-1 relative">
-        <Gallery360Scene
-          preset={preset}
-          slotAssignments={slotAssignments}
-          currentViewpoint={currentViewpoint}
-          onNavigate={navigateToViewpoint}
-          isEditor={true}
-          selectedSlotId={selectedSlotId || undefined}
-          onSlotSelect={setSelectedSlotId}
-          onArtworkClick={handleArtworkClick}
-          focusTarget={focusTarget}
-          onFocusDismiss={handleCloseInfoPanel}
-        />
+        {isPanoramaGallery ? (
+          <Suspense fallback={
+            <div className="w-full h-full flex items-center justify-center bg-gray-100">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+            </div>
+          }>
+            <HybridPanoramaGalleryRenderer
+              preset={preset}
+              slotAssignments={slotAssignments}
+              currentViewpoint={currentViewpoint}
+              onNavigate={navigateToViewpoint}
+              isEditor={true}
+              selectedSlotId={selectedSlotId || undefined}
+              onSlotSelect={setSelectedSlotId}
+              onArtworkClick={handleArtworkClick}
+            />
+          </Suspense>
+        ) : (
+          <>
+            <Gallery360Scene
+              preset={preset}
+              slotAssignments={slotAssignments}
+              currentViewpoint={currentViewpoint}
+              onNavigate={navigateToViewpoint}
+              isEditor={true}
+              selectedSlotId={selectedSlotId || undefined}
+              onSlotSelect={setSelectedSlotId}
+              onArtworkClick={handleArtworkClick}
+              focusTarget={focusTarget}
+              onFocusDismiss={handleCloseInfoPanel}
+            />
+
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/50 rounded-lg px-3 py-2">
+              {preset.viewpoints.map(vp => (
+                <button
+                  key={vp.id}
+                  onClick={() => navigateToViewpoint(vp.id)}
+                  className={`px-3 py-1 rounded text-sm transition-colors ${
+                    currentViewpoint.id === vp.id
+                      ? 'bg-[#C9A24A] text-white'
+                      : 'bg-white/20 text-white hover:bg-white/30'
+                  }`}
+                >
+                  {vp.label}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
         
         <ArtworkInfoPanel
           artwork={activeArtwork}
           open={infoPanelOpen}
           onClose={handleCloseInfoPanel}
         />
-
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/50 rounded-lg px-3 py-2">
-          {preset.viewpoints.map(vp => (
-            <button
-              key={vp.id}
-              onClick={() => navigateToViewpoint(vp.id)}
-              className={`px-3 py-1 rounded text-sm transition-colors ${
-                currentViewpoint.id === vp.id
-                  ? 'bg-[#C9A24A] text-white'
-                  : 'bg-white/20 text-white hover:bg-white/30'
-              }`}
-            >
-              {vp.label}
-            </button>
-          ))}
-        </div>
       </div>
 
       <ShareEmbedModal
