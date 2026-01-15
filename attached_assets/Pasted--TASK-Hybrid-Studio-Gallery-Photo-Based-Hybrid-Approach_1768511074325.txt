@@ -1,0 +1,113 @@
+📌 TASK: Hybrid Studio Gallery – Photo-Based Hybrid Approach (SAFE MODE)
+
+Context:
+We already have four existing galleries that must remain untouched:
+
+Classic Gallery
+
+Modern Gallery
+
+Industrial Loft Gallery
+
+Daylight Atrium Gallery
+
+⚠️ These galleries must NOT be modified in any way.
+This task applies ONLY to the gallery named Hybrid Studio Gallery.
+
+🎯 GOAL
+
+Test a photo-based hybrid gallery approach to achieve maximum realism, inspired by Artplacer / Artsteps–style virtual exhibitions.
+
+This is an experiment, not a final implementation.
+
+🧱 WHAT TO BUILD (Hybrid Studio Gallery ONLY)
+
+Disable / bypass full 3D geometry rendering for Hybrid Studio Gallery only
+
+No procedural 3D walls
+
+No cartoon-style materials
+
+No parametric lighting setup
+
+Use a photo-based background as the main environment
+
+Treat the gallery as a panoramic or wide-angle photographic space
+
+The background should feel like a real physical gallery / studio
+
+Perspective, lighting, shadows come from the photo itself
+
+Overlay artwork slots on top of the photo
+
+Keep existing wall slot logic (North Wall 1–5, East, West, etc.)
+
+Artworks are placed as overlays anchored to the photo
+
+Do NOT overcorrect perspective yet (this is Phase 1)
+
+Navigation
+
+Keep current navigation buttons (Entrance / Center / Back Left / Back Right)
+
+Basic pan + zoom is enough
+
+Smooth movement, no experimental camera logic
+
+🖼️ REFERENCE IMAGES (IMPORTANT)
+
+I am attaching two industrial gallery images as VISUAL REFERENCES ONLY.
+
+These images are:
+
+Reference for realism level
+
+Reference for lighting, space, emptiness, and material feel
+
+Reference for how “real” the environment should look
+
+❗ They are NOT final assets.
+❗ Do NOT copy them 1:1.
+❗ Do NOT apply them to other galleries.
+
+They are meant to answer one question only:
+
+“This is the realism direction we are aiming for.”
+
+🚫 STRICT CONSTRAINTS (VERY IMPORTANT)
+
+❌ Do NOT change any other gallery
+
+❌ Do NOT break existing 360 galleries
+
+❌ Do NOT refactor shared gallery logic
+
+❌ Hybrid logic must be isolated to Hybrid Studio Gallery only
+
+❌ If something is risky, STOP and ASK before changing it
+
+✅ SUCCESS CRITERIA (Phase 1)
+
+This task is successful if:
+
+Hybrid Studio Gallery feels less like a 3D render
+
+The space feels closer to a real photographed gallery
+
+Navigation still works
+
+Other galleries remain untouched and stable
+
+Perfection is NOT expected at this stage.
+
+🧪 NEXT STEPS (NOT PART OF THIS TASK)
+
+Perspective correction
+
+Artwork scaling realism
+
+Light interaction
+
+Multiple photo viewpoints
+
+These will come after this phase is validated.
