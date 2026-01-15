@@ -1,11 +1,22 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import type { Gallery360Preset, Slot, Viewpoint } from '../../config/gallery360Presets';
 import type { SlotAssignment } from './useArtworkSlots';
-import { hybridPanoramaConfig, type PanoramaViewpoint } from '../../config/hybridPanoramaConfig';
+import { 
+  hybridPanoramaConfig, 
+  type PanoramaViewpoint,
+  getPanoramaResolution,
+  getPanoramaLabel
+} from '../../config/hybridPanoramaConfig';
 import { getHybridSlotsForViewpoint, HYBRID_SLOT_DEBUG } from '../../config/hybridStudioSlots';
 
 const panoramaCache = new Map<string, string>();
-const loadedPanoramaUrls = new Map<string, string>();
+const loadedPanoramaUrls = new Map<string, { url: string; isPlaceholder: boolean }>();
+
+function logPanorama(viewpointId: string, message: string, isPlaceholder = false) {
+  const label = getPanoramaLabel(viewpointId);
+  const prefix = isPlaceholder ? '[Placeholder]' : '[Panorama]';
+  console.log(`${prefix} ${label}: ${message}`);
+}
 
 function generatePlaceholderPanorama(viewpointId: string): string {
   const cacheKey = `placeholder-${viewpointId}`;
@@ -83,42 +94,57 @@ function generatePlaceholderPanorama(viewpointId: string): string {
   return dataUrl;
 }
 
-async function loadPanoramaImage(viewpoint: PanoramaViewpoint): Promise<string> {
+async function loadPanoramaImage(viewpoint: PanoramaViewpoint): Promise<{ url: string; isPlaceholder: boolean; resolution: number }> {
   const { id, panoramaUrl } = viewpoint;
+  const resolution = getPanoramaResolution(id);
   
   if (loadedPanoramaUrls.has(id)) {
-    return loadedPanoramaUrls.get(id)!;
+    const cached = loadedPanoramaUrls.get(id)!;
+    logPanorama(id, `Loaded from cache`, cached.isPlaceholder);
+    return { url: cached.url, isPlaceholder: cached.isPlaceholder, resolution };
   }
   
   if (!panoramaUrl) {
+    logPanorama(id, 'No URL configured, using placeholder', true);
     const placeholder = generatePlaceholderPanorama(id);
-    loadedPanoramaUrls.set(id, placeholder);
-    return placeholder;
+    loadedPanoramaUrls.set(id, { url: placeholder, isPlaceholder: true });
+    return { url: placeholder, isPlaceholder: true, resolution: 2048 };
   }
+  
+  logPanorama(id, `Loading from: ${panoramaUrl}`);
   
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
     
     const timeoutId = setTimeout(() => {
-      console.warn(`Panorama load timeout for ${id}, using placeholder`);
+      logPanorama(id, 'Load timeout (10s), using placeholder', true);
       const placeholder = generatePlaceholderPanorama(id);
-      loadedPanoramaUrls.set(id, placeholder);
-      resolve(placeholder);
+      loadedPanoramaUrls.set(id, { url: placeholder, isPlaceholder: true });
+      resolve({ url: placeholder, isPlaceholder: true, resolution: 2048 });
     }, 10000);
     
     img.onload = () => {
       clearTimeout(timeoutId);
-      loadedPanoramaUrls.set(id, panoramaUrl);
-      resolve(panoramaUrl);
+      const actualResolution = img.naturalWidth;
+      const aspectRatio = img.naturalWidth / img.naturalHeight;
+      
+      // Validate equirectangular 2:1 aspect ratio
+      if (Math.abs(aspectRatio - 2.0) > 0.01) {
+        console.warn(`[Panorama] ${getPanoramaLabel(id)}: Non-standard aspect ratio ${aspectRatio.toFixed(2)}:1 (expected 2:1 equirectangular)`);
+      }
+      
+      logPanorama(id, `Loaded successfully (${actualResolution}x${img.naturalHeight})`);
+      loadedPanoramaUrls.set(id, { url: panoramaUrl, isPlaceholder: false });
+      resolve({ url: panoramaUrl, isPlaceholder: false, resolution: actualResolution });
     };
     
     img.onerror = () => {
       clearTimeout(timeoutId);
-      console.warn(`Failed to load panorama for ${id}, using placeholder`);
+      logPanorama(id, `Failed to load (${panoramaUrl}), using placeholder`, true);
       const placeholder = generatePlaceholderPanorama(id);
-      loadedPanoramaUrls.set(id, placeholder);
-      resolve(placeholder);
+      loadedPanoramaUrls.set(id, { url: placeholder, isPlaceholder: true });
+      resolve({ url: placeholder, isPlaceholder: true, resolution: 2048 });
     };
     
     img.src = panoramaUrl;
@@ -181,10 +207,13 @@ export function HybridPanoramaGalleryRenderer({
       });
       viewerRef.current = viewer;
 
+      console.log('[Hybrid Studio] Initializing panorama viewer...');
+      
       const panoramaLoadPromises = hybridPanoramaConfig.viewpoints.map(async (vpConfig) => {
-        const panoramaUrl = await loadPanoramaImage(vpConfig);
+        const { url: panoramaUrl, resolution } = await loadPanoramaImage(vpConfig);
         const source = Marzipano.ImageUrlSource.fromString(panoramaUrl);
-        const geometry = new Marzipano.EquirectGeometry([{ width: 2048 }]);
+        // Support high-resolution panoramas (4096x2048 to 8192x4096)
+        const geometry = new Marzipano.EquirectGeometry([{ width: resolution }]);
         
         const limiter = Marzipano.RectilinearView.limit.traditional(
           100 * Math.PI / 180,
@@ -243,6 +272,8 @@ export function HybridPanoramaGalleryRenderer({
 
     const scene = scenesRef.current.get(currentViewpoint.id);
     if (scene) {
+      const label = getPanoramaLabel(currentViewpoint.id);
+      console.log(`[Panorama] Switching to: ${label}`);
       viewerRef.current.switchScene(scene, { transitionDuration: 800 });
     }
   }, [currentViewpoint.id, marzipanoLoaded]);

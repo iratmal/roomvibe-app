@@ -23,14 +23,53 @@ export interface HybridPanoramaConfig {
   slotMappings: PanoramaSlotMapping[];
 }
 
-// Panorama URLs for each viewpoint (equirectangular 2:1 images)
-// Set to undefined to use generated placeholder, or provide URL to custom panorama
-export const HYBRID_PANORAMA_URLS: Record<string, string | undefined> = {
-  'entrance': undefined,   // Will use placeholder - replace with actual panorama URL
-  'center': undefined,     // Will use placeholder - replace with actual panorama URL
-  'back-left': undefined,  // Will use placeholder - replace with actual panorama URL
-  'back-right': undefined, // Will use placeholder - replace with actual panorama URL
+// Panorama configuration for Hybrid Studio Gallery
+// Supports high-resolution equirectangular images (4096x2048 minimum, 8192x4096 preferred)
+// Set to undefined to use generated placeholder, or provide URL/path to panorama image
+
+export interface PanoramaAssetConfig {
+  url: string | undefined;  // URL or path to equirectangular panorama (2:1 aspect ratio)
+  resolution?: number;      // Width of panorama (default: 4096, max: 8192)
+  label: string;            // Human-readable label for logging
+}
+
+export const HYBRID_PANORAMA_ASSETS: Record<string, PanoramaAssetConfig> = {
+  'entrance': {
+    url: '/panoramas/hybrid-entrance.jpg',  // Static asset path
+    resolution: 4096,
+    label: 'Entrance'
+  },
+  'center': {
+    url: '/panoramas/hybrid-center.jpg',
+    resolution: 4096,
+    label: 'Center'
+  },
+  'back-left': {
+    url: '/panoramas/hybrid-back-left.jpg',
+    resolution: 4096,
+    label: 'Back Left'
+  },
+  'back-right': {
+    url: '/panoramas/hybrid-back-right.jpg',
+    resolution: 4096,
+    label: 'Back Right'
+  }
 };
+
+// Legacy compat - derives from new config
+export const HYBRID_PANORAMA_URLS: Record<string, string | undefined> = Object.fromEntries(
+  Object.entries(HYBRID_PANORAMA_ASSETS).map(([key, config]) => [key, config.url])
+);
+
+// Get resolution for a viewpoint (for Marzipano geometry)
+export function getPanoramaResolution(viewpointId: string): number {
+  return HYBRID_PANORAMA_ASSETS[viewpointId]?.resolution || 4096;
+}
+
+// Get label for logging
+export function getPanoramaLabel(viewpointId: string): string {
+  return HYBRID_PANORAMA_ASSETS[viewpointId]?.label || viewpointId;
+}
 
 export const hybridPanoramaConfig: HybridPanoramaConfig = {
   viewpoints: [
@@ -40,7 +79,7 @@ export const hybridPanoramaConfig: HybridPanoramaConfig = {
       initialYaw: 0,
       initialPitch: 0,
       initialFov: Math.PI / 2,
-      panoramaUrl: HYBRID_PANORAMA_URLS['entrance']
+      panoramaUrl: HYBRID_PANORAMA_ASSETS['entrance'].url
     },
     {
       id: 'center',
@@ -48,7 +87,7 @@ export const hybridPanoramaConfig: HybridPanoramaConfig = {
       initialYaw: 0,
       initialPitch: 0,
       initialFov: Math.PI / 2,
-      panoramaUrl: HYBRID_PANORAMA_URLS['center']
+      panoramaUrl: HYBRID_PANORAMA_ASSETS['center'].url
     },
     {
       id: 'back-left',
@@ -56,7 +95,7 @@ export const hybridPanoramaConfig: HybridPanoramaConfig = {
       initialYaw: -Math.PI / 4,
       initialPitch: 0,
       initialFov: Math.PI / 2,
-      panoramaUrl: HYBRID_PANORAMA_URLS['back-left']
+      panoramaUrl: HYBRID_PANORAMA_ASSETS['back-left'].url
     },
     {
       id: 'back-right',
@@ -64,7 +103,7 @@ export const hybridPanoramaConfig: HybridPanoramaConfig = {
       initialYaw: Math.PI / 4,
       initialPitch: 0,
       initialFov: Math.PI / 2,
-      panoramaUrl: HYBRID_PANORAMA_URLS['back-right']
+      panoramaUrl: HYBRID_PANORAMA_ASSETS['back-right'].url
     }
   ],
   slotMappings: [
