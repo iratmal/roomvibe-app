@@ -4,6 +4,7 @@ export interface PanoramaViewpoint {
   initialYaw: number;
   initialPitch: number;
   initialFov: number;
+  panoramaUrl?: string; // Optional: URL to equirectangular panorama image (2:1 aspect ratio)
 }
 
 export interface PanoramaSlotMapping {
@@ -22,6 +23,15 @@ export interface HybridPanoramaConfig {
   slotMappings: PanoramaSlotMapping[];
 }
 
+// Panorama URLs for each viewpoint (equirectangular 2:1 images)
+// Set to undefined to use generated placeholder, or provide URL to custom panorama
+export const HYBRID_PANORAMA_URLS: Record<string, string | undefined> = {
+  'entrance': undefined,   // Will use placeholder - replace with actual panorama URL
+  'center': undefined,     // Will use placeholder - replace with actual panorama URL
+  'back-left': undefined,  // Will use placeholder - replace with actual panorama URL
+  'back-right': undefined, // Will use placeholder - replace with actual panorama URL
+};
+
 export const hybridPanoramaConfig: HybridPanoramaConfig = {
   viewpoints: [
     {
@@ -29,28 +39,32 @@ export const hybridPanoramaConfig: HybridPanoramaConfig = {
       label: 'Entrance',
       initialYaw: 0,
       initialPitch: 0,
-      initialFov: Math.PI / 2
+      initialFov: Math.PI / 2,
+      panoramaUrl: HYBRID_PANORAMA_URLS['entrance']
     },
     {
       id: 'center',
       label: 'Center',
       initialYaw: 0,
       initialPitch: 0,
-      initialFov: Math.PI / 2
+      initialFov: Math.PI / 2,
+      panoramaUrl: HYBRID_PANORAMA_URLS['center']
     },
     {
       id: 'back-left',
       label: 'Back Left',
       initialYaw: -Math.PI / 4,
       initialPitch: 0,
-      initialFov: Math.PI / 2
+      initialFov: Math.PI / 2,
+      panoramaUrl: HYBRID_PANORAMA_URLS['back-left']
     },
     {
       id: 'back-right',
       label: 'Back Right',
       initialYaw: Math.PI / 4,
       initialPitch: 0,
-      initialFov: Math.PI / 2
+      initialFov: Math.PI / 2,
+      panoramaUrl: HYBRID_PANORAMA_URLS['back-right']
     }
   ],
   slotMappings: [

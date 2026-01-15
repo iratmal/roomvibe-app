@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import type { Gallery360Preset, Slot, Viewpoint } from '../../config/gallery360Presets';
 import type { SlotAssignment } from './useArtworkSlots';
-import { hybridPanoramaConfig } from '../../config/hybridPanoramaConfig';
+import { hybridPanoramaConfig, type PanoramaViewpoint } from '../../config/hybridPanoramaConfig';
 import { getHybridSlotsForViewpoint, HYBRID_SLOT_DEBUG } from '../../config/hybridStudioSlots';
 
 const panoramaCache = new Map<string, string>();
+const loadedPanoramaUrls = new Map<string, string>();
 
 function generatePlaceholderPanorama(viewpointId: string): string {
-  if (panoramaCache.has(viewpointId)) {
-    return panoramaCache.get(viewpointId)!;
+  const cacheKey = `placeholder-${viewpointId}`;
+  if (panoramaCache.has(cacheKey)) {
+    return panoramaCache.get(cacheKey)!;
   }
   
   const canvas = document.createElement('canvas');
@@ -16,21 +18,24 @@ function generatePlaceholderPanorama(viewpointId: string): string {
   canvas.height = 1024;
   const ctx = canvas.getContext('2d')!;
   
-  const colors: Record<string, { wall: string; floor: string; ceiling: string }> = {
-    'entrance': { wall: '#F5F3F0', floor: '#E0DCD8', ceiling: '#FAFAF8' },
-    'center': { wall: '#F3F1EE', floor: '#DED9D5', ceiling: '#F8F8F6' },
-    'back-left': { wall: '#F1EFEC', floor: '#DCD7D3', ceiling: '#F6F6F4' },
-    'back-right': { wall: '#EFECEA', floor: '#DAD5D1', ceiling: '#F4F4F2' }
+  const colors: Record<string, { wall: string; floor: string; ceiling: string; accent: string }> = {
+    'entrance': { wall: '#F5F3F0', floor: '#E0DCD8', ceiling: '#FAFAF8', accent: '#D4B896' },
+    'center': { wall: '#F3F1EE', floor: '#DED9D5', ceiling: '#F8F8F6', accent: '#C4A882' },
+    'back-left': { wall: '#F1EFEC', floor: '#DCD7D3', ceiling: '#F6F6F4', accent: '#B8A078' },
+    'back-right': { wall: '#EFECEA', floor: '#DAD5D1', ceiling: '#F4F4F2', accent: '#AC986E' }
   };
   
   const c = colors[viewpointId] || colors['entrance'];
   
-  const ceilingHeight = canvas.height * 0.35;
+  const ceilingHeight = canvas.height * 0.32;
   ctx.fillStyle = c.ceiling;
   ctx.fillRect(0, 0, canvas.width, ceilingHeight);
   
-  const floorStart = canvas.height * 0.65;
-  ctx.fillStyle = c.floor;
+  const floorStart = canvas.height * 0.68;
+  const floorGradient = ctx.createLinearGradient(0, floorStart, 0, canvas.height);
+  floorGradient.addColorStop(0, c.floor);
+  floorGradient.addColorStop(1, '#C8C4C0');
+  ctx.fillStyle = floorGradient;
   ctx.fillRect(0, floorStart, canvas.width, canvas.height - floorStart);
   
   const wallGradient = ctx.createLinearGradient(0, ceilingHeight, 0, floorStart);
@@ -41,9 +46,9 @@ function generatePlaceholderPanorama(viewpointId: string): string {
   ctx.fillRect(0, ceilingHeight, canvas.width, floorStart - ceilingHeight);
   
   ctx.strokeStyle = '#D8D4D0';
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1;
   
-  const wallSections = 8;
+  const wallSections = 12;
   for (let i = 0; i <= wallSections; i++) {
     const x = (canvas.width / wallSections) * i;
     ctx.beginPath();
@@ -52,26 +57,72 @@ function generatePlaceholderPanorama(viewpointId: string): string {
     ctx.stroke();
   }
   
+  ctx.strokeStyle = c.accent;
+  ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.moveTo(0, ceilingHeight);
-  ctx.lineTo(canvas.width, ceilingHeight);
+  ctx.moveTo(0, ceilingHeight + 2);
+  ctx.lineTo(canvas.width, ceilingHeight + 2);
   ctx.stroke();
   
   ctx.beginPath();
-  ctx.moveTo(0, floorStart);
-  ctx.lineTo(canvas.width, floorStart);
+  ctx.moveTo(0, floorStart - 2);
+  ctx.lineTo(canvas.width, floorStart - 2);
   ctx.stroke();
   
-  ctx.fillStyle = '#AAA';
-  ctx.font = '24px sans-serif';
+  ctx.fillStyle = '#999';
+  ctx.font = '20px system-ui, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText(`Hybrid Studio - ${viewpointId.replace('-', ' ').toUpperCase()}`, canvas.width / 2, canvas.height / 2);
-  ctx.font = '16px sans-serif';
-  ctx.fillText('Placeholder Panorama', canvas.width / 2, canvas.height / 2 + 30);
+  const label = viewpointId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  ctx.fillText(`Hybrid Studio - ${label}`, canvas.width / 2, canvas.height / 2);
+  ctx.font = '14px system-ui, sans-serif';
+  ctx.fillStyle = '#AAA';
+  ctx.fillText('Gallery Panorama Preview', canvas.width / 2, canvas.height / 2 + 24);
   
-  const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-  panoramaCache.set(viewpointId, dataUrl);
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+  panoramaCache.set(cacheKey, dataUrl);
   return dataUrl;
+}
+
+async function loadPanoramaImage(viewpoint: PanoramaViewpoint): Promise<string> {
+  const { id, panoramaUrl } = viewpoint;
+  
+  if (loadedPanoramaUrls.has(id)) {
+    return loadedPanoramaUrls.get(id)!;
+  }
+  
+  if (!panoramaUrl) {
+    const placeholder = generatePlaceholderPanorama(id);
+    loadedPanoramaUrls.set(id, placeholder);
+    return placeholder;
+  }
+  
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    
+    const timeoutId = setTimeout(() => {
+      console.warn(`Panorama load timeout for ${id}, using placeholder`);
+      const placeholder = generatePlaceholderPanorama(id);
+      loadedPanoramaUrls.set(id, placeholder);
+      resolve(placeholder);
+    }, 10000);
+    
+    img.onload = () => {
+      clearTimeout(timeoutId);
+      loadedPanoramaUrls.set(id, panoramaUrl);
+      resolve(panoramaUrl);
+    };
+    
+    img.onerror = () => {
+      clearTimeout(timeoutId);
+      console.warn(`Failed to load panorama for ${id}, using placeholder`);
+      const placeholder = generatePlaceholderPanorama(id);
+      loadedPanoramaUrls.set(id, placeholder);
+      resolve(placeholder);
+    };
+    
+    img.src = panoramaUrl;
+  });
 }
 
 interface HybridPanoramaGalleryRendererProps {
@@ -130,9 +181,9 @@ export function HybridPanoramaGalleryRenderer({
       });
       viewerRef.current = viewer;
 
-      for (const vpConfig of hybridPanoramaConfig.viewpoints) {
-        const panoramaDataUrl = generatePlaceholderPanorama(vpConfig.id);
-        const source = Marzipano.ImageUrlSource.fromString(panoramaDataUrl);
+      const panoramaLoadPromises = hybridPanoramaConfig.viewpoints.map(async (vpConfig) => {
+        const panoramaUrl = await loadPanoramaImage(vpConfig);
+        const source = Marzipano.ImageUrlSource.fromString(panoramaUrl);
         const geometry = new Marzipano.EquirectGeometry([{ width: 2048 }]);
         
         const limiter = Marzipano.RectilinearView.limit.traditional(
@@ -157,7 +208,10 @@ export function HybridPanoramaGalleryRenderer({
         });
 
         scenesRef.current.set(vpConfig.id, scene);
-      }
+        return { id: vpConfig.id, scene };
+      });
+
+      await Promise.all(panoramaLoadPromises);
 
       const initialScene = scenesRef.current.get(currentViewpoint.id);
       if (initialScene) {
