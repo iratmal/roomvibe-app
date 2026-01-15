@@ -411,11 +411,9 @@ export const gallery360Presets: Gallery360Preset[] = [
       { id: 'hybrid-east-2', wallId: 'east', position: [9.95, 2.0, -1.5], rotation: [0, -Math.PI / 2, 0], width: 1.0, height: 0.75, label: 'East Wall - 2' },
       { id: 'hybrid-east-3', wallId: 'east', position: [9.95, 2.0, 1.5], rotation: [0, -Math.PI / 2, 0], width: 1.0, height: 0.75, label: 'East Wall - 3' },
       { id: 'hybrid-east-4', wallId: 'east', position: [9.95, 2.0, 4.5], rotation: [0, -Math.PI / 2, 0], width: 1.0, height: 0.75, label: 'East Wall - 4' },
-      // West Wall - 4 artworks
-      { id: 'hybrid-west-1', wallId: 'west', position: [-9.95, 2.0, -4.5], rotation: [0, Math.PI / 2, 0], width: 1.0, height: 0.75, label: 'West Wall - 1' },
-      { id: 'hybrid-west-2', wallId: 'west', position: [-9.95, 2.0, -1.5], rotation: [0, Math.PI / 2, 0], width: 1.0, height: 0.75, label: 'West Wall - 2' },
-      { id: 'hybrid-west-3', wallId: 'west', position: [-9.95, 2.0, 1.5], rotation: [0, Math.PI / 2, 0], width: 1.0, height: 0.75, label: 'West Wall - 3' },
-      { id: 'hybrid-west-4', wallId: 'west', position: [-9.95, 2.0, 4.5], rotation: [0, Math.PI / 2, 0], width: 1.0, height: 0.75, label: 'West Wall - 4' },
+      // West Wall - 2 artworks
+      { id: 'hybrid-west-1', wallId: 'west', position: [-9.95, 2.0, -3], rotation: [0, Math.PI / 2, 0], width: 1.0, height: 0.75, label: 'West Wall - 1' },
+      { id: 'hybrid-west-2', wallId: 'west', position: [-9.95, 2.0, 1], rotation: [0, Math.PI / 2, 0], width: 1.0, height: 0.75, label: 'West Wall - 2' },
       // South Wall - artworks on sides, avoiding center portal
       { id: 'hybrid-south-1', wallId: 'south', position: [-7.75, 2.0, 7.95], rotation: [0, Math.PI, 0], width: 1.0, height: 0.75, label: 'South Wall - Left 1' },
       { id: 'hybrid-south-2', wallId: 'south', position: [-4.25, 2.0, 7.95], rotation: [0, Math.PI, 0], width: 1.0, height: 0.75, label: 'South Wall - Left 2' },

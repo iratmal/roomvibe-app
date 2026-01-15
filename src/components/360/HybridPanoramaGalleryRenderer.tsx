@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import type { Gallery360Preset, Slot, Viewpoint } from '../../config/gallery360Presets';
 import type { SlotAssignment } from './useArtworkSlots';
-import { hybridPanoramaConfig, getSlotMappingsForViewpoint } from '../../config/hybridPanoramaConfig';
+import { hybridPanoramaConfig } from '../../config/hybridPanoramaConfig';
+import { getHybridSlotsForViewpoint, HYBRID_SLOT_DEBUG } from '../../config/hybridStudioSlots';
 
 const panoramaCache = new Map<string, string>();
 
@@ -203,7 +204,8 @@ export function HybridPanoramaGalleryRenderer({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const slotMappings = getSlotMappingsForViewpoint(currentViewpoint.id);
+  const slotMappings = getHybridSlotsForViewpoint(currentViewpoint.id);
+  const [showDebugBoxes, setShowDebugBoxes] = useState(HYBRID_SLOT_DEBUG.showBoundingBoxes);
 
   const handleSlotClick = (slotId: string) => {
     const assignment = slotAssignments.find(sa => sa.slotId === slotId);
@@ -271,10 +273,17 @@ export function HybridPanoramaGalleryRenderer({
               top: `${mapping.y * 100}%`,
               width: `${mapping.width * 100}%`,
               height: `${mapping.height * 100}%`,
-              transform: 'translate(-50%, -50%)'
+              transform: 'translate(-50%, -50%)',
+              border: showDebugBoxes ? '2px dashed rgba(255, 0, 0, 0.7)' : undefined,
+              backgroundColor: showDebugBoxes && !assignment?.artworkUrl ? 'rgba(255, 0, 0, 0.1)' : undefined,
             }}
             onClick={() => handleSlotClick(mapping.slotId)}
           >
+            {showDebugBoxes && (
+              <span className="absolute -top-5 left-0 text-[10px] bg-red-500 text-white px-1 rounded whitespace-nowrap">
+                {mapping.slotId.replace('hybrid-', '')}
+              </span>
+            )}
             {assignment?.artworkUrl ? (
               <img
                 src={assignment.artworkUrl}
@@ -316,6 +325,19 @@ export function HybridPanoramaGalleryRenderer({
       <div className="absolute top-4 left-4 bg-white/90 px-3 py-1.5 rounded-lg text-xs text-gray-600 z-20">
         Drag to look around • Scroll to zoom
       </div>
+
+      {isEditor && (
+        <button
+          onClick={() => setShowDebugBoxes(!showDebugBoxes)}
+          className={`absolute top-4 right-4 px-3 py-1.5 rounded-lg text-xs font-medium z-20 transition-colors ${
+            showDebugBoxes 
+              ? 'bg-red-500 text-white' 
+              : 'bg-white/90 text-gray-600 hover:bg-gray-100'
+          }`}
+        >
+          {showDebugBoxes ? 'Hide Slots' : 'Show Slots'}
+        </button>
+      )}
     </div>
   );
 }
