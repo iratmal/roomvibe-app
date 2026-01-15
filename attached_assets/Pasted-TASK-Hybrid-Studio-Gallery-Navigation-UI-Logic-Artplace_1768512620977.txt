@@ -1,0 +1,78 @@
+TASK: Hybrid Studio Gallery – Navigation UI & Logic (Artplacer-style)
+
+SCOPE:
+Apply changes ONLY to "Hybrid Studio Gallery".
+DO NOT modify navigation, UI, or logic for any other gallery.
+
+1. NAVIGATION BUTTON GROUPING (UI)
+
+- All navigation buttons must be grouped into a SINGLE fixed control cluster.
+- Position: bottom-right corner of the screen.
+- Style inspiration: Artplacer navigation controls (see reference screenshots).
+
+Buttons to include:
+- Entrance
+- Center
+- Left
+- Right
+- Forward
+- Back
+
+Rules:
+- Buttons must NOT be scattered across the screen.
+- Buttons must be visually consistent (same size, same style).
+- Use a clean, minimal UI (no heavy backgrounds, no oversized buttons).
+- Buttons must always stay visible (fixed position).
+
+2. BUTTON FUNCTIONALITY (MANDATORY)
+
+Each button MUST perform a real action.
+
+- Entrance:
+  → Switch panorama / camera to entrance view.
+
+- Center:
+  → Switch panorama / camera to central view.
+
+- Left / Right:
+  → Rotate or switch panorama logically to left/right viewpoints.
+
+- Forward:
+  → Move user to the next logical panorama (if available).
+
+- Back:
+  → Move user to the previous panorama.
+
+IMPORTANT:
+- Buttons must actually change the view.
+- No placeholder buttons.
+- No non-functional UI.
+
+3. LOGIC ISOLATION (CRITICAL)
+
+- All navigation logic must be scoped ONLY to Hybrid Studio Gallery.
+- Do NOT reuse or overwrite global navigation logic.
+- Other galleries must behave EXACTLY as before.
+
+If shared components are used:
+- Add conditional logic based on gallery type or gallery ID.
+- Ensure zero side effects on other galleries.
+
+4. UX IMPROVEMENTS
+
+- Active button should have a visual state (highlight or subtle color change).
+- Transitions between panoramas should feel smooth (no flicker).
+- Navigation should feel intentional, not random.
+
+5. REFERENCES
+
+- Use the attached Artplacer screenshot as UX reference for:
+  - Button placement
+  - Grouping
+  - Interaction clarity
+
+- Additional reference images are provided for visual inspiration of realistic gallery feeling.
+
+DELIVERABLE:
+- Clean, working navigation UI for Hybrid Studio Gallery
+- Verified that other galleries are unaffected

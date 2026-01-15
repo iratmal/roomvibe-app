@@ -431,111 +431,124 @@ export function HybridPanoramaGalleryRenderer({
         );
       })}
 
-      {/* Directional Navigation Controls */}
+      {/* Artplacer-style Navigation Control Cluster - Bottom Right */}
       {(() => {
         const navLinks = getNavigationLinks(currentViewpoint.id);
+        const NavButton = ({ 
+          onClick, 
+          disabled, 
+          active,
+          children,
+          title 
+        }: { 
+          onClick: () => void; 
+          disabled?: boolean;
+          active?: boolean;
+          children: React.ReactNode;
+          title: string;
+        }) => (
+          <button
+            onClick={onClick}
+            disabled={disabled}
+            title={title}
+            className={`w-10 h-10 flex items-center justify-center rounded transition-all ${
+              disabled 
+                ? 'bg-gray-700/30 text-gray-500 cursor-not-allowed' 
+                : active
+                  ? 'bg-white text-gray-900 shadow-lg'
+                  : 'bg-gray-800/80 text-white hover:bg-gray-700 hover:text-white'
+            }`}
+          >
+            {children}
+          </button>
+        );
+        
         return (
-          <>
-            {/* Forward button - top center */}
-            {navLinks.forward && (
-              <button
-                onClick={() => onNavigate(navLinks.forward!)}
-                className="absolute top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 group"
-                title="Move Forward"
+          <div className="absolute bottom-6 right-6 z-20">
+            {/* Location name buttons - vertical stack */}
+            <div className="flex flex-col gap-1 mb-3">
+              <NavButton
+                onClick={() => onNavigate('entrance')}
+                active={currentViewpoint.id === 'entrance'}
+                title="Go to Entrance"
               >
-                <div className="bg-white/90 hover:bg-white shadow-lg rounded-full p-3 transition-all hover:scale-110">
-                  <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                  </svg>
-                </div>
-                <span className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs bg-black/70 text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                  Forward
-                </span>
-              </button>
-            )}
-            
-            {/* Back button - bottom center above viewpoint buttons */}
-            {navLinks.back && (
-              <button
-                onClick={() => onNavigate(navLinks.back!)}
-                className="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-20 group"
-                title="Go Back"
+                <span className="text-xs font-medium">E</span>
+              </NavButton>
+              <NavButton
+                onClick={() => onNavigate('center')}
+                active={currentViewpoint.id === 'center'}
+                title="Go to Center"
               >
-                <div className="bg-white/90 hover:bg-white shadow-lg rounded-full p-3 transition-all hover:scale-110">
-                  <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-                <span className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs bg-black/70 text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                  Back
-                </span>
-              </button>
-            )}
+                <span className="text-xs font-medium">C</span>
+              </NavButton>
+            </div>
             
-            {/* Left button - left side */}
-            {navLinks.left && (
-              <button
-                onClick={() => onNavigate(navLinks.left!)}
-                className="absolute top-1/2 left-8 transform -translate-y-1/2 z-20 group"
+            {/* Directional controls - 2x3 grid like Artplacer */}
+            <div className="grid grid-cols-3 gap-1">
+              {/* Top row: Rotate Left, Forward, Rotate Right */}
+              <NavButton
+                onClick={() => navLinks.left && onNavigate(navLinks.left)}
+                disabled={!navLinks.left}
                 title="Turn Left"
               >
-                <div className="bg-white/90 hover:bg-white shadow-lg rounded-full p-3 transition-all hover:scale-110">
-                  <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </div>
-                <span className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 text-xs bg-black/70 text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                  Left
-                </span>
-              </button>
-            )}
-            
-            {/* Right button - right side */}
-            {navLinks.right && (
-              <button
-                onClick={() => onNavigate(navLinks.right!)}
-                className="absolute top-1/2 right-8 transform -translate-y-1/2 z-20 group"
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a4 4 0 0 1 4 4v0a4 4 0 0 1-4 4H3m0-8l4-4m-4 4l4 4" />
+                </svg>
+              </NavButton>
+              <NavButton
+                onClick={() => navLinks.forward && onNavigate(navLinks.forward)}
+                disabled={!navLinks.forward}
+                title="Move Forward"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                </svg>
+              </NavButton>
+              <NavButton
+                onClick={() => navLinks.right && onNavigate(navLinks.right)}
+                disabled={!navLinks.right}
                 title="Turn Right"
               >
-                <div className="bg-white/90 hover:bg-white shadow-lg rounded-full p-3 transition-all hover:scale-110">
-                  <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-                <span className="absolute right-full mr-2 top-1/2 transform -translate-y-1/2 text-xs bg-black/70 text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                  Right
-                </span>
-              </button>
-            )}
-          </>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10H11a4 4 0 0 0-4 4v0a4 4 0 0 0 4 4h10m0-8l-4-4m4 4l-4 4" />
+                </svg>
+              </NavButton>
+              
+              {/* Bottom row: Left, Back, Right */}
+              <NavButton
+                onClick={() => navLinks.left && onNavigate(navLinks.left)}
+                disabled={!navLinks.left}
+                title="Go Left"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </NavButton>
+              <NavButton
+                onClick={() => navLinks.back && onNavigate(navLinks.back)}
+                disabled={!navLinks.back}
+                title="Go Back"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </NavButton>
+              <NavButton
+                onClick={() => navLinks.right && onNavigate(navLinks.right)}
+                disabled={!navLinks.right}
+                title="Go Right"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </NavButton>
+            </div>
+          </div>
         );
       })()}
 
-      {/* Location indicator */}
-      <div className="absolute top-4 left-4 bg-white/90 px-3 py-2 rounded-lg z-20">
-        <div className="text-xs text-gray-500 mb-1">Current Location</div>
-        <div className="text-sm font-medium text-gray-800">{currentViewpoint.label}</div>
-      </div>
-
-      {/* Viewpoint quick-nav buttons */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-20">
-        {preset.viewpoints.map(vp => (
-          <button
-            key={vp.id}
-            onClick={() => onNavigate(vp.id)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              currentViewpoint.id === vp.id
-                ? 'bg-blue-600 text-white shadow-lg'
-                : 'bg-white/80 text-gray-600 hover:bg-white shadow'
-            }`}
-          >
-            {vp.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Instructions */}
-      <div className="absolute top-4 right-4 bg-white/90 px-3 py-1.5 rounded-lg text-xs text-gray-600 z-20">
+      {/* Instructions - top left */}
+      <div className="absolute top-4 left-4 bg-black/60 px-3 py-1.5 rounded text-xs text-white/80 z-20">
         Drag to look around • Scroll to zoom
       </div>
 
