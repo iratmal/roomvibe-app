@@ -18,8 +18,10 @@ function logPanorama(viewpointId: string, message: string, isPlaceholder = false
   console.log(`${prefix} ${label}: ${message}`);
 }
 
-// Navigation map for Hybrid Studio Gallery
-// Defines spatial relationships between viewpoints
+// SINGLE-SPACE NAVIGATION MAP
+// All movements happen within ONE gallery space
+// Forward/Back = move deeper/shallower in space
+// Left/Right = rotate camera direction
 interface NavigationLinks {
   forward?: string;
   back?: string;
@@ -30,26 +32,38 @@ interface NavigationLinks {
 const HYBRID_NAVIGATION_MAP: Record<string, NavigationLinks> = {
   'entrance': {
     forward: 'center',
-    left: undefined,
-    right: undefined,
-    back: undefined
+    back: undefined,
+    left: 'left',
+    right: 'right'
   },
   'center': {
-    forward: undefined, // At center, user chooses left or right
+    forward: 'forward',
     back: 'entrance',
-    left: 'back-left',
-    right: 'back-right'
+    left: 'left',
+    right: 'right'
   },
-  'back-left': {
+  'forward': {
     forward: undefined,
     back: 'center',
+    left: 'left',
+    right: 'right'
+  },
+  'back': {
+    forward: 'center',
+    back: undefined,
+    left: 'left',
+    right: 'right'
+  },
+  'left': {
+    forward: 'center',
+    back: 'back',
     left: undefined,
-    right: 'back-right'
+    right: 'entrance'
   },
-  'back-right': {
-    forward: undefined,
-    back: 'center',
-    left: 'back-left',
+  'right': {
+    forward: 'center',
+    back: 'back',
+    left: 'entrance',
     right: undefined
   }
 };
