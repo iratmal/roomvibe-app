@@ -49,7 +49,7 @@ export interface Gallery360Preset {
   viewpoints: Viewpoint[];
   hotspots: Hotspot[];
   slots: Slot[];
-  galleryType?: 'r3f' | 'hybrid_pano';
+  renderMode?: '3D' | 'HYBRID_360';
 }
 
 export const gallery360Presets: Gallery360Preset[] = [
@@ -63,6 +63,7 @@ export const gallery360Presets: Gallery360Preset[] = [
     floorColor: '#e8e4dc',
     ceilingColor: '#B0B0B0',
     floorType: 'tile',
+    renderMode: '3D',
     viewpoints: [
       {
         id: 'entrance',
@@ -142,6 +143,7 @@ export const gallery360Presets: Gallery360Preset[] = [
       { id: 'modern-partition-right', position: [6, 1.6, 0], rotation: 0, width: 4, height: 3.2 },
     ],
     partitionWallColor: '#E0DCD8',
+    renderMode: '3D',
     viewpoints: [
       {
         id: 'entrance',
@@ -210,6 +212,7 @@ export const gallery360Presets: Gallery360Preset[] = [
       { id: 'partition-2', position: [6, 1.65, -1], rotation: 0, width: 3.2, height: 3.3 }
     ],
     partitionWallColor: '#FFFFFF',
+    renderMode: '3D',
     viewpoints: [
       {
         id: 'entrance',
@@ -286,6 +289,7 @@ export const gallery360Presets: Gallery360Preset[] = [
       { id: 'atrium-partition-right', position: [5.5, 1.8, 0], rotation: 0, width: 3.5, height: 3.6 }
     ],
     partitionWallColor: '#F5F3F0',
+    renderMode: '3D',
     viewpoints: [
       {
         id: 'entrance',
@@ -359,7 +363,7 @@ export const gallery360Presets: Gallery360Preset[] = [
     hasSkylights: false,
     hasColumns: false,
     hasPartitionWalls: false,
-    galleryType: 'hybrid_pano',
+    renderMode: 'HYBRID_360',
     viewpoints: [
       {
         id: 'entrance',

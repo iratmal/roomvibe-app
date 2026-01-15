@@ -289,7 +289,7 @@ export function Gallery360Editor({
   const selectedSlot = preset.slots.find(s => s.id === selectedSlotId);
   const selectedAssignment = slotAssignments.find(sa => sa.slotId === selectedSlotId);
 
-  const isPanoramaGallery = preset.galleryType === 'hybrid_pano';
+  const isPanoramaGallery = (preset.renderMode ?? '3D') === 'HYBRID_360';
 
   if (viewerMode) {
     return (
