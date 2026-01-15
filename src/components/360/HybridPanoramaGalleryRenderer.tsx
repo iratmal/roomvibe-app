@@ -18,6 +18,46 @@ function logPanorama(viewpointId: string, message: string, isPlaceholder = false
   console.log(`${prefix} ${label}: ${message}`);
 }
 
+// Navigation map for Hybrid Studio Gallery
+// Defines spatial relationships between viewpoints
+interface NavigationLinks {
+  forward?: string;
+  back?: string;
+  left?: string;
+  right?: string;
+}
+
+const HYBRID_NAVIGATION_MAP: Record<string, NavigationLinks> = {
+  'entrance': {
+    forward: 'center',
+    left: undefined,
+    right: undefined,
+    back: undefined
+  },
+  'center': {
+    forward: undefined, // At center, user chooses left or right
+    back: 'entrance',
+    left: 'back-left',
+    right: 'back-right'
+  },
+  'back-left': {
+    forward: undefined,
+    back: 'center',
+    left: undefined,
+    right: 'back-right'
+  },
+  'back-right': {
+    forward: undefined,
+    back: 'center',
+    left: 'back-left',
+    right: undefined
+  }
+};
+
+function getNavigationLinks(viewpointId: string): NavigationLinks {
+  return HYBRID_NAVIGATION_MAP[viewpointId] || {};
+}
+
 function generatePlaceholderPanorama(viewpointId: string): string {
   const cacheKey = `placeholder-${viewpointId}`;
   if (panoramaCache.has(cacheKey)) {
@@ -391,15 +431,102 @@ export function HybridPanoramaGalleryRenderer({
         );
       })}
 
+      {/* Directional Navigation Controls */}
+      {(() => {
+        const navLinks = getNavigationLinks(currentViewpoint.id);
+        return (
+          <>
+            {/* Forward button - top center */}
+            {navLinks.forward && (
+              <button
+                onClick={() => onNavigate(navLinks.forward!)}
+                className="absolute top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 group"
+                title="Move Forward"
+              >
+                <div className="bg-white/90 hover:bg-white shadow-lg rounded-full p-3 transition-all hover:scale-110">
+                  <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                  </svg>
+                </div>
+                <span className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs bg-black/70 text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  Forward
+                </span>
+              </button>
+            )}
+            
+            {/* Back button - bottom center above viewpoint buttons */}
+            {navLinks.back && (
+              <button
+                onClick={() => onNavigate(navLinks.back!)}
+                className="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-20 group"
+                title="Go Back"
+              >
+                <div className="bg-white/90 hover:bg-white shadow-lg rounded-full p-3 transition-all hover:scale-110">
+                  <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+                <span className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs bg-black/70 text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  Back
+                </span>
+              </button>
+            )}
+            
+            {/* Left button - left side */}
+            {navLinks.left && (
+              <button
+                onClick={() => onNavigate(navLinks.left!)}
+                className="absolute top-1/2 left-8 transform -translate-y-1/2 z-20 group"
+                title="Turn Left"
+              >
+                <div className="bg-white/90 hover:bg-white shadow-lg rounded-full p-3 transition-all hover:scale-110">
+                  <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </div>
+                <span className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 text-xs bg-black/70 text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  Left
+                </span>
+              </button>
+            )}
+            
+            {/* Right button - right side */}
+            {navLinks.right && (
+              <button
+                onClick={() => onNavigate(navLinks.right!)}
+                className="absolute top-1/2 right-8 transform -translate-y-1/2 z-20 group"
+                title="Turn Right"
+              >
+                <div className="bg-white/90 hover:bg-white shadow-lg rounded-full p-3 transition-all hover:scale-110">
+                  <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+                <span className="absolute right-full mr-2 top-1/2 transform -translate-y-1/2 text-xs bg-black/70 text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  Right
+                </span>
+              </button>
+            )}
+          </>
+        );
+      })()}
+
+      {/* Location indicator */}
+      <div className="absolute top-4 left-4 bg-white/90 px-3 py-2 rounded-lg z-20">
+        <div className="text-xs text-gray-500 mb-1">Current Location</div>
+        <div className="text-sm font-medium text-gray-800">{currentViewpoint.label}</div>
+      </div>
+
+      {/* Viewpoint quick-nav buttons */}
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-20">
         {preset.viewpoints.map(vp => (
           <button
             key={vp.id}
             onClick={() => onNavigate(vp.id)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               currentViewpoint.id === vp.id
                 ? 'bg-blue-600 text-white shadow-lg'
-                : 'bg-white/90 text-gray-700 hover:bg-white shadow'
+                : 'bg-white/80 text-gray-600 hover:bg-white shadow'
             }`}
           >
             {vp.label}
@@ -407,14 +534,15 @@ export function HybridPanoramaGalleryRenderer({
         ))}
       </div>
 
-      <div className="absolute top-4 left-4 bg-white/90 px-3 py-1.5 rounded-lg text-xs text-gray-600 z-20">
+      {/* Instructions */}
+      <div className="absolute top-4 right-4 bg-white/90 px-3 py-1.5 rounded-lg text-xs text-gray-600 z-20">
         Drag to look around • Scroll to zoom
       </div>
 
       {isEditor && (
         <button
           onClick={() => setShowDebugBoxes(!showDebugBoxes)}
-          className={`absolute top-4 right-4 px-3 py-1.5 rounded-lg text-xs font-medium z-20 transition-colors ${
+          className={`absolute top-14 right-4 px-3 py-1.5 rounded-lg text-xs font-medium z-20 transition-colors ${
             showDebugBoxes 
               ? 'bg-red-500 text-white' 
               : 'bg-white/90 text-gray-600 hover:bg-gray-100'
