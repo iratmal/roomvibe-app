@@ -190,126 +190,295 @@ function SafeFloorMaterial({ color }: { color?: string }) {
 // Hybrid Studio Gallery Materials - Subtle procedural textures for physical depth
 // Uses MirroredRepeatWrapping to eliminate seams in tiled textures
 
-// Creates seamless plaster wall texture using mirrored tiling
+// Enhanced plaster wall material with texture and roughness map for visual depth
 function HybridPlasterWallMaterial({ color = '#F5F3F0' }: { color?: string }) {
-  const texture = useMemo(() => {
-    const size = 256;
-    const canvas = document.createElement('canvas');
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext('2d')!;
+  const { colorMap, roughnessMap } = useMemo(() => {
+    const size = 512;
     
-    // Base warm off-white / light grey-beige
-    ctx.fillStyle = '#F8F6F3';
-    ctx.fillRect(0, 0, size, size);
+    // Color map with fine plaster texture
+    const colorCanvas = document.createElement('canvas');
+    colorCanvas.width = size;
+    colorCanvas.height = size;
+    const colorCtx = colorCanvas.getContext('2d')!;
     
-    // Very subtle lime plaster grain - minimal noise
-    const imageData = ctx.getImageData(0, 0, size, size);
-    const data = imageData.data;
+    // Base warm off-white lime plaster
+    colorCtx.fillStyle = '#F6F4F0';
+    colorCtx.fillRect(0, 0, size, size);
+    
+    // Fine lime plaster grain with subtle warm variation
+    const colorData = colorCtx.getImageData(0, 0, size, size);
+    const cData = colorData.data;
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
         const i = (y * size + x) * 4;
-        // Subtle warm-tinted noise (±2 levels)
-        const noise = (Math.random() - 0.5) * 4;
-        data[i] = Math.min(255, Math.max(0, data[i] + noise));
-        data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + noise * 0.95));
-        data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + noise * 0.9));
+        // Subtle warm-tinted noise (±3 levels)
+        const noise = (Math.random() - 0.5) * 6;
+        // Very slight vertical gradient for depth perception
+        const verticalFade = (y / size) * 1.5;
+        cData[i] = Math.min(255, Math.max(0, cData[i] + noise - verticalFade));
+        cData[i + 1] = Math.min(255, Math.max(0, cData[i + 1] + noise * 0.95 - verticalFade));
+        cData[i + 2] = Math.min(255, Math.max(0, cData[i + 2] + noise * 0.9 - verticalFade * 0.8));
       }
     }
-    ctx.putImageData(imageData, 0, 0);
+    colorCtx.putImageData(colorData, 0, 0);
     
-    // Add extremely subtle mineral grain spots
-    ctx.globalAlpha = 0.012;
-    for (let i = 0; i < 80; i++) {
+    // Subtle mineral grain and plaster texture
+    colorCtx.globalAlpha = 0.015;
+    for (let i = 0; i < 100; i++) {
       const x = Math.random() * size;
       const y = Math.random() * size;
-      const r = Math.random() * 2 + 0.5;
-      ctx.fillStyle = Math.random() > 0.5 ? '#EAE7E2' : '#FDFCFA';
-      ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2);
-      ctx.fill();
+      const r = Math.random() * 2.5 + 0.5;
+      colorCtx.fillStyle = Math.random() > 0.5 ? '#EAE7E2' : '#FDFCFA';
+      colorCtx.beginPath();
+      colorCtx.arc(x, y, r, 0, Math.PI * 2);
+      colorCtx.fill();
     }
     
-    const tex = new THREE.CanvasTexture(canvas);
-    // MirroredRepeatWrapping eliminates visible seams
-    tex.wrapS = THREE.MirroredRepeatWrapping;
-    tex.wrapT = THREE.MirroredRepeatWrapping;
-    tex.repeat.set(3, 3);
-    tex.minFilter = THREE.LinearMipmapLinearFilter;
-    tex.magFilter = THREE.LinearFilter;
-    tex.anisotropy = 4;
-    return tex;
+    // Roughness map - walls are more matte than floor for visual separation
+    const roughCanvas = document.createElement('canvas');
+    roughCanvas.width = size;
+    roughCanvas.height = size;
+    const roughCtx = roughCanvas.getContext('2d')!;
+    
+    // Higher roughness base for matte plaster look (darker = rougher)
+    roughCtx.fillStyle = '#D0D0D0'; // ~81% roughness - noticeably more matte than floor
+    roughCtx.fillRect(0, 0, size, size);
+    
+    // Subtle roughness variation
+    const roughData = roughCtx.getImageData(0, 0, size, size);
+    const rData = roughData.data;
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const i = (y * size + x) * 4;
+        const noise = (Math.random() - 0.5) * 12;
+        const val = Math.min(255, Math.max(0, 208 + noise));
+        rData[i] = val;
+        rData[i + 1] = val;
+        rData[i + 2] = val;
+      }
+    }
+    roughCtx.putImageData(roughData, 0, 0);
+    
+    const cTex = new THREE.CanvasTexture(colorCanvas);
+    cTex.wrapS = THREE.MirroredRepeatWrapping;
+    cTex.wrapT = THREE.MirroredRepeatWrapping;
+    cTex.repeat.set(4, 4);
+    cTex.minFilter = THREE.LinearMipmapLinearFilter;
+    cTex.magFilter = THREE.LinearFilter;
+    cTex.anisotropy = 4;
+    
+    const rTex = new THREE.CanvasTexture(roughCanvas);
+    rTex.wrapS = THREE.MirroredRepeatWrapping;
+    rTex.wrapT = THREE.MirroredRepeatWrapping;
+    rTex.repeat.set(4, 4);
+    rTex.minFilter = THREE.LinearMipmapLinearFilter;
+    rTex.magFilter = THREE.LinearFilter;
+    
+    return { colorMap: cTex, roughnessMap: rTex };
   }, []);
 
   return (
     <meshStandardMaterial 
       color={color}
-      map={texture}
-      roughness={0.91}
+      map={colorMap}
+      roughnessMap={roughnessMap}
+      roughness={0.88}
       metalness={0}
       side={THREE.DoubleSide}
     />
   );
 }
 
-// Creates seamless matte concrete floor texture - no reflections, no gloss
-function HybridMatteFloorMaterial({ color = '#E0DCD8' }: { color?: string }) {
-  const texture = useMemo(() => {
-    const size = 256;
-    const canvas = document.createElement('canvas');
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext('2d')!;
+// Creates polished concrete floor with PBR properties - subtle reflection, texture grain
+function HybridPolishedConcreteFloor({ color = '#E5E2DD' }: { color?: string }) {
+  const { colorMap, roughnessMap } = useMemo(() => {
+    const size = 512;
     
-    // Base light grey-beige concrete
-    ctx.fillStyle = '#E8E5E0';
-    ctx.fillRect(0, 0, size, size);
+    // Color/Diffuse map
+    const colorCanvas = document.createElement('canvas');
+    colorCanvas.width = size;
+    colorCanvas.height = size;
+    const colorCtx = colorCanvas.getContext('2d')!;
     
-    // Subtle concrete grain
-    const imageData = ctx.getImageData(0, 0, size, size);
-    const data = imageData.data;
+    // Base polished concrete - warm light grey
+    colorCtx.fillStyle = '#E8E5E0';
+    colorCtx.fillRect(0, 0, size, size);
+    
+    // Polished concrete grain with subtle color variation
+    const colorData = colorCtx.getImageData(0, 0, size, size);
+    const cData = colorData.data;
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
         const i = (y * size + x) * 4;
-        // Subtle variation (±3 levels)
-        const noise = (Math.random() - 0.5) * 6;
-        data[i] = Math.min(255, Math.max(0, data[i] + noise));
-        data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + noise));
-        data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + noise * 0.95));
+        // Fine grain texture (±4 levels)
+        const noise = (Math.random() - 0.5) * 8;
+        // Slight warm tint variation
+        cData[i] = Math.min(255, Math.max(0, cData[i] + noise));
+        cData[i + 1] = Math.min(255, Math.max(0, cData[i + 1] + noise * 0.98));
+        cData[i + 2] = Math.min(255, Math.max(0, cData[i + 2] + noise * 0.94));
       }
     }
-    ctx.putImageData(imageData, 0, 0);
+    colorCtx.putImageData(colorData, 0, 0);
     
-    // Very subtle aggregate spots for polished concrete look
-    ctx.globalAlpha = 0.015;
-    for (let i = 0; i < 60; i++) {
+    // Polished aggregate spots - characteristic of polished concrete
+    colorCtx.globalAlpha = 0.02;
+    for (let i = 0; i < 120; i++) {
       const x = Math.random() * size;
       const y = Math.random() * size;
-      const r = Math.random() * 2.5 + 0.5;
-      ctx.fillStyle = Math.random() > 0.5 ? '#D8D4CE' : '#F2EFEA';
-      ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2);
-      ctx.fill();
+      const r = Math.random() * 3 + 0.8;
+      // Mix of lighter and slightly darker aggregate
+      const tone = Math.random();
+      if (tone < 0.4) colorCtx.fillStyle = '#D5D1CB';
+      else if (tone < 0.7) colorCtx.fillStyle = '#F0EDE8';
+      else colorCtx.fillStyle = '#C8C4BE';
+      colorCtx.beginPath();
+      colorCtx.arc(x, y, r, 0, Math.PI * 2);
+      colorCtx.fill();
     }
     
-    const tex = new THREE.CanvasTexture(canvas);
-    // MirroredRepeatWrapping eliminates visible seams
-    tex.wrapS = THREE.MirroredRepeatWrapping;
-    tex.wrapT = THREE.MirroredRepeatWrapping;
-    tex.repeat.set(4, 4);
-    tex.minFilter = THREE.LinearMipmapLinearFilter;
-    tex.magFilter = THREE.LinearFilter;
-    tex.anisotropy = 4;
-    return tex;
+    // Roughness map - controls reflection variation
+    const roughCanvas = document.createElement('canvas');
+    roughCanvas.width = size;
+    roughCanvas.height = size;
+    const roughCtx = roughCanvas.getContext('2d')!;
+    
+    // Base roughness (grey = mid roughness, lighter = smoother/more reflective)
+    roughCtx.fillStyle = '#A8A8A8'; // ~66% roughness base
+    roughCtx.fillRect(0, 0, size, size);
+    
+    // Subtle roughness variation for realistic polished look
+    const roughData = roughCtx.getImageData(0, 0, size, size);
+    const rData = roughData.data;
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const i = (y * size + x) * 4;
+        // Variation in roughness (smoother spots = lighter)
+        const noise = (Math.random() - 0.5) * 20;
+        const val = Math.min(255, Math.max(0, 168 + noise));
+        rData[i] = val;
+        rData[i + 1] = val;
+        rData[i + 2] = val;
+      }
+    }
+    roughCtx.putImageData(roughData, 0, 0);
+    
+    const cTex = new THREE.CanvasTexture(colorCanvas);
+    cTex.wrapS = THREE.MirroredRepeatWrapping;
+    cTex.wrapT = THREE.MirroredRepeatWrapping;
+    cTex.repeat.set(6, 6);
+    cTex.minFilter = THREE.LinearMipmapLinearFilter;
+    cTex.magFilter = THREE.LinearFilter;
+    cTex.anisotropy = 8;
+    
+    const rTex = new THREE.CanvasTexture(roughCanvas);
+    rTex.wrapS = THREE.MirroredRepeatWrapping;
+    rTex.wrapT = THREE.MirroredRepeatWrapping;
+    rTex.repeat.set(6, 6);
+    rTex.minFilter = THREE.LinearMipmapLinearFilter;
+    rTex.magFilter = THREE.LinearFilter;
+    
+    return { colorMap: cTex, roughnessMap: rTex };
   }, []);
 
   return (
     <meshStandardMaterial 
       color={color}
-      map={texture}
-      roughness={0.88}
-      metalness={0}
+      map={colorMap}
+      roughnessMap={roughnessMap}
+      roughness={0.65}
+      metalness={0.02}
     />
+  );
+}
+
+// Floor brightness gradient overlay - lighter center, darker edges
+function HybridFloorBrightnessGradient({ width, depth }: { width: number; depth: number }) {
+  const gradientTexture = useMemo(() => {
+    const size = 128;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d')!;
+    
+    // Radial gradient - light center fading to slightly darker edges
+    const gradient = ctx.createRadialGradient(
+      size / 2, size / 2, 0,
+      size / 2, size / 2, size * 0.7
+    );
+    gradient.addColorStop(0, 'rgba(255, 252, 248, 0.08)');   // Warm light center
+    gradient.addColorStop(0.5, 'rgba(255, 252, 248, 0.03)'); // Fade
+    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');            // Transparent at edges
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, size, size);
+    
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.ClampToEdgeWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    return tex;
+  }, []);
+
+  return (
+    <mesh position={[0, 0.004, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <planeGeometry args={[width * 0.85, depth * 0.85]} />
+      <meshBasicMaterial 
+        map={gradientTexture}
+        transparent
+        opacity={1}
+        depthWrite={false}
+        blending={THREE.AdditiveBlending}
+      />
+    </mesh>
+  );
+}
+
+// Soft daylight studio lighting for Hybrid Studio
+function HybridStudioLighting({ width, height, depth }: { width: number; height: number; depth: number }) {
+  return (
+    <>
+      {/* Primary hemisphere light - soft sky/ground ambient */}
+      <hemisphereLight
+        args={['#F8F6F2', '#E8E4DC', 0.6]}
+        position={[0, height, 0]}
+      />
+      
+      {/* Soft overhead fill - simulates diffused daylight from above */}
+      <directionalLight
+        position={[0, height + 5, 0]}
+        intensity={0.35}
+        color="#FFFBF5"
+        castShadow={false}
+      />
+      
+      {/* Ambient fill - ensures no harsh shadows */}
+      <ambientLight intensity={0.25} color="#FFF8F0" />
+      
+      {/* Soft rect area light from ceiling - even diffused studio light */}
+      <rectAreaLight
+        position={[0, height - 0.3, 0]}
+        rotation={[Math.PI / 2, 0, 0]}
+        width={width * 0.7}
+        height={depth * 0.7}
+        intensity={0.4}
+        color="#FFFAF5"
+      />
+      
+      {/* Gentle side fill lights - prevent wall flatness */}
+      <pointLight
+        position={[width * 0.3, height * 0.6, depth * 0.3]}
+        intensity={0.12}
+        color="#FFF8F2"
+        distance={width}
+        decay={2}
+      />
+      <pointLight
+        position={[-width * 0.3, height * 0.6, -depth * 0.3]}
+        intensity={0.12}
+        color="#FFF8F2"
+        distance={width}
+        decay={2}
+      />
+    </>
   );
 }
 
@@ -435,6 +604,8 @@ function FloorGuard() {
       
       if (!isFloorMesh) return;
       if (meshName === 'floorClickArea') return;
+      // Exempt Hybrid Studio floor - it uses PBR material with proper lighting
+      if (meshName === 'hybridFloorMain') return;
       
       const mat = obj.material as THREE.Material;
       const hasColor = mat && 'color' in mat && (mat as any).color;
@@ -1028,10 +1199,14 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
       ) : preset.floorType === 'concrete' ? (
         <ConcreteFloor width={width} depth={depth} color={preset.floorColor} />
       ) : preset.id === 'hybrid-studio' ? (
-        <mesh name="hybridFloorMain" position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[width, depth]} />
-          <HybridMatteFloorMaterial color={preset.floorColor} />
-        </mesh>
+        <>
+          <mesh name="hybridFloorMain" position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+            <planeGeometry args={[width, depth]} />
+            <HybridPolishedConcreteFloor color={preset.floorColor} />
+          </mesh>
+          {/* Brightness gradient - lighter center, darker edges */}
+          <HybridFloorBrightnessGradient width={width} depth={depth} />
+        </>
       ) : (
         <mesh name="defaultFloorMain" position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
           <planeGeometry args={[width, depth]} />
@@ -1359,6 +1534,64 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
           {/* Simple uniform lighting - like Classic Gallery for smooth performance */}
           <hemisphereLight args={['#FAFCFF', '#E0DCD8', 0.9]} position={[0, height, 0]} />
           <ambientLight intensity={0.5} color="#FAFAFA" />
+        </>
+      ) : preset.id === 'hybrid-studio' ? (
+        <>
+          {/* HYBRID STUDIO: Premium ceiling with darker beams, lighter panels, soft ambient shading */}
+          {/* Main ceiling base - light warm white */}
+          <mesh position={[0, height, 0]} rotation={[Math.PI / 2, 0, 0]}>
+            <planeGeometry args={[width, depth]} />
+            <meshStandardMaterial color="#FAF8F5" roughness={0.92} metalness={0} />
+          </mesh>
+          
+          {/* Ceiling panel grid - lighter recessed panels with darker beam shadows */}
+          {Array.from({ length: 4 }, (_, xi) => 
+            Array.from({ length: 3 }, (_, zi) => ({
+              x: (xi - 1.5) * (width / 4),
+              z: (zi - 1) * (depth / 3),
+              key: `hybrid-panel-${xi}-${zi}`
+            }))
+          ).flat().map((panel) => (
+            <group key={panel.key} position={[panel.x, height - 0.005, panel.z]}>
+              {/* Recessed panel - lighter than surrounding */}
+              <mesh rotation={[Math.PI / 2, 0, 0]}>
+                <planeGeometry args={[width / 4.8, depth / 3.6]} />
+                <meshStandardMaterial color="#FFFFFF" roughness={0.95} metalness={0} />
+              </mesh>
+            </group>
+          ))}
+          
+          {/* Ceiling beam grid - darker grey beams */}
+          {/* Horizontal beams (along X axis) */}
+          {[-depth/3, 0, depth/3].map((zPos, i) => (
+            <mesh key={`hybrid-beam-x-${i}`} position={[0, height - 0.06, zPos]}>
+              <boxGeometry args={[width - 0.2, 0.12, 0.14]} />
+              <meshStandardMaterial color="#4A4845" roughness={0.75} metalness={0.05} />
+            </mesh>
+          ))}
+          {/* Vertical beams (along Z axis) */}
+          {[-width/4, 0, width/4].map((xPos, i) => (
+            <mesh key={`hybrid-beam-z-${i}`} position={[xPos, height - 0.06, 0]}>
+              <boxGeometry args={[0.14, 0.12, depth - 0.2]} />
+              <meshStandardMaterial color="#4A4845" roughness={0.75} metalness={0.05} />
+            </mesh>
+          ))}
+          
+          {/* Edge cove - subtle perimeter shadow */}
+          {[
+            { pos: [0, height - 0.04, -halfD + 0.06] as [number, number, number], size: [width, 0.08, 0.12] as [number, number, number] },
+            { pos: [0, height - 0.04, halfD - 0.06] as [number, number, number], size: [width, 0.08, 0.12] as [number, number, number] },
+            { pos: [-halfW + 0.06, height - 0.04, 0] as [number, number, number], size: [0.12, 0.08, depth] as [number, number, number] },
+            { pos: [halfW - 0.06, height - 0.04, 0] as [number, number, number], size: [0.12, 0.08, depth] as [number, number, number] },
+          ].map((cove, i) => (
+            <mesh key={`hybrid-cove-${i}`} position={cove.pos}>
+              <boxGeometry args={cove.size} />
+              <meshStandardMaterial color="#5A5855" roughness={0.8} metalness={0} />
+            </mesh>
+          ))}
+          
+          {/* Hybrid Studio Soft Daylight Lighting */}
+          <HybridStudioLighting width={width} height={height} depth={depth} />
         </>
       ) : (
         <>
