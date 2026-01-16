@@ -58,9 +58,9 @@ router.get('/profile', authenticateToken, async (req: any, res) => {
       languages: user.languages || [],
       visibleToDesigners: user.visible_to_designers || false,
       visibleToGalleries: user.visible_to_galleries || false,
-      artistAccess: user.artist_access || false,
-      designerAccess: user.designer_access || false,
-      galleryAccess: user.gallery_access || false
+      artistAccess: user.artist_access || user.role === 'artist',
+      designerAccess: user.designer_access || user.role === 'designer',
+      galleryAccess: user.gallery_access || user.role === 'gallery'
     };
 
     res.json({ profile });
