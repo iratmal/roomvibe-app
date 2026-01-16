@@ -1,0 +1,68 @@
+Problem (bug):
+U Artist Dashboardu (tab: Artist Profile → Artist Connect Visibility) korisniku koji je već na Artist planu (plaćeno) i u Artist role dashboardu, prikazuje se žuti banner:
+
+“Upgrade to the Artist plan to enable visibility in Artist Connect and receive inquiries from designers and galleries.”
+
+To je krivo. Kad je plan aktivan, banner se ne smije prikazivati i toggles moraju biti aktivni i spremati state.
+
+Scope (NE DIRATI):
+
+Ne dirati Free plan / User dashboard — sve je ok.
+
+Ne raditi refactor cijelog billing/auth sustava.
+
+GOAL
+
+U Artist Dashboardu prikazati ispravno stanje Artist Connect Visibility:
+
+Ako user ima ACTIVE Artist subscription → nema upgrade bannera, toggles “Visible to Designers / Visible to Galleries” rade.
+
+Ako user nema active Artist subscription → prikaži upgrade banner i toggles su disabled ili se modul sakrije (kako je već definirano u vašem UI-u).
+
+Osigurati da Artist dashboard koristi jedan izvor istine za plan/entitlements (isto kao Admin view) — nema duplih/kontradiktornih provjera.
+
+IMPLEMENTACIJA (koraci)
+
+Lociraj komponentu koja renderira “Artist Connect Visibility” u Artist Dashboardu (Artist Profile tab).
+
+Pronađi gdje se setira showUpgrade, isEligible, canUseArtistConnect, planStatus, subscriptionStatus ili slično.
+
+Provjeri odakle dolazi plan status:
+
+Mora dolaziti iz backend-a/session-a (npr. user.plan, user.subscription, entitlements) i mora biti isti podatak koji koristi Admin sučelje.
+
+Ako trenutno front-end radi fallback na “Free” kad ne stigne podatak → to je uzrok buga.
+
+Fix logike prikaza bannera:
+
+showUpgradeBanner smije biti true samo ako artistPlanActive === false.
+
+Ako je artistPlanActive === true → showUpgradeBanner = false.
+
+Fix za “loading state” (čest uzrok):
+
+Ako se plan status učitava async, ne prikazuj upgrade banner dok je loading.
+
+Tek kad dobiješ potvrđen status artistPlanActive === false, onda ga pokaži.
+
+Toggleri:
+
+Kad je artistPlanActive === true, toggleri moraju biti enabled i spremati state (API call / DB update).
+
+Nakon spremanja, stanje se mora odmah reflektirati u UI-u (optimistic ili refetch).
+
+Brzi QA scenariji:
+
+User A: Artist plan ACTIVE → nema bannera, toggleri rade.
+
+User B: Artist plan INACTIVE/Free → banner se vidi, toggleri ne rade (ili su skriveni, ovisno o postojećem dizajnu).
+
+Refresh stranice: Artist ACTIVE korisniku se banner nikad ne pojavi ni na trenutak.
+
+ACCEPTANCE CRITERIA
+
+Na live/staging: kad se ulogiram kao plaćeni Artist, u Artist Dashboard → Artist Profile → Artist Connect Visibility ne vidim “Upgrade to the Artist plan…” banner.
+
+“Visible to Designers / Visible to Galleries” su aktivni i promjene se spremaju.
+
+Free/User dashboard se ne dira.
