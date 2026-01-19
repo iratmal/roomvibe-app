@@ -129,11 +129,6 @@ export function ArtistDashboard() {
   const [exhibitionFormData, setExhibitionFormData] = useState({ title: '', subtitle: '' });
   const [showExhibitionDeleteConfirm, setShowExhibitionDeleteConfirm] = useState(false);
   const [exhibitionArtworks, setExhibitionArtworks] = useState<any[]>([]);
-  const [showAddExhibitionArtwork, setShowAddExhibitionArtwork] = useState(false);
-  const [exhibitionArtworkForm, setExhibitionArtworkForm] = useState({ title: '', widthValue: '', heightValue: '', dimensionUnit: 'cm' });
-  const [exhibitionArtworkImage, setExhibitionArtworkImage] = useState<File | null>(null);
-  const [exhibitionArtworkPreview, setExhibitionArtworkPreview] = useState<string | null>(null);
-  const [exhibitionArtworkLoading, setExhibitionArtworkLoading] = useState(false);
   const [deleteExhibitionArtworkId, setDeleteExhibitionArtworkId] = useState<number | null>(null);
   const [showStudioWarning, setShowStudioWarning] = useState(false);
   const [pendingStudioArtwork, setPendingStudioArtwork] = useState<Artwork | null>(null);
@@ -275,61 +270,6 @@ export function ArtistDashboard() {
     }
   };
 
-  const handleAddExhibitionArtwork = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!exhibition) return;
-    if (!exhibitionArtworkForm.title.trim()) {
-      setError('Artwork title is required');
-      return;
-    }
-    if (!exhibitionArtworkImage) {
-      setError('Artwork image is required');
-      return;
-    }
-    
-    if (!exhibitionArtworkForm.widthValue || !exhibitionArtworkForm.heightValue) {
-      setError('Artwork dimensions (width and height) are required');
-      return;
-    }
-
-    setExhibitionArtworkLoading(true);
-    setError('');
-
-    try {
-      const formDataToSend = new FormData();
-      formDataToSend.append('title', exhibitionArtworkForm.title);
-      formDataToSend.append('widthValue', exhibitionArtworkForm.widthValue);
-      formDataToSend.append('heightValue', exhibitionArtworkForm.heightValue);
-      formDataToSend.append('dimensionUnit', exhibitionArtworkForm.dimensionUnit);
-      formDataToSend.append('image', exhibitionArtworkImage);
-
-      const response = await fetch(`${API_URL}/api/artist/exhibition/${exhibition.id}/artworks`, {
-        method: 'POST',
-        credentials: 'include',
-        body: formDataToSend
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to add artwork');
-      }
-
-      setSuccess('Artwork added to exhibition!');
-      setExhibitionArtworkForm({ title: '', widthValue: '', heightValue: '', dimensionUnit: 'cm' });
-      setExhibitionArtworkImage(null);
-      setExhibitionArtworkPreview(null);
-      setShowAddExhibitionArtwork(false);
-      fetchExhibitionArtworks(exhibition.id);
-      fetchExhibition();
-
-      setTimeout(() => setSuccess(''), 5000);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setExhibitionArtworkLoading(false);
-    }
-  };
-
   const handleDeleteExhibitionArtwork = async (artworkId: number) => {
     if (!exhibition) return;
 
@@ -418,18 +358,6 @@ export function ArtistDashboard() {
 
   const isArtworkInExhibition = (artworkId: number) => {
     return exhibitionArtworks.some(ea => ea.sourceArtworkId === artworkId);
-  };
-
-  const handleExhibitionArtworkImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setExhibitionArtworkImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setExhibitionArtworkPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
   };
 
   const handleCreateExhibition = async (e: React.FormEvent) => {
@@ -1975,7 +1903,15 @@ export function ArtistDashboard() {
         </div>
 
         <div className="mb-10" data-section="exhibition" ref={exhibitionSectionRef}>
-          <h2 className="text-2xl font-bold mb-6 text-rv-primary">My Exhibition</h2>
+          <h2 className="text-2xl font-bold mb-2 text-rv-primary">My Exhibition</h2>
+          <div className="mb-6 p-4 bg-rv-surface/50 border border-rv-neutral/50 rounded-rvMd">
+            <p className="text-sm text-rv-text font-medium mb-1">How it works:</p>
+            <p className="text-sm text-rv-textMuted">
+              First upload your artworks in the <span className="font-medium">Artworks</span> section.
+              Then click <span className="font-medium">"Add to My Exhibition"</span> on any artwork you want to include.
+            </p>
+            <p className="text-xs text-rv-textMuted mt-2">You can edit or remove artworks from your exhibition at any time.</p>
+          </div>
           
           {!exhibition ? (
             <div className="text-center py-12 bg-white rounded-rvLg border border-rv-neutral shadow-rvSoft">
@@ -2062,7 +1998,7 @@ export function ArtistDashboard() {
           ) : (
             <div className="space-y-6">
               <div className="bg-white border border-rv-neutral rounded-rvLg shadow-rvSoft overflow-hidden">
-                <div className="relative h-40 sm:h-56 bg-gradient-to-br from-rv-primary/10 to-[#C9A24A]/10 flex items-center justify-center overflow-hidden">
+                <div className="relative h-56 sm:h-80 bg-gradient-to-br from-rv-primary/10 to-[#C9A24A]/10 flex items-center justify-center overflow-hidden">
                   {exhibition.coverImageUrl ? (
                     <img 
                       src={getCoverImageUrl(exhibition.coverImageUrl)} 
@@ -2357,124 +2293,15 @@ export function ArtistDashboard() {
               </div>
 
               <div className="bg-white border border-rv-neutral rounded-rvLg shadow-rvSoft p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold text-rv-primary">Exhibition Artworks</h3>
-                  <button
-                    onClick={() => setShowAddExhibitionArtwork(!showAddExhibitionArtwork)}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#C9A24A] text-white rounded-rvMd font-semibold hover:bg-[#B8913A] transition-colors text-sm"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                    Add Artwork
-                  </button>
-                </div>
-
-                {showAddExhibitionArtwork && (
-                  <form onSubmit={handleAddExhibitionArtwork} className="mb-6 p-4 bg-rv-surface rounded-rvMd border border-rv-neutral">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <div>
-                        <label className="block text-sm font-semibold mb-2 text-rv-text">
-                          Artwork Title <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          value={exhibitionArtworkForm.title}
-                          onChange={(e) => setExhibitionArtworkForm(prev => ({ ...prev, title: e.target.value }))}
-                          className="w-full px-3 py-2 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
-                          placeholder="Artwork title"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold mb-2 text-rv-text">
-                          Image <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleExhibitionArtworkImageChange}
-                          className="w-full px-3 py-2 border border-rv-neutral rounded-rvMd text-sm file:mr-3 file:py-1 file:px-3 file:rounded-rvMd file:border-0 file:bg-rv-primary file:text-white file:font-semibold file:cursor-pointer"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-4 mb-4">
-                      <div>
-                        <label className="block text-sm font-semibold mb-2 text-rv-text">Width</label>
-                        <input
-                          type="number"
-                          value={exhibitionArtworkForm.widthValue}
-                          onChange={(e) => setExhibitionArtworkForm(prev => ({ ...prev, widthValue: e.target.value }))}
-                          className="w-full px-3 py-2 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
-                          placeholder="50"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold mb-2 text-rv-text">Height</label>
-                        <input
-                          type="number"
-                          value={exhibitionArtworkForm.heightValue}
-                          onChange={(e) => setExhibitionArtworkForm(prev => ({ ...prev, heightValue: e.target.value }))}
-                          className="w-full px-3 py-2 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
-                          placeholder="50"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold mb-2 text-rv-text">Unit</label>
-                        <select
-                          value={exhibitionArtworkForm.dimensionUnit}
-                          onChange={(e) => setExhibitionArtworkForm(prev => ({ ...prev, dimensionUnit: e.target.value }))}
-                          className="w-full px-3 py-2 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
-                        >
-                          <option value="cm">cm</option>
-                          <option value="in">in</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    {exhibitionArtworkPreview && (
-                      <div className="mb-4">
-                        <img 
-                          src={exhibitionArtworkPreview} 
-                          alt="Preview" 
-                          className="w-32 h-32 object-cover rounded-rvMd border border-rv-neutral"
-                        />
-                      </div>
-                    )}
-
-                    <div className="flex gap-3">
-                      <button
-                        type="submit"
-                        disabled={exhibitionArtworkLoading}
-                        className="px-6 py-2 bg-rv-primary text-white rounded-rvMd font-semibold hover:bg-rv-primaryHover transition-colors disabled:opacity-50"
-                      >
-                        {exhibitionArtworkLoading ? 'Adding...' : 'Add to Exhibition'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowAddExhibitionArtwork(false);
-                          setExhibitionArtworkForm({ title: '', widthValue: '', heightValue: '', dimensionUnit: 'cm' });
-                          setExhibitionArtworkImage(null);
-                          setExhibitionArtworkPreview(null);
-                        }}
-                        className="px-6 py-2 border border-rv-neutral text-rv-text rounded-rvMd font-semibold hover:bg-rv-surface transition-colors"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </form>
-                )}
+                <h3 className="text-lg font-bold text-rv-primary mb-4">Exhibition Artworks</h3>
 
                 {exhibitionArtworks.length === 0 ? (
                   <div className="text-center py-8 text-rv-textMuted">
                     <svg className="w-12 h-12 mx-auto mb-3 text-rv-neutral" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    <p className="font-medium">No artworks yet</p>
-                    <p className="text-sm">Add artworks to display in your virtual exhibition</p>
+                    <p className="font-medium">No artworks in exhibition yet</p>
+                    <p className="text-sm mt-1">Go to your <span className="font-medium">Artworks</span> section and click "Add to My Exhibition" on the artworks you want to include.</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
