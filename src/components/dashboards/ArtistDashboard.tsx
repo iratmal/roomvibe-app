@@ -1682,12 +1682,15 @@ export function ArtistDashboard() {
                     <h3 className="font-bold text-lg mb-2 text-rv-text">{artwork.title}</h3>
                     <p className="text-sm text-rv-textMuted mb-1">
                       {artwork.width} × {artwork.height} {artwork.dimension_unit || 'cm'}
-                      {artwork.variants && Array.isArray(artwork.variants) && artwork.variants.length > 0 && (
-                        <span className="ml-2 text-[#C9A24A] font-medium">
-                          (+{artwork.variants.length} more)
-                        </span>
-                      )}
                     </p>
+                    {artwork.variants && Array.isArray(artwork.variants) && artwork.variants.length > 0 && (
+                      <p className="text-xs text-[#C9A24A] font-semibold mb-1 flex items-center gap-1">
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
+                        </svg>
+                        Available in {artwork.variants.length + 1} sizes
+                      </p>
+                    )}
                     {(() => {
                       const allPrices: { price: number; currency: string }[] = [];
                       

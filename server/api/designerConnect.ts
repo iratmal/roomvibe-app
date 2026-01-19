@@ -24,6 +24,7 @@ router.get('/art-library', authenticateToken, async (req: any, res) => {
         a.id, a.artist_id, a.title, a.image_url, 
         a.width, a.height, a.dimension_unit,
         a.orientation, a.style_tags, a.dominant_colors, a.medium, a.availability,
+        a.price_amount, a.price_currency, a.variants,
         u.display_name as artist_name, u.email as artist_email,
         u.location_city, u.location_country, u.bio, u.primary_medium,
         u.profile_image_url, u.website_url, u.instagram_url
@@ -102,6 +103,9 @@ router.get('/art-library', authenticateToken, async (req: any, res) => {
       dominantColors: row.dominant_colors || [],
       medium: row.medium,
       availability: row.availability,
+      priceAmount: row.price_amount,
+      priceCurrency: row.price_currency || 'EUR',
+      variants: row.variants || [],
       artist: {
         id: row.artist_id,
         name: row.artist_name || row.artist_email,
@@ -206,6 +210,7 @@ router.get('/projects/:projectId/artworks', authenticateToken, async (req: any, 
         a.id, a.artist_id, a.title, a.image_url,
         a.width, a.height, a.dimension_unit,
         a.orientation, a.style_tags, a.dominant_colors, a.medium,
+        a.price_amount, a.price_currency, a.variants,
         u.display_name as artist_name, u.email as artist_email
       FROM designer_project_artworks dpa
       JOIN artworks a ON dpa.artwork_id = a.id
@@ -229,6 +234,9 @@ router.get('/projects/:projectId/artworks', authenticateToken, async (req: any, 
       styleTags: row.style_tags || [],
       dominantColors: row.dominant_colors || [],
       medium: row.medium,
+      priceAmount: row.price_amount,
+      priceCurrency: row.price_currency || 'EUR',
+      variants: row.variants || [],
       artistName: row.artist_name || row.artist_email
     }));
 
