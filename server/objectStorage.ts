@@ -118,12 +118,18 @@ export class ObjectStorageService {
       throw new ObjectNotFoundError();
     }
     
+    // Strip /objects/ prefix if present (gallery images are stored with this prefix in DB but not in GCS)
+    let gcsPath = storageKey;
+    if (storageKey.startsWith('/objects/')) {
+      gcsPath = storageKey.slice('/objects/'.length);
+    }
+    
     // Use GCS via sidecar (Replit native SDK is disabled due to bug)
     const bucketName = getGcsBucketName();
     const bucket = objectStorageClient.bucket(bucketName);
-    const file = bucket.file(storageKey);
+    const file = bucket.file(gcsPath);
     
-    console.log('[ObjectStorage] getObjectByStorageKey (GCS):', { bucketName, storageKey });
+    console.log('[ObjectStorage] getObjectByStorageKey (GCS):', { bucketName, storageKey, gcsPath });
     const [exists] = await file.exists();
     
     if (!exists) {
