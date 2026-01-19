@@ -543,6 +543,24 @@ export function ArtistDashboard() {
   const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      
+      const MAX_FILE_SIZE = 5 * 1024 * 1024;
+      const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+      
+      if (file.size > MAX_FILE_SIZE) {
+        setError('Image too large. Please upload an image under 5 MB. For best results, use JPG/WebP and keep width around 2000-3000 px.');
+        setTimeout(() => setError(''), 8000);
+        e.target.value = '';
+        return;
+      }
+      
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        setError('Invalid file type. Please upload a JPG, PNG, or WebP image.');
+        setTimeout(() => setError(''), 5000);
+        e.target.value = '';
+        return;
+      }
+      
       setCoverImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -2049,7 +2067,14 @@ export function ArtistDashboard() {
                         </label>
                         <div className="flex items-center gap-3">
                           <div className="relative w-24 h-16 bg-rv-surface rounded-rvMd overflow-hidden border border-rv-neutral">
-                            {coverImagePreview ? (
+                            {uploadingCoverImage ? (
+                              <div className="w-full h-full flex items-center justify-center bg-rv-surface">
+                                <svg className="w-5 h-5 text-[#C9A24A] animate-spin" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                              </div>
+                            ) : coverImagePreview ? (
                               <img src={coverImagePreview} alt="Cover preview" className="w-full h-full object-cover" />
                             ) : exhibition.coverImageUrl ? (
                               <img src={getCoverImageUrl(exhibition.coverImageUrl)} alt="Current cover" className="w-full h-full object-cover" />
@@ -2062,14 +2087,15 @@ export function ArtistDashboard() {
                             )}
                           </div>
                           <div className="flex-1 flex gap-2">
-                            <label className="flex-1 cursor-pointer">
+                            <label className={`flex-1 ${uploadingCoverImage ? 'pointer-events-none opacity-50' : 'cursor-pointer'}`}>
                               <span className="block px-3 py-2 text-sm text-center border border-rv-neutral text-rv-text rounded-rvMd hover:bg-rv-surface transition-colors font-medium">
                                 Choose Image
                               </span>
                               <input
                                 type="file"
-                                accept="image/*"
+                                accept="image/jpeg,image/png,image/webp"
                                 onChange={handleCoverImageChange}
+                                disabled={uploadingCoverImage}
                                 className="hidden"
                               />
                             </label>
@@ -2078,14 +2104,22 @@ export function ArtistDashboard() {
                                 type="button"
                                 onClick={handleUploadCoverImage}
                                 disabled={uploadingCoverImage}
-                                className="px-3 py-2 text-sm bg-[#C9A24A] text-white rounded-rvMd hover:bg-[#B8913A] transition-colors font-medium disabled:opacity-50"
+                                className="px-3 py-2 text-sm bg-[#C9A24A] text-white rounded-rvMd hover:bg-[#B8913A] transition-colors font-medium disabled:opacity-50 flex items-center gap-2"
                               >
-                                {uploadingCoverImage ? 'Uploading...' : 'Upload'}
+                                {uploadingCoverImage ? (
+                                  <>
+                                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Uploading...
+                                  </>
+                                ) : 'Upload'}
                               </button>
                             )}
                           </div>
                         </div>
-                        <p className="text-xs text-rv-textMuted mt-1">Recommended: 800x300px, JPG or PNG</p>
+                        <p className="text-xs text-rv-textMuted mt-1">Max 5 MB. Recommended: 2000-3000px wide, JPG/WebP for best quality.</p>
                       </div>
                       <div className="flex gap-2">
                         <button

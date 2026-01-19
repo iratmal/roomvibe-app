@@ -11,7 +11,7 @@ const router = express.Router();
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 },
+  limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     const allowedTypes = /jpeg|jpg|png|webp/;
     const mimetype = allowedTypes.test(file.mimetype);
@@ -500,7 +500,22 @@ router.post('/exhibition/:id/unpublish', authenticateToken, async (req: any, res
   }
 });
 
-router.post('/exhibition/:id/cover-image', authenticateToken, upload.single('image'), async (req: any, res) => {
+router.post('/exhibition/:id/cover-image', authenticateToken, (req: any, res: any, next: any) => {
+  upload.single('image')(req, res, (err: any) => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(413).json({ 
+          error: 'Image too large. Please upload an image under 5 MB. For best results, use JPG/WebP and keep width around 2000-3000 px.' 
+        });
+      }
+      if (err.message && err.message.includes('Only image files')) {
+        return res.status(400).json({ error: err.message });
+      }
+      return res.status(400).json({ error: 'File upload failed', details: err.message });
+    }
+    next();
+  });
+}, async (req: any, res: any) => {
   try {
     const userId = req.user.id;
     const exhibitionId = parseInt(req.params.id);
