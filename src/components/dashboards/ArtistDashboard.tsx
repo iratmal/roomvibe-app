@@ -973,6 +973,8 @@ export function ArtistDashboard() {
 
   const handleDelete = async (id: number) => {
     try {
+      const wasInExhibition = isArtworkInExhibition(id);
+      
       const response = await fetch(`${API_URL}/api/artist/artworks/${id}`, {
         method: 'DELETE',
         credentials: 'include'
@@ -982,9 +984,16 @@ export function ArtistDashboard() {
         throw new Error('Failed to delete artwork');
       }
 
-      setSuccess('Artwork deleted successfully!');
+      setSuccess(wasInExhibition 
+        ? 'Artwork deleted and removed from exhibition!' 
+        : 'Artwork deleted successfully!');
       setShowDeleteConfirm(null);
       await fetchArtworks();
+      
+      // If artwork was in exhibition, refresh exhibition artworks list
+      if (wasInExhibition && exhibition?.id) {
+        await fetchExhibitionArtworks(exhibition.id);
+      }
 
       setTimeout(() => setSuccess(''), 5000);
     } catch (err: any) {
@@ -1928,15 +1937,26 @@ export function ArtistDashboard() {
 
                     {showDeleteConfirm === artwork.id && (
                       <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-rvMd">
-                        <p className="text-sm text-red-700 mb-2 font-semibold">
-                          Are you sure you want to delete this artwork?
-                        </p>
+                        {isArtworkInExhibition(artwork.id) ? (
+                          <>
+                            <p className="text-sm text-red-700 mb-2 font-semibold">
+                              This artwork is in your exhibition.
+                            </p>
+                            <p className="text-xs text-red-600 mb-3">
+                              Deleting this artwork will automatically remove it from the exhibition. Are you sure you want to continue?
+                            </p>
+                          </>
+                        ) : (
+                          <p className="text-sm text-red-700 mb-2 font-semibold">
+                            Are you sure you want to delete this artwork?
+                          </p>
+                        )}
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleDelete(artwork.id)}
                             className="flex-1 px-3 py-1.5 text-sm bg-red-500 text-white rounded-rvMd hover:bg-red-600 transition-colors font-semibold"
                           >
-                            Yes, Delete
+                            Delete
                           </button>
                           <button
                             onClick={() => setShowDeleteConfirm(null)}

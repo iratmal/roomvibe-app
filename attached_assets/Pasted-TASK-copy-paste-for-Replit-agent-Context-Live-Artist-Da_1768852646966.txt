@@ -1,0 +1,63 @@
+TASK (copy-paste for Replit agent)
+
+Context:
+- Live Artist Dashboard has a bug with artwork image uploads. In the UI, only the first (cover) image is visible after save / refresh / edit. Other images (2–5) are often not persisted or not loaded correctly.
+- Second issue: when deleting an artwork that is included in an Exhibition, the system must warn the user and remove the artwork from the exhibition as well.
+
+TASK 1 — Fix: artwork image upload & persistence (up to 5 images)
+
+1) Data model check:
+   - Artwork must support up to 5 images per artwork.
+   - Image order must be preserved (first image = cover).
+   - Database must store an array/list of image URLs (e.g. imageUrls[]), not just a single imageUrl.
+
+2) Upload & save flow:
+   - When user uploads 2–5 images, all images must be uploaded and saved to storage and DB.
+   - After page refresh and after opening Edit, all uploaded images must be loaded back and shown in the edit grid.
+   - Fix cases where:
+     - only the first image is saved,
+     - the first image gets duplicated as the second,
+     - additional images disappear after refresh.
+   - Verify frontend sends ALL image URLs to backend.
+   - Verify backend does not overwrite the image array with only the cover image.
+
+3) Acceptance test:
+   - Upload 5 different images to one artwork.
+   - Refresh the page.
+   - Open Edit: all 5 images are visible in correct order.
+   - Refresh again: still all 5 images.
+   - No duplication, no missing images.
+
+TASK 2 — Delete artwork: confirmation + cascade removal from Exhibition
+
+Expected behavior:
+- If artwork is NOT part of any exhibition → delete normally (no extra confirmation).
+- If artwork IS part of an exhibition → show confirmation modal before deleting.
+
+Confirmation modal text:
+"Deleting this artwork will automatically remove it from the exhibition. Are you sure you want to continue?"
+
+Buttons:
+- Cancel
+- Delete
+
+Implementation details:
+1) Before deleting, check whether the artwork is referenced in any exhibition
+   (e.g. exhibitionArtworks table / artworkIds relation).
+
+2) If artwork is in an exhibition:
+   - Show the confirmation modal with the message above.
+   - If user clicks "Delete":
+       a) Delete the artwork
+       b) Remove the artwork from all exhibitions where it appears
+       c) Refresh/refetch Exhibition Artworks list in the dashboard so nothing remains visible
+
+3) Backend safety:
+   - Ensure no ghost or placeholder artwork can remain in exhibitions after deletion.
+
+Acceptance test:
+- Add artwork to an exhibition → visible in Exhibition Artworks.
+- Click Delete on the artwork card:
+  - Confirmation modal appears.
+  - Cancel → nothing is deleted.
+  - Delete → artwork is removed from Artworks AND removed from Exhibition Artworks (completely gone, no placeholder).
