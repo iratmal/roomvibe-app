@@ -25,8 +25,8 @@ router.get('/artist-directory', authenticateToken, async (req: any, res) => {
         u.location_city, u.location_country,
         u.primary_medium, u.profile_image_url,
         u.website_url, u.instagram_url,
-        COUNT(a.id) as artwork_count,
-        ARRAY_AGG(DISTINCT jsonb_array_elements_text(a.style_tags)) FILTER (WHERE a.style_tags IS NOT NULL) as all_styles
+        COUNT(a.id) FILTER (WHERE a.visible_to_galleries = TRUE) as artwork_count,
+        ARRAY_AGG(DISTINCT jsonb_array_elements_text(a.style_tags)) FILTER (WHERE a.style_tags IS NOT NULL AND a.visible_to_galleries = TRUE) as all_styles
       FROM users u
       LEFT JOIN artworks a ON a.artist_id = u.id
       WHERE u.visible_to_galleries = TRUE
@@ -175,6 +175,7 @@ router.get('/artist-directory/:artistId', authenticateToken, async (req: any, re
         orientation, style_tags, dominant_colors, medium, availability
       FROM artworks
       WHERE artist_id = $1
+        AND visible_to_galleries = TRUE
       ORDER BY created_at DESC
     `, [artistId]);
 
@@ -220,6 +221,7 @@ router.get('/artist-directory/filters', authenticateToken, async (req: any, res)
       FROM artworks a
       JOIN users u ON a.artist_id = u.id
       WHERE u.visible_to_galleries = TRUE AND u.artist_access = TRUE
+        AND a.visible_to_galleries = TRUE
       ORDER BY style
     `);
 
@@ -229,6 +231,7 @@ router.get('/artist-directory/filters', authenticateToken, async (req: any, res)
       JOIN users u ON a.artist_id = u.id
       WHERE u.visible_to_galleries = TRUE 
         AND u.artist_access = TRUE 
+        AND a.visible_to_galleries = TRUE
         AND a.medium IS NOT NULL
       ORDER BY medium
     `);
@@ -239,6 +242,7 @@ router.get('/artist-directory/filters', authenticateToken, async (req: any, res)
       JOIN users u ON a.artist_id = u.id
       WHERE u.visible_to_galleries = TRUE 
         AND u.artist_access = TRUE 
+        AND a.visible_to_galleries = TRUE
         AND a.availability IS NOT NULL
       ORDER BY availability
     `);

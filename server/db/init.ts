@@ -589,6 +589,32 @@ export async function initializeDatabase() {
       END $$;
     `);
 
+    // visible_to_designers - per-artwork visibility for Designer Connect
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'artworks' AND column_name = 'visible_to_designers'
+        ) THEN
+          ALTER TABLE artworks ADD COLUMN visible_to_designers BOOLEAN DEFAULT FALSE;
+        END IF;
+      END $$;
+    `);
+
+    // visible_to_galleries - per-artwork visibility for Gallery Connect
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'artworks' AND column_name = 'visible_to_galleries'
+        ) THEN
+          ALTER TABLE artworks ADD COLUMN visible_to_galleries BOOLEAN DEFAULT FALSE;
+        END IF;
+      END $$;
+    `);
+
     await query(`
       CREATE TABLE IF NOT EXISTS projects (
         id SERIAL PRIMARY KEY,

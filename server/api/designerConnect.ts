@@ -31,6 +31,7 @@ router.get('/art-library', authenticateToken, async (req: any, res) => {
       JOIN users u ON a.artist_id = u.id
       WHERE u.visible_to_designers = TRUE
         AND u.artist_access = TRUE
+        AND a.visible_to_designers = TRUE
     `;
 
     const params: any[] = [];
@@ -129,6 +130,7 @@ router.get('/art-library/filters', authenticateToken, async (req: any, res) => {
       FROM artworks a
       JOIN users u ON a.artist_id = u.id
       WHERE u.visible_to_designers = TRUE AND u.artist_access = TRUE
+        AND a.visible_to_designers = TRUE
       ORDER BY style
     `);
 
@@ -138,6 +140,7 @@ router.get('/art-library/filters', authenticateToken, async (req: any, res) => {
       JOIN users u ON a.artist_id = u.id
       WHERE u.visible_to_designers = TRUE 
         AND u.artist_access = TRUE 
+        AND a.visible_to_designers = TRUE
         AND a.medium IS NOT NULL
       ORDER BY medium
     `);
@@ -147,6 +150,7 @@ router.get('/art-library/filters', authenticateToken, async (req: any, res) => {
       FROM artworks a
       JOIN users u ON a.artist_id = u.id
       WHERE u.visible_to_designers = TRUE AND u.artist_access = TRUE
+        AND a.visible_to_designers = TRUE
       ORDER BY color
     `);
 
@@ -157,6 +161,7 @@ router.get('/art-library/filters', authenticateToken, async (req: any, res) => {
       FROM artworks a
       JOIN users u ON a.artist_id = u.id
       WHERE u.visible_to_designers = TRUE AND u.artist_access = TRUE
+        AND a.visible_to_designers = TRUE
     `);
 
     res.json({

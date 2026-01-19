@@ -1,0 +1,106 @@
+Cilj
+
+Omogućiti da artist može birati koja su pojedinačna djela vidljiva u Artist Connectu (designers / galleries), ne automatski sva.
+
+Profil visibility već postoji i ostaje globalni preduvjet, ali artwork visibility mora biti per-artwork.
+
+1️⃣ Backend / Database
+Dodati nova polja na artworks model/tablicu:
+visibleToDesigners: boolean (default: false)
+visibleToGalleries: boolean (default: false)
+
+
+Napomena: ne dirati postojeći artist.profileVisible* logic.
+
+2️⃣ API logika
+a) GET artworks (Artist Connect feed)
+
+Vraćati samo artworks gdje:
+
+artist.profileVisibleToDesigners === true i
+
+artwork.visibleToDesigners === true
+
+Isto pravilo za galleries.
+
+b) Update artwork
+
+Omogućiti update ovih polja:
+
+{
+  "visibleToDesigners": true | false,
+  "visibleToGalleries": true | false
+}
+
+3️⃣ UI – Artwork Card (Artist Dashboard)
+Na svakoj artwork kartici dodati:
+
+Sekciju: “Visibility”
+
+Checkbox / toggle:
+
+ Visible to Designers
+
+ Visible to Galleries
+
+Pravila ponašanja:
+
+Ako je artist profile visibility OFF:
+
+toggle je disabled
+
+tooltip:
+
+“Turn on profile visibility first to enable artwork visibility”
+
+Promjena togglea:
+
+automatski PATCH artwork
+
+bez reloada stranice
+
+4️⃣ UI – Edit Artwork
+
+U Edit Artwork formu dodati sekciju:
+
+Visibility in Artist Connect
+
+ Visible to Designers
+
+ Visible to Galleries
+
+Vrijednosti se:
+
+učitavaju iz DB
+
+spremaju zajedno s ostalim artwork podacima
+
+5️⃣ Default ponašanje (VAŽNO)
+
+Kad se artwork kreira:
+
+visibleToDesigners = false
+
+visibleToGalleries = false
+
+Ni jedno djelo nije automatski public, čak i ako je profil visible.
+
+6️⃣ UX / Safety rule
+
+Ako je artwork visibility ON, ali artist kasnije isključi profile visibility:
+
+artwork se automatski ne prikazuje u Connect feedu
+
+ali se artwork flagovi ne brišu (samo su neaktivni)
+
+7️⃣ Acceptance criteria (checklist)
+
+ Artist može uključiti visibility po artworku
+
+ Ne moraju sva djela biti vidljiva
+
+ Artist Connect prikazuje samo dozvoljena djela
+
+ Profile visibility ostaje globalni gate
+
+ Nema side-effecta na existing dashboards
