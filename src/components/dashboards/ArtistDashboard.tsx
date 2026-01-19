@@ -658,6 +658,17 @@ export function ArtistDashboard() {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
+  const getCoverImageUrl = (url: string | null | undefined): string => {
+    if (!url) return '';
+    if (url.startsWith('/objects/')) {
+      return `${API_URL}${url}`;
+    }
+    if (url.startsWith('http')) {
+      return url;
+    }
+    return `${API_URL}${url}`;
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -1906,7 +1917,7 @@ export function ArtistDashboard() {
                 <div className="relative h-40 sm:h-56 bg-gradient-to-br from-rv-primary/10 to-[#C9A24A]/10 flex items-center justify-center overflow-hidden">
                   {exhibition.coverImageUrl ? (
                     <img 
-                      src={exhibition.coverImageUrl} 
+                      src={getCoverImageUrl(exhibition.coverImageUrl)} 
                       alt={exhibition.title} 
                       className="w-full h-full object-cover object-center"
                     />
@@ -1954,7 +1965,7 @@ export function ArtistDashboard() {
                             {coverImagePreview ? (
                               <img src={coverImagePreview} alt="Cover preview" className="w-full h-full object-cover" />
                             ) : exhibition.coverImageUrl ? (
-                              <img src={exhibition.coverImageUrl} alt="Current cover" className="w-full h-full object-cover" />
+                              <img src={getCoverImageUrl(exhibition.coverImageUrl)} alt="Current cover" className="w-full h-full object-cover" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
                                 <svg className="w-6 h-6 text-rv-textMuted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
