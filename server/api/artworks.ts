@@ -151,6 +151,7 @@ router.get('/mine', authenticateToken, async (req: any, res) => {
         dominantColors: row.dominant_colors || [],
         medium: row.medium || null,
         availability: row.availability || 'available',
+        variants: row.variants || [],
         requiresReupload
       };
     });
@@ -336,7 +337,7 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
       role: req.user?.role
     });
 
-    const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, artistId, orientation, styleTags, dominantColors, medium, availability } = req.body;
+    const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, artistId, orientation, styleTags, dominantColors, medium, availability, variants } = req.body;
 
     console.log('[UPLOAD] Artwork data:', { title, width, height, dimensionUnit, buyUrl, orientation, medium, availability });
 
@@ -389,15 +390,30 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
     const artworkOrientation = orientation || null;
     const artworkMedium = medium || null;
     const artworkAvailability = availability || 'available';
+    
+    // Parse variants (additional sizes/prints/editions)
+    let artworkVariants: any[] = [];
+    if (variants) {
+      try {
+        artworkVariants = typeof variants === 'string' ? JSON.parse(variants) : variants;
+        if (Array.isArray(artworkVariants)) {
+          artworkVariants = artworkVariants.filter((v: any) => v.width && v.height);
+        }
+      } catch (e) {
+        console.warn('[Upload] Failed to parse variants:', e);
+        artworkVariants = [];
+      }
+    }
+    const variantsJson = JSON.stringify(artworkVariants);
 
     console.log('[Upload] Inserting artwork into database...');
     let result;
     try {
       result = await query(
-        `INSERT INTO artworks (artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, visible_to_designers, visible_to_galleries, updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, FALSE, FALSE, CURRENT_TIMESTAMP)
-         RETURNING id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, visible_to_designers, visible_to_galleries, created_at, updated_at`,
-        [targetArtistId, title, imageUrl, storageKey, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, tags, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability]
+        `INSERT INTO artworks (artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, variants, visible_to_designers, visible_to_galleries, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, FALSE, FALSE, CURRENT_TIMESTAMP)
+         RETURNING id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, variants, visible_to_designers, visible_to_galleries, created_at, updated_at`,
+        [targetArtistId, title, imageUrl, storageKey, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, tags, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability, variantsJson]
       );
     } catch (dbError: any) {
       console.error('[Upload] DB insert failed, cleaning up storage:', dbError.message);
