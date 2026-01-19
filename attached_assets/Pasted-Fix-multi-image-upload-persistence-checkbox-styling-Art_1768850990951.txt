@@ -1,0 +1,64 @@
+Fix multi-image upload/persistence + checkbox styling (Artist Dashboard)
+1) BUG: Uploadaju se samo cover slike (ostale 4 ne prežive / ne prikazuju se)
+
+Problem:
+
+U “Add New Artwork” moguće je dodati do 5 slika, ali nakon save/edit/refresh:
+
+na kartici se vidi samo prva (cover) slika
+
+u Edit Artwork se često vidi samo cover ili se cover duplicira, a ostale slike ne postoje / nestanu
+
+Zaključak: druge slike se ili ne spremaju u DB ili se ne učitavaju pravilno (mapping/ordering/paths).
+
+Što treba napraviti:
+
+Osigurati da se svih max 5 uploadanih slika za artwork stvarno:
+
+uploadaju u storage (obj store),
+
+zapisuju u bazu kao lista (s točnim redoslijedom),
+
+vraćaju kroz API i prikazuju u UI (kartica + edit forma).
+
+U edit formi mora pisati npr. (x/5 images) i prikazati sve postojeće slike u slotovima, bez brisanja/duplica.
+
+Ako je user uploadovao 5 različitih slika, nakon refresh-a i ponovnog ulaska u edit, mora se vidjeti istih 5 slika.
+
+Acceptance criteria (obavezno testirati):
+
+Kreiraj novi artwork i uploadaj 5 različitih slika → Save.
+
+Refresh page → na kartici se mora vidjeti indikator da artwork ima više slika (vidi točku 1.4 ispod) i u edit formi mora biti svih 5 slika.
+
+Klik “Edit” → slike ne smiju nestati niti se cover smije duplicirati.
+
+Provjeri Network/DB: artwork record mora imati listu svih image URL-ova/ključeva (5 kom), u ispravnom poretku (cover = index 0).
+
+Napomena za UI (kartica):
+
+Ne želim da se na kartici vidi samo cover bez ikakve indikacije.
+
+Minimalno rješenje: na kartici dodaj dots / “1/5” indikator ili mali “+4 photos”.
+
+Idealno rješenje: mali carousel (arrow ili swipe) unutar kartice da mogu pregledati svih 5 slika.
+
+2) UI: Checkbox “Visible to Designers / Visible to Galleries” boja
+
+Problem:
+
+Checkbox kvadratići (kvačica) su sada svijetloplavi.
+
+Trebaju biti u RoomVibe navy boji, s bijelom kvačicom.
+
+Što treba napraviti:
+
+Update styling za te checkboxe (na kartici artworka u “Visibility in Artist Connect”).
+
+Navy background kad je checked, bijeli check icon, normalni border/neutral kad nije checked.
+
+Acceptance criteria:
+
+Kad je checked: kvadratić je navy + bijela kvačica.
+
+Kad nije checked: neutralan (bijeli) background + border, bez svijetloplavog fill-a.

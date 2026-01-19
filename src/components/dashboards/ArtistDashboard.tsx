@@ -923,7 +923,9 @@ export function ArtistDashboard() {
       });
       if (response.ok) {
         const data = await response.json();
-        setGalleryImages(data.images || []);
+        // Filter out cover image (is_cover: true) - cover is handled separately via primaryImage
+        const galleryOnly = (data.images || []).filter((img: any) => !img.is_cover);
+        setGalleryImages(galleryOnly);
       } else {
         setGalleryImages([]);
       }
@@ -1494,7 +1496,7 @@ export function ArtistDashboard() {
                         checked={formData.visibleToDesigners || false}
                         disabled={!dashboardStats.visibleToDesigners}
                         onChange={(e) => setFormData(prev => ({ ...prev, visibleToDesigners: e.target.checked }))}
-                        className="w-5 h-5 rounded border-gray-300 text-[#C9A24A] focus:ring-[#C9A24A] accent-[#C9A24A] disabled:opacity-50"
+                        className="checkbox-navy"
                       />
                       <div>
                         <span className={`font-semibold ${dashboardStats.visibleToDesigners ? 'text-rv-text' : 'text-rv-textMuted'}`}>Visible to Designers</span>
@@ -1510,7 +1512,7 @@ export function ArtistDashboard() {
                         checked={formData.visibleToGalleries || false}
                         disabled={!dashboardStats.visibleToGalleries}
                         onChange={(e) => setFormData(prev => ({ ...prev, visibleToGalleries: e.target.checked }))}
-                        className="w-5 h-5 rounded border-gray-300 text-[#C9A24A] focus:ring-[#C9A24A] accent-[#C9A24A] disabled:opacity-50"
+                        className="checkbox-navy"
                       />
                       <div>
                         <span className={`font-semibold ${dashboardStats.visibleToGalleries ? 'text-rv-text' : 'text-rv-textMuted'}`}>Visible to Galleries</span>
@@ -1834,7 +1836,7 @@ export function ArtistDashboard() {
                             checked={artwork.visible_to_designers || false}
                             disabled={!dashboardStats.visibleToDesigners}
                             onChange={(e) => handleVisibilityToggle(artwork.id, 'visibleToDesigners', e.target.checked)}
-                            className="w-4 h-4 rounded border-rv-neutral text-[#C9A24A] focus:ring-[#C9A24A] disabled:opacity-50"
+                            className="checkbox-navy"
                           />
                           <span className="text-sm text-rv-text">Visible to Designers</span>
                         </label>
@@ -1847,7 +1849,7 @@ export function ArtistDashboard() {
                             checked={artwork.visible_to_galleries || false}
                             disabled={!dashboardStats.visibleToGalleries}
                             onChange={(e) => handleVisibilityToggle(artwork.id, 'visibleToGalleries', e.target.checked)}
-                            className="w-4 h-4 rounded border-rv-neutral text-[#C9A24A] focus:ring-[#C9A24A] disabled:opacity-50"
+                            className="checkbox-navy"
                           />
                           <span className="text-sm text-rv-text">Visible to Galleries</span>
                         </label>
