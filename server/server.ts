@@ -409,9 +409,9 @@ app.get('/api/debug/storage-download', async (req, res) => {
         });
       }
       
-      // Try to download
-      const downloadResult = await client.downloadAsStream(storageKey);
-      console.log(`[DebugStorage] downloadAsStream() result:`, { ok: downloadResult.ok, hasValue: !!downloadResult.value, error: downloadResult.error });
+      // Try to download as bytes for debugging
+      const downloadResult = await client.downloadAsBytes(storageKey) as { ok: boolean; value?: Uint8Array; error?: Error };
+      console.log(`[DebugStorage] downloadAsBytes() result:`, { ok: downloadResult.ok, hasValue: !!downloadResult.value, size: downloadResult.value?.length, error: downloadResult.error });
       
       if (!downloadResult.ok || !downloadResult.value) {
         return res.json({
@@ -426,12 +426,13 @@ app.get('/api/debug/storage-download', async (req, res) => {
         });
       }
       
-      // Success - return metadata only
+      // Success - return metadata
       return res.json({
         ok: true,
         storageKey,
         backend: storageConfig.backend,
-        message: 'Download would succeed, stream ready'
+        message: 'Download successful',
+        size: downloadResult.value.length
       });
     } else {
       return res.json({

@@ -1,0 +1,90 @@
+LIVE: /api/artwork-image/:id vraća "File not found" (DB key ↔ storage mismatch)
+PROBLEM
+
+Na LIVE-u endpoint:
+
+GET /api/artwork-image/59
+vraća JSON:
+{"error":"File not found"}
+
+Zbog toga se slike ne prikazuju u Artist Dashboardu (thumbnail/cover).
+Storage health je OK i objectCount > 0, dakle storage radi, ali endpoint traži pogrešan key ili pogrešnu lokaciju.
+
+GOAL
+
+Popraviti serve flow tako da:
+
+artwork ID → ispravan imageKey/storageKey iz DB
+
+objekt se stvarno pročita iz Replit Object Storage
+
+endpoint vrati binary sliku (ne JSON) i UI može renderirati thumbnail
+
+KORACI (obavezno)
+1) DB provjera za artwork ID=59
+
+U bazi pronađi artwork id=59
+
+Ispisati/logirati polja koja se koriste za slike (primjeri):
+
+coverImageKey
+
+images array (key, path, storageKey)
+
+imageUrl / imagePath
+
+Potvrditi koji key endpoint trenutno koristi.
+
+Ako je key prazan/undefined ili ima krivi format → fix u create/update upload flow (spremanje ključa u DB).
+
+2) Storage listing provjera (key postoji?)
+
+U Replit Object Storage listati objekte i provjeriti postoji li key koji DB kaže.
+
+Ako u storage-u postoji isti file ali pod drugim prefixom (npr. uploads/... vs artworks/... ili private/...) → endpoint traži krivo mjesto.
+
+3) Uskladiti prefikse (najčešći uzrok)
+
+privateObjectDir je SET na LIVE-u.
+
+Ako se upload sprema u private dir, endpoint mora koristiti isti prefix/dir pri čitanju.
+
+Popraviti konstruiranje path-a:
+
+ne duplirati privateObjectDir
+
+ne izostaviti dir
+
+ne mijenjati bucket id
+
+4) Fix serve endpoint /api/artwork-image/:id
+
+Umjesto “File not found” za validan artwork s validnim keyem:
+
+dohvatiti objekt iz storage
+
+streamati u response
+
+setirati Content-Type (image/jpeg/png/webp)
+
+Ako artwork nema key → 404 “Artwork has no image”
+
+Ako key postoji ali objekt ne postoji → 404 “Image object missing in storage”
+
+5) Backfill / migration (ako treba)
+
+Ako otkrijete da postoje artworks u DB-u s keyevima koji više ne postoje u storage-u (stari staging keys):
+
+napraviti mali “backfill” script ili admin fix:
+
+reupload ili re-map na postojeći storage object
+
+ili obrisati broken reference za te artworks
+
+ACCEPTANCE CRITERIA
+
+GET /api/artwork-image/59 vraća sliku (ne JSON)
+
+“My Artworks” kartice i “Edit Artwork” prikazuju cover thumbnail bez console errora
+
+Novi upload artworka sprema ispravan key koji odmah radi s /api/artwork-image/:id

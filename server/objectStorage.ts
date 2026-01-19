@@ -190,15 +190,24 @@ export class ObjectStorageService {
         // Use Replit native SDK
         console.log('[ObjectStorage] downloadObject (Replit):', objectInfo.objectName);
         
-        const { ok, value: stream, error } = await client.downloadAsStream(objectInfo.objectName);
+        // First try downloadAsBytes for more reliable binary download
+        const downloadResult = await client.downloadAsBytes(objectInfo.objectName);
         
-        if (!ok || !stream) {
-          console.error('[ObjectStorage] Replit download error:', error);
+        if (!downloadResult.ok || !downloadResult.value) {
+          console.error('[ObjectStorage] Replit download error:', {
+            ok: downloadResult.ok,
+            error: downloadResult.error,
+            errorType: typeof downloadResult.error,
+            errorStr: String(downloadResult.error)
+          });
           if (!res.headersSent) {
-            res.status(404).json({ error: "File not found" });
+            res.status(404).json({ error: "File not found", details: downloadResult.error });
           }
           return;
         }
+        
+        const buffer = downloadResult.value;
+        console.log('[ObjectStorage] Downloaded bytes:', buffer.length);
         
         // Determine content type from extension
         const ext = objectInfo.objectName.split('.').pop()?.toLowerCase() || '';
@@ -216,10 +225,11 @@ export class ObjectStorageService {
         
         res.set({
           "Content-Type": contentType,
+          "Content-Length": buffer.length,
           "Cache-Control": `public, max-age=${cacheTtlSec}`,
         });
 
-        stream.pipe(res);
+        res.send(Buffer.from(buffer));
         return;
       }
       
