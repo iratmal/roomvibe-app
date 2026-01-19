@@ -29,7 +29,7 @@ export function ArtworkImageGallery({
   onPrimaryImageChange,
   onGalleryImagesChange,
   isEditing,
-  maxImages = 4
+  maxImages = 5
 }: ArtworkImageGalleryProps) {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
@@ -293,7 +293,7 @@ export function ArtworkImageGallery({
           </svg>
           <span className="text-lg font-semibold text-rv-text mb-1">Upload Artwork Images</span>
           <span className="text-sm text-rv-textMuted text-center">
-            Select up to 4 images at once. First image will be your cover.
+            Select up to 5 images at once. First image will be your cover.
           </span>
           <span className="text-xs text-rv-textMuted mt-2">Click to browse or drag files here</span>
           <input
@@ -306,7 +306,7 @@ export function ArtworkImageGallery({
           />
         </label>
       ) : (
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {Array.from({ length: maxImages }).map((_, slotIndex) => {
           const img = allImages[slotIndex];
           const isEmptySlot = !img;

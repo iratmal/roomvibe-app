@@ -1,0 +1,88 @@
+U Edit Artwork nestanu “Artwork 2/3/4” (i/ili se slike gube nakon refresh/edit)
+
+Problem: Uploada se više slika (npr. 4 različite), ali:
+
+nakon refresh ili ponovnog ulaska u edit, dio slika nestane
+
+u Edit Artwork UI ostane samo Cover (ili npr. 1–2 slike)
+
+u konzoli/network se ranije vidjelo “Image failed to load: /api/artwork-image/:id” i “File not found”
+
+Root cause (vjerojatno):
+
+backend ne vraća stabilan set image referencea (ili se overwrite-a array)
+
+mapping “slot index → image id/key” nije stabilan
+
+kod edit save/update briše postojeće slike ako nisu ponovno poslane
+
+file key path mismatch (obj store), pa endpoint vraća “File not found”
+
+Expected:
+
+Artwork mora trajno čuvati sve uploadane slike u istim slotovima (1..N).
+
+Refresh stranice / edit / save ne smije obrisati postojeće slike.
+
+Ako korisnik ne dira Artwork 2/3/4/5 — one moraju ostati.
+
+Implementation requirements:
+
+U bazi držati slike kao ordered list sa stabilnim “position/index” (1..max).
+
+Update endpoint ne smije “replace” cijeli array osim ako je to namjera; treba patch logika:
+
+dodaj novu sliku u točan slot
+
+delete radi samo kad user klikne X
+
+/api/artwork-image/:id mora pouzdano pronaći file u object storageu (provjeriti key naming i direktorije).
+
+Acceptance criteria:
+
+Uploadaj 4 različite slike → refresh → i dalje su 4 prisutne u Edit formi.
+
+Klik Edit → i dalje su sve prisutne.
+
+Nema “File not found” za postojeće slike.
+
+3) CHANGE: Povećati max broj slika za artwork sa 4 na 5
+
+Request: Umjesto 4 slotova, treba biti maksimalno 5 fotografija po artworku.
+
+UI:
+
+“Artwork Images (x/5 images)”
+
+Prikazati 5 slotova: Cover + 4 dodatna (Artwork 2..5)
+
+Cover ostaje prvo polje.
+
+Backend:
+
+validacije (max 5)
+
+schema/DTO/typing ažurirati na 5
+
+storage + retrieval radi za 5
+
+Acceptance criteria:
+
+Mogu uploadati 5 slika, sve se spremaju i ostaju nakon refresh/edit.
+
+4) UX: Na artwork kartici se vidi samo prva slika — treba prikazati da postoje i ostale (carousel / “See all”)
+
+Problem: Nakon što uploadam više slika, na kartici vidim samo prvu i nemam način vidjeti ostale osim kroz Edit.
+
+Expected (predloženo rješenje):
+Opcija A (preporuka): mini carousel u kartici
+
+Kartica prikazuje cover + strelice ili swipe (desktop klik strelice)
+
+Ako ima >1 slika, prikazati indikatore (npr. “1/5” ili dots)
+
+Opcija B: “See all (5)” link koji otvara lightbox/modal s galerijom slika
+
+Acceptance criteria:
+
+Na kartici jasno vidim da artwork ima više slika i mogu ih pregledati bez ulaska u Edit.

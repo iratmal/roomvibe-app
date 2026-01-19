@@ -581,6 +581,174 @@ router.get('/artworks/:id/images', authenticateToken, async (req: any, res) => {
   }
 });
 
+// Upload a new gallery image for an artwork
+router.post('/artworks/:id/images', authenticateToken, upload.single('image'), async (req: any, res) => {
+  try {
+    const artworkId = parseInt(req.params.id);
+    const userId = req.user.id;
+    const isMockup = req.body.is_mockup === 'true';
+
+    if (isNaN(artworkId)) {
+      return res.status(400).json({ error: 'Invalid artwork ID' });
+    }
+
+    // Verify ownership
+    const artworkResult = await query(
+      'SELECT id FROM artworks WHERE id = $1 AND artist_id = $2',
+      [artworkId, userId]
+    );
+
+    if (artworkResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Artwork not found' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'No image file provided' });
+    }
+
+    // Check current count (max 5 total: 1 cover + 4 gallery = 5 slots)
+    const countResult = await query(
+      'SELECT COUNT(*) as count FROM artwork_gallery_images WHERE artwork_id = $1',
+      [artworkId]
+    );
+    const currentCount = parseInt(countResult.rows[0].count);
+    if (currentCount >= 4) {
+      return res.status(400).json({ error: 'Maximum 5 images per artwork (1 cover + 4 additional)' });
+    }
+
+    // Get next display order
+    const orderResult = await query(
+      'SELECT COALESCE(MAX(display_order), 0) + 1 as next_order FROM artwork_gallery_images WHERE artwork_id = $1',
+      [artworkId]
+    );
+    const nextOrder = orderResult.rows[0].next_order;
+
+    // Upload to storage
+    const { ObjectStorageService } = await import('../objectStorage.js');
+    const objectStorage = new ObjectStorageService();
+    const storageKey = await objectStorage.uploadBuffer(
+      req.file.buffer,
+      `gallery-${artworkId}-${Date.now()}.${req.file.originalname.split('.').pop()}`,
+      req.file.mimetype
+    );
+
+    // Insert into database
+    const insertResult = await query(
+      `INSERT INTO artwork_gallery_images (artwork_id, storage_key, display_order, is_mockup)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, storage_key, display_order, is_mockup, created_at`,
+      [artworkId, storageKey, nextOrder, isMockup]
+    );
+
+    const newImage = insertResult.rows[0];
+    res.status(201).json({
+      image: {
+        id: newImage.id,
+        image_url: `/api/artwork-gallery-image/${newImage.id}`,
+        display_order: newImage.display_order,
+        is_mockup: newImage.is_mockup,
+        is_cover: false
+      }
+    });
+  } catch (error: any) {
+    console.error('Error uploading gallery image:', error);
+    res.status(500).json({ error: 'Failed to upload gallery image', details: error.message });
+  }
+});
+
+// Reorder gallery images
+router.put('/artworks/:id/images/reorder', authenticateToken, async (req: any, res) => {
+  try {
+    const artworkId = parseInt(req.params.id);
+    const userId = req.user.id;
+    const { imageOrder } = req.body; // Array of image IDs in new order
+
+    if (isNaN(artworkId)) {
+      return res.status(400).json({ error: 'Invalid artwork ID' });
+    }
+
+    if (!Array.isArray(imageOrder)) {
+      return res.status(400).json({ error: 'imageOrder must be an array' });
+    }
+
+    // Verify ownership
+    const artworkResult = await query(
+      'SELECT id FROM artworks WHERE id = $1 AND artist_id = $2',
+      [artworkId, userId]
+    );
+
+    if (artworkResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Artwork not found' });
+    }
+
+    // Update display_order for each image
+    for (let i = 0; i < imageOrder.length; i++) {
+      const imageId = imageOrder[i];
+      await query(
+        'UPDATE artwork_gallery_images SET display_order = $1 WHERE id = $2 AND artwork_id = $3',
+        [i + 1, imageId, artworkId]
+      );
+    }
+
+    res.json({ message: 'Gallery images reordered successfully' });
+  } catch (error: any) {
+    console.error('Error reordering gallery images:', error);
+    res.status(500).json({ error: 'Failed to reorder gallery images', details: error.message });
+  }
+});
+
+// Delete a specific gallery image
+router.delete('/artworks/:artworkId/images/:imageId', authenticateToken, async (req: any, res) => {
+  try {
+    const artworkId = parseInt(req.params.artworkId);
+    const imageId = parseInt(req.params.imageId);
+    const userId = req.user.id;
+
+    if (isNaN(artworkId) || isNaN(imageId)) {
+      return res.status(400).json({ error: 'Invalid artwork or image ID' });
+    }
+
+    // Verify ownership via artwork
+    const artworkResult = await query(
+      'SELECT id FROM artworks WHERE id = $1 AND artist_id = $2',
+      [artworkId, userId]
+    );
+
+    if (artworkResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Artwork not found' });
+    }
+
+    // Get storage key before deletion
+    const imageResult = await query(
+      'SELECT storage_key FROM artwork_gallery_images WHERE id = $1 AND artwork_id = $2',
+      [imageId, artworkId]
+    );
+
+    if (imageResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Gallery image not found' });
+    }
+
+    const storageKey = imageResult.rows[0].storage_key;
+
+    // Delete from database
+    await query('DELETE FROM artwork_gallery_images WHERE id = $1', [imageId]);
+
+    // Try to delete from storage (non-blocking)
+    try {
+      const { ObjectStorageService } = await import('../objectStorage.js');
+      const objectStorage = new ObjectStorageService();
+      await objectStorage.deleteObject(storageKey);
+    } catch (storageErr) {
+      console.error('Error deleting gallery image from storage:', storageErr);
+    }
+
+    res.json({ message: 'Gallery image deleted successfully' });
+  } catch (error: any) {
+    console.error('Error deleting gallery image:', error);
+    res.status(500).json({ error: 'Failed to delete gallery image', details: error.message });
+  }
+});
+
 router.delete('/artworks/:id', authenticateToken, async (req: any, res) => {
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);

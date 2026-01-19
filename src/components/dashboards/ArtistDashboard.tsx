@@ -10,6 +10,7 @@ import { ArtistProfileForm } from './ArtistProfileForm';
 import { ArtistInbox } from './ArtistInbox';
 import { ArtistConnectWidget } from './ArtistConnectWidget';
 import { ArtworkImageGallery } from './ArtworkImageGallery';
+import { ArtworkCardCarousel } from './ArtworkCardCarousel';
 
 interface GalleryImage {
   id?: number;
@@ -1647,17 +1648,11 @@ export function ArtistDashboard() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {artworks.map((artwork) => (
                 <div key={artwork.id} className="bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral overflow-hidden">
-                  <div className="aspect-square bg-rv-surface relative">
-                    <img
-                      src={artwork.image_url.startsWith('http') ? artwork.image_url : `${API_URL}${artwork.image_url}`}
-                      alt={artwork.title}
-                      className="w-full h-full object-contain"
-                      onError={(e) => {
-                        console.warn('Image failed to load:', artwork.image_url);
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
-                  </div>
+                  <ArtworkCardCarousel
+                    artworkId={artwork.id}
+                    primaryImageUrl={artwork.image_url.startsWith('http') ? artwork.image_url : `${API_URL}${artwork.image_url}`}
+                    title={artwork.title}
+                  />
                   <div className="p-4">
                     <h3 className="font-bold text-lg mb-2 text-rv-text">{artwork.title}</h3>
                     <p className="text-sm text-rv-textMuted mb-1">
