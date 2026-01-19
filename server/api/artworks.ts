@@ -814,6 +814,10 @@ router.delete('/artworks/:id', authenticateToken, async (req: any, res) => {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
     const artworkId = parseInt(req.params.id);
 
+    // First, delete any exhibition artwork entries that reference this artwork
+    // This ensures no "No image" placeholders remain in exhibitions
+    await query('DELETE FROM artist_exhibition_artworks WHERE source_artwork_id = $1', [artworkId]);
+
     let result;
     if (effectivePlan === 'admin') {
       result = await query('DELETE FROM artworks WHERE id = $1 RETURNING id', [artworkId]);
