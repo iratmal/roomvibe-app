@@ -82,7 +82,7 @@ router.get('/artist/:slug', async (req, res) => {
 
     const exhibitionResult = await query(
       `SELECT id, title FROM artist_exhibitions 
-       WHERE artist_id = $1 AND is_published = TRUE 
+       WHERE artist_id = $1 AND (status = 'published' OR is_published = TRUE)
        ORDER BY updated_at DESC LIMIT 1`,
       [artist.id]
     );
