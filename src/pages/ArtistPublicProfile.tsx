@@ -528,13 +528,14 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                 return (
                 <div key={artwork.id} className="bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral overflow-hidden group">
                   <div 
-                    className="aspect-square bg-rv-surface relative overflow-hidden cursor-pointer"
+                    className="w-full bg-rv-surface relative overflow-hidden cursor-pointer"
+                    style={{ aspectRatio: '4 / 3' }}
                     onClick={() => openArtworkDetail(artwork)}
                   >
                     <img
                       src={imageUrl}
                       alt={artwork.title}
-                      className="w-full h-full object-contain transition-transform duration-300"
+                      className="w-full h-full object-cover object-center transition-transform duration-300"
                     />
                     
                     {hasMultipleImages && (
