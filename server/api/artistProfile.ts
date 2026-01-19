@@ -84,6 +84,10 @@ router.put('/profile', authenticateToken, async (req: any, res) => {
       languages
     } = req.body;
 
+    if (bio && bio.length > 1000) {
+      return res.status(400).json({ error: 'Bio must not exceed 1000 characters' });
+    }
+
     let websiteUrlClean = websiteUrl || null;
     if (websiteUrlClean && !websiteUrlClean.startsWith('http://') && !websiteUrlClean.startsWith('https://')) {
       websiteUrlClean = 'https://' + websiteUrlClean;

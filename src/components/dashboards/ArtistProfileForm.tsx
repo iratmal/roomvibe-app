@@ -635,11 +635,12 @@ export function ArtistProfileForm() {
                 value={profile.bio}
                 onChange={handleInputChange}
                 rows={4}
+                maxLength={1000}
                 className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary resize-none"
                 placeholder="Tell us about yourself and your artistic practice..."
               />
               <p className="text-xs text-rv-textMuted mt-1">
-                {profile.bio.length}/500 characters
+                {profile.bio.length}/1000 characters
               </p>
             </div>
           </div>
