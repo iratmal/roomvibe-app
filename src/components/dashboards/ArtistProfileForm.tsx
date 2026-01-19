@@ -639,12 +639,12 @@ export function ArtistProfileForm() {
                 onChange={handleInputChange}
                 rows={8}
                 maxLength={1200}
-                className="w-full max-w-[740px] px-4 py-3 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary resize-y"
+                className="w-full px-4 py-3 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary resize-y"
                 style={{ minHeight: '240px' }}
-                placeholder="Tell your story as an artist.&#10;Share your journey, inspiration, process, and what defines your work."
+                placeholder="Share your artistic journey, medium, themes, and what inspires your work. This helps designers, galleries, and collectors understand your art better."
               />
-              <p className="text-xs text-rv-textMuted mt-1.5 max-w-[740px]">
-                {profile.bio.length}/1200 characters. This text appears on your public artist profile.
+              <p className="text-xs text-rv-textMuted mt-1.5">
+                {profile.bio.length} / 1200 characters
               </p>
             </div>
           </div>
