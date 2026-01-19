@@ -689,6 +689,48 @@ app.get('/api/gallery-artwork-image/:id', async (req: any, res) => {
   }
 });
 
+// Serve artwork gallery images from object storage
+app.get('/api/artwork-gallery-image/:id', async (req: any, res) => {
+  try {
+    const imageId = parseInt(req.params.id);
+    
+    if (isNaN(imageId)) {
+      return res.status(400).json({ error: 'Invalid gallery image ID' });
+    }
+
+    const result = await query('SELECT storage_key FROM artwork_gallery_images WHERE id = $1', [imageId]);
+
+    if (result.rows.length === 0 || !result.rows[0].storage_key) {
+      return res.status(404).json({ error: 'Gallery image not found' });
+    }
+
+    const storageKey = result.rows[0].storage_key;
+    const storageReady = isStorageConfigured();
+
+    if (!storageReady) {
+      console.error(`[artwork-gallery-image] Storage not configured, cannot serve image ${imageId}`);
+      return res.status(500).json({ error: 'Storage not configured' });
+    }
+
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const objectFile = await objectStorageService.getObjectByStorageKey(storageKey);
+      console.log(`[artwork-gallery-image] Object found, streaming: ${objectFile.objectName}`);
+      objectStorageService.downloadObject(objectFile, res);
+      return;
+    } catch (storageError: any) {
+      console.error(`[artwork-gallery-image] Storage error for image ${imageId}:`, {
+        error: storageError?.message || storageError,
+        storageKey
+      });
+      return res.status(404).json({ error: 'Image not found in storage', imageId, storageKey });
+    }
+  } catch (error) {
+    console.error('Error serving artwork gallery image:', error);
+    res.status(500).json({ error: 'Failed to serve gallery image' });
+  }
+});
+
 // Image proxy for loading external images with CORS headers (needed for WebGL textures)
 app.get('/api/image-proxy', async (req: any, res) => {
   try {

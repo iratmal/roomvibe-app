@@ -491,6 +491,22 @@ export async function initializeDatabase() {
       WHERE image_url LIKE '/objects/%' AND storage_key IS NULL;
     `);
 
+    // Artwork gallery images - additional images beyond the cover image
+    await query(`
+      CREATE TABLE IF NOT EXISTS artwork_gallery_images (
+        id SERIAL PRIMARY KEY,
+        artwork_id INTEGER NOT NULL REFERENCES artworks(id) ON DELETE CASCADE,
+        storage_key TEXT NOT NULL,
+        display_order INTEGER NOT NULL DEFAULT 1,
+        is_mockup BOOLEAN NOT NULL DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS idx_artwork_gallery_images_artwork_id ON artwork_gallery_images(artwork_id);
+    `);
+
     // =====================================================
     // Artist Connect Core - Artwork Connect metadata fields
     // =====================================================
