@@ -1,0 +1,107 @@
+TASK: Popraviti Public Artist Page u LIVE (link radi u stagingu, u live baca “Profile Not Available”)
+
+Kontekst
+
+U stagingu na Artist Dashboard > Artist Profile postoji blok “Your Public Artist Page” s linkom (npr. /#/artist/irena) i taj public profil radi i izgleda kako treba (header s avatarom, ime, lokacija, medium, tagovi, social ikonice, CTA gumbi, About, Artworks grid, “View Artist’s 360° Exhibition”, Artistic Practice).
+
+U live smo dodali taj blok, ali kad kliknemo “View your page” ili otvorimo public link (npr. app.roomvibe.app/#/artist/irena-r-malbasa) dobijemo “Profile Not Available – Failed to load artist profile”.
+
+Cilj
+
+U live: public artist page mora raditi (učitati profil) i
+
+UI/UX mora biti identičan staging verziji (kao na zadnja 4 staging screenshota).
+
+1) Fix: “Profile Not Available” u LIVE (routing + API)
+
+Što provjeriti / popraviti
+
+Provjeriti da live build ima istu rutu kao staging:
+
+React router ruta za /#/artist/:slug (ili kako je definirano u stagingu) mora postojati u live.
+
+Provjeriti da page u live zove ispravan backend endpoint za dohvat profila:
+
+U stagingu radi → usporedi koji endpoint se zove (npr. /api/public/artist/:slug ili slično).
+
+U live trenutno vjerojatno vraća 404/500 ili ne nalazi usera po slug-u.
+
+Provjeriti slug logiku:
+
+U live URL je irena-r-malbasa (ili irena) → backend mora znati mapirati slug na user/profile.
+
+Ako staging koristi username (irena) a live koristi slugify(displayName) → uskladiti:
+
+ili standardizirati slug na username
+
+ili spremati slug u DB (artist_profiles.slug) i koristiti ga za public page lookup.
+
+Acceptance criteria
+
+Otvaranje app.roomvibe.app/#/artist/<slug> u live učitava profil bez greške.
+
+Ne smije se pojavljivati “Profile Not Available” za validnog artista.
+
+2) Uskladiti LIVE public artist page UI sa STAGING (1:1)
+
+Implementirati/usklađivati identično stagingu:
+
+Header sekcija:
+
+Avatar (profilna slika u krugu)
+
+Ime (Display name)
+
+Lokacija (City, Country)
+
+Primary medium (npr. Acrylic)
+
+Style tagovi (chips)
+
+Social ikonice (web/IG/FB ako postoje)
+
+CTA gumbi:
+
+“Contact Artist”
+
+“View Artworks”
+
+“View Exhibition”
+
+“About” sekcija: bio tekst
+
+“Artworks” sekcija:
+
+grid kartica kao u stagingu
+
+kartice imaju naslov, dimenzije, cijenu/“From EUR”, i gumbe “View in Room” + “View & Buy”
+
+Sekcija za exhibition:
+
+veliki gumb “View Artist’s 360° Exhibition” (kao staging)
+
+“Artistic Practice” blok (Medium / Style / Languages)
+
+Sve spacing/typography/buttons kao staging (copy komponenti/stilova gdje god je moguće).
+
+Napomena
+
+Ako staging koristi posebne komponente (npr. PublicArtistPage.tsx, ArtistPublicProfile.tsx ili slično), u live treba koristiti iste komponente (ili copy/paste istog koda i stilova), ne raditi novu verziju.
+
+Acceptance criteria
+
+Live public artist page vizualno i funkcionalno odgovara stagingu (1:1 sadržajno + layout).
+
+Artworks se prikazuju na public page-u kao u stagingu.
+
+3) Quick debug checklist (da agent brže nađe problem)
+
+U live otvoriti DevTools Network i vidjeti koji request pada kad se otvori /#/artist/<slug>:
+
+status code (404/401/500)
+
+response body (npr. “not found”)
+
+Usporediti s stagingom isti flow.
+
+Provjeriti da live koristi isti API_BASE_URL/proxy i da endpoint nije slučajno blokiran auth-om (public page mora biti public).

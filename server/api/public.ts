@@ -60,7 +60,7 @@ router.get('/artist/:slug', async (req, res) => {
     );
 
     const galleryImagesResult = await query(
-      `SELECT artwork_id, id, image_url, display_order, is_mockup 
+      `SELECT artwork_id, id, storage_key, display_order, is_mockup 
        FROM artwork_gallery_images 
        WHERE artwork_id = ANY($1)
        ORDER BY display_order ASC`,
@@ -74,7 +74,7 @@ router.get('/artist/:slug', async (req, res) => {
       }
       galleryImagesByArtwork[img.artwork_id].push({
         id: img.id,
-        image_url: img.image_url,
+        image_url: `/api/artwork-gallery-image/${img.id}`,
         display_order: img.display_order,
         is_mockup: img.is_mockup
       });

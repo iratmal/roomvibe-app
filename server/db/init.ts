@@ -305,6 +305,71 @@ export async function initializeDatabase() {
       END $$;
     `);
 
+    // facebook_url - Artist's Facebook
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'facebook_url'
+        ) THEN
+          ALTER TABLE users ADD COLUMN facebook_url TEXT;
+        END IF;
+      END $$;
+    `);
+
+    // tiktok_url - Artist's TikTok
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'tiktok_url'
+        ) THEN
+          ALTER TABLE users ADD COLUMN tiktok_url TEXT;
+        END IF;
+      END $$;
+    `);
+
+    // linkedin_url - Artist's LinkedIn
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'linkedin_url'
+        ) THEN
+          ALTER TABLE users ADD COLUMN linkedin_url TEXT;
+        END IF;
+      END $$;
+    `);
+
+    // pinterest_url - Artist's Pinterest
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'pinterest_url'
+        ) THEN
+          ALTER TABLE users ADD COLUMN pinterest_url TEXT;
+        END IF;
+      END $$;
+    `);
+
+    // etsy_url - Artist's Etsy shop
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'etsy_url'
+        ) THEN
+          ALTER TABLE users ADD COLUMN etsy_url TEXT;
+        END IF;
+      END $$;
+    `);
+
     // languages - Array of languages artist speaks (JSONB)
     await query(`
       DO $$ 
@@ -615,6 +680,19 @@ export async function initializeDatabase() {
       END $$;
     `);
 
+    // like_count - track artwork likes
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'artworks' AND column_name = 'like_count'
+        ) THEN
+          ALTER TABLE artworks ADD COLUMN like_count INTEGER DEFAULT 0;
+        END IF;
+      END $$;
+    `);
+
     await query(`
       CREATE TABLE IF NOT EXISTS projects (
         id SERIAL PRIMARY KEY,
@@ -751,12 +829,40 @@ export async function initializeDatabase() {
         status VARCHAR(20) DEFAULT 'draft',
         scene_360_data JSONB,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        cover_image_url TEXT,
+        is_published BOOLEAN DEFAULT FALSE
       );
     `);
 
     await query(`
       CREATE INDEX IF NOT EXISTS idx_artist_exhibitions_artist_id ON artist_exhibitions(artist_id);
+    `);
+
+    // Add is_published column if missing (for existing tables)
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'artist_exhibitions' AND column_name = 'is_published'
+        ) THEN
+          ALTER TABLE artist_exhibitions ADD COLUMN is_published BOOLEAN DEFAULT FALSE;
+        END IF;
+      END $$;
+    `);
+
+    // Add cover_image_url column if missing (for existing tables)
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'artist_exhibitions' AND column_name = 'cover_image_url'
+        ) THEN
+          ALTER TABLE artist_exhibitions ADD COLUMN cover_image_url TEXT;
+        END IF;
+      END $$;
     `);
 
     await query(`
