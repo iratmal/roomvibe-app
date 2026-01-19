@@ -326,6 +326,9 @@ export function ArtistProfileForm() {
           instagramUrl: profile.instagramUrl,
           facebookUrl: profile.facebookUrl,
           tiktokUrl: profile.tiktokUrl,
+          linkedinUrl: profile.linkedinUrl,
+          pinterestUrl: profile.pinterestUrl,
+          etsyUrl: profile.etsyUrl,
           languages: profile.languages
         })
       });
@@ -634,13 +637,14 @@ export function ArtistProfileForm() {
                 name="bio"
                 value={profile.bio}
                 onChange={handleInputChange}
-                rows={4}
-                maxLength={1000}
-                className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary resize-none"
-                placeholder="Tell us about yourself and your artistic practice..."
+                rows={8}
+                maxLength={1200}
+                className="w-full max-w-[740px] px-4 py-3 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary resize-y"
+                style={{ minHeight: '240px' }}
+                placeholder="Tell your story as an artist.&#10;Share your journey, inspiration, process, and what defines your work."
               />
-              <p className="text-xs text-rv-textMuted mt-1">
-                {profile.bio.length}/1000 characters
+              <p className="text-xs text-rv-textMuted mt-1.5 max-w-[740px]">
+                {profile.bio.length}/1200 characters. This text appears on your public artist profile.
               </p>
             </div>
           </div>

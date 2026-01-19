@@ -40,7 +40,8 @@ router.get('/profile', authenticateToken, async (req: any, res) => {
         id, email, role,
         display_name, location_city, location_country, bio,
         primary_style_tags, primary_medium, profile_image_url,
-        website_url, instagram_url, languages,
+        website_url, instagram_url, facebook_url, tiktok_url,
+        linkedin_url, pinterest_url, etsy_url, languages,
         visible_to_designers, visible_to_galleries,
         artist_access, designer_access, gallery_access
        FROM users 
@@ -68,6 +69,11 @@ router.get('/profile', authenticateToken, async (req: any, res) => {
       profileImageUrl: user.profile_image_url || '',
       websiteUrl: user.website_url || '',
       instagramUrl: user.instagram_url || '',
+      facebookUrl: user.facebook_url || '',
+      tiktokUrl: user.tiktok_url || '',
+      linkedinUrl: user.linkedin_url || '',
+      pinterestUrl: user.pinterest_url || '',
+      etsyUrl: user.etsy_url || '',
       languages: user.languages || [],
       visibleToDesigners: user.visible_to_designers || false,
       visibleToGalleries: user.visible_to_galleries || false,
@@ -95,17 +101,25 @@ router.put('/profile', authenticateToken, async (req: any, res) => {
       primaryMedium,
       websiteUrl,
       instagramUrl,
+      facebookUrl,
+      tiktokUrl,
+      linkedinUrl,
+      pinterestUrl,
+      etsyUrl,
       languages
     } = req.body;
 
-    if (bio && bio.length > 1000) {
-      return res.status(400).json({ error: 'Bio must not exceed 1000 characters' });
+    if (bio && bio.length > 1200) {
+      return res.status(400).json({ error: 'Bio must not exceed 1200 characters' });
     }
 
-    let websiteUrlClean = websiteUrl || null;
-    if (websiteUrlClean && !websiteUrlClean.startsWith('http://') && !websiteUrlClean.startsWith('https://')) {
-      websiteUrlClean = 'https://' + websiteUrlClean;
-    }
+    const cleanUrl = (url: string | null | undefined): string | null => {
+      if (!url) return null;
+      if (url.startsWith('http://') || url.startsWith('https://')) return url;
+      return 'https://' + url;
+    };
+
+    let websiteUrlClean = cleanUrl(websiteUrl);
 
     let instagramUrlClean = instagramUrl || null;
     if (instagramUrlClean) {
@@ -115,6 +129,12 @@ router.put('/profile', authenticateToken, async (req: any, res) => {
         instagramUrlClean = 'https://instagram.com/' + instagramUrlClean;
       }
     }
+
+    const facebookUrlClean = cleanUrl(facebookUrl);
+    const tiktokUrlClean = cleanUrl(tiktokUrl);
+    const linkedinUrlClean = cleanUrl(linkedinUrl);
+    const pinterestUrlClean = cleanUrl(pinterestUrl);
+    const etsyUrlClean = cleanUrl(etsyUrl);
 
     const styleTagsJson = Array.isArray(primaryStyleTags) ? JSON.stringify(primaryStyleTags) : '[]';
     const languagesJson = Array.isArray(languages) ? JSON.stringify(languages) : '[]';
@@ -129,11 +149,17 @@ router.put('/profile', authenticateToken, async (req: any, res) => {
         primary_medium = $6,
         website_url = $7,
         instagram_url = $8,
-        languages = $9,
+        facebook_url = $9,
+        tiktok_url = $10,
+        linkedin_url = $11,
+        pinterest_url = $12,
+        etsy_url = $13,
+        languages = $14,
         updated_at = CURRENT_TIMESTAMP
-       WHERE id = $10
+       WHERE id = $15
        RETURNING id, display_name, location_city, location_country, bio,
-                 primary_style_tags, primary_medium, website_url, instagram_url, languages`,
+                 primary_style_tags, primary_medium, website_url, instagram_url,
+                 facebook_url, tiktok_url, linkedin_url, pinterest_url, etsy_url, languages`,
       [
         displayName || null,
         locationCity || null,
@@ -143,6 +169,11 @@ router.put('/profile', authenticateToken, async (req: any, res) => {
         primaryMedium || null,
         websiteUrlClean,
         instagramUrlClean,
+        facebookUrlClean,
+        tiktokUrlClean,
+        linkedinUrlClean,
+        pinterestUrlClean,
+        etsyUrlClean,
         languagesJson,
         req.user.id
       ]
