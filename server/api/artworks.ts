@@ -519,6 +519,68 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
   }
 });
 
+router.get('/artworks/:id/images', authenticateToken, async (req: any, res) => {
+  try {
+    const artworkId = parseInt(req.params.id);
+    const userId = req.user.id;
+
+    if (isNaN(artworkId)) {
+      return res.status(400).json({ error: 'Invalid artwork ID' });
+    }
+
+    // Verify ownership
+    const artworkResult = await query(
+      'SELECT id, image_url, storage_key FROM artworks WHERE id = $1 AND artist_id = $2',
+      [artworkId, userId]
+    );
+
+    if (artworkResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Artwork not found' });
+    }
+
+    const artwork = artworkResult.rows[0];
+
+    // Fetch gallery images
+    const imagesResult = await query(
+      `SELECT id, storage_key, display_order, is_mockup, created_at
+       FROM artwork_gallery_images
+       WHERE artwork_id = $1
+       ORDER BY display_order ASC`,
+      [artworkId]
+    );
+
+    // Build images array with cover image first
+    const images: Array<{ id: number; image_url: string; display_order: number; is_mockup: boolean; is_cover: boolean }> = [];
+    
+    // Add cover image (from main artworks table)
+    if (artwork.storage_key || artwork.image_url) {
+      images.push({
+        id: 0,
+        image_url: `/api/artwork-image/${artworkId}`,
+        display_order: 0,
+        is_mockup: false,
+        is_cover: true
+      });
+    }
+
+    // Add gallery images
+    imagesResult.rows.forEach((img: any, index: number) => {
+      images.push({
+        id: img.id,
+        image_url: `/api/artwork-gallery-image/${img.id}`,
+        display_order: img.display_order,
+        is_mockup: img.is_mockup,
+        is_cover: false
+      });
+    });
+
+    res.json({ images });
+  } catch (error: any) {
+    console.error('Error fetching gallery images:', error);
+    res.status(500).json({ error: 'Failed to fetch gallery images', details: error.message });
+  }
+});
+
 router.delete('/artworks/:id', authenticateToken, async (req: any, res) => {
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);

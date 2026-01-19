@@ -142,6 +142,7 @@ export function ArtistDashboard() {
   const [pendingExhibitionArtwork, setPendingExhibitionArtwork] = useState<Artwork | null>(null);
   
   const exhibitionSectionRef = React.useRef<HTMLDivElement>(null);
+  const editFormRef = React.useRef<HTMLDivElement>(null);
   
   const effectivePlan = user?.effectivePlan || user?.role || 'user';
   const isFreePlan = effectivePlan === 'user' || effectivePlan === 'free';
@@ -920,7 +921,13 @@ export function ArtistDashboard() {
     
     setError('');
     setSuccess('');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Scroll to edit form after state is set
+    setTimeout(() => {
+      if (editFormRef.current) {
+        editFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
   const handleCancelEdit = () => {
@@ -1232,7 +1239,7 @@ export function ArtistDashboard() {
           </div>
         )}
 
-        <div className="mb-10 p-6 bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral">
+        <div ref={editFormRef} className="mb-10 p-6 bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral">
           <h2 className="text-2xl font-bold mb-6 text-rv-primary">
             {editingArtwork ? 'Edit Artwork' : 'Add New Artwork'}
           </h2>
