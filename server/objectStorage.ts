@@ -365,14 +365,20 @@ export class ObjectStorageService {
       if (USE_REPLIT_NATIVE && client) {
         // Use Replit native SDK
         console.log('[ObjectStorage] Using Replit native upload...');
-        const { ok, error } = await client.uploadFromBytes(objectName, buffer);
+        console.log('[ObjectStorage] Buffer type:', buffer.constructor.name, 'isBuffer:', Buffer.isBuffer(buffer), 'length:', buffer.length);
+        
+        // Convert Buffer to Uint8Array explicitly for Replit SDK compatibility
+        const uint8Array = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+        console.log('[ObjectStorage] Uint8Array length:', uint8Array.length);
+        
+        const { ok, error } = await client.uploadFromBytes(objectName, uint8Array);
         
         if (!ok) {
           console.error('[ObjectStorage] Replit upload failed:', error);
           throw new Error(`Replit storage write failed: ${error?.message || 'Unknown error'}`);
         }
         
-        console.log('[ObjectStorage] Replit upload SUCCESS:', objectName);
+        console.log('[ObjectStorage] Replit upload SUCCESS:', objectName, 'bytes:', uint8Array.length);
       } else {
         // GCS fallback
         const bucketName = getGcsBucketName();
