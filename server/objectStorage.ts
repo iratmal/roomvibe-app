@@ -379,6 +379,19 @@ export class ObjectStorageService {
         }
         
         console.log('[ObjectStorage] Replit upload SUCCESS:', objectName, 'bytes:', uint8Array.length);
+        
+        // Verify upload by checking file exists and has correct size
+        const verifyResult = await client.downloadAsBytes(objectName);
+        if (!verifyResult.ok || !verifyResult.value) {
+          console.error('[ObjectStorage] Upload verification FAILED: file not readable after upload');
+          throw new Error('Upload verification failed: file not readable');
+        }
+        const savedBytes = verifyResult.value.length;
+        console.log('[ObjectStorage] Upload verified: saved', savedBytes, 'bytes, expected', uint8Array.length);
+        if (savedBytes !== uint8Array.length) {
+          console.error('[ObjectStorage] SIZE MISMATCH! Expected:', uint8Array.length, 'Got:', savedBytes);
+          throw new Error(`Upload size mismatch: expected ${uint8Array.length}, got ${savedBytes}`);
+        }
       } else {
         // GCS fallback
         const bucketName = getGcsBucketName();

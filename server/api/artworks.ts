@@ -286,6 +286,7 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
   console.log('[UPLOAD] ========== POST /api/artist/artworks ==========');
   console.log('[UPLOAD] Content-Type:', req.headers['content-type']);
   console.log('[UPLOAD] Body keys:', Object.keys(req.body || {}));
+  console.log('[UPLOAD] Body values:', JSON.stringify(req.body || {}, null, 2));
   console.log('[UPLOAD] File present:', !!req.file);
   if (req.file) {
     console.log('[UPLOAD] File details:', {
@@ -293,8 +294,15 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
       originalname: req.file.originalname,
       mimetype: req.file.mimetype,
       size: req.file.size,
-      bufferLen: req.file.buffer?.length || 0
+      bufferLen: req.file.buffer?.length || 0,
+      bufferType: req.file.buffer?.constructor?.name || 'unknown',
+      isBuffer: Buffer.isBuffer(req.file.buffer)
     });
+    // Verify buffer integrity - check first few bytes for JPEG/PNG signature
+    if (req.file.buffer && req.file.buffer.length > 4) {
+      const header = req.file.buffer.slice(0, 4);
+      console.log('[UPLOAD] File header bytes:', header.toString('hex'));
+    }
   } else {
     console.log('[UPLOAD] NO FILE - req.file is undefined/null');
   }
@@ -303,6 +311,19 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
   if (!req.file) {
     console.error('[UPLOAD] NO_FILE: Returning 400');
     return res.status(400).json({ error: 'NO_FILE: Image file is required', code: 'NO_FILE' });
+  }
+  
+  // Validate buffer integrity
+  if (!req.file.buffer || req.file.buffer.length < 100) {
+    console.error('[UPLOAD] INVALID_BUFFER: Buffer too small or missing', { 
+      hasBuffer: !!req.file.buffer, 
+      length: req.file.buffer?.length 
+    });
+    return res.status(400).json({ 
+      error: 'Image file appears to be corrupted or incomplete', 
+      code: 'INVALID_BUFFER',
+      receivedBytes: req.file.buffer?.length || 0
+    });
   }
 
   try {
