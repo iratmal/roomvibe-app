@@ -319,9 +319,9 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
 
     console.log('[UPLOAD] Artwork data:', { title, width, height, dimensionUnit, buyUrl, orientation, medium, availability });
 
-    if (!title || !width || !height || !buyUrl) {
-      console.error('[UPLOAD] Missing required fields:', { title: !!title, width: !!width, height: !!height, buyUrl: !!buyUrl });
-      return res.status(400).json({ error: 'Missing required fields: title, width, height, buyUrl' });
+    if (!title || !width || !height) {
+      console.error('[UPLOAD] Missing required fields:', { title: !!title, width: !!width, height: !!height });
+      return res.status(400).json({ error: 'Missing required fields: title, width, height' });
     }
 
     const targetArtistId = effectivePlan === 'admin' && artistId ? parseInt(artistId) : req.user.id;
