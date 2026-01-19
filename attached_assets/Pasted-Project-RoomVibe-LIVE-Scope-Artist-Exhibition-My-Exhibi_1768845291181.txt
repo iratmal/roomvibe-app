@@ -1,0 +1,132 @@
+Project: RoomVibe (LIVE)
+Scope: Artist → Exhibition (My Exhibition)
+
+1️⃣ BUG: Upload Cover Image za Exhibition NE RADI
+
+Problem:
+
+U Artist Dashboard → My Exhibition
+
+Klik na Edit Exhibition
+
+U sekciji Cover Image:
+
+“Choose Image” → odabir slike
+
+Klik na Save Changes / Publish
+
+❌ Slika se ne upload-a, nema promjene, nema errora u UI-ju
+
+Expected behavior:
+
+Cover image se mora:
+
+uploadati u storage (isti bucket kao artwork images)
+
+spremiti u exhibition record (coverImage / coverImageUrl)
+
+odmah biti vidljiva nakon save-a
+
+Agent provjeriti i popraviti:
+
+API endpoint za update exhibition (PATCH/POST)
+
+Da li endpoint:
+
+prima multipart/form-data
+
+prima coverImage kao file
+
+Da li se koristi isti upload helper / storage logic kao za:
+
+artwork images
+
+Da li se coverImage URL pravilno sprema u DB
+
+Da li frontend šalje file pod ispravnim key-em (coverImage, image, itd.)
+
+2️⃣ BUG: Publish Exhibition NE RADI
+
+Problem:
+
+U Artist Dashboard → My Exhibition
+
+Klik na Publish ili Publish Exhibition
+
+UI ostaje u stanju:
+
+“Exhibition not published”
+
+❌ Status se ne mijenja
+
+❌ Embed code se ne otključava
+
+Expected behavior:
+
+Klik na Publish Exhibition mora:
+
+postaviti status = published
+
+(ili isPublished = true)
+
+omogućiti embed code
+
+ukloniti warning “Exhibition not published”
+
+Agent provjeriti i popraviti:
+
+API endpoint za publish exhibition
+
+Da li frontend:
+
+uopće šalje request
+
+šalje ispravan exhibition ID
+
+Da li backend:
+
+prima request
+
+update-a publish status u DB
+
+Da li frontend refresh-a state nakon uspješnog publisha
+
+3️⃣ LOGIKA (OBAVEZNO)
+
+Artist ima samo jednu exhibition
+
+Nema biranja exhibitiona
+
+Sve akcije (Add to My Exhibition, Publish, Embed) rade nad tom jednom izložbom
+
+Nakon publisha:
+
+Embed sekcija mora biti aktivna
+
+Warning nestaje
+
+4️⃣ VALIDATION / DEBUG
+
+Agent OBAVEZNO:
+
+Dodati console.log / server log za:
+
+upload cover image
+
+publish exhibition
+
+Ako request faila:
+
+vratiti jasan error message (ne silent fail)
+
+✅ Definition of Done
+
+✔️ Cover image upload radi
+
+✔️ Publish Exhibition radi
+
+✔️ Embed sekcija se aktivira nakon publisha
+
+✔️ Nema “Exhibition not published” nakon publisha
+
+✔️ Sve radi na LIVE, ne staging

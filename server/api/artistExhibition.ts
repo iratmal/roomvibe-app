@@ -3,6 +3,9 @@ import multer from 'multer';
 import { query } from '../db/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { getEffectivePlan, requireMinimumPlan } from '../middleware/subscription.js';
+import { ObjectStorageService } from '../objectStorage.js';
+
+const storageService = new ObjectStorageService();
 
 const router = express.Router();
 
@@ -25,7 +28,7 @@ router.get('/exhibition', authenticateToken, async (req: any, res) => {
     const userId = req.user.id;
     
     const result = await query(
-      `SELECT id, title, subtitle, gallery_type, status, created_at, updated_at,
+      `SELECT id, title, subtitle, gallery_type, status, cover_image_url, created_at, updated_at,
        (SELECT COUNT(*) FROM artist_exhibition_artworks WHERE exhibition_id = artist_exhibitions.id) as artwork_count
        FROM artist_exhibitions 
        WHERE artist_id = $1 
@@ -46,6 +49,7 @@ router.get('/exhibition', authenticateToken, async (req: any, res) => {
         subtitle: exhibition.subtitle,
         galleryType: exhibition.gallery_type,
         status: exhibition.status,
+        coverImageUrl: exhibition.cover_image_url,
         artworkCount: parseInt(exhibition.artwork_count) || 0,
         createdAt: exhibition.created_at,
         updatedAt: exhibition.updated_at
@@ -397,6 +401,163 @@ router.delete('/exhibition/:id/artworks/unlink/:artworkId', authenticateToken, a
   } catch (error: any) {
     console.error('Error unlinking artwork from exhibition:', error);
     res.status(500).json({ error: 'Failed to remove artwork from exhibition', details: error.message });
+  }
+});
+
+router.post('/exhibition/:id/publish', authenticateToken, async (req: any, res) => {
+  try {
+    const userId = req.user.id;
+    const exhibitionId = parseInt(req.params.id);
+
+    if (isNaN(exhibitionId)) {
+      return res.status(400).json({ error: 'Invalid exhibition ID' });
+    }
+
+    const checkResult = await query(
+      'SELECT * FROM artist_exhibitions WHERE id = $1 AND artist_id = $2',
+      [exhibitionId, userId]
+    );
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Exhibition not found' });
+    }
+
+    const result = await query(
+      `UPDATE artist_exhibitions 
+       SET status = 'published', updated_at = CURRENT_TIMESTAMP
+       WHERE id = $1 AND artist_id = $2
+       RETURNING *`,
+      [exhibitionId, userId]
+    );
+
+    const exhibition = result.rows[0];
+    console.log('Exhibition published:', { id: exhibitionId, artistId: userId });
+
+    res.json({
+      exhibition: {
+        id: exhibition.id,
+        title: exhibition.title,
+        subtitle: exhibition.subtitle,
+        galleryType: exhibition.gallery_type,
+        status: exhibition.status,
+        coverImageUrl: exhibition.cover_image_url,
+        createdAt: exhibition.created_at,
+        updatedAt: exhibition.updated_at
+      },
+      message: 'Exhibition published successfully'
+    });
+  } catch (error: any) {
+    console.error('Error publishing exhibition:', error);
+    res.status(500).json({ error: 'Failed to publish exhibition', details: error.message });
+  }
+});
+
+router.post('/exhibition/:id/unpublish', authenticateToken, async (req: any, res) => {
+  try {
+    const userId = req.user.id;
+    const exhibitionId = parseInt(req.params.id);
+
+    if (isNaN(exhibitionId)) {
+      return res.status(400).json({ error: 'Invalid exhibition ID' });
+    }
+
+    const checkResult = await query(
+      'SELECT * FROM artist_exhibitions WHERE id = $1 AND artist_id = $2',
+      [exhibitionId, userId]
+    );
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Exhibition not found' });
+    }
+
+    const result = await query(
+      `UPDATE artist_exhibitions 
+       SET status = 'draft', updated_at = CURRENT_TIMESTAMP
+       WHERE id = $1 AND artist_id = $2
+       RETURNING *`,
+      [exhibitionId, userId]
+    );
+
+    const exhibition = result.rows[0];
+    console.log('Exhibition unpublished:', { id: exhibitionId, artistId: userId });
+
+    res.json({
+      exhibition: {
+        id: exhibition.id,
+        title: exhibition.title,
+        subtitle: exhibition.subtitle,
+        galleryType: exhibition.gallery_type,
+        status: exhibition.status,
+        coverImageUrl: exhibition.cover_image_url,
+        createdAt: exhibition.created_at,
+        updatedAt: exhibition.updated_at
+      },
+      message: 'Exhibition unpublished successfully'
+    });
+  } catch (error: any) {
+    console.error('Error unpublishing exhibition:', error);
+    res.status(500).json({ error: 'Failed to unpublish exhibition', details: error.message });
+  }
+});
+
+router.post('/exhibition/:id/cover-image', authenticateToken, upload.single('image'), async (req: any, res) => {
+  try {
+    const userId = req.user.id;
+    const exhibitionId = parseInt(req.params.id);
+
+    console.log('Cover image upload request:', { exhibitionId, userId, hasFile: !!req.file });
+
+    if (isNaN(exhibitionId)) {
+      return res.status(400).json({ error: 'Invalid exhibition ID' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'No image file provided' });
+    }
+
+    const checkResult = await query(
+      'SELECT * FROM artist_exhibitions WHERE id = $1 AND artist_id = $2',
+      [exhibitionId, userId]
+    );
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Exhibition not found' });
+    }
+
+    const oldCoverUrl = checkResult.rows[0].cover_image_url;
+
+    const fileExtension = req.file.originalname.split('.').pop()?.toLowerCase() || 'jpg';
+    const filename = `exhibition-cover-${exhibitionId}-${Date.now()}.${fileExtension}`;
+
+    console.log('Uploading cover image:', filename);
+
+    const objectPath = await storageService.uploadBuffer(req.file.buffer, filename, req.file.mimetype);
+    console.log('Cover image uploaded successfully:', objectPath);
+
+    await query(
+      `UPDATE artist_exhibitions 
+       SET cover_image_url = $1, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $2 AND artist_id = $3`,
+      [objectPath, exhibitionId, userId]
+    );
+
+    if (oldCoverUrl && oldCoverUrl.startsWith('/objects/')) {
+      try {
+        const oldKey = oldCoverUrl.replace('/objects/', '');
+        await storageService.deleteObject(oldKey);
+        console.log('Old cover image deleted:', oldKey);
+      } catch (deleteErr) {
+        console.warn('Failed to delete old cover image:', deleteErr);
+      }
+    }
+
+    res.json({
+      coverImageUrl: objectPath,
+      message: 'Cover image uploaded successfully'
+    });
+  } catch (error: any) {
+    console.error('Error uploading cover image:', error);
+    res.status(500).json({ error: 'Failed to upload cover image', details: error.message });
   }
 });
 
