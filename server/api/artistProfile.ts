@@ -21,6 +21,18 @@ const upload = multer({
   }
 });
 
+function generateSlug(displayName: string, email: string): string {
+  const name = displayName || email.split('@')[0];
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
+}
+
 router.get('/profile', authenticateToken, async (req: any, res) => {
   try {
     const result = await query(
@@ -41,6 +53,7 @@ router.get('/profile', authenticateToken, async (req: any, res) => {
     }
 
     const user = result.rows[0];
+    const slug = generateSlug(user.display_name, user.email);
     
     const profile = {
       id: user.id,
@@ -60,7 +73,8 @@ router.get('/profile', authenticateToken, async (req: any, res) => {
       visibleToGalleries: user.visible_to_galleries || false,
       artistAccess: user.artist_access || user.role === 'artist',
       designerAccess: user.designer_access || user.role === 'designer',
-      galleryAccess: user.gallery_access || user.role === 'gallery'
+      galleryAccess: user.gallery_access || user.role === 'gallery',
+      slug: slug
     };
 
     res.json({ profile });

@@ -859,6 +859,25 @@ export async function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_designer_project_artworks_artwork ON designer_project_artworks(artwork_id);
     `);
 
+    // =====================================================
+    // Public Contact Messages - for visitors to contact artists
+    // =====================================================
+    await query(`
+      CREATE TABLE IF NOT EXISTS public_contact_messages (
+        id SERIAL PRIMARY KEY,
+        artist_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        sender_name VARCHAR(255) NOT NULL,
+        sender_email VARCHAR(255) NOT NULL,
+        message TEXT NOT NULL,
+        is_read BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS idx_public_contact_messages_artist ON public_contact_messages(artist_id);
+    `);
+
     console.log('✅ Database schema initialized successfully');
     return true;
   } catch (error) {

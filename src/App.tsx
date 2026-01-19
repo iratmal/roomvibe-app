@@ -41,6 +41,7 @@ import { Gallery360Editor } from "./components/360/Gallery360Editor";
 import { Viewer360 } from "./components/360/Viewer360";
 import { isExhibitionPublicEnabled } from "./utils/featureFlags";
 import { FeatureDisabled } from "./components/FeatureDisabled";
+import { ArtistPublicProfile } from "./pages/ArtistPublicProfile";
 
 /**
  * RoomVibe — App + Landing + Studio + Authentication
@@ -106,7 +107,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-white text-rv-text">
-      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/privacy" && normalizedHash !== "#/terms" && normalizedHash !== "#/upload-consent" && normalizedHash !== "#/pricing" && normalizedHash !== "#/billing" && normalizedHash !== "#/onboarding" && !normalizedHash.startsWith("#/exhibition") && !normalizedHash.startsWith("#/gallery/exhibitions/") && !normalizedHash.startsWith("#/exhibitions/") && !normalizedHash.startsWith("#/app/exhibitions/") && !normalizedHash.startsWith("#/embed/exhibitions/") && <TopNav />}
+      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/privacy" && normalizedHash !== "#/terms" && normalizedHash !== "#/upload-consent" && normalizedHash !== "#/pricing" && normalizedHash !== "#/billing" && normalizedHash !== "#/onboarding" && !normalizedHash.startsWith("#/exhibition") && !normalizedHash.startsWith("#/gallery/exhibitions/") && !normalizedHash.startsWith("#/exhibitions/") && !normalizedHash.startsWith("#/app/exhibitions/") && !normalizedHash.startsWith("#/embed/exhibitions/") && !normalizedHash.startsWith("#/artist/") && <TopNav />}
       {normalizedHash === "#/onboarding" ? (
         <OnboardingRouter />
       ) : normalizedHash === "#/pricing" ? (
@@ -139,6 +140,8 @@ function AppContent() {
         <VirtualExhibitionRoom />
       ) : normalizedHash === "#/docs" ? (
         <DocsPage />
+      ) : normalizedHash.startsWith("#/artist/") ? (
+        <ArtistPublicProfilePage />
       ) : normalizedHash === "#/login" ? (
         <AuthPage mode="login" />
       ) : normalizedHash === "#/register" ? (
@@ -4150,6 +4153,20 @@ function PublicExhibitionPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ------------- Public Artist Page ------------- */
+
+function ArtistPublicProfilePage() {
+  const hash = window.location.hash;
+  const slug = hash.replace('#/artist/', '').split('?')[0];
+  
+  return (
+    <div className="min-h-screen bg-white">
+      <SiteHeader />
+      <ArtistPublicProfile slug={slug} />
     </div>
   );
 }
