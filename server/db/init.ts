@@ -697,6 +697,49 @@ export async function initializeDatabase() {
     `);
 
     // =====================================================
+    // Artist Exhibitions - Virtual exhibition for artists
+    // =====================================================
+    await query(`
+      CREATE TABLE IF NOT EXISTS artist_exhibitions (
+        id SERIAL PRIMARY KEY,
+        artist_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        title VARCHAR(255) NOT NULL,
+        subtitle VARCHAR(255),
+        gallery_type VARCHAR(50) DEFAULT 'classic',
+        status VARCHAR(20) DEFAULT 'draft',
+        scene_360_data JSONB,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS idx_artist_exhibitions_artist_id ON artist_exhibitions(artist_id);
+    `);
+
+    await query(`
+      CREATE TABLE IF NOT EXISTS artist_exhibition_artworks (
+        id SERIAL PRIMARY KEY,
+        exhibition_id INTEGER NOT NULL REFERENCES artist_exhibitions(id) ON DELETE CASCADE,
+        source_artwork_id INTEGER REFERENCES artworks(id) ON DELETE SET NULL,
+        title VARCHAR(255) NOT NULL,
+        artist_name VARCHAR(255),
+        image_url TEXT,
+        image_data TEXT,
+        width_value DECIMAL(10, 2) NOT NULL,
+        height_value DECIMAL(10, 2) NOT NULL,
+        dimension_unit VARCHAR(2) DEFAULT 'cm',
+        slot_id VARCHAR(50),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS idx_artist_exhibition_artworks_exhibition_id ON artist_exhibition_artworks(exhibition_id);
+    `);
+
+    // =====================================================
     // Artist Connect Core - User profile images table
     // =====================================================
     await query(`
