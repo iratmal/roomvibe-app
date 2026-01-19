@@ -271,6 +271,7 @@ router.post('/projects/:projectId/artworks', authenticateToken, async (req: any,
       SELECT a.id FROM artworks a
       JOIN users u ON a.artist_id = u.id
       WHERE a.id = $1 AND u.visible_to_designers = TRUE
+        AND a.visible_to_designers = TRUE
     `, [artworkId]);
 
     if (artworkCheck.rows.length === 0) {

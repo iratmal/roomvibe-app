@@ -61,13 +61,13 @@ router.get('/artworks', authenticateToken, async (req: any, res) => {
     let queryParams;
 
     if (effectivePlan === 'admin') {
-      queryText = `SELECT a.id, a.artist_id, a.title, a.image_url, a.storage_key, a.width, a.height, a.dimension_unit, a.price_amount, a.price_currency, a.buy_url, a.tags, a.orientation, a.style_tags, a.dominant_colors, a.medium, a.availability, a.created_at, a.updated_at, u.email as artist_email
+      queryText = `SELECT a.id, a.artist_id, a.title, a.image_url, a.storage_key, a.width, a.height, a.dimension_unit, a.price_amount, a.price_currency, a.buy_url, a.tags, a.orientation, a.style_tags, a.dominant_colors, a.medium, a.availability, a.visible_to_designers, a.visible_to_galleries, a.created_at, a.updated_at, u.email as artist_email
                    FROM artworks a
                    LEFT JOIN users u ON a.artist_id = u.id
                    ORDER BY a.created_at DESC`;
       queryParams = [];
     } else {
-      queryText = `SELECT id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, created_at, updated_at
+      queryText = `SELECT id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, visible_to_designers, visible_to_galleries, created_at, updated_at
                    FROM artworks 
                    WHERE artist_id = $1 
                    ORDER BY created_at DESC`;
@@ -394,9 +394,9 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
     let result;
     try {
       result = await query(
-        `INSERT INTO artworks (artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, CURRENT_TIMESTAMP)
-         RETURNING id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, created_at, updated_at`,
+        `INSERT INTO artworks (artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, visible_to_designers, visible_to_galleries, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, FALSE, FALSE, CURRENT_TIMESTAMP)
+         RETURNING id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, visible_to_designers, visible_to_galleries, created_at, updated_at`,
         [targetArtistId, title, imageUrl, storageKey, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, tags, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability]
       );
     } catch (dbError: any) {
@@ -449,7 +449,7 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
     const artworkId = parseInt(req.params.id);
-    const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, orientation, styleTags, dominantColors, medium, availability } = req.body;
+    const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, orientation, styleTags, dominantColors, medium, availability, visibleToDesigners, visibleToGalleries } = req.body;
 
     let existingArtwork;
     if (effectivePlan === 'admin') {
@@ -501,13 +501,15 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
     const artworkOrientation = orientation !== undefined ? orientation : existingArtwork.rows[0].orientation;
     const artworkMedium = medium !== undefined ? medium : existingArtwork.rows[0].medium;
     const artworkAvailability = availability !== undefined ? availability : (existingArtwork.rows[0].availability || 'available');
+    const artworkVisibleToDesigners = visibleToDesigners !== undefined ? (visibleToDesigners === true || visibleToDesigners === 'true') : existingArtwork.rows[0].visible_to_designers;
+    const artworkVisibleToGalleries = visibleToGalleries !== undefined ? (visibleToGalleries === true || visibleToGalleries === 'true') : existingArtwork.rows[0].visible_to_galleries;
 
     const result = await query(
       `UPDATE artworks 
-       SET title = $1, image_url = $2, storage_key = $3, width = $4, height = $5, dimension_unit = $6, price_amount = $7, price_currency = $8, buy_url = $9, orientation = $10, style_tags = $11, dominant_colors = $12, medium = $13, availability = $14, updated_at = CURRENT_TIMESTAMP
-       WHERE id = $15
-       RETURNING id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, orientation, style_tags, dominant_colors, medium, availability, created_at, updated_at`,
-      [title, imageUrl, storageKey, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability, artworkId]
+       SET title = $1, image_url = $2, storage_key = $3, width = $4, height = $5, dimension_unit = $6, price_amount = $7, price_currency = $8, buy_url = $9, orientation = $10, style_tags = $11, dominant_colors = $12, medium = $13, availability = $14, visible_to_designers = $15, visible_to_galleries = $16, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $17
+       RETURNING id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, orientation, style_tags, dominant_colors, medium, availability, visible_to_designers, visible_to_galleries, created_at, updated_at`,
+      [title, imageUrl, storageKey, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability, artworkVisibleToDesigners, artworkVisibleToGalleries, artworkId]
     );
 
     // Return the API endpoint URL for frontend compatibility (actual path is stored in DB)
@@ -516,6 +518,64 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
   } catch (error) {
     console.error('Error updating artwork:', error);
     res.status(500).json({ error: 'Failed to update artwork' });
+  }
+});
+
+router.patch('/artworks/:id/visibility', authenticateToken, async (req: any, res) => {
+  try {
+    const artworkId = parseInt(req.params.id);
+    const { visibleToDesigners, visibleToGalleries } = req.body;
+
+    if (isNaN(artworkId)) {
+      return res.status(400).json({ error: 'Invalid artwork ID' });
+    }
+
+    const existingArtwork = await query(
+      'SELECT id, visible_to_designers, visible_to_galleries FROM artworks WHERE id = $1 AND artist_id = $2',
+      [artworkId, req.user.id]
+    );
+
+    if (existingArtwork.rows.length === 0) {
+      return res.status(404).json({ error: 'Artwork not found or access denied' });
+    }
+
+    const updates: string[] = [];
+    const params: any[] = [];
+    let paramCount = 0;
+
+    if (visibleToDesigners !== undefined) {
+      paramCount++;
+      updates.push(`visible_to_designers = $${paramCount}`);
+      params.push(visibleToDesigners === true || visibleToDesigners === 'true');
+    }
+
+    if (visibleToGalleries !== undefined) {
+      paramCount++;
+      updates.push(`visible_to_galleries = $${paramCount}`);
+      params.push(visibleToGalleries === true || visibleToGalleries === 'true');
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ error: 'No visibility fields provided' });
+    }
+
+    updates.push('updated_at = CURRENT_TIMESTAMP');
+    paramCount++;
+    params.push(artworkId);
+
+    const result = await query(
+      `UPDATE artworks SET ${updates.join(', ')} WHERE id = $${paramCount}
+       RETURNING id, visible_to_designers, visible_to_galleries`,
+      params
+    );
+
+    res.json({ 
+      artwork: result.rows[0], 
+      message: 'Visibility updated successfully' 
+    });
+  } catch (error) {
+    console.error('Error updating artwork visibility:', error);
+    res.status(500).json({ error: 'Failed to update visibility' });
   }
 });
 

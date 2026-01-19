@@ -41,6 +41,7 @@ router.get('/artist-directory', authenticateToken, async (req: any, res) => {
       queryText += ` AND EXISTS (
         SELECT 1 FROM artworks aw 
         WHERE aw.artist_id = u.id 
+        AND aw.visible_to_galleries = TRUE
         AND aw.style_tags @> $${paramCount}::jsonb
       )`;
       params.push(JSON.stringify([style]));
@@ -51,6 +52,7 @@ router.get('/artist-directory', authenticateToken, async (req: any, res) => {
       queryText += ` AND EXISTS (
         SELECT 1 FROM artworks aw 
         WHERE aw.artist_id = u.id 
+        AND aw.visible_to_galleries = TRUE
         AND aw.medium = $${paramCount}
       )`;
       params.push(medium);
@@ -61,6 +63,7 @@ router.get('/artist-directory', authenticateToken, async (req: any, res) => {
       queryText += ` AND EXISTS (
         SELECT 1 FROM artworks aw 
         WHERE aw.artist_id = u.id 
+        AND aw.visible_to_galleries = TRUE
         AND aw.availability = $${paramCount}
       )`;
       params.push(availability);
@@ -92,6 +95,7 @@ router.get('/artist-directory', authenticateToken, async (req: any, res) => {
         queryText += ` AND EXISTS (
           SELECT 1 FROM artworks aw 
           WHERE aw.artist_id = u.id 
+          AND aw.visible_to_galleries = TRUE
           AND ${sizeConditions.join(' AND ')}
         )`;
       }
@@ -113,7 +117,7 @@ router.get('/artist-directory', authenticateToken, async (req: any, res) => {
       GROUP BY u.id, u.email, u.display_name, u.bio, 
                u.location_city, u.location_country, u.primary_medium,
                u.profile_image_url, u.website_url, u.instagram_url
-      HAVING COUNT(a.id) > 0
+      HAVING COUNT(a.id) FILTER (WHERE a.visible_to_galleries = TRUE) > 0
       ORDER BY u.display_name ASC NULLS LAST, u.email ASC
     `;
 
@@ -272,6 +276,7 @@ router.get('/artist-directory/filters', authenticateToken, async (req: any, res)
       FROM artworks a
       JOIN users u ON a.artist_id = u.id
       WHERE u.visible_to_galleries = TRUE AND u.artist_access = TRUE
+        AND a.visible_to_galleries = TRUE
     `);
 
     res.json({
@@ -346,6 +351,7 @@ router.get('/stats', authenticateToken, async (req: any, res) => {
       FROM users u
       JOIN artworks a ON a.artist_id = u.id
       WHERE u.visible_to_galleries = TRUE AND u.artist_access = TRUE
+        AND a.visible_to_galleries = TRUE
     `);
 
     const contactedArtistsResult = await query(`

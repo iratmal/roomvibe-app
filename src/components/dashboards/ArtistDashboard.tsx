@@ -53,6 +53,8 @@ interface Artwork {
   medium?: string;
   availability?: string;
   show_on_public_profile?: boolean;
+  visible_to_designers?: boolean;
+  visible_to_galleries?: boolean;
   variants?: ArtworkVariant[];
   created_at: string;
   updated_at: string;
@@ -164,6 +166,8 @@ export function ArtistDashboard() {
     styleTags: [] as string[],
     availability: 'available',
     showOnPublicProfile: true,
+    visibleToDesigners: false,
+    visibleToGalleries: false,
     hasVariants: false,
     variants: [] as Array<{ width: string; height: string; unit: string; price: string; currency: string; availability: string }>
   });
@@ -751,6 +755,10 @@ export function ArtistDashboard() {
       }
       formDataObj.append('availability', formData.availability);
       formDataObj.append('showOnPublicProfile', String(formData.showOnPublicProfile));
+      if (editingArtwork) {
+        formDataObj.append('visibleToDesigners', String(formData.visibleToDesigners));
+        formDataObj.append('visibleToGalleries', String(formData.visibleToGalleries));
+      }
       if (formData.hasVariants && formData.variants.length > 0) {
         formDataObj.append('variants', JSON.stringify(formData.variants));
       }
@@ -848,6 +856,8 @@ export function ArtistDashboard() {
         styleTags: [],
         availability: 'available',
         showOnPublicProfile: true,
+        visibleToDesigners: false,
+        visibleToGalleries: false,
         hasVariants: false,
         variants: []
       });
@@ -901,6 +911,8 @@ export function ArtistDashboard() {
       styleTags: artwork.style_tags || [],
       availability: artwork.availability || 'available',
       showOnPublicProfile: artwork.show_on_public_profile !== false,
+      visibleToDesigners: artwork.visible_to_designers || false,
+      visibleToGalleries: artwork.visible_to_galleries || false,
       hasVariants: artworkVariants.length > 0,
       variants: artworkVariants
     });
@@ -947,6 +959,8 @@ export function ArtistDashboard() {
       styleTags: [],
       availability: 'available',
       showOnPublicProfile: true,
+      visibleToDesigners: false,
+      visibleToGalleries: false,
       hasVariants: false,
       variants: []
     });
@@ -973,6 +987,30 @@ export function ArtistDashboard() {
       setTimeout(() => setSuccess(''), 5000);
     } catch (err: any) {
       console.error('Error deleting artwork:', err);
+      setError(err.message);
+    }
+  };
+
+  const handleVisibilityToggle = async (artworkId: number, field: 'visibleToDesigners' | 'visibleToGalleries', value: boolean) => {
+    try {
+      const response = await fetch(`${API_URL}/api/artist/artworks/${artworkId}/visibility`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ [field]: value })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update visibility');
+      }
+
+      setArtworks(prev => prev.map(a => 
+        a.id === artworkId 
+          ? { ...a, [field === 'visibleToDesigners' ? 'visible_to_designers' : 'visible_to_galleries']: value }
+          : a
+      ));
+    } catch (err: any) {
+      console.error('Error updating visibility:', err);
       setError(err.message);
     }
   };
@@ -1440,6 +1478,54 @@ export function ArtistDashboard() {
                 </label>
               </div>
 
+              {editingArtwork && (
+                <div className="md:col-span-2 pt-4 border-t border-rv-neutral">
+                  <div className="mb-2">
+                    <span className="font-semibold text-rv-text">Visibility in Artist Connect</span>
+                    <p className="text-xs text-rv-textMuted">Choose which platforms can discover this artwork</p>
+                  </div>
+                  <div className="flex flex-col gap-3 mt-3">
+                    <label 
+                      className={`flex items-center gap-3 ${!dashboardStats.visibleToDesigners ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                      title={!dashboardStats.visibleToDesigners ? 'Turn on profile visibility first in Profile tab' : ''}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={formData.visibleToDesigners || false}
+                        disabled={!dashboardStats.visibleToDesigners}
+                        onChange={(e) => setFormData(prev => ({ ...prev, visibleToDesigners: e.target.checked }))}
+                        className="w-5 h-5 rounded border-gray-300 text-[#C9A24A] focus:ring-[#C9A24A] accent-[#C9A24A] disabled:opacity-50"
+                      />
+                      <div>
+                        <span className={`font-semibold ${dashboardStats.visibleToDesigners ? 'text-rv-text' : 'text-rv-textMuted'}`}>Visible to Designers</span>
+                        <p className="text-xs text-rv-textMuted">Designers can discover this artwork in the Art Library</p>
+                      </div>
+                    </label>
+                    <label 
+                      className={`flex items-center gap-3 ${!dashboardStats.visibleToGalleries ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                      title={!dashboardStats.visibleToGalleries ? 'Turn on profile visibility first in Profile tab' : ''}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={formData.visibleToGalleries || false}
+                        disabled={!dashboardStats.visibleToGalleries}
+                        onChange={(e) => setFormData(prev => ({ ...prev, visibleToGalleries: e.target.checked }))}
+                        className="w-5 h-5 rounded border-gray-300 text-[#C9A24A] focus:ring-[#C9A24A] accent-[#C9A24A] disabled:opacity-50"
+                      />
+                      <div>
+                        <span className={`font-semibold ${dashboardStats.visibleToGalleries ? 'text-rv-text' : 'text-rv-textMuted'}`}>Visible to Galleries</span>
+                        <p className="text-xs text-rv-textMuted">Galleries can discover this artwork in the Artist Directory</p>
+                      </div>
+                    </label>
+                  </div>
+                  {(!dashboardStats.visibleToDesigners && !dashboardStats.visibleToGalleries) && (
+                    <p className="text-xs text-amber-600 mt-3">
+                      Turn on profile visibility first in the Profile tab to enable artwork visibility.
+                    </p>
+                  )}
+                </div>
+              )}
+
               <div className="md:col-span-2 pt-4 border-t border-rv-neutral">
                 <label className="flex items-center gap-3 cursor-pointer mb-4">
                   <input
@@ -1734,6 +1820,44 @@ export function ArtistDashboard() {
                     >
                       View & Buy →
                     </button>
+                    
+                    {/* Visibility in Artist Connect */}
+                    <div className="mb-4 p-3 bg-rv-surface rounded-rvMd border border-rv-neutral">
+                      <p className="text-xs font-semibold text-rv-textMuted mb-2">Visibility in Artist Connect</p>
+                      <div className="flex flex-col gap-2">
+                        <label 
+                          className={`flex items-center gap-2 ${!dashboardStats.visibleToDesigners ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                          title={!dashboardStats.visibleToDesigners ? 'Turn on profile visibility first in Profile tab' : ''}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={artwork.visible_to_designers || false}
+                            disabled={!dashboardStats.visibleToDesigners}
+                            onChange={(e) => handleVisibilityToggle(artwork.id, 'visibleToDesigners', e.target.checked)}
+                            className="w-4 h-4 rounded border-rv-neutral text-[#C9A24A] focus:ring-[#C9A24A] disabled:opacity-50"
+                          />
+                          <span className="text-sm text-rv-text">Visible to Designers</span>
+                        </label>
+                        <label 
+                          className={`flex items-center gap-2 ${!dashboardStats.visibleToGalleries ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                          title={!dashboardStats.visibleToGalleries ? 'Turn on profile visibility first in Profile tab' : ''}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={artwork.visible_to_galleries || false}
+                            disabled={!dashboardStats.visibleToGalleries}
+                            onChange={(e) => handleVisibilityToggle(artwork.id, 'visibleToGalleries', e.target.checked)}
+                            className="w-4 h-4 rounded border-rv-neutral text-[#C9A24A] focus:ring-[#C9A24A] disabled:opacity-50"
+                          />
+                          <span className="text-sm text-rv-text">Visible to Galleries</span>
+                        </label>
+                      </div>
+                      {(!dashboardStats.visibleToDesigners && !dashboardStats.visibleToGalleries) && (
+                        <p className="text-xs text-amber-600 mt-2">
+                          Turn on profile visibility first in the Profile tab to enable artwork visibility.
+                        </p>
+                      )}
+                    </div>
                     
                     {/* Row 1: Admin actions (compact) */}
                     <div className="flex gap-2.5 mt-4">
