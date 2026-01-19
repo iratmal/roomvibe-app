@@ -655,17 +655,28 @@ export function ArtistDashboard() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('[ArtistDashboard] handleSubmit called');
+    console.log('[ArtistDashboard] formData:', {
+      title: formData.title,
+      width: formData.width,
+      height: formData.height,
+      image: formData.image,
+      imageType: formData.image ? typeof formData.image : 'null',
+      isFile: formData.image instanceof File
+    });
     setError('');
     setSuccess('');
 
     if (!formData.title || !formData.width || !formData.height) {
       setError('Please fill in all required fields');
+      console.log('[ArtistDashboard] Validation failed: missing required fields');
       return;
     }
 
     const hasImage = formData.image || editingArtwork?.image_url;
     if (!hasImage) {
       setError('Please select an image');
+      console.log('[ArtistDashboard] Validation failed: no image');
       return;
     }
 
@@ -710,11 +721,15 @@ export function ArtistDashboard() {
       
       const method = editingArtwork ? 'PUT' : 'POST';
 
+      console.log('[ArtistDashboard] Making API request:', { url, method, hasImage: formDataObj.has('image') });
+
       const response = await fetch(url, {
         method,
         credentials: 'include',
         body: formDataObj
       });
+
+      console.log('[ArtistDashboard] API response:', { status: response.status, ok: response.ok });
 
       if (!response.ok) {
         let errorMessage = 'Failed to save artwork';
@@ -1207,6 +1222,12 @@ export function ArtistDashboard() {
                   primaryImage={editingArtwork?.image_url || null}
                   galleryImages={galleryImages}
                   onPrimaryImageChange={(fileOrInfo) => {
+                    console.log('[ArtistDashboard] onPrimaryImageChange called:', {
+                      fileOrInfo,
+                      type: typeof fileOrInfo,
+                      isFile: fileOrInfo instanceof File,
+                      name: fileOrInfo instanceof File ? fileOrInfo.name : 'N/A'
+                    });
                     if (fileOrInfo && typeof fileOrInfo === 'object' && 'type' in fileOrInfo && fileOrInfo.type === 'gallery') {
                       setPromotedGalleryImageId((fileOrInfo as any).id);
                       setFormData(prev => ({ ...prev, image: (fileOrInfo as any).url }));
