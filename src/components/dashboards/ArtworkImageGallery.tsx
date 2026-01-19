@@ -36,6 +36,7 @@ export function ArtworkImageGallery({
   const [newPrimaryFile, setNewPrimaryFile] = useState<File | null>(null);
   const [primaryPreview, setPrimaryPreview] = useState<string | null>(null);
   const [showStudioWarning, setShowStudioWarning] = useState(false);
+  const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -43,6 +44,7 @@ export function ArtworkImageGallery({
     setPrimaryPreview(null);
     setDraggedIndex(null);
     setDropTargetIndex(null);
+    setImageErrors(new Set());
   }, [artworkId, isEditing]);
 
   const allImages: GalleryImage[] = [
@@ -355,11 +357,29 @@ export function ArtworkImageGallery({
                       : 'border-rv-neutral hover:border-rv-primary/50'
               } ${allImages.length > 1 ? 'cursor-grab active:cursor-grabbing' : ''}`}
             >
-              <img
-                src={getImageUrl(img)}
-                alt={`Artwork ${slotIndex + 1}`}
-                className="w-full h-full object-cover"
-              />
+              {(() => {
+                const imgSrc = getImageUrl(img);
+                const hasError = imageErrors.has(imgSrc);
+                
+                return hasError ? (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-rv-textMuted bg-rv-surface">
+                    <svg className="w-8 h-8 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span className="text-xs">Image unavailable</span>
+                  </div>
+                ) : (
+                  <img
+                    src={imgSrc}
+                    alt={`Artwork ${slotIndex + 1}`}
+                    className="w-full h-full object-cover"
+                    onError={() => {
+                      console.warn('Gallery image failed to load:', img.image_url);
+                      setImageErrors(prev => new Set(prev).add(imgSrc));
+                    }}
+                  />
+                );
+              })()}
               
               {draggedIndex !== null && (
                 <span className="absolute top-1 left-1 w-5 h-5 bg-black/60 text-white text-xs font-bold rounded-full flex items-center justify-center">
