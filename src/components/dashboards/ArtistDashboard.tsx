@@ -139,6 +139,9 @@ export function ArtistDashboard() {
   const [uploadingCoverImage, setUploadingCoverImage] = useState(false);
   const [showPublishSuccessModal, setShowPublishSuccessModal] = useState(false);
   const [showUnpublishConfirmModal, setShowUnpublishConfirmModal] = useState(false);
+  const [pendingExhibitionArtwork, setPendingExhibitionArtwork] = useState<Artwork | null>(null);
+  
+  const exhibitionSectionRef = React.useRef<HTMLDivElement>(null);
   
   const effectivePlan = user?.effectivePlan || user?.role || 'user';
   const isFreePlan = effectivePlan === 'user' || effectivePlan === 'free';
@@ -346,16 +349,19 @@ export function ArtistDashboard() {
   };
 
   const handleAddToExhibition = async (artworkId: number) => {
+    const artwork = artworks.find(a => a.id === artworkId);
+    
     if (!exhibition) {
-      setError('Please create an exhibition first');
+      if (artwork) {
+        setPendingExhibitionArtwork(artwork);
+      }
+      setShowCreateExhibition(true);
       setActiveTab('artworks');
       setTimeout(() => {
-        const exhibitionSection = document.querySelector('[data-section="exhibition"]');
-        if (exhibitionSection) {
-          exhibitionSection.scrollIntoView({ behavior: 'smooth' });
+        if (exhibitionSectionRef.current) {
+          exhibitionSectionRef.current.scrollIntoView({ behavior: 'smooth' });
         }
       }, 100);
-      setTimeout(() => setError(''), 5000);
       return;
     }
 
@@ -433,7 +439,7 @@ export function ArtistDashboard() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(exhibitionFormData)
+        body: JSON.stringify({ ...exhibitionFormData, galleryType: 'classic' })
       });
       
       if (!response.ok) {
@@ -446,7 +452,28 @@ export function ArtistDashboard() {
       setExhibitionArtworks([]);
       setShowCreateExhibition(false);
       setExhibitionFormData({ title: '', subtitle: '' });
-      setSuccess('Exhibition created! Add artworks below.');
+      
+      if (pendingExhibitionArtwork && data.exhibition?.id) {
+        try {
+          const linkResponse = await fetch(`${API_URL}/api/artist/exhibition/${data.exhibition.id}/artworks/link/${pendingExhibitionArtwork.id}`, {
+            method: 'POST',
+            credentials: 'include'
+          });
+          
+          if (linkResponse.ok) {
+            setSuccess(`Exhibition created and "${pendingExhibitionArtwork.title}" added!`);
+            fetchExhibitionArtworks(data.exhibition.id);
+          } else {
+            setSuccess('Exhibition created! Add artworks below.');
+          }
+        } catch {
+          setSuccess('Exhibition created! Add artworks below.');
+        }
+        setPendingExhibitionArtwork(null);
+      } else {
+        setSuccess('Exhibition created! Add artworks below.');
+      }
+      
       setTimeout(() => setSuccess(''), 5000);
     } catch (err: any) {
       setError(err.message);
@@ -1788,13 +1815,26 @@ export function ArtistDashboard() {
           )}
         </div>
 
-        <div className="mb-10" data-section="exhibition">
+        <div className="mb-10" data-section="exhibition" ref={exhibitionSectionRef}>
           <h2 className="text-2xl font-bold mb-6 text-rv-primary">My Exhibition</h2>
           
           {!exhibition ? (
             <div className="text-center py-12 bg-white rounded-rvLg border border-rv-neutral shadow-rvSoft">
               {showCreateExhibition ? (
                 <form onSubmit={handleCreateExhibition} className="max-w-md mx-auto px-6">
+                  {pendingExhibitionArtwork && (
+                    <div className="mb-6 p-4 bg-[#C9A24A]/10 border border-[#C9A24A]/30 rounded-rvMd">
+                      <p className="text-sm font-semibold text-[#C9A24A] mb-2">Artwork to add:</p>
+                      <div className="flex items-center gap-3">
+                        <img 
+                          src={`${API_URL}/api/artwork-image/${pendingExhibitionArtwork.id}`}
+                          alt={pendingExhibitionArtwork.title}
+                          className="w-12 h-12 object-cover rounded-rvSm border border-rv-neutral"
+                        />
+                        <span className="text-rv-text font-medium">{pendingExhibitionArtwork.title}</span>
+                      </div>
+                    </div>
+                  )}
                   <div className="mb-4 text-left">
                     <label className="block text-sm font-semibold mb-2 text-rv-text">
                       Exhibition Title <span className="text-red-500">*</span>
@@ -1830,7 +1870,7 @@ export function ArtistDashboard() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setShowCreateExhibition(false)}
+                      onClick={() => { setShowCreateExhibition(false); setPendingExhibitionArtwork(null); }}
                       className="px-6 py-2.5 border border-rv-neutral text-rv-text rounded-rvMd font-semibold hover:bg-rv-surface transition-colors"
                     >
                       Cancel
