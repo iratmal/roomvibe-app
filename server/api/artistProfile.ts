@@ -148,7 +148,8 @@ router.put('/profile/visibility', authenticateToken, async (req: any, res) => {
   try {
     const { visibleToDesigners, visibleToGalleries } = req.body;
 
-    if (!req.user.artist_access) {
+    const hasArtistAccess = req.user.artist_access || req.user.role === 'artist';
+    if (!hasArtistAccess) {
       return res.status(403).json({ 
         error: 'Artist access required',
         message: 'You need an Artist subscription to enable visibility in Artist Connect.'

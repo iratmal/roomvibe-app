@@ -1,0 +1,110 @@
+BUG FIX – Artist Dashboard / Artist Connect Visibility (LIVE)
+
+PROBLEM
+
+Na Artist Dashboardu (tab: Artist Profile) za korisnika koji:
+
+ima Artist role
+
+ima AKTIVAN, PLAĆEN Artist subscription
+
+i dalje se pojavljuje greška:
+
+“You need an Artist subscription to enable visibility in Artist Connect.”
+
+Uz to:
+
+checkboxi Visible to Designers i Visible to Galleries ne rade (disabled ili ne reagiraju).
+
+To je pogrešno ponašanje.
+
+ŠTO TREBA BITI ISPRAVNO
+
+Ako je korisnik:
+
+u Artist Dashboardu
+
+i ima active Artist plan
+
+onda:
+
+NE SMIJE se prikazivati nikakav upgrade / error / warning banner
+
+Checkboxi Visible to Designers i Visible to Galleries moraju:
+
+biti enabled
+
+reagirati na klik
+
+spremati state (API + DB)
+
+nakon refresha zadržati stanje
+
+SCOPE (VAŽNO)
+
+❌ NE DIRATI Free plan / User dashboard (to je ispravno i gotovo)
+
+❌ Ne mijenjati pricing, Stripe logiku, niti UI dizajn
+
+✅ Fix isključivo vrijedi za Artist Dashboard
+
+IMPLEMENTACIJA – KORACI
+
+Locirati komponentu koja renderira:
+
+error/banner tekst
+“You need an Artist subscription to enable visibility in Artist Connect.”
+
+Artist Connect Visibility module
+
+Provjeriti izvor istine za plan status:
+
+mora dolaziti iz backend/session-a (isti izvor koji koristi Admin sučelje)
+
+ne koristiti fallback ili hardcoded “Free” state
+
+Ispraviti logiku prikaza bannera:
+
+banner se smije prikazati samo ako:
+artistPlanActive === false
+
+ako je:
+artistPlanActive === true
+→ banner se nikada ne smije renderirati
+
+Loading state fix (kritično):
+
+dok se subscription status učitava (loading === true)
+→ NE prikazivati banner
+
+banner se smije pojaviti tek nakon potvrđenog false
+
+Checkbox logika:
+
+ako je artistPlanActive === true
+→ checkboxi moraju biti enabled
+
+klik mora pozivati API
+
+state mora biti zapisan u bazi
+
+UI se mora odmah ažurirati (optimistic update ili refetch)
+
+ACCEPTANCE CRITERIA
+
+Plaćeni Artist user:
+
+❌ ne vidi error / upgrade poruku
+
+✅ može kliknuti Visible to Designers / Galleries
+
+✅ stanje se sprema i ostaje nakon refresh-a
+
+Free / User dashboard:
+
+nema promjena
+
+LOKACIJA BUGA
+
+/dashboard/artist
+Tab: Artist Profile → Artist Connect Visibility
