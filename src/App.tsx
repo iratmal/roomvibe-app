@@ -4162,11 +4162,85 @@ function PublicExhibitionPage() {
 function ArtistPublicProfilePage() {
   const hash = window.location.hash;
   const slug = hash.replace('#/artist/', '').split('?')[0];
+  const [showStudioNotice, setShowStudioNotice] = useState(false);
+  const [pendingArtwork, setPendingArtwork] = useState<any>(null);
+  
+  const handleViewInRoom = (artwork: any) => {
+    setPendingArtwork(artwork);
+    setShowStudioNotice(true);
+  };
+  
+  const handleContinueToStudio = () => {
+    if (pendingArtwork) {
+      let imageUrl = pendingArtwork.imageUrl || pendingArtwork.image_url;
+      
+      // Normalize URL - add API host for relative /api/ paths
+      if (imageUrl && imageUrl.startsWith('/api/')) {
+        const apiUrl = import.meta.env.DEV ? 'http://localhost:3001' : '';
+        imageUrl = `${apiUrl}${imageUrl}`;
+      }
+      
+      if (!imageUrl) {
+        console.error('No valid image URL for artwork');
+        setShowStudioNotice(false);
+        setPendingArtwork(null);
+        return;
+      }
+      
+      const params = new URLSearchParams({
+        externalImage: imageUrl,
+        width: String(pendingArtwork.width || 50),
+        height: String(pendingArtwork.height || 50),
+        unit: pendingArtwork.dimensionUnit || 'cm'
+      });
+      window.location.hash = `#/studio?${params.toString()}`;
+    }
+    setShowStudioNotice(false);
+    setPendingArtwork(null);
+  };
+  
+  const handleCancelStudio = () => {
+    setShowStudioNotice(false);
+    setPendingArtwork(null);
+  };
   
   return (
     <div className="min-h-screen bg-white">
       <SiteHeader />
-      <ArtistPublicProfile slug={slug} />
+      <ArtistPublicProfile slug={slug} onViewInRoom={handleViewInRoom} />
+      
+      {/* Important Notice Modal */}
+      {showStudioNotice && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-rvLg shadow-2xl max-w-md w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-[#C9A24A]/10 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-[#C9A24A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-rv-text">Important Notice</h3>
+            </div>
+            <p className="text-rv-textMuted mb-6">
+              Before opening Studio, please make sure your first image is a clean artwork image (without any room mockups). The Studio works best with plain artwork photos on neutral backgrounds.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={handleCancelStudio}
+                className="flex-1 px-4 py-2.5 border border-rv-neutral text-rv-text rounded-rvMd font-medium hover:bg-rv-surface transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleContinueToStudio}
+                className="flex-1 px-4 py-2.5 bg-rv-primary text-white rounded-rvMd font-medium hover:bg-rv-primaryHover transition-colors"
+              >
+                Continue to Studio
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

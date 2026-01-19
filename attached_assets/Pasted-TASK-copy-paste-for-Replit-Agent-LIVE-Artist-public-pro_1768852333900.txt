@@ -1,0 +1,45 @@
+TASK (copy-paste for Replit Agent) — LIVE: Artist public profile page missing “Exhibition / View in Room / 360°” sections (match STAGING)
+
+Context:
+- STAGING public artist page has the full layout and CTAs.
+- LIVE public artist page (e.g. /#/artist/irena-r-malbasa) is missing multiple UI blocks/links that exist on STAGING.
+- Goal: Make LIVE public artist profile page match STAGING behavior and UI.
+
+What to fix (LIVE):
+1) Add “View Exhibition” entry point on the public artist profile header area
+   - On STAGING: next to the buttons under artist name (Contact Artist, View Artworks, View Exhibition).
+   - LIVE currently shows only Contact Artist + View Artworks (missing View Exhibition).
+   - Implement the same “View Exhibition” button and wiring as STAGING.
+
+2) Add “View in Room” button on each artwork card on the public profile page
+   - On STAGING artwork cards: there is “View in Room” + “View & Buy”.
+   - LIVE currently shows only “View & Buy” (missing “View in Room”).
+   - Implement “View in Room” on LIVE artwork cards using the same component/logic as STAGING.
+
+3) Add the “View Artist’s 360° Exhibition” CTA section on the public profile page
+   - On STAGING: below the artworks grid, there is a large CTA/button “View Artist’s 360° Exhibition”.
+   - LIVE is missing this section entirely.
+   - Implement the same section and link behavior as STAGING (should open the artist’s published exhibition).
+
+4) Ensure “View Exhibition” also exists as a link/CTA in the page flow (not only header)
+   - Match STAGING placement/behavior where the exhibition CTA appears in the page content (the big button section).
+
+5) Important Notice modal before opening Studio (when clicking “View in Room”)
+   - On STAGING: clicking “View in Room” shows a modal:
+     “Important Notice — Before opening Studio… Please make sure your first image is a clean artwork image (without any room mockups)…”
+     with buttons Cancel / Continue to Studio.
+   - LIVE must show the same modal before navigating into Studio from “View in Room”.
+   - Only after user clicks “Continue to Studio” proceed to Studio; Cancel closes modal.
+
+Acceptance criteria:
+- LIVE public artist profile page visually/behaviorally matches STAGING for:
+  a) Header buttons: Contact Artist, View Artworks, View Exhibition
+  b) Artwork cards: View in Room + View & Buy
+  c) Big CTA: View Artist’s 360° Exhibition
+  d) “Important Notice” modal appears on View in Room and gating works
+- Links route correctly (no “Profile not available”, no broken exhibition links).
+- No regressions in dashboard or other pages.
+
+Implementation hint:
+- Reuse the same components / routes / helpers already working on STAGING.
+- If LIVE uses a different route slug format, normalize it so artist page + exhibition page resolve consistently (same as STAGING).
