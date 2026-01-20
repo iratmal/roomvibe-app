@@ -1,0 +1,104 @@
+1) Footer: godina + tagline
+
+Goal: U footeru ažurirati tekst:
+
+© 2025 RoomVibe → © 2026 RoomVibe (ili još bolje: dinamički trenutna godina)
+
+See Art in Your Space. → Visualize Art in Your Space.
+
+Context (LIVE):
+Na dnu stranice (footer) trenutno piše “© 2025 RoomVibe” i “See Art in Your Space.”
+Treba biti usklađeno s 2026 i copyjem.
+
+Scope (napravi samo ovo):
+
+Pronađi footer komponentu (npr. Footer.tsx ili ekvivalent).
+
+Promijeni tagline u: “Visualize Art in Your Space.”
+
+Copyright:
+
+Preferirano: koristi new Date().getFullYear() da se automatski mijenja svake godine.
+
+Ako je hardcoded: postavi na 2026.
+
+Provjeri da se footer prikazuje isto na:
+
+Homepage
+
+Dashboard pages
+
+Public pages (artist profile, exhibition embed)
+
+Ne raditi:
+
+Ne mijenjati stil/boje/layout footera
+
+Ne raditi refactor drugih komponenti
+
+Acceptance / Stop condition:
+
+Na live footeru piše “Visualize Art in Your Space.” i godina je 2026 (ili dinamički current year).
+
+2) “View Exhibition” gumbi na artist profilu ne rade (Exhibition not found)
+
+Problem:
+Na artist public profilu:
+
+gumb “View Exhibition” (u gornjem dijelu profila) vodi na stranicu gdje piše “Exhibition not found”
+
+i donji CTA “View Artist’s 360° Exhibition” također ne radi
+
+Vidim da se otvara ruta tipa /#/embed/exhibitions/1 i vraća “Exhibition not found”.
+
+Goal: Popraviti linkanje tako da oba gumba vode na ispravnu izložbu tog artista.
+
+Scope (napravi samo ovo):
+
+Pronađi gdje se renderira artist public profil i gumbi:
+
+“View Exhibition”
+
+“View Artist’s 360° Exhibition” (donji CTA)
+
+Uspostavi ispravan exhibition target:
+
+Nemoj hardcodati /embed/exhibitions/1.
+
+Umjesto toga, dohvatiti exhibition za tog artista iz backenda (npr. “latest published exhibition for artistId” ili “active exhibition”).
+
+Update routing:
+
+Gumbi moraju otvoriti točan route koji viewer očekuje (embed/public viewer).
+
+Dodaj minimalni fallback UX:
+
+Ako artist nema izložbu, sakrij oba gumba ili prikaži disabled stanje s tekstom tipa: “No exhibition yet”.
+
+Test:
+
+Otvori public artist profil (Irena R. Malbasa) i klikni oba gumba → oba moraju otvoriti realnu izložbu (ne “not found”).
+
+Ne raditi:
+
+Ne dirati 360 engine, UI gumba, dizajn profila, niti dodavati nove feature-e
+
+Ne refaktorirati cijeli routing sustav
+
+Acceptance / Stop condition:
+
+Klik na View Exhibition radi i otvara ispravnu izložbu za tog artista
+
+Klik na View Artist’s 360° Exhibition radi i otvara istu (ili odgovarajuću 360) izložbu
+
+Nema više “Exhibition not found”
+
+Ako nema izložbe: gumbi se ne prikazuju ili su disabled (bez error page)
+
+Referenca (što se vidi na liveu)
+
+Footer: “© 2025” + “See Art in Your Space.”
+
+Artist profil: gumbi “View Exhibition” / “View Artist’s 360° Exhibition” vode na “Exhibition not found”.
+
+(Screenshotovi poslani u chat.)

@@ -612,4 +612,95 @@ router.delete('/exhibition/:exhibitionId/artworks/:artworkId', authenticateToken
   }
 });
 
+router.get('/exhibition/:id/360-public', async (req, res) => {
+  try {
+    const exhibitionId = parseInt(req.params.id);
+
+    if (isNaN(exhibitionId)) {
+      return res.status(400).json({ error: 'Invalid exhibition ID' });
+    }
+
+    const result = await query(
+      `SELECT ae.id, ae.title, ae.subtitle, ae.gallery_type, ae.scene_360_data, ae.status, ae.is_published,
+              u.display_name as artist_name
+       FROM artist_exhibitions ae
+       JOIN users u ON ae.artist_id = u.id
+       WHERE ae.id = $1`,
+      [exhibitionId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Exhibition not found' });
+    }
+
+    const exhibition = result.rows[0];
+    
+    if (exhibition.status !== 'published' && !exhibition.is_published) {
+      return res.status(403).json({ error: 'Exhibition is not published' });
+    }
+
+    if (!exhibition.scene_360_data) {
+      return res.status(404).json({ error: 'No 360 scene configured for this exhibition' });
+    }
+
+    const artworksResult = await query(
+      `SELECT aea.id, aea.source_artwork_id, aea.image_url, aea.title, aea.width_value, aea.height_value, aea.dimension_unit
+       FROM artist_exhibition_artworks aea
+       WHERE aea.exhibition_id = $1`,
+      [exhibitionId]
+    );
+
+    const scene360Data = typeof exhibition.scene_360_data === 'string' 
+      ? JSON.parse(exhibition.scene_360_data) 
+      : exhibition.scene_360_data;
+
+    const hydratedSlots = (scene360Data.slots || []).map((slot: any) => {
+      if (!slot.artworkId) return slot;
+      
+      let artwork = artworksResult.rows.find((a: any) => String(a.id) === slot.artworkId);
+      
+      if (!artwork) {
+        artwork = artworksResult.rows.find((a: any) => a.source_artwork_id && String(a.source_artwork_id) === slot.artworkId);
+      }
+      
+      if (!artwork) {
+        if (slot.artworkUrl) {
+          return {
+            ...slot,
+            width: slot.width || 100,
+            height: slot.height || 70,
+            dimensionUnit: slot.dimensionUnit || 'cm'
+          };
+        }
+        return slot;
+      }
+      
+      return {
+        ...slot,
+        artworkUrl: artwork.image_url || slot.artworkUrl,
+        artworkTitle: artwork.title || slot.artworkTitle,
+        artistName: exhibition.artist_name || slot.artistName,
+        width: artwork.width_value || slot.width || 100,
+        height: artwork.height_value || slot.height || 70,
+        dimensionUnit: artwork.dimension_unit || 'cm'
+      };
+    });
+
+    res.json({
+      id: exhibition.id,
+      title: exhibition.title,
+      subtitle: exhibition.subtitle,
+      artistName: exhibition.artist_name,
+      galleryType: exhibition.gallery_type,
+      scene360Data: {
+        ...scene360Data,
+        slots: hydratedSlots
+      }
+    });
+  } catch (err) {
+    console.error('Error fetching public artist 360 exhibition:', err);
+    res.status(500).json({ error: 'Failed to fetch exhibition' });
+  }
+});
+
 export default router;

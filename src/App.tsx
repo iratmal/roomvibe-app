@@ -3871,7 +3871,14 @@ function EmbedExhibition360Viewer() {
     
     const fetchData = async () => {
       try {
-        const res = await fetch(`${API_URL}/api/gallery/exhibitions/${exhibitionId}/360-public`);
+        // Try artist exhibition first (most common for artist profile links)
+        let res = await fetch(`${API_URL}/api/artist/exhibition/${exhibitionId}/360-public`);
+        
+        // If not found as artist exhibition, try gallery exhibition
+        if (!res.ok) {
+          res = await fetch(`${API_URL}/api/gallery/exhibitions/${exhibitionId}/360-public`);
+        }
+        
         if (!res.ok) {
           const errData = await res.json();
           setError(errData.error || 'Exhibition not found');
