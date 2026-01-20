@@ -897,22 +897,84 @@ router.delete('/artworks/:id', authenticateToken, async (req: any, res) => {
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
     const artworkId = parseInt(req.params.id);
+    const userId = req.user.id;
 
-    // First, delete any exhibition artwork entries that reference this artwork
-    // This ensures no "No image" placeholders remain in exhibitions
-    await query('DELETE FROM artist_exhibition_artworks WHERE source_artwork_id = $1', [artworkId]);
-
-    let result;
+    // 1. First verify artwork exists and user owns it (unless admin)
+    let artworkResult;
     if (effectivePlan === 'admin') {
-      result = await query('DELETE FROM artworks WHERE id = $1 RETURNING id', [artworkId]);
+      artworkResult = await query(
+        'SELECT id, storage_key FROM artworks WHERE id = $1',
+        [artworkId]
+      );
     } else {
-      result = await query('DELETE FROM artworks WHERE id = $1 AND artist_id = $2 RETURNING id', [artworkId, req.user.id]);
+      artworkResult = await query(
+        'SELECT id, storage_key FROM artworks WHERE id = $1 AND artist_id = $2',
+        [artworkId, userId]
+      );
     }
 
-    if (result.rows.length === 0) {
+    if (artworkResult.rows.length === 0) {
       return res.status(404).json({ error: 'Artwork not found or you can only delete your own artworks' });
     }
 
+    const artwork = artworkResult.rows[0];
+    const storageKeysToDelete: string[] = [];
+
+    // Collect main artwork storage key if exists
+    if (artwork.storage_key) {
+      storageKeysToDelete.push(artwork.storage_key);
+    }
+
+    // 2. Get all gallery image storage keys before deleting
+    const galleryImagesResult = await query(
+      'SELECT id, storage_key FROM artwork_gallery_images WHERE artwork_id = $1',
+      [artworkId]
+    );
+
+    for (const img of galleryImagesResult.rows) {
+      if (img.storage_key) {
+        storageKeysToDelete.push(img.storage_key);
+      }
+    }
+
+    // 3. Perform all DB deletions in a transaction to ensure atomicity
+    await query('BEGIN');
+    try {
+      // Delete from exhibitions (artist_exhibition_artworks)
+      await query('DELETE FROM artist_exhibition_artworks WHERE source_artwork_id = $1', [artworkId]);
+
+      // Delete all gallery images from database
+      await query('DELETE FROM artwork_gallery_images WHERE artwork_id = $1', [artworkId]);
+
+      // Delete the artwork record
+      await query('DELETE FROM artworks WHERE id = $1', [artworkId]);
+
+      await query('COMMIT');
+    } catch (txError) {
+      await query('ROLLBACK');
+      throw txError;
+    }
+
+    // 4. Delete all storage objects (non-blocking, continue even if some fail)
+    // This happens after successful DB commit - storage cleanup is best-effort
+    if (storageKeysToDelete.length > 0) {
+      try {
+        const { ObjectStorageService } = await import('../objectStorage.js');
+        const objectStorage = new ObjectStorageService();
+        
+        for (const key of storageKeysToDelete) {
+          try {
+            await objectStorage.deleteObject(key);
+          } catch (keyErr) {
+            console.error(`[Storage Cleanup] Failed to delete key ${key}:`, keyErr);
+          }
+        }
+      } catch (storageErr) {
+        console.error('[Storage Cleanup] Error initializing storage for deletion:', storageErr);
+      }
+    }
+
+    console.log(`Artwork ${artworkId} deleted: ${storageKeysToDelete.length} storage files cleaned up`);
     res.json({ message: 'Artwork deleted successfully' });
   } catch (error) {
     console.error('Error deleting artwork:', error);
