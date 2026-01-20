@@ -612,6 +612,123 @@ router.delete('/exhibition/:exhibitionId/artworks/:artworkId', authenticateToken
   }
 });
 
+router.get('/exhibition/:id/360-scene', authenticateToken, async (req: any, res) => {
+  try {
+    const exhibitionId = parseInt(req.params.id);
+    const userId = req.user?.id;
+
+    if (isNaN(exhibitionId)) {
+      return res.status(400).json({ error: 'Invalid exhibition ID' });
+    }
+
+    const result = await query(
+      `SELECT ae.id, ae.title, ae.scene_360_data, ae.artist_id
+       FROM artist_exhibitions ae
+       WHERE ae.id = $1`,
+      [exhibitionId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Exhibition not found' });
+    }
+
+    const exhibition = result.rows[0];
+    
+    if (exhibition.artist_id !== userId && req.user?.role !== 'admin') {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    let scene360Data = exhibition.scene_360_data || null;
+    
+    if (scene360Data) {
+      const parsedScene = typeof scene360Data === 'string' 
+        ? JSON.parse(scene360Data) 
+        : scene360Data;
+      
+      const artworksResult = await query(
+        `SELECT aea.id, aea.title, aea.image_url, aea.width_value, aea.height_value, aea.dimension_unit
+         FROM artist_exhibition_artworks aea
+         WHERE aea.exhibition_id = $1`,
+        [exhibitionId]
+      );
+      
+      const hydratedSlots = (parsedScene.slots || []).map((slot: any) => {
+        if (!slot.artworkId) return slot;
+        
+        const artwork = artworksResult.rows.find((a: any) => String(a.id) === slot.artworkId);
+        
+        if (!artwork) return slot;
+        
+        return {
+          ...slot,
+          artworkUrl: artwork.image_url || slot.artworkUrl,
+          artworkTitle: artwork.title || slot.artworkTitle,
+          width: artwork.width_value || slot.width || 100,
+          height: artwork.height_value || slot.height || 70,
+          dimensionUnit: artwork.dimension_unit || 'cm'
+        };
+      });
+      
+      scene360Data = {
+        ...parsedScene,
+        slots: hydratedSlots
+      };
+    }
+
+    res.json({
+      collectionId: exhibition.id,
+      title: exhibition.title,
+      scene360Data
+    });
+  } catch (err) {
+    console.error('Error fetching artist 360 scene:', err);
+    res.status(500).json({ error: 'Failed to fetch 360 scene' });
+  }
+});
+
+router.put('/exhibition/:id/360-scene', authenticateToken, async (req: any, res) => {
+  try {
+    const exhibitionId = parseInt(req.params.id);
+    const userId = req.user?.id;
+    const { presetId, slots } = req.body;
+
+    if (isNaN(exhibitionId)) {
+      return res.status(400).json({ error: 'Invalid exhibition ID' });
+    }
+
+    const result = await query(
+      'SELECT id, artist_id FROM artist_exhibitions WHERE id = $1',
+      [exhibitionId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Exhibition not found' });
+    }
+
+    if (result.rows[0].artist_id !== userId && req.user?.role !== 'admin') {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    const scene360Data = {
+      presetId: presetId || 'white-cube-v1',
+      slots: slots || [],
+      updatedAt: new Date().toISOString()
+    };
+
+    await query(
+      `UPDATE artist_exhibitions 
+       SET scene_360_data = $1, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $2`,
+      [JSON.stringify(scene360Data), exhibitionId]
+    );
+
+    res.json({ success: true, scene360Data });
+  } catch (err) {
+    console.error('Error saving artist 360 scene:', err);
+    res.status(500).json({ error: 'Failed to save 360 scene' });
+  }
+});
+
 router.get('/exhibition/:id/360-public', async (req, res) => {
   try {
     const exhibitionId = parseInt(req.params.id);

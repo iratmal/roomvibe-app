@@ -3498,14 +3498,15 @@ function VirtualExhibitionEditor({ preset, availableArtworks, placedArtworks, on
 function Exhibition360EditorPage() {
   const hash = window.location.hash;
   const match = hash.match(/^#\/gallery\/exhibitions\/(\d+)\/360-editor/);
-  const collectionId = match ? match[1] : null;
+  const exhibitionId = match ? match[1] : null;
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [availableArtworks, setAvailableArtworks] = useState<any[]>([]);
   const [initialAssignments, setInitialAssignments] = useState<any[]>([]);
   const [presetId, setPresetId] = useState('white-cube-v1');
-  const [collectionTitle, setCollectionTitle] = useState('');
+  const [exhibitionTitle, setExhibitionTitle] = useState('');
+  const [exhibitionType, setExhibitionType] = useState<'artist' | 'gallery'>('gallery');
   
   const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
 
@@ -3514,26 +3515,51 @@ function Exhibition360EditorPage() {
   }, []);
 
   useEffect(() => {
-    if (!collectionId) return;
+    if (!exhibitionId) return;
     
     const fetchData = async () => {
       try {
-        const [sceneRes, artworksRes] = await Promise.all([
-          fetch(`${API_URL}/api/gallery/collections/${collectionId}/360-scene`, { credentials: 'include' }),
-          fetch(`${API_URL}/api/gallery/collections/${collectionId}/artworks`, { credentials: 'include' })
-        ]);
+        // Try artist exhibition first
+        const artistSceneRes = await fetch(`${API_URL}/api/artist/exhibition/${exhibitionId}/360-scene`, { credentials: 'include' });
         
-        if (artworksRes.ok) {
-          const artData = await artworksRes.json();
-          setAvailableArtworks(artData.artworks || []);
-        }
-        
-        if (sceneRes.ok) {
-          const sceneData = await sceneRes.json();
-          setCollectionTitle(sceneData.title || '');
+        if (artistSceneRes.ok) {
+          // It's an artist exhibition
+          setExhibitionType('artist');
+          const sceneData = await artistSceneRes.json();
+          setExhibitionTitle(sceneData.title || '');
           if (sceneData.scene360Data) {
             setPresetId(sceneData.scene360Data.presetId || 'white-cube-v1');
             setInitialAssignments(sceneData.scene360Data.slots || []);
+          }
+          
+          // Fetch artist exhibition artworks
+          const artworksRes = await fetch(`${API_URL}/api/artist/exhibition/${exhibitionId}/artworks`, { credentials: 'include' });
+          if (artworksRes.ok) {
+            const artData = await artworksRes.json();
+            setAvailableArtworks(artData.artworks || []);
+          }
+        } else {
+          // Fall back to gallery collection
+          setExhibitionType('gallery');
+          const [sceneRes, artworksRes] = await Promise.all([
+            fetch(`${API_URL}/api/gallery/collections/${exhibitionId}/360-scene`, { credentials: 'include' }),
+            fetch(`${API_URL}/api/gallery/collections/${exhibitionId}/artworks`, { credentials: 'include' })
+          ]);
+          
+          if (artworksRes.ok) {
+            const artData = await artworksRes.json();
+            setAvailableArtworks(artData.artworks || []);
+          }
+          
+          if (sceneRes.ok) {
+            const sceneData = await sceneRes.json();
+            setExhibitionTitle(sceneData.title || '');
+            if (sceneData.scene360Data) {
+              setPresetId(sceneData.scene360Data.presetId || 'white-cube-v1');
+              setInitialAssignments(sceneData.scene360Data.slots || []);
+            }
+          } else {
+            setError('Exhibition not found');
           }
         }
       } catch (err) {
@@ -3545,10 +3571,14 @@ function Exhibition360EditorPage() {
     };
     
     fetchData();
-  }, [collectionId, API_URL]);
+  }, [exhibitionId, API_URL]);
 
   const handleSave = async (newPresetId: string, slots: any[]) => {
-    const res = await fetch(`${API_URL}/api/gallery/collections/${collectionId}/360-scene`, {
+    const endpoint = exhibitionType === 'artist'
+      ? `${API_URL}/api/artist/exhibition/${exhibitionId}/360-scene`
+      : `${API_URL}/api/gallery/collections/${exhibitionId}/360-scene`;
+    
+    const res = await fetch(endpoint, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -3558,6 +3588,10 @@ function Exhibition360EditorPage() {
     if (!res.ok) {
       throw new Error('Failed to save scene');
     }
+  };
+
+  const handleBack = () => {
+    window.location.hash = exhibitionType === 'artist' ? '#/dashboard/artist' : '#/dashboard/gallery';
   };
 
   if (loading) {
@@ -3576,7 +3610,7 @@ function Exhibition360EditorPage() {
       <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-400 mb-4">{error}</p>
-          <a href="#/dashboard/gallery" className="text-[#C9A24A] hover:underline">Back to Gallery</a>
+          <a href="#/dashboard/artist" className="text-[#C9A24A] hover:underline">Back to Dashboard</a>
         </div>
       </div>
     );
@@ -3585,12 +3619,12 @@ function Exhibition360EditorPage() {
   return (
     <div className="h-screen bg-[#1a1a1a]">
       <Gallery360Editor
-        exhibitionId={collectionId || ''}
+        exhibitionId={exhibitionId || ''}
         presetId={presetId}
         availableArtworks={availableArtworks}
         initialAssignments={initialAssignments}
         onSave={handleSave}
-        onBack={() => window.location.hash = '#/dashboard/gallery'}
+        onBack={handleBack}
       />
     </div>
   );
