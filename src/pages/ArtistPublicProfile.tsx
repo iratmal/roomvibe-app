@@ -101,6 +101,13 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
   useEffect(() => {
     fetchProfile();
     loadLikedArtworks();
+    
+    // Refetch when window gains focus (e.g., user returns from Dashboard)
+    const handleFocus = () => {
+      fetchProfile();
+    };
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, [slug]);
 
   const loadLikedArtworks = () => {
@@ -128,7 +135,7 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
       setError(null);
       setArtistId(null);
 
-      const response = await fetch(`${API_URL}/api/public/artist/${slug}`);
+      const response = await fetch(`${API_URL}/api/public/artist/${slug}?_t=${Date.now()}`);
       
       if (!response.ok) {
         if (response.status === 404) {
