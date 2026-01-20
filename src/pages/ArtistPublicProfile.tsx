@@ -297,20 +297,20 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
     <div className="min-h-screen bg-white">
       {/* Premium Gallery Hero */}
       <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
-        {/* Blurred artwork background */}
+        {/* Blurred artwork background - refined with smoother blur */}
         {heroBackgroundImage && (
           <div 
             className="absolute inset-0 bg-cover bg-center"
             style={{ 
               backgroundImage: `url(${heroBackgroundImage.startsWith('/api/') ? API_URL + heroBackgroundImage : heroBackgroundImage})`,
-              filter: 'blur(60px) brightness(0.9)',
-              transform: 'scale(1.2)'
+              filter: 'blur(80px) brightness(0.85) saturate(0.9)',
+              transform: 'scale(1.3)'
             }}
           />
         )}
         
-        {/* Gradient overlay for elegance */}
-        <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-white/50 to-white/90" />
+        {/* Gradient overlay - balanced to support not compete */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-white/60 to-white/95" />
         
         {/* Back to Dashboard link for owners */}
         {isOwner && (
@@ -328,16 +328,24 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
         {/* Main hero content */}
         <div className="relative z-10 text-center px-6 py-20 max-w-4xl mx-auto">
           
-          {/* Profile image - larger and prominent */}
+          {/* Profile image - elevated gallery-grade presentation */}
           <div className="mb-10">
             {profile.profileImageUrl ? (
               <img
                 src={profile.profileImageUrl}
                 alt={profile.displayName}
-                className="w-40 h-40 md:w-52 md:h-52 rounded-full object-cover mx-auto shadow-2xl ring-4 ring-white/80"
+                className="w-40 h-40 md:w-52 md:h-52 rounded-full object-cover mx-auto ring-4 ring-white/90"
+                style={{ 
+                  boxShadow: '0 8px 40px -8px rgba(0,0,0,0.25), 0 4px 20px -4px rgba(0,0,0,0.1)'
+                }}
               />
             ) : (
-              <div className="w-40 h-40 md:w-52 md:h-52 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center mx-auto shadow-2xl ring-4 ring-white/80">
+              <div 
+                className="w-40 h-40 md:w-52 md:h-52 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center mx-auto ring-4 ring-white/90"
+                style={{ 
+                  boxShadow: '0 8px 40px -8px rgba(0,0,0,0.25), 0 4px 20px -4px rgba(0,0,0,0.1)'
+                }}
+              >
                 <svg className="w-20 h-20 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
@@ -345,8 +353,13 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
             )}
           </div>
 
-          {/* Artist name - strong editorial typography */}
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-light tracking-tight text-gray-900 mb-4">
+          {/* Artist name - editorial typography with refined contrast */}
+          <h1 
+            className="text-4xl md:text-6xl lg:text-7xl font-light tracking-tight text-gray-900 mb-4"
+            style={{ 
+              textShadow: '0 1px 2px rgba(255,255,255,0.8), 0 2px 8px rgba(255,255,255,0.4)'
+            }}
+          >
             {profile.displayName || 'Artist'}
           </h1>
 
@@ -365,13 +378,13 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
 
           {/* CTA Buttons - Clear hierarchy */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            {/* Primary CTA: Enter 360° Exhibition (gold) - only if exhibition exists */}
+            {/* Primary CTA: Enter 360° Exhibition (gold) - premium hover via CSS */}
             {publishedExhibition && (
               <a
                 href={`#/embed/exhibitions/${publishedExhibition.id}`}
-                className="group inline-flex items-center gap-3 px-10 py-4 bg-[#C9A24A] hover:bg-[#B8913A] text-white text-lg font-medium rounded-full transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                className="cta-exhibition group inline-flex items-center gap-3 px-10 py-4 bg-[#C9A24A] hover:bg-[#D4AC54] text-white text-lg font-medium rounded-full transition-all duration-500 ease-out transform hover:-translate-y-1 hover:shadow-[0_8px_32px_-4px_rgba(201,162,74,0.5),0_4px_16px_-2px_rgba(201,162,74,0.3)] shadow-[0_4px_20px_-4px_rgba(201,162,74,0.4),0_2px_8px_-2px_rgba(201,162,74,0.2)]"
               >
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-6 h-6 transition-transform duration-300 group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 10l3-3m0 0l3 3m-3-3v12" style={{transform: 'rotate(90deg)', transformOrigin: '12px 12px'}} />
                 </svg>
