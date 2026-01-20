@@ -376,15 +376,15 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
             )}
           </div>
 
-          {/* CTA Buttons - Clear hierarchy */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            {/* Primary CTA: Enter 360° Exhibition (gold) - premium hover via CSS */}
+          {/* CTA Buttons - Aligned row */}
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {/* Primary CTA: Enter 360° Exhibition (gold) */}
             {publishedExhibition && (
               <a
                 href={`#/embed/exhibitions/${publishedExhibition.id}`}
-                className="cta-exhibition group inline-flex items-center gap-3 px-10 py-4 bg-[#C9A24A] hover:bg-[#D4AC54] text-white text-lg font-medium rounded-full transition-all duration-500 ease-out transform hover:-translate-y-1 hover:shadow-[0_8px_32px_-4px_rgba(201,162,74,0.5),0_4px_16px_-2px_rgba(201,162,74,0.3)] shadow-[0_4px_20px_-4px_rgba(201,162,74,0.4),0_2px_8px_-2px_rgba(201,162,74,0.2)]"
+                className="cta-exhibition group inline-flex items-center justify-center gap-2 h-12 px-8 bg-[#C9A24A] hover:bg-[#D4AC54] text-white text-sm font-medium rounded-full transition-all duration-300 shadow-lg hover:shadow-xl"
               >
-                <svg className="w-6 h-6 transition-transform duration-300 group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 10l3-3m0 0l3 3m-3-3v12" style={{transform: 'rotate(90deg)', transformOrigin: '12px 12px'}} />
                 </svg>
@@ -392,18 +392,29 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
               </a>
             )}
             
-            {/* Secondary CTA: View Artworks (subtle) */}
+            {/* Secondary CTA: View Artworks */}
             {artworks.length > 0 && (
               <button
                 onClick={scrollToArtworks}
-                className="inline-flex items-center gap-2 px-8 py-4 text-gray-700 hover:text-gray-900 text-lg font-light border-b-2 border-transparent hover:border-gray-300 transition-all duration-300"
+                className="inline-flex items-center justify-center gap-2 h-12 px-8 bg-white/90 hover:bg-white text-gray-800 text-sm font-medium rounded-full transition-all duration-300 shadow-md hover:shadow-lg border border-gray-200"
               >
-                View Artworks
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
+                View Artworks
               </button>
             )}
+            
+            {/* Tertiary CTA: Contact Artist */}
+            <button
+              onClick={() => setShowContactModal(true)}
+              className="inline-flex items-center justify-center gap-2 h-12 px-8 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-full transition-all duration-300 shadow-md hover:shadow-lg"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              Contact Artist
+            </button>
           </div>
         </div>
 
