@@ -465,7 +465,7 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
     const artworkId = parseInt(req.params.id);
-    const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, orientation, styleTags, dominantColors, medium, availability, visibleToDesigners, visibleToGalleries, variants } = req.body;
+    const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, orientation, styleTags, dominantColors, medium, availability, visibleToDesigners, visibleToGalleries, variants, promotedGalleryImageId } = req.body;
 
     let existingArtwork;
     if (effectivePlan === 'admin') {
@@ -487,7 +487,59 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
       console.warn(`[Update] Artwork ${artworkId} has corrupted image_url: ${imageUrl}`);
     }
     
-    if (req.file) {
+    // Handle promoted gallery image (drag & drop reorder making gallery image the new cover)
+    if (promotedGalleryImageId && !req.file) {
+      const promotedId = parseInt(promotedGalleryImageId);
+      console.log(`[Update] Promoting gallery image ${promotedId} to cover for artwork ${artworkId}`);
+      
+      // Get the gallery image that's being promoted
+      const galleryImageResult = await query(
+        'SELECT id, storage_key FROM artwork_gallery_images WHERE id = $1 AND artwork_id = $2',
+        [promotedId, artworkId]
+      );
+      
+      if (galleryImageResult.rows.length > 0) {
+        const promotedImage = galleryImageResult.rows[0];
+        const oldCoverStorageKey = storageKey;
+        
+        // Set the promoted image as the new cover
+        storageKey = promotedImage.storage_key;
+        imageUrl = promotedImage.storage_key;
+        
+        // Move old cover to gallery (if it exists and isn't corrupted)
+        if (oldCoverStorageKey && !isCorrupted) {
+          // Get the next display_order
+          const maxOrderResult = await query(
+            'SELECT COALESCE(MAX(display_order), 0) + 1 as next_order FROM artwork_gallery_images WHERE artwork_id = $1',
+            [artworkId]
+          );
+          const nextOrder = maxOrderResult.rows[0].next_order;
+          
+          // Insert old cover as a gallery image
+          await query(
+            'INSERT INTO artwork_gallery_images (artwork_id, storage_key, display_order, is_mockup) VALUES ($1, $2, $3, false)',
+            [artworkId, oldCoverStorageKey, nextOrder]
+          );
+          console.log(`[Update] Moved old cover to gallery with order ${nextOrder}`);
+        }
+        
+        // Delete the promoted image from gallery (it's now the cover)
+        await query('DELETE FROM artwork_gallery_images WHERE id = $1', [promotedId]);
+        console.log(`[Update] Removed promoted image ${promotedId} from gallery`);
+        
+        // Reorder remaining gallery images to fill the gap
+        const remainingImages = await query(
+          'SELECT id FROM artwork_gallery_images WHERE artwork_id = $1 ORDER BY display_order',
+          [artworkId]
+        );
+        for (let i = 0; i < remainingImages.rows.length; i++) {
+          await query(
+            'UPDATE artwork_gallery_images SET display_order = $1 WHERE id = $2',
+            [i + 1, remainingImages.rows[i].id]
+          );
+        }
+      }
+    } else if (req.file) {
       // Upload new image to Object Storage
       console.log('[Update] Uploading new image to Object Storage...');
       const objectStorage = new ObjectStorageService();

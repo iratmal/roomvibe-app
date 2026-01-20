@@ -754,32 +754,53 @@ export function ArtistDashboard() {
       const savedArtworkId = data.artwork?.id || editingArtwork?.id;
       
       if (savedArtworkId && galleryImages.length > 0) {
-        const newImages = galleryImages.filter(img => img.isNew && img.file);
-        for (const img of newImages) {
+        // Build final image order: existing images keep their IDs, new images get IDs after upload
+        const finalImageOrder: number[] = [];
+        const newImageUploadMap = new Map<number, File>(); // position -> file
+        
+        // First pass: identify new vs existing images and their positions
+        for (let i = 0; i < galleryImages.length; i++) {
+          const img = galleryImages[i];
+          if (img.isNew && img.file) {
+            newImageUploadMap.set(i, img.file);
+          } else if (img.id && img.id > 0) {
+            // Track position for existing images
+            finalImageOrder[i] = img.id;
+          }
+        }
+        
+        // Upload new images and capture their IDs
+        for (const [position, file] of newImageUploadMap.entries()) {
           const imgFormData = new FormData();
-          imgFormData.append('image', img.file!);
-          imgFormData.append('is_mockup', String(img.is_mockup));
+          imgFormData.append('image', file);
+          imgFormData.append('is_mockup', String(galleryImages[position]?.is_mockup || false));
           
           try {
-            await fetch(`${API_URL}/api/artist/artworks/${savedArtworkId}/images`, {
+            const uploadResponse = await fetch(`${API_URL}/api/artist/artworks/${savedArtworkId}/images`, {
               method: 'POST',
               credentials: 'include',
               body: imgFormData
             });
+            if (uploadResponse.ok) {
+              const uploadData = await uploadResponse.json();
+              if (uploadData.image?.id) {
+                finalImageOrder[position] = uploadData.image.id;
+              }
+            }
           } catch (imgErr) {
             console.error('Error uploading gallery image:', imgErr);
           }
         }
         
-        const existingImages = galleryImages.filter(img => !img.isNew && img.id);
-        if (existingImages.length > 0) {
-          const imageOrder = existingImages.map(img => img.id);
+        // Filter out undefined entries and reorder all gallery images
+        const validImageOrder = finalImageOrder.filter((id): id is number => id !== undefined && id > 0);
+        if (validImageOrder.length > 0) {
           try {
             await fetch(`${API_URL}/api/artist/artworks/${savedArtworkId}/images/reorder`, {
               method: 'PUT',
               credentials: 'include',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ imageOrder })
+              body: JSON.stringify({ imageOrder: validImageOrder })
             });
           } catch (reorderErr) {
             console.error('Error reordering gallery images:', reorderErr);
