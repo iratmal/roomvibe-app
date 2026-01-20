@@ -279,6 +279,19 @@ export async function initializeDatabase() {
       END $$;
     `);
 
+    // header_image_url - Artist's header/cover image for public page hero
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'users' AND column_name = 'header_image_url'
+        ) THEN
+          ALTER TABLE users ADD COLUMN header_image_url TEXT;
+        END IF;
+      END $$;
+    `);
+
     // website_url - Artist's website
     await query(`
       DO $$ 

@@ -1,0 +1,115 @@
+TASK: Add “Header Image” upload for Artist Public Page (Artist Dashboard)
+Goal
+
+Artists should be able to upload a custom header/cover image that will be used as the hero background on their Public Artist Page (the top section behind the profile photo + name + buttons). This makes profiles more personal and visual.
+
+UI Requirements (Dashboard → Artist Profile)
+Where
+
+On Artist Dashboard → Profile page, near the existing Profile Photo section.
+
+What to add
+
+A new section/card: Header Image
+
+Show a preview thumbnail (rectangle) of the current header image.
+
+If no header exists, show a clean placeholder (same style as the app).
+
+Button: Upload Header
+
+Optional: Remove Header (secondary button / icon) to revert to default header.
+
+Layout suggestion
+
+Put Profile Photo (circle) and Header Image (rectangle) in the same row on desktop:
+
+Left: Profile Photo
+
+Right: Header Image
+
+On mobile, stack vertically.
+
+Microcopy
+
+Under the button:
+
+“Recommended: 2400×800px (or wider). JPG/PNG/WebP. Max 5MB.”
+
+If user uploads a too-large file: “File is too large. Please upload an image under 5MB.”
+
+Validation & Upload Behavior
+
+Allowed formats: JPG, PNG, WebP
+
+Max size: 5MB
+
+Client-side validation first (instant message), plus server validation.
+
+While uploading: show loading state (spinner + “Uploading…”).
+
+After upload success: show updated preview immediately.
+
+Data Model / Backend
+Store
+
+Add a new field on the artist profile (or user profile) like:
+
+headerImageUrl (string)
+
+(Optional) headerImageUpdatedAt
+
+Upload endpoint
+
+Add a dedicated endpoint (or reuse existing upload pipeline) for header images, e.g.:
+
+POST /api/artist/profile/header-image
+
+Returns the stored headerImageUrl
+
+Persist URL to DB.
+
+Image processing (important)
+
+To keep it fast + consistent:
+
+Compress / resize on upload (server-side preferred).
+
+Target width e.g. 2400px (or 1920px), keep aspect ratio.
+
+Save optimized version to storage.
+
+Public Artist Page Rendering
+Source of truth
+
+Use headerImageUrl from the profile as the single source of truth.
+
+Display
+
+Use header image as hero background (top section).
+
+Use object-fit: cover; object-position: center;
+
+Add a subtle overlay for readability (e.g. dark gradient overlay at 20–35%).
+
+If headerImageUrl is missing → fallback to existing default hero background.
+
+Performance
+
+Use loading="lazy" where appropriate, but hero image can preload if needed.
+
+Avoid layout shift: set a fixed hero height (e.g. 420–520px desktop, smaller on mobile).
+
+Acceptance Criteria
+
+ Artist can upload a header image in dashboard and immediately see preview.
+
+ File type/size validation works (JPG/PNG/WebP, max 5MB) with clear error messages.
+
+ URL is saved to DB and persists after refresh/logout.
+
+ Public artist page hero uses uploaded header image; fallback works when none exists.
+
+ Layout is responsive (desktop row layout, mobile stacked).
+
+ Optional remove header restores default.

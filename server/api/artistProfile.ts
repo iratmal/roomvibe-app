@@ -39,7 +39,7 @@ router.get('/profile', authenticateToken, async (req: any, res) => {
       `SELECT 
         id, email, role,
         display_name, location_city, location_country, bio,
-        primary_style_tags, primary_medium, profile_image_url,
+        primary_style_tags, primary_medium, profile_image_url, header_image_url,
         website_url, instagram_url, facebook_url, tiktok_url,
         linkedin_url, pinterest_url, etsy_url, languages,
         visible_to_designers, visible_to_galleries,
@@ -67,6 +67,7 @@ router.get('/profile', authenticateToken, async (req: any, res) => {
       primaryStyleTags: user.primary_style_tags || [],
       primaryMedium: user.primary_medium || '',
       profileImageUrl: user.profile_image_url || '',
+      headerImageUrl: user.header_image_url || '',
       websiteUrl: user.website_url || '',
       instagramUrl: user.instagram_url || '',
       facebookUrl: user.facebook_url || '',
@@ -314,6 +315,108 @@ router.get('/profile-image/:userId', async (req: any, res) => {
   } catch (error: any) {
     console.error('Error fetching profile image:', error);
     res.status(500).json({ error: 'Failed to fetch profile image' });
+  }
+});
+
+// Header image upload endpoint
+router.post('/profile/header-image', authenticateToken, upload.single('image'), async (req: any, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Image file is required' });
+    }
+
+    const imageData = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    const imageUrl = `/api/artist/header-image/${req.user.id}`;
+
+    await query(
+      `UPDATE users SET
+        header_image_url = $1,
+        updated_at = CURRENT_TIMESTAMP
+       WHERE id = $2`,
+      [imageUrl, req.user.id]
+    );
+
+    await query(
+      `INSERT INTO user_header_images (user_id, image_data, updated_at)
+       VALUES ($1, $2, CURRENT_TIMESTAMP)
+       ON CONFLICT (user_id) DO UPDATE SET image_data = $2, updated_at = CURRENT_TIMESTAMP`,
+      [req.user.id, imageData]
+    ).catch(async () => {
+      await query(
+        `CREATE TABLE IF NOT EXISTS user_header_images (
+          user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+          image_data TEXT NOT NULL,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`
+      );
+      await query(
+        `INSERT INTO user_header_images (user_id, image_data, updated_at)
+         VALUES ($1, $2, CURRENT_TIMESTAMP)
+         ON CONFLICT (user_id) DO UPDATE SET image_data = $2, updated_at = CURRENT_TIMESTAMP`,
+        [req.user.id, imageData]
+      );
+    });
+
+    res.json({ 
+      message: 'Header image uploaded successfully',
+      headerImageUrl: imageUrl
+    });
+  } catch (error: any) {
+    console.error('Error uploading header image:', error);
+    res.status(500).json({ error: 'Failed to upload header image' });
+  }
+});
+
+router.get('/header-image/:userId', async (req: any, res) => {
+  try {
+    const userId = parseInt(req.params.userId);
+    
+    const result = await query(
+      `SELECT image_data FROM user_header_images WHERE user_id = $1`,
+      [userId]
+    );
+
+    if (result.rows.length === 0 || !result.rows[0].image_data) {
+      return res.status(404).json({ error: 'Header image not found' });
+    }
+
+    const imageData = result.rows[0].image_data;
+    const matches = imageData.match(/^data:([^;]+);base64,(.+)$/);
+    
+    if (!matches) {
+      return res.status(500).json({ error: 'Invalid image data format' });
+    }
+
+    const mimeType = matches[1];
+    const base64Data = matches[2];
+    const imageBuffer = Buffer.from(base64Data, 'base64');
+
+    res.set('Content-Type', mimeType);
+    res.set('Cache-Control', 'public, max-age=86400');
+    res.send(imageBuffer);
+  } catch (error: any) {
+    console.error('Error fetching header image:', error);
+    res.status(500).json({ error: 'Failed to fetch header image' });
+  }
+});
+
+// Delete header image endpoint
+router.delete('/profile/header-image', authenticateToken, async (req: any, res) => {
+  try {
+    await query(
+      `UPDATE users SET header_image_url = NULL, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+      [req.user.id]
+    );
+
+    await query(
+      `DELETE FROM user_header_images WHERE user_id = $1`,
+      [req.user.id]
+    );
+
+    res.json({ message: 'Header image removed successfully' });
+  } catch (error: any) {
+    console.error('Error removing header image:', error);
+    res.status(500).json({ error: 'Failed to remove header image' });
   }
 });
 
