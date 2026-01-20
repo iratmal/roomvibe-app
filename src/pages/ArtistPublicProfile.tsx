@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
@@ -97,6 +97,14 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
   
   // Track current image index for each artwork carousel
   const [artworkImageIndex, setArtworkImageIndex] = useState<Record<number, number>>({});
+  
+  // Zoom lightbox state
+  const [zoomImageUrl, setZoomImageUrl] = useState<string | null>(null);
+  const [zoomScale, setZoomScale] = useState(1);
+  const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const zoomContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchProfile();
@@ -219,6 +227,100 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
     setDetailImageIndex(0);
     setSelectedVariantIndex(null);
   };
+
+  // Zoom lightbox handlers
+  const openZoom = useCallback((imageUrl: string) => {
+    setZoomImageUrl(imageUrl);
+    setZoomScale(1);
+    setZoomPosition({ x: 0, y: 0 });
+  }, []);
+
+  const closeZoom = useCallback(() => {
+    setZoomImageUrl(null);
+    setZoomScale(1);
+    setZoomPosition({ x: 0, y: 0 });
+    setIsDragging(false);
+  }, []);
+
+  const handleZoomWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.2 : 0.2;
+    setZoomScale(prev => Math.min(Math.max(prev + delta, 1), 5));
+  }, []);
+
+  const handleZoomMouseDown = useCallback((e: React.MouseEvent) => {
+    if (zoomScale > 1) {
+      setIsDragging(true);
+      setDragStart({ x: e.clientX - zoomPosition.x, y: e.clientY - zoomPosition.y });
+    }
+  }, [zoomScale, zoomPosition]);
+
+  const handleZoomMouseMove = useCallback((e: React.MouseEvent) => {
+    if (isDragging && zoomScale > 1) {
+      setZoomPosition({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+    }
+  }, [isDragging, dragStart, zoomScale]);
+
+  const handleZoomMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  // Handle touch events for mobile pinch-to-zoom
+  const [touchStartDistance, setTouchStartDistance] = useState(0);
+  const [touchStartScale, setTouchStartScale] = useState(1);
+
+  const getTouchDistance = (touches: React.TouchList) => {
+    if (touches.length < 2) return 0;
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      setTouchStartDistance(getTouchDistance(e.touches));
+      setTouchStartScale(zoomScale);
+    } else if (e.touches.length === 1 && zoomScale > 1) {
+      setIsDragging(true);
+      setDragStart({ 
+        x: e.touches[0].clientX - zoomPosition.x, 
+        y: e.touches[0].clientY - zoomPosition.y 
+      });
+    }
+  }, [zoomScale, zoomPosition]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (e.touches.length === 2 && touchStartDistance > 0) {
+      e.preventDefault();
+      const currentDistance = getTouchDistance(e.touches);
+      const scale = (currentDistance / touchStartDistance) * touchStartScale;
+      setZoomScale(Math.min(Math.max(scale, 1), 5));
+    } else if (e.touches.length === 1 && isDragging && zoomScale > 1) {
+      setZoomPosition({
+        x: e.touches[0].clientX - dragStart.x,
+        y: e.touches[0].clientY - dragStart.y
+      });
+    }
+  }, [touchStartDistance, touchStartScale, isDragging, dragStart, zoomScale]);
+
+  const handleTouchEnd = useCallback(() => {
+    setIsDragging(false);
+    setTouchStartDistance(0);
+  }, []);
+
+  // Close zoom on ESC key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && zoomImageUrl) {
+        closeZoom();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [zoomImageUrl, closeZoom]);
 
   const openContactAboutArtwork = (artwork: Artwork) => {
     const sizeInfo = selectedVariantIndex !== null && artwork.variants?.[selectedVariantIndex]
@@ -866,7 +968,11 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                   
                   return (
                     <>
-                      <div className="aspect-square relative bg-white rounded-rvMd overflow-hidden mb-4">
+                      <button
+                        onClick={() => openZoom(displayUrl)}
+                        className="aspect-square relative bg-white rounded-rvMd overflow-hidden mb-4 w-full cursor-zoom-in group"
+                        title="Click to zoom"
+                      >
                         <img
                           src={displayUrl}
                           alt={selectedArtwork.title}
@@ -880,7 +986,10 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                             Mockup
                           </span>
                         )}
-                      </div>
+                        <span className="absolute bottom-3 right-3 px-2 py-1 bg-black/50 text-white text-xs font-medium rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                          Click to zoom
+                        </span>
+                      </button>
                       
                       {allImages.length > 1 && (
                         <div className="flex gap-2 justify-center">
@@ -1174,6 +1283,58 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Zoom Lightbox */}
+      {zoomImageUrl && (
+        <div 
+          className="fixed inset-0 bg-black/95 z-[100] flex items-center justify-center"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeZoom();
+          }}
+          onWheel={handleZoomWheel}
+          ref={zoomContainerRef}
+        >
+          {/* Close button */}
+          <button
+            onClick={closeZoom}
+            className="absolute top-4 right-4 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors z-10"
+            aria-label="Close zoom"
+          >
+            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          
+          {/* Zoom hint */}
+          <div className="absolute top-4 left-4 px-3 py-2 bg-white/10 rounded-full text-white text-sm font-medium">
+            {zoomScale > 1 ? `${Math.round(zoomScale * 100)}%` : 'Scroll to zoom'}
+          </div>
+          
+          {/* Image container */}
+          <div
+            className="relative max-w-[90vw] max-h-[90vh] overflow-hidden select-none"
+            onMouseDown={handleZoomMouseDown}
+            onMouseMove={handleZoomMouseMove}
+            onMouseUp={handleZoomMouseUp}
+            onMouseLeave={handleZoomMouseUp}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            style={{ cursor: zoomScale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
+          >
+            <img
+              src={zoomImageUrl}
+              alt="Zoomed artwork"
+              className="max-w-[90vw] max-h-[90vh] object-contain transition-transform duration-100"
+              style={{
+                transform: `scale(${zoomScale}) translate(${zoomPosition.x / zoomScale}px, ${zoomPosition.y / zoomScale}px)`,
+                touchAction: 'none'
+              }}
+              draggable={false}
+            />
           </div>
         </div>
       )}
