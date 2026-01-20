@@ -756,10 +756,6 @@ router.get('/exhibition/:id/360-public', async (req, res) => {
       return res.status(403).json({ error: 'Exhibition is not published' });
     }
 
-    if (!exhibition.scene_360_data) {
-      return res.status(404).json({ error: 'No 360 scene configured for this exhibition' });
-    }
-
     const artworksResult = await query(
       `SELECT aea.id, aea.source_artwork_id, aea.image_url, aea.title, aea.width_value, aea.height_value, aea.dimension_unit
        FROM artist_exhibition_artworks aea
@@ -767,9 +763,57 @@ router.get('/exhibition/:id/360-public', async (req, res) => {
       [exhibitionId]
     );
 
-    const scene360Data = typeof exhibition.scene_360_data === 'string' 
-      ? JSON.parse(exhibition.scene_360_data) 
-      : exhibition.scene_360_data;
+    // Map gallery_type to preset ID
+    const galleryTypeToPreset: Record<string, string> = {
+      'classic': 'white-cube-v1',
+      'modern': 'modern-gallery-v2',
+      'industrial': 'industrial-loft-v1',
+      'daylight': 'daylight-atrium-v1',
+      'hybrid': 'hybrid-studio-v1'
+    };
+
+    let scene360Data: any;
+    
+    if (exhibition.scene_360_data) {
+      scene360Data = typeof exhibition.scene_360_data === 'string' 
+        ? JSON.parse(exhibition.scene_360_data) 
+        : exhibition.scene_360_data;
+    } else {
+      // Create default scene with artworks auto-assigned to slots
+      const presetId = galleryTypeToPreset[exhibition.gallery_type] || 'white-cube-v1';
+      const defaultSlots: any[] = [];
+      
+      // Auto-assign artworks to default slot positions
+      const slotPrefixes: Record<string, string[]> = {
+        'white-cube-v1': ['north-1', 'north-2', 'east-1', 'east-2', 'south-1', 'south-2', 'west-1', 'west-2'],
+        'modern-gallery-v2': ['north-1', 'north-2', 'north-3', 'east-1', 'east-2', 'south-1', 'south-2', 'west-1', 'west-2'],
+        'industrial-loft-v1': ['north-1', 'north-2', 'east-1', 'south-1', 'south-2', 'west-1'],
+        'daylight-atrium-v1': ['north-1', 'north-2', 'north-3', 'east-1', 'south-1', 'south-2', 'west-1'],
+        'hybrid-studio-v1': ['hybrid-north-1', 'hybrid-north-2', 'hybrid-east-1', 'hybrid-south-1', 'hybrid-west-1']
+      };
+      
+      const slotIds = slotPrefixes[presetId] || slotPrefixes['white-cube-v1'];
+      
+      artworksResult.rows.forEach((artwork: any, index: number) => {
+        if (index < slotIds.length) {
+          defaultSlots.push({
+            slotId: slotIds[index],
+            artworkId: String(artwork.id),
+            artworkUrl: artwork.image_url,
+            artworkTitle: artwork.title,
+            artistName: exhibition.artist_name,
+            width: artwork.width_value || 100,
+            height: artwork.height_value || 70,
+            dimensionUnit: artwork.dimension_unit || 'cm'
+          });
+        }
+      });
+      
+      scene360Data = {
+        presetId,
+        slots: defaultSlots
+      };
+    }
 
     const hydratedSlots = (scene360Data.slots || []).map((slot: any) => {
       if (!slot.artworkId) return slot;
