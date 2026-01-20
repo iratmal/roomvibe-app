@@ -431,28 +431,47 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
         </div>
       </div>
 
-      {/* About & Social Section - moved from hero */}
+      {/* About & Connect Section - Editorial Layout */}
       <section className="bg-white border-b border-gray-100">
-        <div className="max-w-4xl mx-auto px-6 py-16">
-          <div className="flex flex-col md:flex-row gap-12 items-start">
-            {/* Bio */}
+        <div className="max-w-5xl mx-auto px-6 py-20 lg:py-24">
+          <div className="grid md:grid-cols-12 gap-12 lg:gap-16">
+            {/* Bio - Editorial Two-Column Treatment */}
             {profile.bio && (
-              <div className="flex-1">
-                <h2 className="text-sm font-medium uppercase tracking-wider text-gray-400 mb-4">About</h2>
-                <p className="text-gray-700 leading-relaxed text-lg font-light whitespace-pre-wrap">
-                  {profile.bio}
-                </p>
+              <div className="md:col-span-8">
+                <h2 className="text-xs font-medium uppercase tracking-[0.2em] text-gray-400 mb-8">About the Artist</h2>
+                
+                {/* Pull-quote - First sentence emphasized */}
+                {(() => {
+                  const sentences = profile.bio.split(/(?<=[.!?])\s+/);
+                  const firstSentence = sentences[0] || '';
+                  const remainingText = sentences.slice(1).join(' ');
+                  
+                  return (
+                    <div className="space-y-8">
+                      {firstSentence && (
+                        <p className="text-2xl lg:text-3xl font-light text-gray-800 leading-relaxed tracking-tight border-l-2 border-gray-200 pl-6">
+                          {firstSentence}
+                        </p>
+                      )}
+                      {remainingText && (
+                        <p className="text-gray-600 leading-[1.9] text-base font-light whitespace-pre-wrap max-w-prose">
+                          {remainingText}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             )}
             
-            {/* Contact & Social */}
-            <div className="md:w-64 flex-shrink-0">
-              <h2 className="text-sm font-medium uppercase tracking-wider text-gray-400 mb-4">Connect</h2>
+            {/* Connect - Sidebar */}
+            <div className="md:col-span-4">
+              <h2 className="text-xs font-medium uppercase tracking-[0.2em] text-gray-400 mb-8">Connect</h2>
               
               {/* Contact button */}
               <button
                 onClick={() => setShowContactModal(true)}
-                className="w-full mb-6 px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-lg transition-colors"
+                className="w-full mb-8 px-6 py-3 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium tracking-wide rounded-lg transition-colors"
               >
                 Contact Artist
               </button>
@@ -517,10 +536,10 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
       </section>
 
       {artworks.length > 0 && (
-        <section id="artworks-section" className="py-12">
-          <div className="max-w-6xl mx-auto px-4">
-            <h2 className="text-2xl font-bold text-rv-text mb-8">Artworks</h2>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <section id="artworks-section" className="py-16 lg:py-24 bg-gray-50/50">
+          <div className="max-w-6xl mx-auto px-6">
+            <h2 className="text-xs font-medium uppercase tracking-[0.2em] text-gray-400 mb-12 text-center">Selected Works</h2>
+            <div className="grid gap-10 sm:gap-12 sm:grid-cols-2 lg:grid-cols-3">
               {artworks.map((artwork) => {
                 const galleryImgs = artwork.galleryImages || [];
                 const allImages: GalleryImage[] = [];
@@ -545,16 +564,16 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                   : currentImage.image_url;
 
                 return (
-                <div key={artwork.id} className="bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral overflow-hidden group">
+                <div key={artwork.id} className="bg-white overflow-hidden group">
                   <div 
-                    className="w-full bg-rv-surface relative overflow-hidden cursor-pointer min-h-[360px] sm:min-h-[420px] lg:min-h-[480px]"
+                    className="w-full bg-gray-100 relative overflow-hidden cursor-pointer min-h-[360px] sm:min-h-[420px] lg:min-h-[480px]"
                     style={{ aspectRatio: '3 / 4' }}
                     onClick={() => openArtworkDetail(artwork)}
                   >
                     <img
                       src={imageUrl}
                       alt={artwork.title}
-                      className="w-full h-full object-cover object-center transition-transform duration-300"
+                      className="w-full h-full object-cover object-center transition-all duration-500 group-hover:scale-[1.02]"
                     />
                     
                     {hasMultipleImages && (
@@ -619,27 +638,26 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                       </div>
                     )}
                   </div>
-                  <div className="p-4">
+                  <div className="pt-5 pb-2">
                     <h3 
-                      className="font-bold text-rv-text mb-1 truncate cursor-pointer hover:text-rv-primary transition-colors"
+                      className="text-base font-medium text-gray-900 mb-1.5 truncate cursor-pointer hover:text-gray-600 transition-colors"
                       onClick={() => openArtworkDetail(artwork)}
                     >
                       {artwork.title}
                     </h3>
-                    <p className="text-sm text-rv-textMuted mb-2">
-                      {artwork.width} x {artwork.height} {artwork.dimensionUnit}
-                      {artwork.medium && ` • ${artwork.medium}`}
+                    <p className="text-sm text-gray-500 font-light mb-3">
+                      {artwork.medium && <span>{artwork.medium}</span>}
+                      {artwork.medium && <span className="mx-2 text-gray-300">|</span>}
+                      <span>{artwork.width} x {artwork.height} {artwork.dimensionUnit}</span>
                     </p>
                     {Array.isArray(artwork.variants) && artwork.variants.length > 0 ? (
-                      <div className="mb-3">
-                        <span className="inline-block px-2 py-1 text-xs font-medium bg-[#C9A24A]/10 text-[#C9A24A] rounded-full">
-                          Available in {artwork.variants.length + 1} sizes
+                      <div className="mb-4">
+                        <span className="text-xs text-gray-400 font-light">
+                          {artwork.variants.length + 1} sizes available
                         </span>
                         {(() => {
-                          // Collect ALL prices: base price + variant prices
                           const allPrices: { price: number; currency: string }[] = [];
                           
-                          // Add base price if exists
                           if (artwork.priceAmount != null) {
                             const basePrice = parseFloat(String(artwork.priceAmount).replace(/,/g, ''));
                             if (!isNaN(basePrice) && basePrice > 0) {
@@ -647,7 +665,6 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                             }
                           }
                           
-                          // Add all variant prices
                           artwork.variants.forEach(v => {
                             if (v && v.price != null) {
                               const variantPrice = parseFloat(String(v.price).replace(/,/g, ''));
@@ -659,73 +676,72 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                           
                           if (allPrices.length === 0) return null;
                           
-                          // Find lowest price
                           const lowest = allPrices.reduce((min, curr) => curr.price < min.price ? curr : min);
                           const showFromPrefix = allPrices.length > 1;
                           
                           return (
-                            <p className="text-lg font-bold text-rv-primary mt-2">
+                            <p className="text-sm text-gray-600 mt-1">
                               {showFromPrefix ? 'From ' : ''}{lowest.currency} {lowest.price.toLocaleString()}
                             </p>
                           );
                         })()}
                       </div>
                     ) : artwork.priceAmount ? (
-                      <p className="text-lg font-bold text-rv-primary mb-3">
+                      <p className="text-sm text-gray-600 mb-4">
                         {artwork.priceCurrency} {artwork.priceAmount.toLocaleString()}
                       </p>
                     ) : null}
                     
-                    {/* Like button */}
-                    <div className="flex items-center justify-between mb-3">
+                    {/* Actions row - subtle gallery style */}
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                       <button
                         onClick={() => handleLikeArtwork(artwork.id)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-colors ${
+                        className={`flex items-center gap-1.5 transition-colors ${
                           likedArtworks.has(artwork.id)
-                            ? 'bg-red-50 text-red-500'
-                            : 'bg-rv-surface text-rv-textMuted hover:bg-red-50 hover:text-red-500'
+                            ? 'text-red-500'
+                            : 'text-gray-400 hover:text-red-500'
                         }`}
                       >
                         <svg 
-                          className="w-5 h-5" 
+                          className="w-4 h-4" 
                           fill={likedArtworks.has(artwork.id) ? 'currentColor' : 'none'} 
                           viewBox="0 0 24 24" 
                           stroke="currentColor"
                         >
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                         </svg>
-                        <span className="text-sm font-medium">{artwork.likeCount}</span>
+                        <span className="text-xs">{artwork.likeCount}</span>
                       </button>
-                    </div>
-                    
-                    <div className="flex gap-2">
-                      {onViewInRoom && (
-                        <button
-                          onClick={() => onViewInRoom(artwork)}
-                          className="flex-1 px-3 py-2 text-sm font-medium bg-rv-primary/10 text-rv-primary rounded-rvMd hover:bg-rv-primary/20 transition-colors"
-                        >
-                          View in Room
-                        </button>
-                      )}
-                      {artwork.availability !== 'sold' && (
-                        artwork.buyUrl ? (
-                          <a
-                            href={artwork.buyUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex-1 px-3 py-2 text-sm font-medium text-center bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-colors"
-                          >
-                            View & Buy
-                          </a>
-                        ) : (
+                      
+                      <div className="flex items-center gap-4">
+                        {onViewInRoom && (
                           <button
-                            onClick={() => setShowContactModal(true)}
-                            className="flex-1 px-3 py-2 text-sm font-medium text-center bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-colors"
+                            onClick={() => onViewInRoom(artwork)}
+                            className="text-xs text-gray-500 hover:text-gray-900 transition-colors"
                           >
-                            Inquire
+                            View in Room
                           </button>
-                        )
-                      )}
+                        )}
+                        {artwork.availability !== 'sold' && (
+                          artwork.buyUrl ? (
+                            <a
+                              href={artwork.buyUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-gray-900 font-medium hover:text-gray-600 transition-colors"
+                            >
+                              View & Buy
+                            </a>
+                          ) : (
+                            <button
+                              onClick={() => setShowContactModal(true)}
+                              className="text-xs text-gray-900 font-medium hover:text-gray-600 transition-colors"
+                            >
+                              Inquire
+                            </button>
+                          )
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
