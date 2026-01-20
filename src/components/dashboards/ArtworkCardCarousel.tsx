@@ -95,7 +95,7 @@ export function ArtworkCardCarousel({ artworkId, primaryImageUrl, title }: Artwo
 
   if (isLoading) {
     return (
-      <div className="w-full bg-gray-100 relative flex items-center justify-center overflow-hidden min-h-[360px] sm:min-h-[420px] lg:min-h-[480px]" style={{ aspectRatio: '3 / 4' }}>
+      <div className="w-full bg-neutral-200 relative flex items-center justify-center overflow-hidden h-[320px]">
         <div className="w-8 h-8 border-2 border-rv-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -105,32 +105,34 @@ export function ArtworkCardCarousel({ artworkId, primaryImageUrl, title }: Artwo
   const hasMultipleImages = images.length > 1;
 
   return (
-    <div className="w-full bg-gray-100 relative group overflow-hidden min-h-[360px] sm:min-h-[420px] lg:min-h-[480px]" style={{ aspectRatio: '3 / 4' }}>
-      {!imageLoaded && !imageLoadError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-rv-surface">
-          <div className="w-8 h-8 border-2 border-rv-primary border-t-transparent rounded-full animate-spin" />
-        </div>
-      )}
-      
-      {imageLoadError ? (
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-rv-textMuted bg-rv-surface">
-          <svg className="w-12 h-12 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          <span className="text-xs">Image unavailable</span>
-        </div>
-      ) : (
-        <img
-          src={getImageUrl(currentImage?.image_url || primaryImageUrl)}
-          alt={`${title} - Image ${currentIndex + 1}`}
-          className={`w-full h-full object-contain ${imageLoaded ? '' : 'opacity-0'}`}
-          onLoad={() => setImageLoaded(true)}
-          onError={() => {
-            console.warn('Image failed to load:', currentImage?.image_url);
-            setImageLoadError(true);
-          }}
-        />
-      )}
+    <div className="w-full bg-neutral-200 relative group overflow-hidden h-[320px]">
+      <div className="absolute inset-4 flex items-center justify-center">
+        {!imageLoaded && !imageLoadError && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-8 h-8 border-2 border-rv-primary border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+        
+        {imageLoadError ? (
+          <div className="flex flex-col items-center justify-center text-rv-textMuted">
+            <svg className="w-12 h-12 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span className="text-xs">Image unavailable</span>
+          </div>
+        ) : (
+          <img
+            src={getImageUrl(currentImage?.image_url || primaryImageUrl)}
+            alt={`${title} - Image ${currentIndex + 1}`}
+            className={`max-w-full max-h-full object-contain shadow-md ${imageLoaded ? '' : 'opacity-0'}`}
+            onLoad={() => setImageLoaded(true)}
+            onError={() => {
+              console.warn('Image failed to load:', currentImage?.image_url);
+              setImageLoadError(true);
+            }}
+          />
+        )}
+      </div>
 
       {hasMultipleImages && (
         <>
