@@ -2344,11 +2344,11 @@ export function ArtistDashboard() {
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {exhibitionArtworks.map((artwork) => (
                       <div key={artwork.id} className="group relative bg-rv-surface rounded-rvMd overflow-hidden border border-rv-neutral">
-                        <div className="aspect-square relative">
+                        <div className="aspect-square relative bg-gray-100">
                           <img
                             src={artwork.imageUrl}
                             alt={artwork.title}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain"
                             onError={(e) => {
                               (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23f1f5f9" width="100" height="100"/><text x="50" y="55" text-anchor="middle" fill="%2394a3b8" font-size="12">No Image</text></svg>';
                             }}
