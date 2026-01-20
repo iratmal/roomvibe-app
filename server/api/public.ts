@@ -26,7 +26,7 @@ router.get('/artist/:slug', async (req, res) => {
     const usersResult = await query(
       `SELECT 
         id, email, display_name, location_city, location_country, bio,
-        primary_style_tags, primary_medium, profile_image_url,
+        primary_style_tags, primary_medium, profile_image_url, header_image_url,
         website_url, instagram_url, facebook_url, tiktok_url, 
         linkedin_url, pinterest_url, etsy_url, languages,
         visible_to_designers, visible_to_galleries
@@ -95,6 +95,7 @@ router.get('/artist/:slug', async (req, res) => {
       primaryStyleTags: artist.primary_style_tags || [],
       primaryMedium: artist.primary_medium || '',
       profileImageUrl: artist.profile_image_url || '',
+      headerImageUrl: artist.header_image_url || '',
       websiteUrl: artist.website_url || '',
       instagramUrl: artist.instagram_url || '',
       facebookUrl: artist.facebook_url || '',

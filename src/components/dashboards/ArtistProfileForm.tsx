@@ -11,6 +11,7 @@ interface ArtistProfile {
   primaryStyleTags: string[];
   primaryMedium: string;
   profileImageUrl: string;
+  headerImageUrl: string;
   websiteUrl: string;
   instagramUrl: string;
   facebookUrl: string;
@@ -166,6 +167,7 @@ export function ArtistProfileForm() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingHeaderImage, setUploadingHeaderImage] = useState(false);
   
   const [profile, setProfile] = useState<ArtistProfile>({
     displayName: '',
@@ -175,6 +177,7 @@ export function ArtistProfileForm() {
     primaryStyleTags: [],
     primaryMedium: '',
     profileImageUrl: '',
+    headerImageUrl: '',
     websiteUrl: '',
     instagramUrl: '',
     facebookUrl: '',
@@ -301,6 +304,65 @@ export function ArtistProfileForm() {
       setError(err.message);
     } finally {
       setUploadingImage(false);
+    }
+  };
+
+  const handleHeaderImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+
+    const file = e.target.files[0];
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image must be less than 5MB');
+      return;
+    }
+
+    setUploadingHeaderImage(true);
+    setError('');
+
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await fetch(`${API_URL}/api/artist/profile/header-image`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload header image');
+      }
+
+      const data = await response.json();
+      const cacheBustUrl = `${data.headerImageUrl}?t=${Date.now()}`;
+      setProfile(prev => ({ ...prev, headerImageUrl: cacheBustUrl }));
+      setSuccess('Header image updated!');
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err: any) {
+      console.error('Error uploading header image:', err);
+      setError(err.message);
+    } finally {
+      setUploadingHeaderImage(false);
+    }
+  };
+
+  const handleRemoveHeaderImage = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/artist/profile/header-image`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to remove header image');
+      }
+
+      setProfile(prev => ({ ...prev, headerImageUrl: '' }));
+      setSuccess('Header image removed!');
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err: any) {
+      console.error('Error removing header image:', err);
+      setError(err.message);
     }
   };
 
@@ -583,6 +645,70 @@ export function ArtistProfileForm() {
                 />
               </label>
               <p className="text-xs text-rv-textMuted mt-2">Max 5MB. JPG, PNG, or WebP.</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral">
+          <h3 className="text-xl font-bold mb-4 text-rv-primary">Header Image</h3>
+          <p className="text-sm text-rv-textMuted mb-4">
+            This image appears as the hero background on your public artist page. Recommended size: 1920x600px or wider.
+          </p>
+          
+          <div className="space-y-4">
+            {profile.headerImageUrl ? (
+              <div className="relative w-full h-40 rounded-rvMd overflow-hidden border-2 border-rv-neutral bg-rv-surface">
+                <img
+                  src={profile.headerImageUrl.startsWith('http') ? profile.headerImageUrl : `${API_URL}${profile.headerImageUrl}`}
+                  alt="Header"
+                  className="w-full h-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={handleRemoveHeaderImage}
+                  className="absolute top-2 right-2 p-1.5 bg-white/90 rounded-full hover:bg-white transition-colors shadow-md"
+                  title="Remove header image"
+                >
+                  <svg className="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            ) : (
+              <div className="w-full h-32 rounded-rvMd border-2 border-dashed border-rv-neutral bg-rv-surface/50 flex items-center justify-center">
+                <div className="text-center">
+                  <svg className="w-8 h-8 mx-auto mb-2 text-rv-textMuted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <p className="text-sm text-rv-textMuted">No header image uploaded</p>
+                </div>
+              </div>
+            )}
+            
+            <div className="flex items-center gap-3">
+              <label className="inline-flex items-center gap-2 px-4 py-2 bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-colors cursor-pointer font-semibold text-sm">
+                {uploadingHeaderImage ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {profile.headerImageUrl ? 'Change Header' : 'Upload Header'}
+                  </>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleHeaderImageUpload}
+                  disabled={uploadingHeaderImage}
+                  className="hidden"
+                />
+              </label>
+              <p className="text-xs text-rv-textMuted">Max 5MB. JPG, PNG, or WebP.</p>
             </div>
           </div>
         </div>

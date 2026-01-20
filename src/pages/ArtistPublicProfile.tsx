@@ -11,6 +11,7 @@ interface ArtistProfile {
   primaryStyleTags: string[];
   primaryMedium: string;
   profileImageUrl: string;
+  headerImageUrl: string;
   websiteUrl: string;
   instagramUrl: string;
   facebookUrl: string;
@@ -291,32 +292,43 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
 
   const location = [profile.locationCity, profile.locationCountry].filter(Boolean).join(', ');
 
-  const heroBackgroundImage = artworks.length > 0 ? artworks[0].imageUrl : null;
+  const heroBackgroundImage = profile.headerImageUrl 
+    ? profile.headerImageUrl 
+    : (artworks.length > 0 ? artworks[0].imageUrl : null);
+  
+  const hasCustomHeader = !!profile.headerImageUrl;
 
   return (
     <div className="min-h-screen bg-white">
       {/* Premium Gallery Hero */}
       <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
-        {/* Blurred artwork background - refined with smoother blur */}
+        {/* Background - custom header or blurred artwork */}
         {heroBackgroundImage && (
           <div 
             className="absolute inset-0 bg-cover bg-center"
             style={{ 
               backgroundImage: `url(${heroBackgroundImage.startsWith('/api/') ? API_URL + heroBackgroundImage : heroBackgroundImage})`,
-              filter: 'blur(80px) brightness(0.85) saturate(0.9)',
-              transform: 'scale(1.3)'
+              filter: hasCustomHeader ? 'brightness(0.95)' : 'blur(80px) brightness(0.85) saturate(0.9)',
+              transform: hasCustomHeader ? 'none' : 'scale(1.3)'
             }}
           />
         )}
         
-        {/* Gradient overlay - balanced to support not compete */}
-        <div className="absolute inset-0 bg-gradient-to-b from-white/80 via-white/60 to-white/95" />
+        {/* Gradient overlay - adjusted based on whether custom header is used */}
+        <div className={`absolute inset-0 ${hasCustomHeader 
+          ? 'bg-gradient-to-b from-black/40 via-black/20 to-white/95' 
+          : 'bg-gradient-to-b from-white/80 via-white/60 to-white/95'
+        }`} />
         
         {/* Back to Dashboard link for owners */}
         {isOwner && (
           <a
             href="#/dashboard/artist"
-            className="absolute top-6 left-6 z-20 inline-flex items-center gap-2 text-gray-500 hover:text-gray-800 transition-colors text-sm font-medium"
+            className={`absolute top-6 left-6 z-20 inline-flex items-center gap-2 transition-colors text-sm font-medium ${
+              hasCustomHeader 
+                ? 'text-white/80 hover:text-white' 
+                : 'text-gray-500 hover:text-gray-800'
+            }`}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -355,21 +367,27 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
 
           {/* Artist name - editorial typography with refined contrast */}
           <h1 
-            className="text-4xl md:text-6xl lg:text-7xl font-light tracking-tight text-gray-900 mb-4"
+            className={`text-4xl md:text-6xl lg:text-7xl font-light tracking-tight mb-4 ${
+              hasCustomHeader ? 'text-white' : 'text-gray-900'
+            }`}
             style={{ 
-              textShadow: '0 1px 2px rgba(255,255,255,0.8), 0 2px 8px rgba(255,255,255,0.4)'
+              textShadow: hasCustomHeader 
+                ? '0 2px 12px rgba(0,0,0,0.4), 0 4px 24px rgba(0,0,0,0.2)' 
+                : '0 1px 2px rgba(255,255,255,0.8), 0 2px 8px rgba(255,255,255,0.4)'
             }}
           >
             {profile.displayName || 'Artist'}
           </h1>
 
           {/* Subtle location/medium line */}
-          <div className="flex items-center justify-center gap-3 text-gray-500 text-lg md:text-xl font-light mb-12">
+          <div className={`flex items-center justify-center gap-3 text-lg md:text-xl font-light mb-12 ${
+            hasCustomHeader ? 'text-white/80' : 'text-gray-500'
+          }`}>
             {profile.primaryMedium && (
-              <span className="text-[#C9A24A]">{profile.primaryMedium}</span>
+              <span className={hasCustomHeader ? 'text-[#D4AC54]' : 'text-[#C9A24A]'}>{profile.primaryMedium}</span>
             )}
             {profile.primaryMedium && location && (
-              <span className="text-gray-300">|</span>
+              <span className={hasCustomHeader ? 'text-white/40' : 'text-gray-300'}>|</span>
             )}
             {location && (
               <span>{location}</span>
