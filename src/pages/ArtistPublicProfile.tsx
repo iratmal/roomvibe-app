@@ -415,6 +415,22 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
         </div>
       </section>
 
+      {/* Gallery Caption - RoomVibe signature (museum label style) */}
+      <div className="bg-white">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="border-t border-gray-200 pt-6 pb-4 flex items-center justify-center gap-2">
+            {/* RoomVibe frame logomark */}
+            <svg className="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <rect x="3" y="3" width="18" height="18" rx="1" />
+              <rect x="6" y="6" width="12" height="12" rx="0.5" />
+            </svg>
+            <span className="text-xs tracking-wide text-gray-400 font-light">
+              Exhibited on RoomVibe
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* About & Social Section - moved from hero */}
       <section className="bg-white border-b border-gray-100">
         <div className="max-w-4xl mx-auto px-6 py-16">
