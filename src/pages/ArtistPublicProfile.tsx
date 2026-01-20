@@ -387,7 +387,7 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
           </h1>
 
           {/* Subtle location/medium line */}
-          <div className={`flex items-center justify-center gap-3 text-lg md:text-xl font-light mb-12 ${
+          <div className={`flex items-center justify-center gap-3 text-lg md:text-xl font-light ${
             hasCustomHeader ? 'text-white/80' : 'text-gray-500'
           }`}>
             {profile.primaryMedium && (
@@ -400,9 +400,11 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
               <span>{location}</span>
             )}
           </div>
+        </div>
 
-          {/* CTA Buttons - Aligned row */}
-          <div className="flex flex-wrap items-center justify-center gap-3">
+        {/* CTA Buttons - Positioned at bottom of hero in white area */}
+        <div className="absolute bottom-16 left-0 right-0 z-10">
+          <div className="flex flex-wrap items-center justify-center gap-3 px-6">
             {/* Primary CTA: Enter 360° Exhibition (gold) */}
             {publishedExhibition && (
               <a
@@ -421,7 +423,7 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
             {artworks.length > 0 && (
               <button
                 onClick={scrollToArtworks}
-                className="inline-flex items-center justify-center gap-2 h-12 px-8 bg-white/90 hover:bg-white text-gray-800 text-sm font-medium rounded-full transition-all duration-300 shadow-md hover:shadow-lg border border-gray-200"
+                className="inline-flex items-center justify-center gap-2 h-12 px-8 bg-white hover:bg-gray-50 text-gray-800 text-sm font-medium rounded-full transition-all duration-300 shadow-lg hover:shadow-xl border border-gray-200"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -433,7 +435,7 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
             {/* Tertiary CTA: Contact Artist */}
             <button
               onClick={() => setShowContactModal(true)}
-              className="inline-flex items-center justify-center gap-2 h-12 px-8 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-full transition-all duration-300 shadow-md hover:shadow-lg"
+              className="inline-flex items-center justify-center gap-2 h-12 px-8 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-full transition-all duration-300 shadow-lg hover:shadow-xl"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -444,8 +446,8 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
         </div>
 
         {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce opacity-40">
-          <svg className="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 animate-bounce opacity-40">
+          <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>
         </div>
