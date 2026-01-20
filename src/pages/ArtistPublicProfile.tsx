@@ -692,8 +692,8 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                       </p>
                     ) : null}
                     
-                    {/* Actions row - subtle gallery style */}
-                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                    {/* Like button row */}
+                    <div className="flex items-center mb-4">
                       <button
                         onClick={() => handleLikeArtwork(artwork.id)}
                         className={`flex items-center gap-1.5 transition-colors ${
@@ -712,36 +712,37 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                         </svg>
                         <span className="text-xs">{artwork.likeCount}</span>
                       </button>
-                      
-                      <div className="flex items-center gap-4">
-                        {onViewInRoom && (
-                          <button
-                            onClick={() => onViewInRoom(artwork)}
-                            className="text-xs text-gray-500 hover:text-gray-900 transition-colors"
+                    </div>
+                    
+                    {/* CTA Buttons - equal width, side by side */}
+                    <div className="flex gap-3">
+                      {onViewInRoom && (
+                        <button
+                          onClick={() => onViewInRoom(artwork)}
+                          className="flex-1 px-4 py-2.5 text-sm font-medium text-center bg-[#1E2A3B] text-white rounded-lg hover:bg-[#2A3A4F] transition-colors"
+                        >
+                          View in Room
+                        </button>
+                      )}
+                      {artwork.availability !== 'sold' && (
+                        artwork.buyUrl ? (
+                          <a
+                            href={artwork.buyUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 px-4 py-2.5 text-sm font-medium text-center border border-[#1E2A3B] text-[#1E2A3B] rounded-lg hover:bg-gray-50 transition-colors"
                           >
-                            View in Room
+                            View & Buy
+                          </a>
+                        ) : (
+                          <button
+                            onClick={() => setShowContactModal(true)}
+                            className="flex-1 px-4 py-2.5 text-sm font-medium text-center border border-[#1E2A3B] text-[#1E2A3B] rounded-lg hover:bg-gray-50 transition-colors"
+                          >
+                            Inquire
                           </button>
-                        )}
-                        {artwork.availability !== 'sold' && (
-                          artwork.buyUrl ? (
-                            <a
-                              href={artwork.buyUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-gray-900 font-medium hover:text-gray-600 transition-colors"
-                            >
-                              View & Buy
-                            </a>
-                          ) : (
-                            <button
-                              onClick={() => setShowContactModal(true)}
-                              className="text-xs text-gray-900 font-medium hover:text-gray-600 transition-colors"
-                            >
-                              Inquire
-                            </button>
-                          )
-                        )}
-                      </div>
+                        )
+                      )}
                     </div>
                   </div>
                 </div>
