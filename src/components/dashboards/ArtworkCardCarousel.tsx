@@ -95,7 +95,7 @@ export function ArtworkCardCarousel({ artworkId, primaryImageUrl, title }: Artwo
 
   if (isLoading) {
     return (
-      <div className="w-full bg-rv-surface relative flex items-center justify-center overflow-hidden min-h-[240px] sm:min-h-[280px] lg:min-h-[320px]" style={{ aspectRatio: '4 / 3' }}>
+      <div className="w-full bg-rv-surface relative flex items-center justify-center overflow-hidden min-h-[360px] sm:min-h-[420px] lg:min-h-[480px]" style={{ aspectRatio: '3 / 4' }}>
         <div className="w-8 h-8 border-2 border-rv-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -105,7 +105,7 @@ export function ArtworkCardCarousel({ artworkId, primaryImageUrl, title }: Artwo
   const hasMultipleImages = images.length > 1;
 
   return (
-    <div className="w-full bg-rv-surface relative group overflow-hidden min-h-[240px] sm:min-h-[280px] lg:min-h-[320px]" style={{ aspectRatio: '4 / 3' }}>
+    <div className="w-full bg-rv-surface relative group overflow-hidden min-h-[360px] sm:min-h-[420px] lg:min-h-[480px]" style={{ aspectRatio: '3 / 4' }}>
       {!imageLoaded && !imageLoadError && (
         <div className="absolute inset-0 flex items-center justify-center bg-rv-surface">
           <div className="w-8 h-8 border-2 border-rv-primary border-t-transparent rounded-full animate-spin" />
