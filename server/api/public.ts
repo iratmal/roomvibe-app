@@ -67,7 +67,26 @@ router.get('/artist/:slug', async (req, res) => {
       [artworksResult.rows.map((a: any) => a.id)]
     );
 
+    // Build gallery images by artwork - include main cover image first (display_order: 0)
+    // This matches the Dashboard behavior from /api/artist/artworks/:id/images
     const galleryImagesByArtwork: Record<number, any[]> = {};
+    
+    // First, add each artwork's main cover image with display_order: 0
+    for (const artwork of artworksResult.rows as any[]) {
+      if (artwork.image_url) {
+        galleryImagesByArtwork[artwork.id] = [{
+          id: 0,  // Special ID for cover image
+          image_url: `/api/artwork-image/${artwork.id}`,
+          display_order: 0,
+          is_mockup: false,
+          is_cover: true
+        }];
+      } else {
+        galleryImagesByArtwork[artwork.id] = [];
+      }
+    }
+    
+    // Then add gallery images from artwork_gallery_images table
     for (const img of galleryImagesResult.rows) {
       if (!galleryImagesByArtwork[img.artwork_id]) {
         galleryImagesByArtwork[img.artwork_id] = [];
@@ -76,7 +95,8 @@ router.get('/artist/:slug', async (req, res) => {
         id: img.id,
         image_url: `/api/artwork-gallery-image/${img.id}`,
         display_order: img.display_order,
-        is_mockup: img.is_mockup
+        is_mockup: img.is_mockup,
+        is_cover: false
       });
     }
 

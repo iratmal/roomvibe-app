@@ -228,7 +228,11 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
     setSelectedVariantIndex(null);
   };
 
-  // Zoom lightbox handlers
+  // Zoom lightbox handlers - stable, constrained zoom with centered focus
+  const MIN_ZOOM = 1;
+  const MAX_ZOOM = 4;
+  const ZOOM_STEP = 0.15;
+
   const openZoom = useCallback((imageUrl: string) => {
     setZoomImageUrl(imageUrl);
     setZoomScale(1);
@@ -242,13 +246,42 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
     setIsDragging(false);
   }, []);
 
+  // Constrain pan position to keep image visible (prevent black space)
+  const constrainPosition = useCallback((pos: { x: number; y: number }, scale: number) => {
+    if (scale <= 1) return { x: 0, y: 0 };
+    
+    // Calculate max allowed offset based on zoom level
+    // As zoom increases, more panning is allowed
+    const maxOffset = Math.max(0, (scale - 1) * 150);
+    
+    return {
+      x: Math.max(-maxOffset, Math.min(maxOffset, pos.x)),
+      y: Math.max(-maxOffset, Math.min(maxOffset, pos.y))
+    };
+  }, []);
+
   const handleZoomWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault();
-    const delta = e.deltaY > 0 ? -0.2 : 0.2;
-    setZoomScale(prev => Math.min(Math.max(prev + delta, 1), 5));
+    e.stopPropagation();
+    
+    // Smooth, consistent zoom step
+    const direction = e.deltaY > 0 ? -1 : 1;
+    
+    setZoomScale(prev => {
+      const newScale = prev + (direction * ZOOM_STEP);
+      const clampedScale = Math.min(Math.max(newScale, MIN_ZOOM), MAX_ZOOM);
+      
+      // Reset position when zooming out to minimum
+      if (clampedScale <= MIN_ZOOM) {
+        setZoomPosition({ x: 0, y: 0 });
+      }
+      
+      return clampedScale;
+    });
   }, []);
 
   const handleZoomMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
     if (zoomScale > 1) {
       setIsDragging(true);
       setDragStart({ x: e.clientX - zoomPosition.x, y: e.clientY - zoomPosition.y });
@@ -257,12 +290,13 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
 
   const handleZoomMouseMove = useCallback((e: React.MouseEvent) => {
     if (isDragging && zoomScale > 1) {
-      setZoomPosition({
+      const newPos = {
         x: e.clientX - dragStart.x,
         y: e.clientY - dragStart.y
-      });
+      };
+      setZoomPosition(constrainPosition(newPos, zoomScale));
     }
-  }, [isDragging, dragStart, zoomScale]);
+  }, [isDragging, dragStart, zoomScale, constrainPosition]);
 
   const handleZoomMouseUp = useCallback(() => {
     setIsDragging(false);
@@ -297,14 +331,20 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
       e.preventDefault();
       const currentDistance = getTouchDistance(e.touches);
       const scale = (currentDistance / touchStartDistance) * touchStartScale;
-      setZoomScale(Math.min(Math.max(scale, 1), 5));
+      const clampedScale = Math.min(Math.max(scale, MIN_ZOOM), MAX_ZOOM);
+      setZoomScale(clampedScale);
+      
+      if (clampedScale <= MIN_ZOOM) {
+        setZoomPosition({ x: 0, y: 0 });
+      }
     } else if (e.touches.length === 1 && isDragging && zoomScale > 1) {
-      setZoomPosition({
+      const newPos = {
         x: e.touches[0].clientX - dragStart.x,
         y: e.touches[0].clientY - dragStart.y
-      });
+      };
+      setZoomPosition(constrainPosition(newPos, zoomScale));
     }
-  }, [touchStartDistance, touchStartScale, isDragging, dragStart, zoomScale]);
+  }, [touchStartDistance, touchStartScale, isDragging, dragStart, zoomScale, constrainPosition]);
 
   const handleTouchEnd = useCallback(() => {
     setIsDragging(false);
@@ -1290,7 +1330,7 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
       {/* Zoom Lightbox */}
       {zoomImageUrl && (
         <div 
-          className="fixed inset-0 bg-black/95 z-[100] flex items-center justify-center"
+          className="fixed inset-0 bg-black z-[100] flex items-center justify-center"
           onClick={(e) => {
             if (e.target === e.currentTarget) closeZoom();
           }}
@@ -1308,14 +1348,26 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
             </svg>
           </button>
           
-          {/* Zoom hint */}
+          {/* Zoom level indicator */}
           <div className="absolute top-4 left-4 px-3 py-2 bg-white/10 rounded-full text-white text-sm font-medium">
             {zoomScale > 1 ? `${Math.round(zoomScale * 100)}%` : 'Scroll to zoom'}
           </div>
           
-          {/* Image container */}
+          {/* Zoom controls hint */}
+          {zoomScale === 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-white/10 rounded-full text-white text-sm">
+              Use scroll wheel to zoom, drag to pan when zoomed
+            </div>
+          )}
+          
+          {/* Image container - centered with overflow visible to prevent black space */}
           <div
-            className="relative max-w-[90vw] max-h-[90vh] overflow-hidden select-none"
+            className="relative flex items-center justify-center select-none"
+            style={{ 
+              width: '90vw', 
+              height: '90vh',
+              cursor: zoomScale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'zoom-in'
+            }}
             onMouseDown={handleZoomMouseDown}
             onMouseMove={handleZoomMouseMove}
             onMouseUp={handleZoomMouseUp}
@@ -1323,15 +1375,17 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-            style={{ cursor: zoomScale > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
           >
             <img
               src={zoomImageUrl}
               alt="Zoomed artwork"
-              className="max-w-[90vw] max-h-[90vh] object-contain transition-transform duration-100"
+              className="max-w-full max-h-full object-contain"
               style={{
                 transform: `scale(${zoomScale}) translate(${zoomPosition.x / zoomScale}px, ${zoomPosition.y / zoomScale}px)`,
-                touchAction: 'none'
+                transformOrigin: 'center center',
+                transition: isDragging ? 'none' : 'transform 0.1s ease-out',
+                touchAction: 'none',
+                willChange: 'transform'
               }}
               draggable={false}
             />
