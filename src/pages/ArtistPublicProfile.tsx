@@ -553,17 +553,14 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
             <div className="grid gap-10 sm:gap-12 sm:grid-cols-2 lg:grid-cols-3">
               {artworks.map((artwork) => {
                 const galleryImgs = artwork.galleryImages || [];
-                const allImages: GalleryImage[] = [];
                 
-                if (artwork.imageUrl) {
-                  allImages.push({ id: 0, image_url: artwork.imageUrl, display_order: 0, is_mockup: false });
-                }
+                // Sort by display_order to match Dashboard (same as ArtworkCardCarousel)
+                const sortedImages = [...galleryImgs].sort((a, b) => a.display_order - b.display_order);
                 
-                galleryImgs.forEach(img => {
-                  if (img.image_url && !allImages.some(existing => existing.image_url === img.image_url)) {
-                    allImages.push(img);
-                  }
-                });
+                // Use sorted galleryImages as source of truth; fallback to imageUrl only if no gallery images
+                const allImages: GalleryImage[] = sortedImages.length > 0 
+                  ? sortedImages 
+                  : (artwork.imageUrl ? [{ id: 0, image_url: artwork.imageUrl, display_order: 0, is_mockup: false }] : []);
                 
                 if (allImages.length === 0) return null;
                 
@@ -572,20 +569,23 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                 const currentImage = allImages[currentIndex];
                 const imageUrl = currentImage.image_url.startsWith('/api/') 
                   ? `${API_URL}${currentImage.image_url}` 
-                  : currentImage.image_url;
+                  : (currentImage.image_url.startsWith('http') ? currentImage.image_url : `${API_URL}${currentImage.image_url}`);
 
                 return (
-                <div key={artwork.id} className="bg-white overflow-hidden group">
+                <div key={artwork.id} className="bg-white overflow-hidden group rounded-lg">
+                  {/* Wall container - matches Dashboard ArtworkCardCarousel exactly */}
                   <div 
-                    className="w-full bg-gray-100 relative overflow-hidden cursor-pointer min-h-[360px] sm:min-h-[420px] lg:min-h-[480px]"
-                    style={{ aspectRatio: '3 / 4' }}
+                    className="w-full bg-neutral-200 relative overflow-hidden cursor-pointer"
+                    style={{ aspectRatio: '4 / 3' }}
                     onClick={() => openArtworkDetail(artwork)}
                   >
-                    <img
-                      src={imageUrl}
-                      alt={artwork.title}
-                      className="w-full h-full object-cover object-center transition-all duration-500 group-hover:scale-[1.02]"
-                    />
+                    <div className="absolute inset-4 flex items-center justify-center">
+                      <img
+                        src={imageUrl}
+                        alt={artwork.title}
+                        className="max-w-full max-h-full object-contain shadow-md"
+                      />
+                    </div>
                     
                     {hasMultipleImages && (
                       <>
