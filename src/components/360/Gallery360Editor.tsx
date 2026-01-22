@@ -15,6 +15,8 @@ interface Artwork {
   title: string;
   artist_name?: string;
   image_url: string;
+  clean_image_url?: string | null;
+  card_image_url?: string | null;
   width?: number;
   height?: number;
   width_value?: number;
@@ -138,9 +140,12 @@ export function Gallery360Editor({
             orientation: heightCm > widthCm ? 'PORTRAIT' : 'LANDSCAPE'
           });
           
+          // Use clean_image_url for exhibitions (no mockups), fall back to image_url
+          const exhibitionImageUrl = artwork.clean_image_url || artwork.image_url;
+          
           return {
             ...assignment,
-            artworkUrl: artwork.image_url || assignment.artworkUrl,
+            artworkUrl: exhibitionImageUrl || assignment.artworkUrl,
             artworkTitle: artwork.title || assignment.artworkTitle,
             artistName: artwork.artist_name || assignment.artistName,
             width: widthCm,
@@ -198,8 +203,11 @@ export function Gallery360Editor({
         resolved: { widthCm, heightCm }
       });
       
+      // Use clean_image_url for exhibitions (no mockups), fall back to image_url
+      const exhibitionImageUrl = artwork.clean_image_url || artwork.image_url;
+      
       assignArtwork(slotId, String(artwork.id), {
-        artworkUrl: artwork.image_url,
+        artworkUrl: exhibitionImageUrl,
         artworkTitle: artwork.title,
         artistName: artwork.artist_name,
         width: widthCm,
