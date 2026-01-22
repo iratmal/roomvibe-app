@@ -52,7 +52,7 @@ router.get('/artist/:slug', async (req, res) => {
       `SELECT 
         id, title, image_url, width, height, dimension_unit,
         price_amount, price_currency, buy_url, medium, style_tags,
-        availability, like_count, variants
+        availability, like_count, variants, card_image_id, clean_image_id, updated_at
       FROM artworks 
       WHERE artist_id = $1
       ORDER BY created_at DESC`,
@@ -138,23 +138,73 @@ router.get('/artist/:slug', async (req, res) => {
       visibleToGalleries: artist.visible_to_galleries || false
     };
 
-    const artworks = artworksResult.rows.map((a: any) => ({
-      id: a.id,
-      title: a.title,
-      imageUrl: a.image_url,
-      width: parseFloat(a.width),
-      height: parseFloat(a.height),
-      dimensionUnit: a.dimension_unit || 'cm',
-      priceAmount: a.price_amount ? parseFloat(a.price_amount) : null,
-      priceCurrency: a.price_currency || 'EUR',
-      buyUrl: a.buy_url,
-      medium: a.medium,
-      styleTags: a.style_tags || [],
-      availability: a.availability,
-      likeCount: parseInt(a.like_count) || 0,
-      variants: a.variants || [],
-      galleryImages: galleryImagesByArtwork[a.id] || []
-    }));
+    const artworks = artworksResult.rows.map((a: any) => {
+      const galleryImages = galleryImagesByArtwork[a.id] || [];
+      const coverUrl = `/api/artwork-image/${a.id}`;
+      const artworkCacheBust = a.updated_at ? new Date(a.updated_at).getTime() : Date.now();
+      
+      // Helper to get URL with cache busting
+      const addArtworkCacheBust = (url: string) => {
+        if (!url) return '';
+        if (url.includes('?')) return `${url}&t=${artworkCacheBust}`;
+        return `${url}?t=${artworkCacheBust}`;
+      };
+      
+      // Calculate card_image_url: if card_image_id is set, use that; otherwise default to first mockup or cover
+      let cardImageUrl = coverUrl;
+      if (a.card_image_id !== null && a.card_image_id !== undefined) {
+        if (a.card_image_id === 0) {
+          cardImageUrl = coverUrl; // Explicitly set to cover
+        } else {
+          // Find the gallery image with this ID
+          const cardImg = galleryImages.find((img: any) => img.id === a.card_image_id);
+          if (cardImg) {
+            cardImageUrl = cardImg.image_url;
+          }
+        }
+      } else {
+        // Auto-default: first mockup if available
+        const firstMockup = galleryImages.find((img: any) => img.is_mockup);
+        if (firstMockup) {
+          cardImageUrl = firstMockup.image_url;
+        }
+      }
+      
+      // Calculate clean_image_url: if clean_image_id is set, use that; otherwise default to cover (no mockups allowed)
+      let cleanImageUrl = coverUrl;
+      if (a.clean_image_id !== null && a.clean_image_id !== undefined) {
+        if (a.clean_image_id === 0) {
+          cleanImageUrl = coverUrl; // Explicitly set to cover
+        } else {
+          // Find the gallery image with this ID
+          const cleanImg = galleryImages.find((img: any) => img.id === a.clean_image_id && !img.is_mockup);
+          if (cleanImg) {
+            cleanImageUrl = cleanImg.image_url;
+          }
+        }
+      }
+      // If no clean_image_id set, default stays as cover (which is clean artwork)
+      
+      return {
+        id: a.id,
+        title: a.title,
+        imageUrl: addArtworkCacheBust(a.image_url),
+        cardImageUrl: addArtworkCacheBust(cardImageUrl),
+        cleanImageUrl: addArtworkCacheBust(cleanImageUrl),
+        width: parseFloat(a.width),
+        height: parseFloat(a.height),
+        dimensionUnit: a.dimension_unit || 'cm',
+        priceAmount: a.price_amount ? parseFloat(a.price_amount) : null,
+        priceCurrency: a.price_currency || 'EUR',
+        buyUrl: a.buy_url,
+        medium: a.medium,
+        styleTags: a.style_tags || [],
+        availability: a.availability,
+        likeCount: parseInt(a.like_count) || 0,
+        variants: a.variants || [],
+        galleryImages: galleryImages
+      };
+    });
 
     res.json({
       profile,

@@ -44,6 +44,8 @@ interface Artwork {
   id: number;
   title: string;
   imageUrl: string;
+  cardImageUrl?: string | null;
+  cleanImageUrl?: string | null;
   width: number;
   height: number;
   priceAmount: number | null;
@@ -732,9 +734,17 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                 const currentIndex = Math.min(artworkImageIndex[artwork.id] || 0, allImages.length - 1);
                 const hasMultipleImages = allImages.length > 1;
                 const currentImage = allImages[currentIndex];
-                const imageUrl = currentImage.image_url.startsWith('/api/') 
-                  ? `${API_URL}${currentImage.image_url}` 
-                  : (currentImage.image_url.startsWith('http') ? currentImage.image_url : `${API_URL}${currentImage.image_url}`);
+                
+                // Use cardImageUrl for initial display (index 0), otherwise use gallery carousel
+                const getDisplayUrl = (url: string) => {
+                  if (url.startsWith('/api/')) return `${API_URL}${url}`;
+                  if (url.startsWith('http')) return url;
+                  return `${API_URL}${url}`;
+                };
+                
+                const imageUrl = currentIndex === 0 && artwork.cardImageUrl
+                  ? getDisplayUrl(artwork.cardImageUrl)
+                  : getDisplayUrl(currentImage.image_url);
 
                 return (
                 <div key={artwork.id} className="bg-white overflow-hidden group rounded-lg">
