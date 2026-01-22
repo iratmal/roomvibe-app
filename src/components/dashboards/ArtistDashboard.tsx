@@ -840,7 +840,9 @@ export function ArtistDashboard() {
         visibleToDesigners: false,
         visibleToGalleries: false,
         hasVariants: false,
-        variants: []
+        variants: [],
+        cardImageId: null,
+        cleanImageId: null
       });
       setGalleryImages([]);
       setPromotedGalleryImageId(null);
