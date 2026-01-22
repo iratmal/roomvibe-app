@@ -143,6 +143,8 @@ export function ArtistDashboard() {
   const [showPublishSuccessModal, setShowPublishSuccessModal] = useState(false);
   const [showUnpublishConfirmModal, setShowUnpublishConfirmModal] = useState(false);
   const [pendingExhibitionArtwork, setPendingExhibitionArtwork] = useState<Artwork | null>(null);
+  const [imageSaveSuccess, setImageSaveSuccess] = useState(false);
+  const [savingImages, setSavingImages] = useState(false);
   
   const exhibitionSectionRef = React.useRef<HTMLDivElement>(null);
   const editFormRef = React.useRef<HTMLDivElement>(null);
@@ -958,6 +960,64 @@ export function ArtistDashboard() {
     setSuccess('');
   };
 
+  // Save images only (order + image roles) without closing edit view
+  const handleSaveImages = async () => {
+    if (!editingArtwork) return;
+    
+    setSavingImages(true);
+    setImageSaveSuccess(false);
+    
+    try {
+      // 1. Save gallery image order
+      const reorderedImages = galleryImages.map((img, idx) => ({
+        id: img.id,
+        display_order: idx + 1
+      }));
+      
+      if (reorderedImages.length > 0) {
+        await fetch(`${API_URL}/api/artist/artworks/${editingArtwork.id}/images/reorder`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ images: reorderedImages })
+        });
+      }
+      
+      // 2. Save image role settings (cardImageId, cleanImageId)
+      const formDataObj = new FormData();
+      if (formData.cardImageId !== null) {
+        formDataObj.append('cardImageId', String(formData.cardImageId));
+      }
+      if (formData.cleanImageId !== null) {
+        formDataObj.append('cleanImageId', String(formData.cleanImageId));
+      }
+      // Also include current title and dimensions to avoid validation errors
+      formDataObj.append('title', formData.title);
+      formDataObj.append('width', formData.width);
+      formDataObj.append('height', formData.height);
+      formDataObj.append('dimensionUnit', formData.dimensionUnit);
+      
+      await fetch(`${API_URL}/api/artist/artworks/${editingArtwork.id}`, {
+        method: 'PUT',
+        credentials: 'include',
+        body: formDataObj
+      });
+      
+      // 3. Refresh artworks list to reflect changes
+      await fetchArtworks();
+      
+      // Show success feedback
+      setImageSaveSuccess(true);
+      setTimeout(() => setImageSaveSuccess(false), 3000);
+      
+    } catch (err) {
+      console.error('Error saving images:', err);
+      setError('Failed to save image settings');
+    } finally {
+      setSavingImages(false);
+    }
+  };
+
   const handleDelete = async (id: number) => {
     try {
       const wasInExhibition = isArtworkInExhibition(id);
@@ -1449,6 +1509,41 @@ export function ArtistDashboard() {
                         </p>
                       )}
                     </div>
+                  </div>
+                  
+                  {/* Save Images Button */}
+                  <div className="flex items-center gap-3 mt-4 pt-4 border-t border-gray-200">
+                    <button
+                      type="button"
+                      onClick={handleSaveImages}
+                      disabled={savingImages}
+                      className="px-4 py-2 bg-rv-primary text-white text-sm font-medium rounded-lg hover:bg-rv-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      {savingImages ? (
+                        <>
+                          <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                          </svg>
+                          Save images
+                        </>
+                      )}
+                    </button>
+                    {imageSaveSuccess && (
+                      <span className="text-sm text-green-600 flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        Images saved successfully
+                      </span>
+                    )}
                   </div>
                 </div>
               )}
@@ -2732,10 +2827,13 @@ export function ArtistDashboard() {
               </div>
               <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
                 <p className="text-sm text-amber-800">
-                  Please make sure your first image is a <strong>clean artwork image</strong> (without any room mockups).
+                  Please make sure that your <strong>Exhibition & Studio image</strong> is a clean artwork image (without room mockups).
                 </p>
                 <p className="text-sm text-amber-700 mt-2">
-                  The Studio already places your artwork into realistic interiors. If you use a mockup image as the first image, it will result in a <em>mockup inside a mockup</em>.
+                  RoomVibe Studio automatically places your artwork into realistic interiors. If a mockup image is used, it may result in unrealistic visuals (mockup inside a mockup).
+                </p>
+                <p className="text-sm text-amber-600 mt-2">
+                  You can manage this anytime in <strong>Image Roles</strong> inside your artwork settings.
                 </p>
               </div>
               <div className="flex gap-3">

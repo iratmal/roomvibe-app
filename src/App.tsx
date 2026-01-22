@@ -4263,9 +4263,17 @@ function ArtistPublicProfilePage() {
               </div>
               <h3 className="text-lg font-bold text-rv-text">Important Notice</h3>
             </div>
-            <p className="text-rv-textMuted mb-6">
-              Before opening Studio, please make sure your first image is a clean artwork image (without any room mockups). The Studio works best with plain artwork photos on neutral backgrounds.
-            </p>
+            <div className="text-rv-textMuted mb-6 space-y-3">
+              <p>
+                Please make sure that your <strong className="text-rv-text">Exhibition & Studio image</strong> is a clean artwork image (without room mockups).
+              </p>
+              <p className="text-sm">
+                RoomVibe Studio automatically places your artwork into realistic interiors. If a mockup image is used, it may result in unrealistic visuals (mockup inside a mockup).
+              </p>
+              <p className="text-sm text-amber-600">
+                You can manage this anytime in <strong>Image Roles</strong> inside your artwork settings.
+              </p>
+            </div>
             <div className="flex gap-3">
               <button
                 onClick={handleCancelStudio}
