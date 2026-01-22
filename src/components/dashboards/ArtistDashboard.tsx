@@ -56,6 +56,11 @@ interface Artwork {
   visible_to_designers?: boolean;
   visible_to_galleries?: boolean;
   variants?: ArtworkVariant[];
+  card_image_id?: number | null;
+  clean_image_id?: number | null;
+  card_image_url?: string;
+  clean_image_url?: string;
+  hasCleanImage?: boolean;
   created_at: string;
   updated_at: string;
   artist_email?: string;
@@ -164,7 +169,9 @@ export function ArtistDashboard() {
     visibleToDesigners: false,
     visibleToGalleries: false,
     hasVariants: false,
-    variants: [] as Array<{ width: string; height: string; unit: string; price: string; currency: string; availability: string }>
+    variants: [] as Array<{ width: string; height: string; unit: string; price: string; currency: string; availability: string }>,
+    cardImageId: null as number | null,
+    cleanImageId: null as number | null
   });
   const [promotedGalleryImageId, setPromotedGalleryImageId] = useState<number | null>(null);
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
@@ -704,6 +711,13 @@ export function ArtistDashboard() {
       if (editingArtwork) {
         formDataObj.append('visibleToDesigners', String(formData.visibleToDesigners));
         formDataObj.append('visibleToGalleries', String(formData.visibleToGalleries));
+        // Include image role IDs
+        if (formData.cardImageId !== null) {
+          formDataObj.append('cardImageId', String(formData.cardImageId));
+        }
+        if (formData.cleanImageId !== null) {
+          formDataObj.append('cleanImageId', String(formData.cleanImageId));
+        }
       }
       if (formData.hasVariants && formData.variants.length > 0) {
         formDataObj.append('variants', JSON.stringify(formData.variants));
@@ -881,7 +895,9 @@ export function ArtistDashboard() {
       visibleToDesigners: artwork.visible_to_designers || false,
       visibleToGalleries: artwork.visible_to_galleries || false,
       hasVariants: artworkVariants.length > 0,
-      variants: artworkVariants
+      variants: artworkVariants,
+      cardImageId: artwork.card_image_id ?? null,
+      cleanImageId: artwork.clean_image_id ?? null
     });
     
     try {
@@ -931,7 +947,9 @@ export function ArtistDashboard() {
       visibleToDesigners: false,
       visibleToGalleries: false,
       hasVariants: false,
-      variants: []
+      variants: [],
+      cardImageId: null,
+      cleanImageId: null
     });
     setGalleryImages([]);
     setError('');
@@ -1302,6 +1320,136 @@ export function ArtistDashboard() {
                   isEditing={!!editingArtwork}
                 />
               </div>
+
+              {/* Image Roles Section - Only show when editing existing artwork */}
+              {editingArtwork && (
+                <div className="md:col-span-2 bg-gray-50 rounded-lg p-4 border border-gray-200">
+                  <h4 className="text-sm font-semibold text-rv-text mb-3 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    Image Roles
+                  </h4>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {/* Card Image Picker */}
+                    <div className="bg-white rounded-lg p-3 border border-gray-200">
+                      <label className="block text-xs font-medium text-gray-700 mb-2">
+                        Card Image
+                        <span className="text-gray-400 font-normal ml-1">(shown on artwork cards)</span>
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
+                          {(() => {
+                            const selectedId = formData.cardImageId;
+                            let imgUrl = editingArtwork.card_image_url || editingArtwork.image_url;
+                            if (selectedId === 0) {
+                              imgUrl = editingArtwork.image_url;
+                            } else if (selectedId !== null) {
+                              const galleryImg = galleryImages.find(g => g.id === selectedId);
+                              if (galleryImg) {
+                                imgUrl = galleryImg.image_url;
+                              }
+                            }
+                            return (
+                              <img
+                                src={imgUrl?.startsWith('http') ? imgUrl : `${API_URL}${imgUrl}`}
+                                alt="Card preview"
+                                className="w-full h-full object-cover"
+                              />
+                            );
+                          })()}
+                        </div>
+                        <select
+                          value={formData.cardImageId ?? ''}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setFormData(prev => ({
+                              ...prev,
+                              cardImageId: val === '' ? null : parseInt(val)
+                            }));
+                          }}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                        >
+                          <option value="">Auto (default)</option>
+                          <option value="0">Cover image</option>
+                          {galleryImages.map((img, idx) => (
+                            <option key={img.id || idx} value={img.id}>
+                              Gallery {idx + 1}{img.is_mockup ? ' (mockup)' : ''}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Clean Image Picker (Exhibition & Studio) */}
+                    <div className="bg-white rounded-lg p-3 border border-gray-200">
+                      <label className="block text-xs font-medium text-gray-700 mb-2">
+                        Exhibition & Studio Image
+                        <span className="text-gray-400 font-normal ml-1">(360° & View in Room)</span>
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
+                          {(() => {
+                            const selectedId = formData.cleanImageId;
+                            let imgUrl = editingArtwork.clean_image_url || editingArtwork.image_url;
+                            if (selectedId === 0) {
+                              imgUrl = editingArtwork.image_url;
+                            } else if (selectedId !== null) {
+                              const galleryImg = galleryImages.find(g => g.id === selectedId);
+                              if (galleryImg) {
+                                imgUrl = galleryImg.image_url;
+                              }
+                            }
+                            return (
+                              <img
+                                src={imgUrl?.startsWith('http') ? imgUrl : `${API_URL}${imgUrl}`}
+                                alt="Exhibition preview"
+                                className="w-full h-full object-cover"
+                              />
+                            );
+                          })()}
+                        </div>
+                        <select
+                          value={formData.cleanImageId ?? ''}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            const selectedId = val === '' ? null : parseInt(val);
+                            // Block mockup selection for clean image
+                            if (selectedId !== null && selectedId !== 0) {
+                              const selectedImg = galleryImages.find(g => g.id === selectedId);
+                              if (selectedImg?.is_mockup) {
+                                alert('Mockups are not allowed for exhibitions and studio. Please select a clean artwork image.');
+                                return;
+                              }
+                            }
+                            setFormData(prev => ({
+                              ...prev,
+                              cleanImageId: selectedId
+                            }));
+                          }}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                        >
+                          <option value="">Auto (cover)</option>
+                          <option value="0">Cover image</option>
+                          {galleryImages.filter(img => !img.is_mockup).map((img, idx) => (
+                            <option key={img.id || idx} value={img.id}>
+                              Gallery {galleryImages.indexOf(img) + 1}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      {galleryImages.length > 0 && galleryImages.every(img => img.is_mockup) && (
+                        <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          </svg>
+                          Only mockups available. Cover image will be used for exhibitions.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="md:col-span-2">
                 <label className="block text-sm font-semibold mb-2 text-rv-text">
