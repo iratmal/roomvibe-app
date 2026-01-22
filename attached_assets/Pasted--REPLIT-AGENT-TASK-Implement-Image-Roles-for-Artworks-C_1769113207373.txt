@@ -1,0 +1,204 @@
+✅ REPLIT AGENT TASK — Implement “Image Roles” for Artworks (Card vs Exhibition vs Studio)
+
+Priority: HIGH
+Area: Artwork model · Artist Dashboard · 360° Exhibition · Studio (View in Room)
+Goal: Razdvojiti uloge slika (marketing vs exhibition vs visualization) bez kompliciranja UX-a.
+
+1️⃣ Problem (current state)
+
+Trenutno:
+
+prva slika artworka koristi se za:
+
+artwork card (listing),
+
+View in Room / Studio,
+
+360° Exhibition.
+
+To prisiljava artista da koristi istu sliku za 3 različita use-casea, što je pogrešno:
+
+mockup je najbolji za card,
+
+clean artwork je obavezan za studio + exhibition.
+
+2️⃣ Target solution (MVP – jednostavno i skalabilno)
+Uvodimo image roles:
+
+Card image → marketing / listing
+
+Clean image → exhibition + studio
+
+Exhibition i Studio uvijek koriste clean image, nikad mockup.
+
+3️⃣ Backend – minimalne promjene
+A) Artwork model
+
+Dodati 2 opcionalna polja:
+
+artwork {
+  cardImageId?: string
+  cleanImageId?: string
+}
+
+
+Ne dirati postojeći images[] model.
+
+B) Defaults (ako user ništa ne dira)
+
+cardImageId:
+
+prva slika koja je mockup (ako postoji)
+
+inače prva uploadana slika
+
+cleanImageId:
+
+prva slika koja nije mockup
+
+mockupi se preskaču
+
+⚠️ Ako ne postoji nijedna clean slika:
+
+cleanImageId = null
+
+4️⃣ Frontend – Artist Dashboard (Edit Artwork)
+A) Artwork Images sekcija
+
+Ostaje kako je (upload + drag & drop).
+
+Redoslijed slika nema više sistemsku ulogu za exhibition/studio.
+
+B) Nova mini sekcija ispod slika (VRLO JEDNOSTAVNA)
+🔹 Card image
+
+Label:
+
+Card image
+Shown on artwork cards
+
+prikaz trenutno odabrane slike
+
+“Change” → otvara image picker
+
+sve slike dozvoljene (uključujući mockups)
+
+🔹 Exhibition & Studio image
+
+Label:
+
+Exhibition & Studio image
+Used in 360° exhibitions and View in Room
+
+prikaz trenutno odabrane slike
+
+“Change” → image picker
+
+mockupi su disabled / hidden
+
+tooltip ako je slika mockup:
+
+“Mockups are not allowed in exhibitions.”
+
+C) Save behavior
+
+Klik na Update Artwork mora spremiti:
+
+cardImageId
+
+cleanImageId
+
+Nakon save:
+
+refetch artwork
+
+UI se odmah update-a (bez refresha)
+
+5️⃣ 360° Exhibition logic (editor + viewer)
+Pravilo (obavezno):
+
+Kad se artwork doda na zid:
+
+koristi se cleanImageId
+
+nikad cardImageId
+
+Ako cleanImageId == null:
+
+blokirati dodavanje
+
+ili prikazati warning:
+
+⚠️ “This artwork has no clean image suitable for exhibitions.”
+
+❌ Nema dropdowna po wallovima u MVP-u.
+
+6️⃣ Studio / View in Room logic
+
+Studio koristi cleanImageId
+
+Ako ne postoji:
+
+prikazati jasnu poruku useru da doda clean image
+
+7️⃣ Acceptance criteria (mora sve proći)
+
+Artwork card koristi card image (mockup dozvoljen).
+
+View in Room koristi clean image.
+
+360° Exhibition koristi clean image.
+
+Promjena card/clean image-a:
+
+odmah se reflektira svugdje (bez refresha).
+
+Mockup se nikad ne pojavljuje u izložbi.
+
+Ako clean image ne postoji:
+
+user dobije jasan warning, ne silent failure.
+
+8️⃣ Not in scope (NE DIRATI)
+
+AI auto-detection mockupa
+
+per-wall image override
+
+monetizacija / plan gating
+
+migracije starih podataka (fallback može biti default logic)
+
+9️⃣ Deliverables od agenta
+
+Popis izmijenjenih fileova (FE + BE)
+
+Kratko objašnjenje:
+
+kako se bira default card image
+
+kako se bira default clean image
+
+Screenshot:
+
+artwork card
+
+studio
+
+exhibition wall (da se vidi da je clean image)
+
+🧠 Napomena (za agenta, ali i za budućnost)
+
+Ovo rješenje:
+
+rješava problem trajno,
+
+ne komplicira UX,
+
+omogućava kasnije:
+
+AI tagging,
+
+Pro feature (više clean images),
+
+galerijske kuracije.

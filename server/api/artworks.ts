@@ -61,13 +61,13 @@ router.get('/artworks', authenticateToken, async (req: any, res) => {
     let queryParams;
 
     if (effectivePlan === 'admin') {
-      queryText = `SELECT a.id, a.artist_id, a.title, a.image_url, a.storage_key, a.width, a.height, a.dimension_unit, a.price_amount, a.price_currency, a.buy_url, a.tags, a.orientation, a.style_tags, a.dominant_colors, a.medium, a.availability, a.visible_to_designers, a.visible_to_galleries, a.variants, a.created_at, a.updated_at, u.email as artist_email
+      queryText = `SELECT a.id, a.artist_id, a.title, a.image_url, a.storage_key, a.width, a.height, a.dimension_unit, a.price_amount, a.price_currency, a.buy_url, a.tags, a.orientation, a.style_tags, a.dominant_colors, a.medium, a.availability, a.visible_to_designers, a.visible_to_galleries, a.variants, a.card_image_id, a.clean_image_id, a.created_at, a.updated_at, u.email as artist_email
                    FROM artworks a
                    LEFT JOIN users u ON a.artist_id = u.id
                    ORDER BY a.created_at DESC`;
       queryParams = [];
     } else {
-      queryText = `SELECT id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, visible_to_designers, visible_to_galleries, variants, created_at, updated_at
+      queryText = `SELECT id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, visible_to_designers, visible_to_galleries, variants, card_image_id, clean_image_id, created_at, updated_at
                    FROM artworks 
                    WHERE artist_id = $1 
                    ORDER BY created_at DESC`;
@@ -77,6 +77,28 @@ router.get('/artworks', authenticateToken, async (req: any, res) => {
     const result = await query(queryText, queryParams);
     // Always return array, never null/undefined
     const artworks = result?.rows || [];
+    
+    // Fetch gallery images for all artworks to compute card/clean image defaults
+    const artworkIds = artworks.map((a: any) => a.id);
+    let galleryImagesMap: Record<number, any[]> = {};
+    
+    if (artworkIds.length > 0) {
+      const galleryResult = await query(
+        `SELECT id, artwork_id, storage_key, display_order, is_mockup 
+         FROM artwork_gallery_images 
+         WHERE artwork_id = ANY($1) 
+         ORDER BY display_order ASC`,
+        [artworkIds]
+      );
+      
+      // Group gallery images by artwork_id
+      for (const img of galleryResult.rows) {
+        if (!galleryImagesMap[img.artwork_id]) {
+          galleryImagesMap[img.artwork_id] = [];
+        }
+        galleryImagesMap[img.artwork_id].push(img);
+      }
+    }
     
     // Normalize image_url to API endpoint format for frontend compatibility
     // Also add requiresReupload flag for artworks missing storage_key
@@ -95,6 +117,51 @@ router.get('/artworks', authenticateToken, async (req: any, res) => {
       } else if (!a.image_url || a.image_url.startsWith('/api/artwork-image/')) {
         a.image_url = `/api/artwork-image/${a.id}?t=${cacheBust}`;
       }
+      
+      // Compute effective card and clean image URLs based on roles
+      const galleryImages = galleryImagesMap[a.id] || [];
+      
+      // Build all images list (cover + gallery) for selection
+      const allImages = [
+        { id: 0, is_mockup: false, is_cover: true }, // Cover image (id=0 represents the main artwork image)
+        ...galleryImages.map((g: any) => ({ id: g.id, is_mockup: g.is_mockup, is_cover: false }))
+      ];
+      
+      // Card image: Use card_image_id if set, otherwise default to first mockup, then cover
+      if (a.card_image_id !== null && a.card_image_id !== undefined) {
+        // Explicit card image set
+        if (a.card_image_id === 0) {
+          a.card_image_url = `/api/artwork-image/${a.id}?t=${cacheBust}`;
+        } else {
+          a.card_image_url = `/api/artwork-gallery-image/${a.card_image_id}?t=${cacheBust}`;
+        }
+      } else {
+        // Default: first mockup, or cover if no mockups
+        const firstMockup = galleryImages.find((g: any) => g.is_mockup);
+        if (firstMockup) {
+          a.card_image_url = `/api/artwork-gallery-image/${firstMockup.id}?t=${cacheBust}`;
+        } else {
+          a.card_image_url = `/api/artwork-image/${a.id}?t=${cacheBust}`;
+        }
+      }
+      
+      // Clean image: Use clean_image_id if set, otherwise default to cover (skip mockups)
+      if (a.clean_image_id !== null && a.clean_image_id !== undefined) {
+        // Explicit clean image set
+        if (a.clean_image_id === 0) {
+          a.clean_image_url = `/api/artwork-image/${a.id}?t=${cacheBust}`;
+        } else {
+          a.clean_image_url = `/api/artwork-gallery-image/${a.clean_image_id}?t=${cacheBust}`;
+        }
+      } else {
+        // Default: cover image (assumed to be clean), or first non-mockup gallery image
+        // Cover is always considered clean unless it's replaced
+        a.clean_image_url = `/api/artwork-image/${a.id}?t=${cacheBust}`;
+      }
+      
+      // Check if clean image exists (null if only mockups available)
+      const hasCleanImage = allImages.some((img: any) => !img.is_mockup);
+      a.hasCleanImage = hasCleanImage;
     });
     
     console.log(`Found ${artworks.length} artworks`);

@@ -706,6 +706,38 @@ export async function initializeDatabase() {
       END $$;
     `);
 
+    // =====================================================
+    // Image Roles - separate card vs clean images
+    // =====================================================
+    
+    // card_image_id - ID of gallery image to use for artwork cards (marketing)
+    // Can be a mockup. NULL means use default (first mockup, or first image)
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'artworks' AND column_name = 'card_image_id'
+        ) THEN
+          ALTER TABLE artworks ADD COLUMN card_image_id INTEGER;
+        END IF;
+      END $$;
+    `);
+    
+    // clean_image_id - ID of gallery image to use for exhibitions & studio
+    // Must NOT be a mockup. NULL means use default (first non-mockup image)
+    await query(`
+      DO $$ 
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'artworks' AND column_name = 'clean_image_id'
+        ) THEN
+          ALTER TABLE artworks ADD COLUMN clean_image_id INTEGER;
+        END IF;
+      END $$;
+    `);
+
     await query(`
       CREATE TABLE IF NOT EXISTS projects (
         id SERIAL PRIMARY KEY,
