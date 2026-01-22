@@ -4213,7 +4213,8 @@ function ArtistPublicProfilePage() {
   
   const handleContinueToStudio = () => {
     if (pendingArtwork) {
-      let imageUrl = pendingArtwork.imageUrl || pendingArtwork.image_url;
+      // Prefer cleanImageUrl for studio (no mockups), fall back to imageUrl
+      let imageUrl = pendingArtwork.cleanImageUrl || pendingArtwork.clean_image_url || pendingArtwork.imageUrl || pendingArtwork.image_url;
       
       // Normalize URL - add API host for relative /api/ paths
       if (imageUrl && imageUrl.startsWith('/api/')) {
