@@ -1,0 +1,105 @@
+✅ REPLIT AGENT TASK — Fix “Artist Profile → 360 links” (embed viewer bez footera + navigacija vraćena)
+
+Priority: HIGH (blokira core feature “artist exhibition”)
+Mode: FAST MODE (bugfix + UI/layout)
+
+1) Goal
+
+Kad na Artist Profile Page kliknem “360 View” ili “360 Exhibition”, mora se otvoriti izložba u čistom embed viewer modu:
+
+bez footera i bez globalnog site layouta
+
+sa vraćenim navigacijskim kontrolama (Main Entrance / Enter / Left / Right…) koje su prije bile dolje u kutu
+
+viewer mora biti fullscreen/clean, bez “curenja” homepage layouta
+
+Trenutno oba linka vode na viewer gdje se vidi footer, a navigacijski gumbi su nestali.
+
+2) Context (što se sada događa)
+
+Route izgleda kao app.roomvibe.app/#/embed/exhibitions/1 (prema URL-u na screenshotu).
+
+Embed viewer se rendera unutar layouta koji uključuje Footer (što ne smije).
+
+Navigacija (controls overlay) se ne rendera ili je skrivena (CSS/z-index/conditional render).
+
+3) Scope (napravi samo ovo)
+A) Embed route mora koristiti “minimal layout”
+
+Pronađi router i komponentu/layout koji wrapa #/embed/exhibitions/:id.
+
+U embed modu:
+
+ne renderati Footer
+
+ne renderati globalnu navigaciju/header (ako postoji)
+
+viewer treba zauzeti 100vh i imati vlastiti container
+
+✅ Prihvatljivo rješenje:
+
+poseban EmbedLayout bez footera, ili
+
+u postojećem layoutu: if (isEmbedRoute) hide Footer + adjust padding/margins.
+
+B) Vratiti navigacijske gumbe (Entrance / Left / Right…)
+
+Pronađi komponentu za navigaciju (controls overlay) koja je ranije bila dolje u kutu.
+
+Osiguraj da se u embed vieweru uvijek rendera (ako je izložba “walkthrough”/360).
+
+Provjeri CSS:
+
+position: fixed
+
+bottom/right (npr. bottom: 24px; right: 24px)
+
+z-index dovoljno visok da bude iznad canvasa/scene
+
+Ako viewer koristi conditional flag (npr. showControls, isPublic, isEmbed):
+
+ispravi logiku da embed ne gasi kontrole
+
+embed mod = “clean UI”, ali kontrole moraju ostati
+
+C) Artist Profile linkovi
+
+Na Artist Profile Page provjeri oba linka (“360 View” i “360 Exhibition”):
+
+oba trebaju voditi na točan route za viewer (embed ili public — prema našem standardu)
+
+Ako su oba linka redundantna:
+
+neka oba vode na isti ispravan viewer (ili jedan preimenuj, ali ne raditi veći refactor)
+
+4) Not in scope (ne dirati)
+
+Ne refaktorirati cijeli routing sustav.
+
+Ne mijenjati 3D/scene logiku.
+
+Ne uvoditi nove feature-e.
+
+Ne dirati Stripe/auth/deploy logiku.
+
+5) Acceptance criteria (mora proći sve)
+
+✅ Kad otvorim izložbu preko artist profila:
+
+Nema footera i nema “homepage” layouta u vieweru.
+
+Viewer je clean fullscreen (bez dodatnog paddinga/margina).
+
+Navigacijski gumbi su vidljivi i klikabilni (Entrance / Left / Right itd.).
+
+Gumbi su stalno u istom mjestu (donji kut), i ne “bježe” po ekranu.
+
+Testirano na desktopu (Firefox/Chrome).
+
+6) Deliverables
+
+Navedi točno koje si fileove mijenjao (putanje).
+
+Kratko opiši uzrok (zašto se footer prikazivao i zašto su kontrole nestale).
+
+Screenshot ili kratki opis rezultata: “embed viewer clean + controls visible”.

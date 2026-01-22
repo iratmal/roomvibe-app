@@ -322,23 +322,21 @@ export function Gallery360Editor({
               onFocusDismiss={handleCloseInfoPanel}
             />
             
-            {!embedMode && (
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/50 rounded-lg px-3 py-2">
-                {preset.viewpoints.map(vp => (
-                  <button
-                    key={vp.id}
-                    onClick={() => navigateToViewpoint(vp.id)}
-                    className={`px-3 py-1 rounded text-sm transition-colors ${
-                      currentViewpoint.id === vp.id
-                        ? 'bg-[#C9A24A] text-white'
-                        : 'bg-white/20 text-white hover:bg-white/30'
-                    }`}
-                  >
-                    {vp.label}
-                  </button>
-                ))}
-              </div>
-            )}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-black/50 rounded-lg px-3 py-2 z-10">
+              {preset.viewpoints.map(vp => (
+                <button
+                  key={vp.id}
+                  onClick={() => navigateToViewpoint(vp.id)}
+                  className={`px-3 py-1 rounded text-sm transition-colors ${
+                    currentViewpoint.id === vp.id
+                      ? 'bg-[#C9A24A] text-white'
+                      : 'bg-white/20 text-white hover:bg-white/30'
+                  }`}
+                >
+                  {vp.label}
+                </button>
+              ))}
+            </div>
           </>
         )}
         

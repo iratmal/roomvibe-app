@@ -165,7 +165,7 @@ function AppContent() {
       ) : (
         <HomePage />
       )}
-      {normalizedHash !== "#/simple" && <Footer />}
+      {normalizedHash !== "#/simple" && !normalizedHash.startsWith("#/embed/") && <Footer />}
       <CookieConsentBanner />
     </div>
   );
