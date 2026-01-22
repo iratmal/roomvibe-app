@@ -29,7 +29,7 @@ router.get('/artist/:slug', async (req, res) => {
         primary_style_tags, primary_medium, profile_image_url, header_image_url,
         website_url, instagram_url, facebook_url, tiktok_url, 
         linkedin_url, pinterest_url, etsy_url, languages,
-        visible_to_designers, visible_to_galleries
+        visible_to_designers, visible_to_galleries, updated_at
       FROM users 
       WHERE artist_access = TRUE`,
       []
@@ -107,6 +107,16 @@ router.get('/artist/:slug', async (req, res) => {
       [artist.id]
     );
 
+    // Add cache-busting timestamp for profile/header images to ensure instant updates
+    const cacheBust = artist.updated_at ? new Date(artist.updated_at).getTime() : Date.now();
+    
+    // Helper to add cache-bust to image URLs
+    const addCacheBust = (url: string) => {
+      if (!url) return '';
+      if (url.includes('?')) return `${url}&t=${cacheBust}`;
+      return `${url}?t=${cacheBust}`;
+    };
+    
     const profile = {
       displayName: artist.display_name || '',
       locationCity: artist.location_city || '',
@@ -114,8 +124,8 @@ router.get('/artist/:slug', async (req, res) => {
       bio: artist.bio || '',
       primaryStyleTags: artist.primary_style_tags || [],
       primaryMedium: artist.primary_medium || '',
-      profileImageUrl: artist.profile_image_url || '',
-      headerImageUrl: artist.header_image_url || '',
+      profileImageUrl: artist.profile_image_url ? addCacheBust(artist.profile_image_url) : '',
+      headerImageUrl: artist.header_image_url ? addCacheBust(artist.header_image_url) : '',
       websiteUrl: artist.website_url || '',
       instagramUrl: artist.instagram_url || '',
       facebookUrl: artist.facebook_url || '',

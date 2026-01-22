@@ -1,0 +1,119 @@
+✅ REPLIT AGENT TASK #1 — Artist Profile Header: tekst i gumbi moraju biti crni + na bijeloj podlozi
+
+Priority: HIGH (UI/UX + čitljivost + brand consistency)
+Page: Public Artist Profile (/artist/:slug)
+
+Problem (trenutno)
+
+Ime artista, subtitle (npr. Acrylic · Zagreb, Croatia) i CTA gumbi stoje preko header slike.
+
+Tekst je svijetle boje i ovisno o slici često je nečitljiv.
+
+Vizualno izgleda “floatano” preko fotografije, a ne kao stabilan header.
+
+Očekivano ponašanje
+
+Ime artista, subtitle i gumbi moraju uvijek biti:
+
+na bijeloj podlozi (overlay / panel),
+
+sa crnim tekstom (#000 ili design system black),
+
+neovisno o tome kakvu header fotografiju artist upload-a.
+
+Header image ostaje u pozadini, ali content mora biti “izvučen” na bijeli dio (donji dio headera ili overlay panel).
+
+Konkretni zadaci
+
+Dodati bijeli container / overlay za:
+
+artist name
+
+medium + location
+
+CTA gumbe (Enter 360°, View Artworks, Contact Artist)
+
+Postaviti:
+
+text color = black
+
+button text + icons = black (ili brand dark)
+
+Osigurati da je layout:
+
+responzivan
+
+vizualno stabilan (ne ovisi o slici)
+
+❗️Cilj: header izgleda profesionalno i čitljivo u 100% slučajeva, bez obzira na artwork u pozadini.
+
+✅ REPLIT AGENT TASK #2 — Artist Header Image: promjena mora biti instant (bez refresh-a)
+
+Priority: HIGH (bug + user trust issue)
+Page: Artist Profile → Change Header Image
+
+Problem (trenutno)
+
+Kad artist promijeni header image i klikne Save:
+
+promjena se ne vidi odmah na javnom artist profile pageu,
+
+potreban je manual refresh linka da bi se nova slika prikazala.
+
+Očekivano ponašanje
+
+Nakon klika na Save:
+
+nova header slika se odmah reflektira na javnoj artist profile stranici,
+
+bez refresh-a, bez hard reload-a.
+
+Najvjerojatniji uzrok
+
+Frontend ne invalidira cache / ne refetcha artist data.
+
+Ili:
+
+koristi se stale state
+
+ili CDN/cache nije invalidiran
+
+ili save endpoint ne vraća updated object
+
+Konkretni zadaci
+
+Nakon uspješnog Save:
+
+triggerati refetch artist profile data
+
+ili optimistički update state-a s novim header image URL-om
+
+Ako se koristi cache (React Query / SWR / custom):
+
+invalidirati artist profile query
+
+Osigurati da:
+
+javna stranica koristi latest data, ne cached snapshot
+
+✅ Acceptance criteria (za oba taska)
+
+Tekst i gumbi u headeru:
+
+uvijek crni
+
+uvijek na bijeloj podlozi
+
+čitljivi bez obzira na header image
+
+Promjena header image-a:
+
+vidi se odmah nakon Save
+
+bez ručnog refresha
+
+Testirano:
+
+desktop (Firefox + Chrome)
+
+barem s 2 različite header fotografije

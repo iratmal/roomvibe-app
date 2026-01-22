@@ -115,7 +115,20 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
       fetchProfile();
     };
     window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
+    
+    // Listen for profile updates from other tabs (e.g., header image change in Dashboard)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'artistProfileUpdated') {
+        console.log('[ArtistPublicProfile] Profile updated in another tab, refetching...');
+        fetchProfile();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, [slug]);
 
   const loadLikedArtworks = () => {
@@ -449,141 +462,124 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Premium Gallery Hero */}
-      <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
-        {/* Background - custom header or blurred artwork */}
-        {heroBackgroundImage && (
-          <div 
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ 
-              backgroundImage: `url(${heroBackgroundImage.startsWith('/api/') ? API_URL + heroBackgroundImage : heroBackgroundImage})`,
-              filter: hasCustomHeader ? 'brightness(0.95)' : 'blur(80px) brightness(0.85) saturate(0.9)',
-              transform: hasCustomHeader ? 'none' : 'scale(1.3)'
-            }}
-          />
-        )}
-        
-        {/* Gradient overlay - adjusted based on whether custom header is used */}
-        <div className={`absolute inset-0 ${hasCustomHeader 
-          ? 'bg-gradient-to-b from-black/40 via-black/20 to-white/95' 
-          : 'bg-gradient-to-b from-white/80 via-white/60 to-white/95'
-        }`} />
-        
-        {/* Back to Dashboard link for owners */}
-        {isOwner && (
-          <a
-            href="#/dashboard/artist"
-            className={`absolute top-6 left-6 z-20 inline-flex items-center gap-2 transition-colors text-sm font-medium ${
-              hasCustomHeader 
-                ? 'text-white/80 hover:text-white' 
-                : 'text-gray-500 hover:text-gray-800'
-            }`}
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Dashboard
-          </a>
-        )}
-
-        {/* Main hero content */}
-        <div className="relative z-10 text-center px-6 py-20 max-w-4xl mx-auto">
+      {/* Premium Gallery Hero - Header image with white content panel */}
+      <section className="relative">
+        {/* Header image area */}
+        <div className="relative h-[40vh] md:h-[50vh] overflow-hidden">
+          {heroBackgroundImage ? (
+            <div 
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ 
+                backgroundImage: `url(${heroBackgroundImage.startsWith('/api/') ? API_URL + heroBackgroundImage : heroBackgroundImage})`,
+              }}
+            />
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200" />
+          )}
           
-          {/* Profile image - elevated gallery-grade presentation */}
-          <div className="mb-10">
-            {profile.profileImageUrl ? (
-              <img
-                src={profile.profileImageUrl}
-                alt={profile.displayName}
-                className="w-40 h-40 md:w-52 md:h-52 rounded-full object-cover mx-auto ring-4 ring-white/90"
-                style={{ 
-                  boxShadow: '0 8px 40px -8px rgba(0,0,0,0.25), 0 4px 20px -4px rgba(0,0,0,0.1)'
-                }}
-              />
-            ) : (
-              <div 
-                className="w-40 h-40 md:w-52 md:h-52 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center mx-auto ring-4 ring-white/90"
-                style={{ 
-                  boxShadow: '0 8px 40px -8px rgba(0,0,0,0.25), 0 4px 20px -4px rgba(0,0,0,0.1)'
-                }}
-              >
-                <svg className="w-20 h-20 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </div>
-            )}
-          </div>
-
-          {/* Artist name - editorial typography with refined contrast */}
-          <h1 
-            className={`text-4xl md:text-6xl lg:text-7xl font-light tracking-tight mb-4 ${
-              hasCustomHeader ? 'text-white' : 'text-gray-900'
-            }`}
-            style={{ 
-              textShadow: hasCustomHeader 
-                ? '0 2px 12px rgba(0,0,0,0.4), 0 4px 24px rgba(0,0,0,0.2)' 
-                : '0 1px 2px rgba(255,255,255,0.8), 0 2px 8px rgba(255,255,255,0.4)'
-            }}
-          >
-            {profile.displayName || 'Artist'}
-          </h1>
-
-          {/* Subtle location/medium line */}
-          <div className={`flex items-center justify-center gap-3 text-lg md:text-xl font-light ${
-            hasCustomHeader ? 'text-white/80' : 'text-gray-500'
-          }`}>
-            {profile.primaryMedium && (
-              <span className={hasCustomHeader ? 'text-[#D4AC54]' : 'text-[#C9A24A]'}>{profile.primaryMedium}</span>
-            )}
-            {profile.primaryMedium && location && (
-              <span className={hasCustomHeader ? 'text-white/40' : 'text-gray-300'}>|</span>
-            )}
-            {location && (
-              <span>{location}</span>
-            )}
-          </div>
+          {/* Subtle gradient at bottom for smooth transition */}
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-white/60 to-transparent" />
+          
+          {/* Back to Dashboard link for owners */}
+          {isOwner && (
+            <a
+              href="#/dashboard/artist"
+              className="absolute top-6 left-6 z-20 inline-flex items-center gap-2 transition-colors text-sm font-medium bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full text-gray-700 hover:text-gray-900 hover:bg-white shadow-sm"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Dashboard
+            </a>
+          )}
         </div>
 
-        {/* CTA Buttons - Positioned at bottom of hero in white area */}
-        <div className="absolute bottom-16 left-0 right-0 z-10">
-          <div className="flex flex-wrap items-center justify-center gap-3 px-6">
-            {/* Primary CTA: Enter 360° Exhibition (gold) */}
-            {publishedExhibition && (
-              <a
-                href={`#/embed/exhibitions/${publishedExhibition.id}`}
-                className="cta-exhibition group inline-flex items-center justify-center gap-2 h-12 px-8 bg-[#C9A24A] hover:bg-[#D4AC54] text-white text-sm font-medium rounded-full transition-all duration-300 shadow-lg hover:shadow-xl"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 10l3-3m0 0l3 3m-3-3v12" style={{transform: 'rotate(90deg)', transformOrigin: '12px 12px'}} />
-                </svg>
-                Enter 360° Exhibition
-              </a>
-            )}
-            
-            {/* Secondary CTA: View Artworks */}
-            {artworks.length > 0 && (
+        {/* White content panel - overlaps header image */}
+        <div className="relative -mt-32 md:-mt-40 z-10 px-6 pb-12">
+          <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl px-8 py-10 md:px-12 md:py-14">
+            {/* Profile image - centered and elevated */}
+            <div className="flex justify-center -mt-24 md:-mt-28 mb-8">
+              {profile.profileImageUrl ? (
+                <img
+                  src={profile.profileImageUrl}
+                  alt={profile.displayName}
+                  className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover ring-4 ring-white"
+                  style={{ 
+                    boxShadow: '0 8px 40px -8px rgba(0,0,0,0.25), 0 4px 20px -4px rgba(0,0,0,0.1)'
+                  }}
+                />
+              ) : (
+                <div 
+                  className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center ring-4 ring-white"
+                  style={{ 
+                    boxShadow: '0 8px 40px -8px rgba(0,0,0,0.25), 0 4px 20px -4px rgba(0,0,0,0.1)'
+                  }}
+                >
+                  <svg className="w-16 h-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+              )}
+            </div>
+
+            {/* Artist name - black text on white */}
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-light tracking-tight text-center text-gray-900 mb-4">
+              {profile.displayName || 'Artist'}
+            </h1>
+
+            {/* Medium and location - black/gray text */}
+            <div className="flex items-center justify-center gap-3 text-base md:text-lg font-light text-gray-600 mb-8">
+              {profile.primaryMedium && (
+                <span className="text-[#C9A24A] font-medium">{profile.primaryMedium}</span>
+              )}
+              {profile.primaryMedium && location && (
+                <span className="text-gray-300">·</span>
+              )}
+              {location && (
+                <span>{location}</span>
+              )}
+            </div>
+
+            {/* CTA Buttons - black text/icons on white panel */}
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              {/* Primary CTA: Enter 360° Exhibition */}
+              {publishedExhibition && (
+                <a
+                  href={`#/embed/exhibitions/${publishedExhibition.id}`}
+                  className="cta-exhibition group inline-flex items-center justify-center gap-2 h-12 px-8 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-full transition-all duration-300 shadow-md hover:shadow-lg"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 10l3-3m0 0l3 3m-3-3v12" style={{transform: 'rotate(90deg)', transformOrigin: '12px 12px'}} />
+                  </svg>
+                  Enter 360° Exhibition
+                </a>
+              )}
+              
+              {/* Secondary CTA: View Artworks */}
+              {artworks.length > 0 && (
+                <button
+                  onClick={scrollToArtworks}
+                  className="inline-flex items-center justify-center gap-2 h-12 px-8 bg-white hover:bg-gray-50 text-gray-900 text-sm font-medium rounded-full transition-all duration-300 shadow-md hover:shadow-lg border border-gray-300"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  View Artworks
+                </button>
+              )}
+              
+              {/* Tertiary CTA: Contact Artist */}
               <button
-                onClick={scrollToArtworks}
-                className="inline-flex items-center justify-center gap-2 h-12 px-8 bg-white hover:bg-gray-50 text-gray-800 text-sm font-medium rounded-full transition-all duration-300 shadow-lg hover:shadow-xl border border-gray-200"
+                onClick={() => setShowContactModal(true)}
+                className="inline-flex items-center justify-center gap-2 h-12 px-8 bg-white hover:bg-gray-50 text-gray-900 text-sm font-medium rounded-full transition-all duration-300 shadow-md hover:shadow-lg border border-gray-300"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
-                View Artworks
+                Contact Artist
               </button>
-            )}
-            
-            {/* Tertiary CTA: Contact Artist */}
-            <button
-              onClick={() => setShowContactModal(true)}
-              className="inline-flex items-center justify-center gap-2 h-12 px-8 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-full transition-all duration-300 shadow-lg hover:shadow-xl"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              Contact Artist
-            </button>
+            </div>
           </div>
         </div>
 

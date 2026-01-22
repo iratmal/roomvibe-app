@@ -338,6 +338,8 @@ export function ArtistProfileForm() {
       setProfile(prev => ({ ...prev, headerImageUrl: cacheBustUrl }));
       setSuccess('Header image updated!');
       setTimeout(() => setSuccess(''), 3000);
+      // Signal other tabs to refresh artist profile
+      localStorage.setItem('artistProfileUpdated', Date.now().toString());
     } catch (err: any) {
       console.error('Error uploading header image:', err);
       setError(err.message);
@@ -360,6 +362,8 @@ export function ArtistProfileForm() {
       setProfile(prev => ({ ...prev, headerImageUrl: '' }));
       setSuccess('Header image removed!');
       setTimeout(() => setSuccess(''), 3000);
+      // Signal other tabs to refresh artist profile
+      localStorage.setItem('artistProfileUpdated', Date.now().toString());
     } catch (err: any) {
       console.error('Error removing header image:', err);
       setError(err.message);
@@ -406,6 +410,8 @@ export function ArtistProfileForm() {
 
       setSuccess('Profile saved successfully!');
       setTimeout(() => setSuccess(''), 5000);
+      // Signal other tabs to refresh artist profile
+      localStorage.setItem('artistProfileUpdated', Date.now().toString());
     } catch (err: any) {
       console.error('Error saving profile:', err);
       setError(err.message);
