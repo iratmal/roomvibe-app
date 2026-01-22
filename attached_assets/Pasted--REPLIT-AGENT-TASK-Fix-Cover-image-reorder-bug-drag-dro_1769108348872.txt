@@ -1,0 +1,143 @@
+✅ REPLIT AGENT TASK — Fix “Cover image reorder” bug (drag & drop + persist + disappearing first image)
+
+Priority: HIGH (ruši povjerenje; user misli da je izgubio sliku)
+Area: Artist Dashboard → Edit Artwork → Artwork Images (sortable + cover)
+
+1) Problem (trenutno ponašanje)
+
+U Edit Artwork formi postoji drag & drop za Artwork Images.
+
+Kad:
+
+povučem neku drugu sliku na prvo mjesto (da postane cover / first image),
+
+kliknem Update Artwork,
+
+onda:
+
+na kartici (artwork card) se ne prikazuje nova prva slika kao cover,
+
+kad ponovo otvorim Edit, dogodi se bug: prva slika “nestane” i na cover slotu piše Image unavailable (kao na screenshotu).
+
+2) Očekivano ponašanje
+
+Redoslijed slika nakon drag&drop mora biti persistiran u bazi (ili storage metadata).
+
+“First image = cover image” mora biti konzistentno:
+
+u editoru,
+
+na artwork cardu,
+
+na javnom profilu/exhibition gdje se koristi cover.
+
+Nakon ponovnog otvaranja Edit:
+
+cover slot prikazuje ispravnu sliku,
+
+nema “Image unavailable”.
+
+3) Najvjerojatniji uzroci (agent provjerava)
+
+Provjeri i popravi gdje puca:
+
+A) Frontend šalje krivi payload (redoslijed se ne šalje)
+
+Drag&drop mijenja UI state, ali Update Artwork request ne šalje novi images[] poredak (ili position).
+
+Ili šalje samo array URL-ova bez ID-eva, a backend očekuje IDs.
+
+B) Backend ne persistira poredak / krivo sortira prilikom čitanja
+
+Backend vraća slike sortirane po created_at/id, ignorira position/order.
+
+Ili coverImageId nije ažuriran.
+
+C) “Cover” slot koristi zasebno polje koje ostaje prazno
+
+Npr. postoji artwork.coverImage ili primaryImageId, ali drag&drop samo mijenja images[].
+
+Nakon update, cover polje ostane na starom ID-u → stari ID možda obrisan ili nije više prvi → UI padne na “Image unavailable”.
+
+D) Object storage URL / signing problem (manje vjerojatno)
+
+Ako cover slika ima drugačiji URL format ili se čuva kao signed URL pa expira.
+
+Ali po opisu više liči na krivi referencirani image key.
+
+4) Što točno treba implementirati (minimal fix, bez refactora)
+✅ Data model / contract (odaberi 1 standard i dosljedno ga koristi)
+
+Opcija 1 (preporučena):
+
+Svaka slika ima id i order (integer).
+
+Cover = slika s najmanjim order (0 ili 1).
+
+Update endpoint prima listu: [{id, order}].
+
+Opcija 2:
+
+Artwork ima coverImageId + images[] bez ordera.
+
+Drag&drop update mora setati coverImageId + eventualno reorder.
+
+Bitno: ne miješati ova dva pristupa. Odaberi jedan i ispravi UI + backend da budu usklađeni.
+
+✅ Frontend
+
+Nakon drag&drop:
+
+ažuriraj state tako da se redoslijed stvarno promijeni u arrayu.
+
+Na Update Artwork:
+
+pošalji novi redoslijed (IDs + order) ili coverImageId (ovisno o odabranoj opciji).
+
+Nakon uspješnog update:
+
+refetch artwork i re-render, da kartica odmah pokaže novi cover.
+
+✅ Backend
+
+Endpoint koji prima update mora:
+
+spremiti order u DB (ili coverImageId),
+
+osigurati da GET artwork vraća slike sortirane po orderu.
+
+Ako coverImageId postoji:
+
+osiguraj fallback: ako coverImageId null ili ne postoji, uzmi prvu sliku.
+
+✅ UI fallback
+
+Ako cover image nije dostupna (broken reference):
+
+fallback na sljedeću dostupnu sliku umjesto “Image unavailable” (ali ovo je sekundarno; primarno je fix referenci).
+
+5) Acceptance criteria (test)
+
+U Edit Artwork → povuci sliku #3 na prvo mjesto.
+
+Klikni Update.
+
+Na artwork cardu cover je ta nova slika.
+
+Refresh page.
+
+Ponovo otvori Edit:
+
+cover slot prikazuje istu novu prvu sliku,
+
+nema “Image unavailable”.
+
+Ponovi još jednom s drugom slikom (da se potvrdi persist).
+
+6) Deliverables
+
+Navedi fileove koje si mijenjao (frontend + backend).
+
+Kratak opis: “root cause” (npr. order nije bio persistiran / backend sortirao po created_at / coverImageId nije update-an).
+
+Dodaj mali unit/integration test ako već imate infra (nije obavezno).

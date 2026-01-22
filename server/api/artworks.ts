@@ -80,14 +80,20 @@ router.get('/artworks', authenticateToken, async (req: any, res) => {
     
     // Normalize image_url to API endpoint format for frontend compatibility
     // Also add requiresReupload flag for artworks missing storage_key
+    // Add cache-busting timestamp to prevent stale images after cover changes
     artworks.forEach((a: any) => {
       // Check if artwork needs re-upload (missing storage_key)
       const hasValidStorageKey = a.storage_key && a.storage_key.trim() !== '';
       const hasValidImageUrl = a.image_url && (a.image_url.startsWith('/objects/') || a.image_url.startsWith('http'));
       a.requiresReupload = !hasValidStorageKey && !hasValidImageUrl;
       
+      // Add cache-bust timestamp based on updated_at
+      const cacheBust = a.updated_at ? new Date(a.updated_at).getTime() : Date.now();
+      
       if (a.image_url && a.image_url.startsWith('/objects/')) {
-        a.image_url = `/api/artwork-image/${a.id}`;
+        a.image_url = `/api/artwork-image/${a.id}?t=${cacheBust}`;
+      } else if (!a.image_url || a.image_url.startsWith('/api/artwork-image/')) {
+        a.image_url = `/api/artwork-image/${a.id}?t=${cacheBust}`;
       }
     });
     
@@ -492,44 +498,39 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
       const promotedId = parseInt(promotedGalleryImageId);
       console.log(`[Update] Promoting gallery image ${promotedId} to cover for artwork ${artworkId}`);
       
-      // Get the gallery image that's being promoted
+      // Get the gallery image that's being promoted (including its position)
       const galleryImageResult = await query(
-        'SELECT id, storage_key FROM artwork_gallery_images WHERE id = $1 AND artwork_id = $2',
+        'SELECT id, storage_key, display_order FROM artwork_gallery_images WHERE id = $1 AND artwork_id = $2',
         [promotedId, artworkId]
       );
       
       if (galleryImageResult.rows.length > 0) {
         const promotedImage = galleryImageResult.rows[0];
+        const promotedDisplayOrder = promotedImage.display_order;
         const oldCoverStorageKey = storageKey;
         
         // Set the promoted image as the new cover
         storageKey = promotedImage.storage_key;
         imageUrl = promotedImage.storage_key;
         
-        // Move old cover to gallery (if it exists and isn't corrupted)
+        // Delete the promoted image from gallery first (it's now the cover)
+        await query('DELETE FROM artwork_gallery_images WHERE id = $1', [promotedId]);
+        console.log(`[Update] Removed promoted image ${promotedId} from gallery (was at order ${promotedDisplayOrder})`);
+        
+        // Move old cover to gallery at position 1 (replacing promoted image's position)
+        // This ensures the old cover takes the first slot in the gallery
         if (oldCoverStorageKey && !isCorrupted) {
-          // Get the next display_order
-          const maxOrderResult = await query(
-            'SELECT COALESCE(MAX(display_order), 0) + 1 as next_order FROM artwork_gallery_images WHERE artwork_id = $1',
-            [artworkId]
-          );
-          const nextOrder = maxOrderResult.rows[0].next_order;
-          
-          // Insert old cover as a gallery image
+          // Insert old cover at display_order 1 (first position in gallery)
           await query(
-            'INSERT INTO artwork_gallery_images (artwork_id, storage_key, display_order, is_mockup) VALUES ($1, $2, $3, false)',
-            [artworkId, oldCoverStorageKey, nextOrder]
+            'INSERT INTO artwork_gallery_images (artwork_id, storage_key, display_order, is_mockup) VALUES ($1, $2, 1, false)',
+            [artworkId, oldCoverStorageKey]
           );
-          console.log(`[Update] Moved old cover to gallery with order ${nextOrder}`);
+          console.log(`[Update] Moved old cover to gallery at position 1`);
         }
         
-        // Delete the promoted image from gallery (it's now the cover)
-        await query('DELETE FROM artwork_gallery_images WHERE id = $1', [promotedId]);
-        console.log(`[Update] Removed promoted image ${promotedId} from gallery`);
-        
-        // Reorder remaining gallery images to fill the gap
+        // Reorder all gallery images to have sequential display_order starting from 1
         const remainingImages = await query(
-          'SELECT id FROM artwork_gallery_images WHERE artwork_id = $1 ORDER BY display_order',
+          'SELECT id FROM artwork_gallery_images WHERE artwork_id = $1 ORDER BY display_order ASC, id ASC',
           [artworkId]
         );
         for (let i = 0; i < remainingImages.rows.length; i++) {
@@ -538,6 +539,7 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
             [i + 1, remainingImages.rows[i].id]
           );
         }
+        console.log(`[Update] Reordered ${remainingImages.rows.length} gallery images`);
       }
     } else if (req.file) {
       // Upload new image to Object Storage
@@ -694,13 +696,15 @@ router.get('/artworks/:id/images', authenticateToken, async (req: any, res) => {
     );
 
     // Build images array with cover image first
+    // Add cache-busting timestamps to prevent stale images after cover changes
     const images: Array<{ id: number; image_url: string; display_order: number; is_mockup: boolean; is_cover: boolean }> = [];
+    const cacheBust = artwork.updated_at ? new Date(artwork.updated_at).getTime() : Date.now();
     
     // Add cover image (from main artworks table)
     if (artwork.storage_key || artwork.image_url) {
       images.push({
         id: 0,
-        image_url: `/api/artwork-image/${artworkId}`,
+        image_url: `/api/artwork-image/${artworkId}?t=${cacheBust}`,
         display_order: 0,
         is_mockup: false,
         is_cover: true
@@ -711,7 +715,7 @@ router.get('/artworks/:id/images', authenticateToken, async (req: any, res) => {
     imagesResult.rows.forEach((img: any, index: number) => {
       images.push({
         id: img.id,
-        image_url: `/api/artwork-gallery-image/${img.id}`,
+        image_url: `/api/artwork-gallery-image/${img.id}?t=${cacheBust}`,
         display_order: img.display_order,
         is_mockup: img.is_mockup,
         is_cover: false
