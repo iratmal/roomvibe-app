@@ -1,0 +1,104 @@
+✅ REPLIT AGENT TASK — Fix Upload Artwork “Image Roles” dropdown (Gallery 1–5 + correct image mapping)
+
+Priority: HIGH
+Area: Dashboard → Add New Artwork (Upload form) → Image Roles
+Components: Card Image dropdown + Exhibition & Studio Image dropdown
+
+1) Problem (trenutno)
+
+Na Upload new artwork formi:
+
+U oba dropdowna (Card Image i Exhibition & Studio Image):
+
+prikazuje se samo Gallery 1–4
+
+Gallery 5 nedostaje iako postoji 5 slika
+
+Dropdown ne mapira ispravno:
+
+kad kliknem “Gallery 1” → ne selektira prvu sliku kako treba
+
+“Gallery 2” → ne selektira drugu
+
+“Gallery 3” → ne treću…
+
+isto vrijedi i za Exhibition & Studio dropdown
+
+➡️ znači: dropdown opcije i preview ne odgovaraju stvarnim slikama (index mismatch / stale state / pogrešan key).
+
+2) Očekivano ponašanje
+
+Na Upload formi, čim su slike uploadane:
+
+A) Dropdown opcije
+
+U OBA dropdowna mora biti:
+
+Gallery 1, Gallery 2, Gallery 3, Gallery 4, Gallery 5
+(ili Gallery 1..N ovisno o broju uploadanih slika)
+
+B) Ispravno mapiranje (obavezno)
+
+Klik Gallery 1 → odabere prvu sliku (index 0) + preview lijevo pokazuje tu sliku
+
+Klik Gallery 2 → odabere drugu sliku (index 1)
+
+Klik Gallery 3 → treću (index 2)
+
+Klik Gallery 4 → četvrtu (index 3)
+
+Klik Gallery 5 → petu (index 4)
+
+Ovo mora raditi:
+
+za Card Image
+
+i za Exhibition & Studio Image
+
+3) Najvjerojatniji uzrok (agent provjeri)
+
+Dropdown options se generiraju iz pogrešnog izvora (npr. max 4 hardcoded).
+
+ili se koristi cover / selectedImage state iz Edit forme, pa se ne update-a na Upload formi.
+
+ili indexiranje kreće od 1, ali u arrayu kreće od 0 (off-by-one).
+
+ili koristi se pogrešan key (npr. Gallery ${i} bez stabilnog imageId) pa React ne rerendera pravilno kad se upload promijeni.
+
+4) Implementacijski zahtjevi
+
+Dropdown options generirati iz trenutnog images[] state-a na Upload formi:
+
+options = images.map((img, idx) => ({ label: Gallery idx+1, value: img.id }))
+
+Selected value spremati kao imageId, ne kao label/index string.
+
+Preview thumbnail uz dropdown mora renderati:
+
+images.find(img => img.id === selectedId)
+
+Ako user obriše sliku:
+
+dropdown se mora update-ati
+
+ako je obrisana selektirana slika, fallback na Gallery 1
+
+5) Acceptance criteria (test scenario)
+
+Uploadaj 5 slika.
+
+U Card Image dropdownu vidi se Gallery 1–5.
+
+Klik Gallery 5 → preview pokaže 5. sliku.
+
+Ponovi za Gallery 2 i Gallery 3 (mora odgovarati).
+
+Isto ponovi na Exhibition & Studio dropdownu.
+
+Spremi artwork → sačuvani odabiri ostaju i na Edit i na My Artworks.
+
+6) Deliverables
+
+Popis fileova izmijenjenih u Upload formi.
+
+Kratko: “Dropdown uses imageId mapping; options are Gallery 1..N; fixed off-by-one + removed hardcoded limit 4.”

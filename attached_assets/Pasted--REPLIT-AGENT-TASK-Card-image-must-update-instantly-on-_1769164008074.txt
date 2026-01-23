@@ -1,0 +1,91 @@
+✅ REPLIT AGENT TASK — Card image must update instantly on My Artworks (no refresh)
+
+Priority: HIGH
+Area: Artist Dashboard → My Artworks list + Edit/Add Artwork save flow
+Goal: Nakon “Save images” ili spremanja card image-a, artwork kartica mora odmah prikazati novu cover sliku.
+
+1) Problem (trenutno)
+
+User promijeni Card Image (Image Roles) i klikne Save images (ili submit).
+
+Backend spremi promjenu.
+
+Ali u My Artworks listi:
+
+cover slika ostaje stara
+
+promjena se vidi tek nakon manual refresh-a stranice.
+
+2) Očekivano ponašanje
+
+Nakon uspješnog save-a:
+
+My Artworks kartica odmah prikazuje novu cardImageId sliku
+
+bez refresh-a
+
+i to vrijedi:
+
+kad se radi iz Edit Artwork
+
+i kad se radi iz Upload (Add New Artwork)
+
+3) Što treba napraviti (minimalno, pouzdano)
+A) Refetch / cache invalidation
+
+Nakon uspješnog Save images requesta:
+
+invalidirati / refetch:
+
+getMyArtworks (list query)
+
+i/ili getArtworkById ako kartica koristi detalje
+
+Ako koristite React Query / SWR:
+
+queryClient.invalidateQueries(['my-artworks'])
+
+(i po potrebi) invalidateQueries(['artwork', artworkId])
+
+Ako je custom state:
+
+nakon save-a ručno update-ati list state:
+
+pronaći artwork u listi i zamijeniti cardImageId (optimistic update)
+
+B) Kartica mora koristiti cardImageId kao source of truth
+
+Provjeriti komponentu artwork kartice:
+
+cover image ne smije biti images[0]
+
+mora biti:
+
+images.find(img.id === cardImageId)
+
+fallback: images[0] samo ako cardImageId ne postoji
+
+C) “Instant” UI feedback (optional but recommended)
+
+nakon save-a:
+
+odmah promijeniti cover na UI (optimistic)
+
+zatim refetch za potvrdu
+To eliminira “delay” i osjeća se instantno.
+
+4) Acceptance criteria
+
+U My Artworks listi promijenim Card Image (npr. Gallery 3) → Save images.
+
+Bez refresh-a, kartica odmah pokaže novu sliku.
+
+Refresh page → ista slika ostaje (persistirano).
+
+Isto ponašanje radi i nakon Upload new artwork flowa.
+
+5) Deliverables
+
+Popis fileova (save handler + my artworks query/state + card component).
+
+Kratak root cause: “query wasn’t invalidated / card used first image instead of cardImageId”.
