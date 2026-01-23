@@ -1,0 +1,108 @@
+✅ REPLIT AGENT TASK — Add “Image Roles + Save images” section to Add New Artwork (Upload flow)
+
+Priority: HIGH
+Page: Dashboard → Add New Artwork (Upload new artwork form)
+Goal: Isti “Image Roles” flow koji radi u Edit Artwork mora postojati i kod kreiranja novog artworka.
+
+1) Problem (trenutno)
+
+Na Add New Artwork formi (upload):
+
+user može uploadati 5 slika
+
+ali nema novog bloka koji smo dodali u Edit:
+
+Card Image dropdown
+
+Exhibition & Studio Image dropdown
+
+Save images gumb
+
+Zbog toga user pri uploadu ne može odmah postaviti image roles, nego tek kasnije kroz Edit (što je loš UX i stvara zabunu).
+
+2) Očekivano ponašanje
+
+Na Add New Artwork formi, ispod “Artwork Images” (odmah nakon upload thumbnails), a prije “Dimensions”, dodati potpuno isti blok kao u Edit:
+
+✅ Image Roles (identičan UI i logika kao u Edit)
+
+Dropdown 1: Card Image
+
+Dropdown 2: Exhibition & Studio Image (360° & View in Room)
+
+Dropdown opcije u oba menija:
+Gallery 1 – Gallery 5 (dinamički prema redoslijedu slika)
+
+bez Auto
+
+bez Cover image
+
+✅ Save button
+
+gumb: Save images
+
+klik na Save images:
+
+sprema trenutno stanje image roles (i redoslijed slika ako se može mijenjati)
+
+ne resetira formu
+
+ne smije zatvoriti Add New Artwork view
+
+Cilj: user odmah pri uploadu definira “card image” i “exhibition/studio image”.
+
+3) Behaviour / edge cases (bitno)
+
+Ako user upload-a manje od 5 slika:
+
+dropdown prikazuje samo Gallery 1…N
+
+Default selekcije:
+
+Card Image default = Gallery 1 (ili prva mockup ako imate logiku, ali MVP može Gallery 1)
+
+Exhibition & Studio default = Gallery 1 (ili prva clean, ako postoji)
+
+Ako user promijeni redoslijed slika (ako postoji drag&drop i na upload formi):
+
+Gallery 1–N se mora ažurirati i pratiti novi poredak
+
+4) Backend / data persistence
+
+Add New Artwork create endpoint mora primiti i spremiti:
+
+cardImageId
+
+cleanImageId (Exhibition & Studio)
+
+(ako se sprema order) redoslijed slika / positions
+
+Ako trenutno create endpoint ne podržava ta polja:
+
+proširiti payload i spremanje identično kao update endpoint.
+
+5) Acceptance criteria
+
+Na Add New Artwork formi vidim Image Roles blok prije Dimensions.
+
+U oba dropdowna vidim samo Gallery 1–N.
+
+Klik na Save images:
+
+ne briše formu
+
+ne resetira uploadane slike
+
+Nakon finalnog kreiranja artworka:
+
+u My Artworks kartici se koristi odabrani Card Image
+
+Studio i Exhibition koriste odabrani Exhibition & Studio Image
+
+6) Deliverables
+
+Popis izmijenjenih fileova (FE + BE).
+
+Kratko: kako su implementirani defaulti u upload flowu.
+
+Test: kreirati novi artwork, odabrati Card Image = Gallery 3, spremiti i potvrditi da kartica prikazuje Gallery 3.
