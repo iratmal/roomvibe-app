@@ -283,9 +283,6 @@ export function ArtworkImageGallery({
             ({allImages.length}/{maxImages} images)
           </span>
         </label>
-        {isEditing && primaryImage && (
-          <span className="text-xs text-rv-textMuted">First image = cover image</span>
-        )}
       </div>
 
       {allImages.length === 0 ? (
@@ -295,7 +292,7 @@ export function ArtworkImageGallery({
           </svg>
           <span className="text-lg font-semibold text-rv-text mb-1">Upload Artwork Images</span>
           <span className="text-sm text-rv-textMuted text-center">
-            Select up to 5 images at once. First image will be your cover.
+            Select up to 5 images. Use Image Roles below to set card and exhibition images.
           </span>
           <span className="text-xs text-rv-textMuted mt-2">Click to browse or drag files here</span>
           <input
@@ -387,11 +384,6 @@ export function ArtworkImageGallery({
                 </span>
               )}
               
-              {slotIndex === 0 && draggedIndex === null && (
-                <span className="absolute top-2 left-2 px-2 py-0.5 bg-rv-primary text-white text-xs font-semibold rounded-full">
-                  Cover
-                </span>
-              )}
               
               {img.is_mockup && (
                 <span className="absolute bottom-2 left-2 px-2 py-0.5 bg-[#C9A24A] text-white text-xs font-semibold rounded-full flex items-center gap-1">
@@ -525,7 +517,7 @@ export function ArtworkImageGallery({
         {!isEditing ? (
           <>Tip: After uploading, you can use RoomVibe Studio to create realistic room mockups that help collectors visualize your art.</>
         ) : (
-          <>Tip: Use a <strong>clean artwork image</strong> as your cover. Avoid mockups as the first image.</>
+          <>Tip: Use <strong>Image Roles</strong> above to select which image appears on cards and in exhibitions.</>
         )}
       </p>
     </div>
