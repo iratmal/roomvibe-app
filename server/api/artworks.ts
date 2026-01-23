@@ -410,9 +410,9 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
       role: req.user?.role
     });
 
-    const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, artistId, orientation, styleTags, dominantColors, medium, availability, variants } = req.body;
+    const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, artistId, orientation, styleTags, dominantColors, medium, availability, variants, cardImageId, cleanImageId } = req.body;
 
-    console.log('[UPLOAD] Artwork data:', { title, width, height, dimensionUnit, buyUrl, orientation, medium, availability });
+    console.log('[UPLOAD] Artwork data:', { title, width, height, dimensionUnit, buyUrl, orientation, medium, availability, cardImageId, cleanImageId });
 
     if (!title || !width || !height) {
       console.error('[UPLOAD] Missing required fields:', { title: !!title, width: !!width, height: !!height });
@@ -478,15 +478,23 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
       }
     }
     const variantsJson = JSON.stringify(artworkVariants);
+    
+    // Parse image role IDs - these will be resolved to actual image IDs after gallery upload
+    const artworkCardImageId = cardImageId !== undefined && cardImageId !== '' && cardImageId !== null 
+      ? parseInt(cardImageId) 
+      : null;
+    const artworkCleanImageId = cleanImageId !== undefined && cleanImageId !== '' && cleanImageId !== null 
+      ? parseInt(cleanImageId) 
+      : null;
 
     console.log('[Upload] Inserting artwork into database...');
     let result;
     try {
       result = await query(
-        `INSERT INTO artworks (artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, variants, visible_to_designers, visible_to_galleries, updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, FALSE, FALSE, CURRENT_TIMESTAMP)
-         RETURNING id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, variants, visible_to_designers, visible_to_galleries, created_at, updated_at`,
-        [targetArtistId, title, imageUrl, storageKey, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, tags, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability, variantsJson]
+        `INSERT INTO artworks (artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, variants, visible_to_designers, visible_to_galleries, card_image_id, clean_image_id, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, FALSE, FALSE, $18, $19, CURRENT_TIMESTAMP)
+         RETURNING id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, variants, visible_to_designers, visible_to_galleries, card_image_id, clean_image_id, created_at, updated_at`,
+        [targetArtistId, title, imageUrl, storageKey, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, tags, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability, variantsJson, artworkCardImageId, artworkCleanImageId]
       );
     } catch (dbError: any) {
       console.error('[Upload] DB insert failed, cleaning up storage:', dbError.message);

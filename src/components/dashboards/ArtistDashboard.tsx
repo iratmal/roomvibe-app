@@ -710,16 +710,23 @@ export function ArtistDashboard() {
       }
       formDataObj.append('availability', formData.availability);
       formDataObj.append('showOnPublicProfile', String(formData.showOnPublicProfile));
+      
+      // Include image role IDs for both create and edit
+      // For new uploads, determine actual IDs (default to first gallery image)
+      const actualCardImageId = formData.cardImageId ?? (galleryImages.length > 0 ? galleryImages[0].id : null);
+      const nonMockupImages = galleryImages.filter(g => !g.is_mockup);
+      const actualCleanImageId = formData.cleanImageId ?? (nonMockupImages.length > 0 ? nonMockupImages[0].id : null);
+      
+      if (actualCardImageId !== null) {
+        formDataObj.append('cardImageId', String(actualCardImageId));
+      }
+      if (actualCleanImageId !== null) {
+        formDataObj.append('cleanImageId', String(actualCleanImageId));
+      }
+      
       if (editingArtwork) {
         formDataObj.append('visibleToDesigners', String(formData.visibleToDesigners));
         formDataObj.append('visibleToGalleries', String(formData.visibleToGalleries));
-        // Include image role IDs
-        if (formData.cardImageId !== null) {
-          formDataObj.append('cardImageId', String(formData.cardImageId));
-        }
-        if (formData.cleanImageId !== null) {
-          formDataObj.append('cleanImageId', String(formData.cleanImageId));
-        }
       }
       if (formData.hasVariants && formData.variants.length > 0) {
         formDataObj.append('variants', JSON.stringify(formData.variants));
@@ -1408,8 +1415,8 @@ export function ArtistDashboard() {
                 />
               </div>
 
-              {/* Image Roles Section - Only show when editing existing artwork */}
-              {editingArtwork && (
+              {/* Image Roles Section - Show when images are available (both edit and upload) */}
+              {galleryImages.length > 0 && (
                 <div className="md:col-span-2 bg-gray-50 rounded-lg p-4 border border-gray-200">
                   <h4 className="text-sm font-semibold text-rv-text mb-3 flex items-center gap-2">
                     <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1428,7 +1435,7 @@ export function ArtistDashboard() {
                         <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
                           {(() => {
                             const selectedId = formData.cardImageId;
-                            let imgUrl = editingArtwork.card_image_url || editingArtwork.image_url;
+                            let imgUrl = editingArtwork?.card_image_url || editingArtwork?.image_url || (galleryImages.length > 0 ? galleryImages[0].image_url : '');
                             if (selectedId !== null) {
                               const galleryImg = galleryImages.find(g => g.id === selectedId);
                               if (galleryImg) {
@@ -1437,6 +1444,7 @@ export function ArtistDashboard() {
                             } else if (galleryImages.length > 0) {
                               imgUrl = galleryImages[0].image_url;
                             }
+                            if (!imgUrl) return <div className="w-full h-full bg-gray-200" />;
                             return (
                               <img
                                 src={imgUrl?.startsWith('http') ? imgUrl : `${API_URL}${imgUrl}`}
@@ -1477,7 +1485,7 @@ export function ArtistDashboard() {
                           {(() => {
                             const selectedId = formData.cleanImageId;
                             const nonMockupImages = galleryImages.filter(g => !g.is_mockup);
-                            let imgUrl = editingArtwork.clean_image_url || editingArtwork.image_url;
+                            let imgUrl = editingArtwork?.clean_image_url || editingArtwork?.image_url || (nonMockupImages.length > 0 ? nonMockupImages[0].image_url : (galleryImages.length > 0 ? galleryImages[0].image_url : ''));
                             if (selectedId !== null) {
                               const galleryImg = galleryImages.find(g => g.id === selectedId);
                               if (galleryImg) {
@@ -1486,6 +1494,7 @@ export function ArtistDashboard() {
                             } else if (nonMockupImages.length > 0) {
                               imgUrl = nonMockupImages[0].image_url;
                             }
+                            if (!imgUrl) return <div className="w-full h-full bg-gray-200" />;
                             return (
                               <img
                                 src={imgUrl?.startsWith('http') ? imgUrl : `${API_URL}${imgUrl}`}
@@ -1536,7 +1545,8 @@ export function ArtistDashboard() {
                     </div>
                   </div>
                   
-                  {/* Save Images Button */}
+                  {/* Save Images Button - Only show when editing existing artwork */}
+                  {editingArtwork && (
                   <div className="flex items-center gap-3 mt-4 pt-4 border-t border-gray-200">
                     <button
                       type="button"
@@ -1570,6 +1580,17 @@ export function ArtistDashboard() {
                       </span>
                     )}
                   </div>
+                  )}
+                  
+                  {/* Info text for new uploads */}
+                  {!editingArtwork && (
+                    <p className="text-xs text-gray-500 mt-3 flex items-center gap-1">
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Image roles will be saved when you submit the artwork.
+                    </p>
+                  )}
                 </div>
               )}
 
