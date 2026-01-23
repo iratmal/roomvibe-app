@@ -1,0 +1,106 @@
+✅ REPLIT AGENT TASK #1 — “Change” (replace image) mora postojati na SVIM artwork slikama (ne samo na prvoj)
+
+Priority: HIGH (UX + brzina rada)
+Scope: Add New Artwork + Edit Artwork (svugdje gdje se prikazuju uploadane slike)
+
+Problem (trenutno)
+
+“Change” overlay (hover → Change → upload zamjene) postoji samo na prvoj slici.
+
+Za ostale slike user mora:
+
+obrisati (X)
+
+pa ponovno uploadati
+→ to je sporo i frustrirajuće.
+
+Očekivano ponašanje
+
+Za SVAKI thumbnail (Gallery 1–5):
+
+na hover se prikaže Change
+
+klik na Change otvara file picker
+
+odabrana nova slika zamijeni baš tu sliku na tom indexu
+
+X (delete) ostaje i dalje (kao sada)
+
+Implementacijski zahtjevi
+
+“Change” overlay renderati na svakom thumbnailu (loop/map), ne samo na index 0.
+
+Klik “Change” mora:
+
+otvoriti input type=file (skriven) vezan uz taj thumbnail (ili shared input + activeIndex state)
+
+nakon odabira file-a:
+
+uploadati novu sliku
+
+zamijeniti postojeći image record na istom mjestu (ili update imageId na toj poziciji)
+
+Bitno: zamjena ne smije poremetiti:
+
+redoslijed (Gallery 1–5 ostaje)
+
+Image Roles odabire (ako je zamijenjena slika bila card/clean, neka ostane selected ali s novim imageId ili automatski rebind)
+
+Acceptance criteria
+
+Na svih 5 slika postoji “Change” na hover.
+
+Zamjena radi na Gallery 2/3/4/5 bez brisanja.
+
+Redoslijed ostaje isti.
+
+X delete i dalje radi.
+
+✅ REPLIT AGENT TASK #2 — Nakon “Upload artwork” novi artwork mora se odmah pojaviti kao nova kartica u My Artworks
+
+Priority: HIGH (core flow broken)
+Scope: Add New Artwork → submit / upload → My Artworks
+
+Problem (trenutno)
+
+Uploadam novi artwork i kliknem “Upload artwork” (submit).
+
+Očekujem da se:
+
+forma resetira / zatvori
+
+i da se u My Artworks pojavi nova kartica
+
+Ali nova kartica se ne pojavi (ni nakon submit-a), i izgleda kao da nije dodano (ili lista nije osvježena).
+
+Očekivano ponašanje
+
+Nakon uspješnog upload/submit:
+
+prikazati success feedback (toast): “Artwork uploaded successfully”
+
+My Artworks lista se mora:
+
+automatski refetchati / invalidirati cache
+
+nova kartica se mora pojaviti odmah (bez refresh-a stranice)
+
+Implementacijski zahtjevi
+
+Provjeriti submit handler:
+
+da stvarno dobiva success response i new artwork ID
+
+Nakon success:
+
+invalidirati/refetch my-artworks query/list state
+
+opcionalno optimistic add u listu (odmah ubaciti novi artwork u UI)
+
+Acceptance criteria
+
+Uploadam artwork → klik Upload → bez refresh-a se pojavi nova kartica u My Artworks.
+
+Kartica ima točan Card Image (prema Image Roles).
+
+Nakon reload-a i dalje postoji (persistirano).

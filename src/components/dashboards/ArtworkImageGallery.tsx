@@ -37,7 +37,9 @@ export function ArtworkImageGallery({
   const [primaryPreview, setPrimaryPreview] = useState<string | null>(null);
   const [showStudioWarning, setShowStudioWarning] = useState(false);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+  const [replaceIndex, setReplaceIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const replaceInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setNewPrimaryFile(null);
@@ -268,6 +270,54 @@ export function ArtworkImageGallery({
     onGalleryImagesChange(updated);
   }, [primaryImage, newPrimaryFile, galleryImages, onGalleryImagesChange]);
 
+  const handleReplaceClick = useCallback((slotIndex: number) => {
+    setReplaceIndex(slotIndex);
+    setTimeout(() => replaceInputRef.current?.click(), 0);
+  }, []);
+
+  const handleReplaceImage = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || replaceIndex === null) {
+      setReplaceIndex(null);
+      return;
+    }
+
+    const hasPrimary = !!(primaryImage || newPrimaryFile);
+    
+    if (replaceIndex === 0 && hasPrimary) {
+      setNewPrimaryFile(file);
+      onPrimaryImageChange(file);
+      const reader = new FileReader();
+      reader.onload = () => setPrimaryPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    } else {
+      const galleryIndex = hasPrimary ? replaceIndex - 1 : replaceIndex;
+      if (galleryIndex >= 0 && galleryIndex < galleryImages.length) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const updated = galleryImages.map((img, i) => {
+            if (i === galleryIndex) {
+              return {
+                ...img,
+                id: -(Date.now()),
+                image_url: reader.result as string,
+                isNew: true,
+                file,
+                previewUrl: reader.result as string
+              };
+            }
+            return img;
+          });
+          onGalleryImagesChange(updated);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+    
+    setReplaceIndex(null);
+    if (e.target) e.target.value = '';
+  }, [replaceIndex, primaryImage, newPrimaryFile, galleryImages, onPrimaryImageChange, onGalleryImagesChange]);
+
   const getImageUrl = (img: GalleryImage) => {
     if (img.previewUrl) return img.previewUrl;
     if (img.image_url?.startsWith('data:')) return img.image_url;
@@ -278,6 +328,15 @@ export function ArtworkImageGallery({
 
   return (
     <div className="space-y-4">
+      {/* Hidden file input for replacing individual images */}
+      <input
+        ref={replaceInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleReplaceImage}
+        className="hidden"
+      />
+      
       <div className="flex items-center justify-between">
         <label className="block text-sm font-semibold text-rv-text">
           Artwork Images <span className="text-red-500">*</span>
@@ -424,20 +483,15 @@ export function ArtworkImageGallery({
                 </button>
               </div>
               
-              {slotIndex === 0 && !isEditing && (
-                <label className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
-                  <span className="px-3 py-1.5 bg-white text-rv-text text-sm font-semibold rounded-rvMd">
-                    Change
-                  </span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleMultiFileUpload(e, true)}
-                    className="hidden"
-                    multiple
-                  />
-                </label>
-              )}
+              {/* Change overlay on ALL images */}
+              <div 
+                onClick={() => handleReplaceClick(slotIndex)}
+                className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
+              >
+                <span className="px-3 py-1.5 bg-white text-rv-text text-sm font-semibold rounded-rvMd shadow-lg">
+                  Change
+                </span>
+              </div>
             </div>
           );
         })}

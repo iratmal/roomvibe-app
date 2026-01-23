@@ -864,6 +864,9 @@ export function ArtistDashboard() {
         await fetchExhibitionArtworks(exhibition.id);
       }
 
+      // Scroll to top so user sees the new artwork card and success message
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
       setTimeout(() => setSuccess(''), 5000);
     } catch (err: any) {
       console.error('Error saving artwork:', err);
