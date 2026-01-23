@@ -32,7 +32,18 @@ export function ArtworkCardCarousel({ artworkId, primaryImageUrl, title }: Artwo
         if (response.ok) {
           const data = await response.json();
           if (data.images && data.images.length > 0) {
-            setImages(data.images);
+            // Sort images so the card image (matching primaryImageUrl) is first
+            const sortedImages = [...data.images].sort((a, b) => {
+              const aUrl = a.image_url.startsWith('http') ? a.image_url : `${API_URL}${a.image_url}`;
+              const bUrl = b.image_url.startsWith('http') ? b.image_url : `${API_URL}${b.image_url}`;
+              const primaryNorm = primaryImageUrl.split('?')[0]; // Remove cache-bust params for comparison
+              const aMatch = aUrl.split('?')[0] === primaryNorm || a.image_url.includes(primaryNorm.split('/').pop() || '');
+              const bMatch = bUrl.split('?')[0] === primaryNorm || b.image_url.includes(primaryNorm.split('/').pop() || '');
+              if (aMatch && !bMatch) return -1;
+              if (bMatch && !aMatch) return 1;
+              return a.display_order - b.display_order;
+            });
+            setImages(sortedImages);
           } else {
             setImages([{
               id: 0,
@@ -92,6 +103,13 @@ export function ArtworkCardCarousel({ artworkId, primaryImageUrl, title }: Artwo
     setImageLoadError(false);
     setImageLoaded(false);
   }, [currentIndex]);
+
+  // Reset to first image when primaryImageUrl changes (e.g., after card image update)
+  useEffect(() => {
+    setCurrentIndex(0);
+    setImageLoadError(false);
+    setImageLoaded(false);
+  }, [primaryImageUrl]);
 
   if (isLoading) {
     return (
