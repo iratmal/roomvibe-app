@@ -1020,15 +1020,22 @@ export function ArtistDashboard() {
       });
       
       // Update editingArtwork with new card image URL for immediate preview
-      if (actualCardImageId !== null) {
-        const selectedCardImg = galleryImages.find(g => g.id === actualCardImageId);
-        if (selectedCardImg) {
-          setEditingArtwork(prev => prev ? {
-            ...prev,
-            card_image_id: actualCardImageId,
-            card_image_url: selectedCardImg.image_url
-          } : null);
+      if (actualCardImageId !== null && editingArtwork) {
+        let cardImageUrl: string;
+        if (actualCardImageId === 0) {
+          // Primary image selected
+          cardImageUrl = editingArtwork.image_url;
+        } else {
+          // Gallery image selected
+          const selectedCardImg = galleryImages.find(g => g.id === actualCardImageId);
+          cardImageUrl = selectedCardImg?.image_url || editingArtwork.image_url;
         }
+        
+        setEditingArtwork(prev => prev ? {
+          ...prev,
+          card_image_id: actualCardImageId,
+          card_image_url: cardImageUrl
+        } : null);
       }
       
       // Update formData with explicit values
@@ -2019,12 +2026,14 @@ export function ArtistDashboard() {
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {artworks.map((artwork) => (
-                <div key={artwork.id} className="bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral overflow-hidden">
+                <div key={`${artwork.id}-${artwork.card_image_id || 'default'}-${artwork.updated_at || ''}`} className="bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral overflow-hidden">
                   <ArtworkCardCarousel
                     artworkId={artwork.id}
                     primaryImageUrl={(() => {
                       const imgUrl = artwork.card_image_url || artwork.image_url;
-                      return imgUrl.startsWith('http') ? imgUrl : `${API_URL}${imgUrl}`;
+                      const baseUrl = imgUrl.startsWith('http') ? imgUrl : `${API_URL}${imgUrl}`;
+                      // Add cache-bust if not already present
+                      return baseUrl.includes('?') ? baseUrl : `${baseUrl}?t=${Date.now()}`;
                     })()}
                     title={artwork.title}
                   />
