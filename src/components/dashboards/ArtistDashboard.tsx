@@ -1416,7 +1416,24 @@ export function ArtistDashboard() {
               </div>
 
               {/* Image Roles Section - Show when images are available (both edit and upload) */}
-              {galleryImages.length > 0 && (
+              {galleryImages.length > 0 && (() => {
+                // Build allImagesForDropdown: combine primary image + gallery images
+                // This ensures dropdown shows Gallery 1..N for ALL images
+                const primaryImgUrl = editingArtwork?.image_url || (formData.image instanceof File ? URL.createObjectURL(formData.image) : (typeof formData.image === 'string' ? formData.image : null));
+                const hasPrimaryImage = !!primaryImgUrl;
+                
+                const allImagesForDropdown: GalleryImage[] = [
+                  ...(hasPrimaryImage ? [{
+                    id: editingArtwork?.id ? 0 : -1, // 0 for existing artwork primary, -1 for new
+                    image_url: primaryImgUrl || '',
+                    display_order: 0,
+                    is_mockup: false,
+                    isNew: !editingArtwork
+                  }] : []),
+                  ...galleryImages
+                ];
+                
+                return (
                 <div className="md:col-span-2 bg-gray-50 rounded-lg p-4 border border-gray-200">
                   <h4 className="text-sm font-semibold text-rv-text mb-3 flex items-center gap-2">
                     <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1435,19 +1452,17 @@ export function ArtistDashboard() {
                         <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
                           {(() => {
                             const selectedId = formData.cardImageId;
-                            let imgUrl = editingArtwork?.card_image_url || editingArtwork?.image_url || (galleryImages.length > 0 ? galleryImages[0].image_url : '');
+                            let imgUrl = allImagesForDropdown.length > 0 ? allImagesForDropdown[0].image_url : '';
                             if (selectedId !== null) {
-                              const galleryImg = galleryImages.find(g => g.id === selectedId);
-                              if (galleryImg) {
-                                imgUrl = galleryImg.image_url;
+                              const foundImg = allImagesForDropdown.find(g => g.id === selectedId);
+                              if (foundImg) {
+                                imgUrl = foundImg.image_url;
                               }
-                            } else if (galleryImages.length > 0) {
-                              imgUrl = galleryImages[0].image_url;
                             }
                             if (!imgUrl) return <div className="w-full h-full bg-gray-200" />;
                             return (
                               <img
-                                src={imgUrl?.startsWith('http') ? imgUrl : `${API_URL}${imgUrl}`}
+                                src={imgUrl?.startsWith('http') || imgUrl?.startsWith('data:') || imgUrl?.startsWith('blob:') ? imgUrl : `${API_URL}${imgUrl}`}
                                 alt="Card preview"
                                 className="w-full h-full object-cover"
                               />
@@ -1455,7 +1470,7 @@ export function ArtistDashboard() {
                           })()}
                         </div>
                         <select
-                          value={formData.cardImageId ?? (galleryImages.length > 0 ? galleryImages[0].id : '')}
+                          value={formData.cardImageId ?? (allImagesForDropdown.length > 0 ? allImagesForDropdown[0].id : '')}
                           onChange={(e) => {
                             const val = e.target.value;
                             setFormData(prev => ({
@@ -1465,8 +1480,8 @@ export function ArtistDashboard() {
                           }}
                           className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-rv-primary"
                         >
-                          {galleryImages.map((img, idx) => (
-                            <option key={img.id || idx} value={img.id}>
+                          {allImagesForDropdown.map((img, idx) => (
+                            <option key={img.id ?? idx} value={img.id}>
                               Gallery {idx + 1}{img.is_mockup ? ' (mockup)' : ''}
                             </option>
                           ))}
@@ -1484,20 +1499,18 @@ export function ArtistDashboard() {
                         <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
                           {(() => {
                             const selectedId = formData.cleanImageId;
-                            const nonMockupImages = galleryImages.filter(g => !g.is_mockup);
-                            let imgUrl = editingArtwork?.clean_image_url || editingArtwork?.image_url || (nonMockupImages.length > 0 ? nonMockupImages[0].image_url : (galleryImages.length > 0 ? galleryImages[0].image_url : ''));
+                            const nonMockupImages = allImagesForDropdown.filter(g => !g.is_mockup);
+                            let imgUrl = nonMockupImages.length > 0 ? nonMockupImages[0].image_url : (allImagesForDropdown.length > 0 ? allImagesForDropdown[0].image_url : '');
                             if (selectedId !== null) {
-                              const galleryImg = galleryImages.find(g => g.id === selectedId);
-                              if (galleryImg) {
-                                imgUrl = galleryImg.image_url;
+                              const foundImg = allImagesForDropdown.find(g => g.id === selectedId);
+                              if (foundImg) {
+                                imgUrl = foundImg.image_url;
                               }
-                            } else if (nonMockupImages.length > 0) {
-                              imgUrl = nonMockupImages[0].image_url;
                             }
                             if (!imgUrl) return <div className="w-full h-full bg-gray-200" />;
                             return (
                               <img
-                                src={imgUrl?.startsWith('http') ? imgUrl : `${API_URL}${imgUrl}`}
+                                src={imgUrl?.startsWith('http') || imgUrl?.startsWith('data:') || imgUrl?.startsWith('blob:') ? imgUrl : `${API_URL}${imgUrl}`}
                                 alt="Exhibition preview"
                                 className="w-full h-full object-cover"
                               />
@@ -1506,7 +1519,7 @@ export function ArtistDashboard() {
                         </div>
                         <select
                           value={formData.cleanImageId ?? (() => {
-                            const nonMockup = galleryImages.filter(g => !g.is_mockup);
+                            const nonMockup = allImagesForDropdown.filter(g => !g.is_mockup);
                             return nonMockup.length > 0 ? nonMockup[0].id : '';
                           })()}
                           onChange={(e) => {
@@ -1514,7 +1527,7 @@ export function ArtistDashboard() {
                             const selectedId = val === '' ? null : parseInt(val);
                             // Block mockup selection for clean image
                             if (selectedId !== null) {
-                              const selectedImg = galleryImages.find(g => g.id === selectedId);
+                              const selectedImg = allImagesForDropdown.find(g => g.id === selectedId);
                               if (selectedImg?.is_mockup) {
                                 alert('Mockups are not allowed for exhibitions and studio. Please select a clean artwork image.');
                                 return;
@@ -1527,19 +1540,19 @@ export function ArtistDashboard() {
                           }}
                           className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-rv-primary"
                         >
-                          {galleryImages.filter(img => !img.is_mockup).map((img) => (
-                            <option key={img.id} value={img.id}>
-                              Gallery {galleryImages.indexOf(img) + 1}
+                          {allImagesForDropdown.filter(img => !img.is_mockup).map((img, idx) => (
+                            <option key={img.id ?? idx} value={img.id}>
+                              Gallery {allImagesForDropdown.indexOf(img) + 1}
                             </option>
                           ))}
                         </select>
                       </div>
-                      {galleryImages.length > 0 && galleryImages.every(img => img.is_mockup) && (
+                      {allImagesForDropdown.length > 0 && allImagesForDropdown.every(img => img.is_mockup) && (
                         <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
                           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                           </svg>
-                          Only mockups available. Cover image will be used for exhibitions.
+                          Only mockups available. First image will be used for exhibitions.
                         </p>
                       )}
                     </div>
@@ -1592,7 +1605,8 @@ export function ArtistDashboard() {
                     </p>
                   )}
                 </div>
-              )}
+                );
+              })()}
 
               <div className="md:col-span-2">
                 <label className="block text-sm font-semibold mb-2 text-rv-text">

@@ -1,0 +1,173 @@
+🚨 REPLIT AGENT BLOCKER — Fix Image Roles mapping & persistence (Edit + Upload) + instant card update
+
+Priority: BLOCKER / P0
+Scope:
+
+Artist Dashboard → Edit Artwork
+
+Artist Dashboard → Add New Artwork (Upload)
+
+My Artworks cards
+
+0) What’s broken (current)
+A) Dropdown options
+
+Dropdown prikazuje samo Gallery 1–4 (fali 5) iako postoji 5 slika.
+
+B) Dropdown interaction
+
+Klik na Gallery 1 / 2 / 3 ne mijenja selekciju (ne mijenja preview i/ili saved value).
+
+C) Wrong mapping
+
+Gallery 1 mora biti prva slika u nizu (index 0) — ona koja je prije bila “cover”.
+
+Trenutno Gallery 1 nije prva (mapping/indexing je kriv).
+
+D) Save + instant UI update
+
+Nakon “Save images” / update:
+
+cardImage se ne prikazuje odmah na My Artworks kartici (treba refresh)
+
+Ovo ne radi ni na Edit ni na Upload.
+
+1) Required behavior (Definition of Done)
+1.1 Dropdown list MUST be dynamic (Gallery 1..N)
+
+Za artwork koji ima N slika, dropdown mora prikazati:
+
+Gallery 1…Gallery N
+N=5 → mora biti Gallery 1–5
+
+NO hardcoded limit 4.
+
+1.2 Gallery mapping MUST be exact
+
+Ako je images[] array:
+
+Gallery 1 → images[0]
+
+Gallery 2 → images[1]
+
+Gallery 3 → images[2]
+
+Gallery 4 → images[3]
+
+Gallery 5 → images[4]
+
+✅ “Gallery 1” = prva slika, ona koja je prije bila cover.
+
+1.3 Clicking dropdown MUST update state + preview
+
+Kad user klikne Gallery X:
+
+dropdown selected value se promijeni
+
+preview thumbnail uz dropdown se promijeni na odgovarajuću sliku
+
+internal state se spremi kao imageId (ne kao label)
+
+1.4 Save MUST persist and reflect instantly (no refresh)
+
+Kad user klikne Save images:
+
+backend sprema:
+
+cardImageId
+
+cleanImageId (Exhibition/Studio)
+
+UI:
+
+ne zatvara Edit view
+
+refetch/invalidira My Artworks list
+
+My Artworks kartica mora odmah prikazati novu cover sliku (cardImageId)
+
+Bez refresh-a.
+
+2) Implementation requirements (to prevent repeated bugs)
+2.1 Use imageId as dropdown value (NOT index, NOT “Gallery 2” string)
+
+Options must be built like:
+
+label: Gallery ${idx+1}
+
+value: image.id
+
+Selected state:
+
+selectedCardImageId
+
+selectedCleanImageId
+
+Preview:
+
+images.find(img => img.id === selectedId)
+
+This fixes:
+
+off-by-one
+
+reorder issues
+
+missing gallery 5
+
+“click does nothing” bug
+
+2.2 Ensure options come from CURRENT images state
+
+On Edit and Upload, dropdown options must reference the same array that renders thumbnails.
+
+If there are 5 thumbnails, dropdown must show 5 items.
+
+2.3 Fix My Artworks card source-of-truth
+
+Artwork card cover must render:
+
+image where img.id === cardImageId
+
+fallback only if cardImageId missing
+
+After save:
+
+invalidate/refetch my-artworks query OR update local state optimistically.
+
+3) Acceptance tests (agent must run)
+Test A (Edit)
+
+Open Edit Artwork with 5 images.
+
+Dropdown shows Gallery 1–5.
+
+Select Gallery 5 → preview changes to 5th image.
+
+Select Gallery 1 → preview becomes 1st image.
+
+Save images.
+
+Go back to My Artworks (or list visible) → card cover changes instantly (no refresh).
+
+Test B (Upload)
+
+Upload 5 images.
+
+Dropdown shows Gallery 1–5.
+
+Select Gallery 2 for Card → preview becomes 2nd image.
+
+Select Gallery 4 for Exhibition/Studio → preview becomes 4th image.
+
+Submit/save.
+
+My Artworks card shows selected Card image immediately.
+
+4) Deliverables
+
+List of files changed (Edit + Upload + Card component + API)
+
+Short “root cause” note (hardcoded limit / index-based values / missing query invalidation)
+
+Confirmation: both Test A and Test B pass.

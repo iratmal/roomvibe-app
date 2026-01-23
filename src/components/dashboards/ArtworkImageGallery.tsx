@@ -107,6 +107,7 @@ export function ArtworkImageGallery({
           const reader = new FileReader();
           reader.onload = () => {
             newImages[index] = {
+              id: -(Date.now() + index + 100),
               image_url: reader.result as string,
               display_order: updatedGallery.length + index,
               is_mockup: false,
@@ -140,6 +141,7 @@ export function ArtworkImageGallery({
         const reader = new FileReader();
         reader.onload = () => {
           newImages[index] = {
+            id: -(Date.now() + index),
             image_url: reader.result as string,
             display_order: currentGalleryCount + index,
             is_mockup: false,
