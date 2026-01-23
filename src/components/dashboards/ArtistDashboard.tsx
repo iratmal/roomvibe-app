@@ -983,13 +983,19 @@ export function ArtistDashboard() {
         });
       }
       
+      // Determine actual cardImageId - use first gallery image if null
+      const actualCardImageId = formData.cardImageId ?? (galleryImages.length > 0 ? galleryImages[0].id : null);
+      // Determine actual cleanImageId - use first non-mockup if null
+      const nonMockupImages = galleryImages.filter(g => !g.is_mockup);
+      const actualCleanImageId = formData.cleanImageId ?? (nonMockupImages.length > 0 ? nonMockupImages[0].id : null);
+      
       // 2. Save image role settings (cardImageId, cleanImageId)
       const formDataObj = new FormData();
-      if (formData.cardImageId !== null) {
-        formDataObj.append('cardImageId', String(formData.cardImageId));
+      if (actualCardImageId !== null) {
+        formDataObj.append('cardImageId', String(actualCardImageId));
       }
-      if (formData.cleanImageId !== null) {
-        formDataObj.append('cleanImageId', String(formData.cleanImageId));
+      if (actualCleanImageId !== null) {
+        formDataObj.append('cleanImageId', String(actualCleanImageId));
       }
       // Also include current title and dimensions to avoid validation errors
       formDataObj.append('title', formData.title);
@@ -1002,6 +1008,25 @@ export function ArtistDashboard() {
         credentials: 'include',
         body: formDataObj
       });
+      
+      // Update editingArtwork with new card image URL for immediate preview
+      if (actualCardImageId !== null) {
+        const selectedCardImg = galleryImages.find(g => g.id === actualCardImageId);
+        if (selectedCardImg) {
+          setEditingArtwork(prev => prev ? {
+            ...prev,
+            card_image_id: actualCardImageId,
+            card_image_url: selectedCardImg.image_url
+          } : null);
+        }
+      }
+      
+      // Update formData with explicit values
+      setFormData(prev => ({
+        ...prev,
+        cardImageId: actualCardImageId ?? null,
+        cleanImageId: actualCleanImageId ?? null
+      }));
       
       // 3. Refresh artworks list to reflect changes
       await fetchArtworks();
@@ -1404,13 +1429,13 @@ export function ArtistDashboard() {
                           {(() => {
                             const selectedId = formData.cardImageId;
                             let imgUrl = editingArtwork.card_image_url || editingArtwork.image_url;
-                            if (selectedId === 0) {
-                              imgUrl = editingArtwork.image_url;
-                            } else if (selectedId !== null) {
+                            if (selectedId !== null) {
                               const galleryImg = galleryImages.find(g => g.id === selectedId);
                               if (galleryImg) {
                                 imgUrl = galleryImg.image_url;
                               }
+                            } else if (galleryImages.length > 0) {
+                              imgUrl = galleryImages[0].image_url;
                             }
                             return (
                               <img
@@ -1422,7 +1447,7 @@ export function ArtistDashboard() {
                           })()}
                         </div>
                         <select
-                          value={formData.cardImageId ?? ''}
+                          value={formData.cardImageId ?? (galleryImages.length > 0 ? galleryImages[0].id : '')}
                           onChange={(e) => {
                             const val = e.target.value;
                             setFormData(prev => ({
@@ -1432,8 +1457,6 @@ export function ArtistDashboard() {
                           }}
                           className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-rv-primary"
                         >
-                          <option value="">Auto (default)</option>
-                          <option value="0">Cover image</option>
                           {galleryImages.map((img, idx) => (
                             <option key={img.id || idx} value={img.id}>
                               Gallery {idx + 1}{img.is_mockup ? ' (mockup)' : ''}
@@ -1453,14 +1476,15 @@ export function ArtistDashboard() {
                         <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
                           {(() => {
                             const selectedId = formData.cleanImageId;
+                            const nonMockupImages = galleryImages.filter(g => !g.is_mockup);
                             let imgUrl = editingArtwork.clean_image_url || editingArtwork.image_url;
-                            if (selectedId === 0) {
-                              imgUrl = editingArtwork.image_url;
-                            } else if (selectedId !== null) {
+                            if (selectedId !== null) {
                               const galleryImg = galleryImages.find(g => g.id === selectedId);
                               if (galleryImg) {
                                 imgUrl = galleryImg.image_url;
                               }
+                            } else if (nonMockupImages.length > 0) {
+                              imgUrl = nonMockupImages[0].image_url;
                             }
                             return (
                               <img
@@ -1472,12 +1496,15 @@ export function ArtistDashboard() {
                           })()}
                         </div>
                         <select
-                          value={formData.cleanImageId ?? ''}
+                          value={formData.cleanImageId ?? (() => {
+                            const nonMockup = galleryImages.filter(g => !g.is_mockup);
+                            return nonMockup.length > 0 ? nonMockup[0].id : '';
+                          })()}
                           onChange={(e) => {
                             const val = e.target.value;
                             const selectedId = val === '' ? null : parseInt(val);
                             // Block mockup selection for clean image
-                            if (selectedId !== null && selectedId !== 0) {
+                            if (selectedId !== null) {
                               const selectedImg = galleryImages.find(g => g.id === selectedId);
                               if (selectedImg?.is_mockup) {
                                 alert('Mockups are not allowed for exhibitions and studio. Please select a clean artwork image.');
@@ -1491,10 +1518,8 @@ export function ArtistDashboard() {
                           }}
                           className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-rv-primary"
                         >
-                          <option value="">Auto (cover)</option>
-                          <option value="0">Cover image</option>
-                          {galleryImages.filter(img => !img.is_mockup).map((img, idx) => (
-                            <option key={img.id || idx} value={img.id}>
+                          {galleryImages.filter(img => !img.is_mockup).map((img) => (
+                            <option key={img.id} value={img.id}>
                               Gallery {galleryImages.indexOf(img) + 1}
                             </option>
                           ))}
@@ -1959,7 +1984,10 @@ export function ArtistDashboard() {
                 <div key={artwork.id} className="bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral overflow-hidden">
                   <ArtworkCardCarousel
                     artworkId={artwork.id}
-                    primaryImageUrl={artwork.image_url.startsWith('http') ? artwork.image_url : `${API_URL}${artwork.image_url}`}
+                    primaryImageUrl={(() => {
+                      const imgUrl = artwork.card_image_url || artwork.image_url;
+                      return imgUrl.startsWith('http') ? imgUrl : `${API_URL}${imgUrl}`;
+                    })()}
                     title={artwork.title}
                   />
                   <div className="p-4">

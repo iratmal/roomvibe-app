@@ -1,0 +1,181 @@
+✅ REPLIT AGENT TASK — Fix Image Roles dropdown options + Card image not updating in My Artworks
+
+Priority: HIGH
+Area: Artist Dashboard → Edit Artwork · Image Roles · My Artworks cards
+Goal: Dropdown mora prikazivati samo stvarne gallery slike + card image mora se odmah reflektirati na artwork kartici.
+
+🔹 TASK 1 — Očistiti Image Roles dropdown (ukloniti “Auto” i “Cover image”)
+Problem (trenutno stanje)
+
+U Image Roles sekciji, u oba dropdown menija:
+
+Card Image
+
+Exhibition & Studio Image
+
+prikazuju se opcije:
+
+Auto (default)
+
+Cover image
+
+Ovo:
+
+zbunjuje usera
+
+više nema smisla, jer smo prešli na Gallery-based image roles
+
+uvodi implicitnu logiku koju više ne želimo
+
+Očekivano ponašanje
+
+U OBA dropdown menija treba postojati isključivo:
+
+Gallery 1
+Gallery 2
+Gallery 3
+Gallery 4
+Gallery 5
+
+
+👉 redoslijedom kako su slike poredane gore u Artwork Images sekciji
+👉 nema:
+
+Auto
+
+Cover image
+
+ikakvih “smart” opcija
+
+Dropdown = direktan odabir konkretne slike
+
+Konkretni zadaci
+
+Ukloniti:
+
+Auto (default)
+
+Cover image
+iz oba dropdowna
+
+Dropdown opcije se generiraju dinamički iz images[], po indexu:
+
+index 0 → Gallery 1
+
+index 1 → Gallery 2
+
+itd.
+
+I Card Image i Exhibition & Studio Image koriste isti izvor opcija
+
+🔹 TASK 2 — Card image se NE ažurira na artwork kartici nakon “Save images”
+Problem (trenutno)
+
+User:
+
+promijeni redoslijed slika gore
+
+u dropdownu odabere novi Card Image (npr. Gallery 2)
+
+klikne Save images
+
+Backend očito sprema promjenu,
+
+ali:
+
+u My Artworks listi
+
+artwork kartica i dalje prikazuje staru sliku
+
+👉 Ovo izgleda kao bug / broken state i ruši povjerenje.
+
+Očekivano ponašanje
+
+Nakon klika na Save images:
+
+cardImageId se:
+
+ispravno sprema u backend
+
+My Artworks:
+
+mora se refetchati
+
+i koristiti cardImageId kao izvor cover slike
+
+Artwork kartica mora:
+
+ODMAH prikazivati novu card image
+
+bez refresh-a stranice
+
+Najvjerojatniji uzrok (agent provjeri)
+
+My Artworks koristi:
+
+staru cached vrijednost
+
+ili i dalje koristi “first image” umjesto cardImageId
+
+Nakon save-a:
+
+ne invalidira se query
+
+ili se UI ne rerendera
+
+Konkretni zadaci
+
+Nakon uspješnog Save images:
+
+invalidirati / refetch:
+
+artwork detail
+
+My Artworks list
+
+Provjeriti da artwork kartica:
+
+ne koristi index 0
+
+nego eksplicitno cardImageId
+
+Osigurati:
+
+da promjena vrijedi i nakon reload-a
+
+✅ Acceptance criteria (mora sve proći)
+Dropdown
+
+U oba dropdowna postoje samo:
+
+Gallery 1–5
+
+Nema:
+
+Auto
+
+Cover image
+
+Card image update
+
+Promijenim Card Image u dropdownu
+
+Kliknem Save images
+
+My Artworks kartica:
+
+odmah pokazuje novu sliku
+
+Refresh page:
+
+ista slika ostaje (persist)
+
+❌ Not in scope
+
+AI image detection
+
+dodatni warningi
+
+per-wall image override
+
+promjena UI dizajna dropdowna
