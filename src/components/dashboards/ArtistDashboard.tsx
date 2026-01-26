@@ -1773,8 +1773,8 @@ export function ArtistDashboard() {
                 <label className="block text-sm font-semibold mb-2 text-rv-text">
                   Story Behind <span className="font-normal text-rv-textMuted">(optional)</span>
                 </label>
-                <p className="text-xs text-rv-textMuted mb-3">
-                  Share the inspiration, emotion or story behind this artwork.
+                <p className="text-sm text-rv-textMuted mb-3 leading-relaxed">
+                  Buying art is not just a transaction. Collectors, designers and galleries often want to understand what inspired you, the emotions behind the work, or the journey that led to its creation. Sharing your story helps others connect more deeply with your art.
                 </p>
                 {formData.story ? (
                   <div className="bg-rv-surface rounded-rvMd p-4 border border-rv-neutral">
@@ -2951,7 +2951,7 @@ export function ArtistDashboard() {
         {/* Story Edit Modal */}
         {showStoryModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl max-w-lg w-full p-6 shadow-xl">
+            <div className="bg-white rounded-xl w-full max-w-3xl p-6 shadow-xl">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold text-rv-text">Story Behind</h3>
                 <button
@@ -2966,14 +2966,24 @@ export function ArtistDashboard() {
               </div>
               <textarea
                 value={formData.story}
-                onChange={(e) => setFormData(prev => ({ ...prev, story: e.target.value }))}
-                placeholder="What inspired this piece?&#10;Was there a specific moment, feeling or story behind it?"
-                rows={6}
-                className="w-full px-4 py-3 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary resize-none text-rv-text"
+                onChange={(e) => {
+                  if (e.target.value.length <= 1500) {
+                    setFormData(prev => ({ ...prev, story: e.target.value }));
+                  }
+                }}
+                maxLength={1500}
+                placeholder="What inspired this piece? Was there a specific moment, feeling or story behind it?"
+                rows={10}
+                className="w-full px-4 py-3 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary resize-none text-rv-text text-base"
               />
-              <p className="text-xs text-rv-textMuted mt-2 mb-4">
-                This story will be visible to visitors on your artwork page.
-              </p>
+              <div className="flex items-center justify-between mt-2 mb-4">
+                <p className="text-xs text-rv-textMuted">
+                  This story will be visible to visitors on your artwork page.
+                </p>
+                <p className={`text-xs font-medium ${(formData.story?.length || 0) > 1400 ? 'text-amber-600' : 'text-rv-textMuted'}`}>
+                  {formData.story?.length || 0} / 1500
+                </p>
+              </div>
               <div className="flex gap-3">
                 <button
                   type="button"
@@ -3000,7 +3010,7 @@ export function ArtistDashboard() {
         {/* Story View Modal (for viewing story from artwork card) */}
         {viewStoryArtwork && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl max-w-lg w-full p-6 shadow-xl">
+            <div className="bg-white rounded-xl w-full max-w-3xl p-6 shadow-xl">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold text-rv-text">Story Behind</h3>
                 <button
@@ -3014,16 +3024,16 @@ export function ArtistDashboard() {
                 </button>
               </div>
               <div className="mb-4">
-                <p className="text-sm font-semibold text-rv-primary mb-1">{viewStoryArtwork.title}</p>
+                <p className="text-base font-semibold text-rv-primary mb-1">{viewStoryArtwork.title}</p>
               </div>
-              <div className="bg-rv-surface rounded-lg p-4 border border-rv-neutral">
-                <p className="text-sm text-rv-text whitespace-pre-wrap">{viewStoryArtwork.story}</p>
+              <div className="bg-rv-surface rounded-lg p-5 border border-rv-neutral max-h-[60vh] overflow-y-auto">
+                <p className="text-base text-rv-text whitespace-pre-wrap leading-relaxed">{viewStoryArtwork.story}</p>
               </div>
               <div className="mt-6 flex justify-end">
                 <button
                   type="button"
                   onClick={() => setViewStoryArtwork(null)}
-                  className="px-4 py-2 bg-rv-primary text-white text-sm font-semibold rounded-lg hover:bg-rv-primaryHover transition-colors"
+                  className="px-5 py-2.5 bg-rv-primary text-white text-sm font-semibold rounded-lg hover:bg-rv-primaryHover transition-colors"
                 >
                   Close
                 </button>

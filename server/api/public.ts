@@ -52,7 +52,7 @@ router.get('/artist/:slug', async (req, res) => {
       `SELECT 
         id, title, image_url, width, height, dimension_unit,
         price_amount, price_currency, buy_url, medium, style_tags,
-        availability, like_count, variants, card_image_id, clean_image_id, updated_at
+        availability, like_count, variants, card_image_id, clean_image_id, story, updated_at
       FROM artworks 
       WHERE artist_id = $1
       ORDER BY created_at DESC`,
@@ -201,6 +201,7 @@ router.get('/artist/:slug', async (req, res) => {
         styleTags: a.style_tags || [],
         availability: a.availability,
         likeCount: parseInt(a.like_count) || 0,
+        story: a.story || null,
         variants: a.variants || [],
         galleryImages: galleryImages
       };

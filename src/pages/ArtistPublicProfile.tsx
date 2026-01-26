@@ -56,6 +56,7 @@ interface Artwork {
   styleTags: string[];
   availability: string;
   likeCount: number;
+  story?: string | null;
   variants?: ArtworkVariant[];
   galleryImages?: GalleryImage[];
 }
@@ -83,6 +84,7 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
   const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(null);
   const [detailImageIndex, setDetailImageIndex] = useState(0);
   const [selectedVariantIndex, setSelectedVariantIndex] = useState<number | null>(null);
+  const [viewStoryArtwork, setViewStoryArtwork] = useState<Artwork | null>(null);
   
   const isOwner = user && artistId && user.id === artistId;
   
@@ -878,8 +880,8 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                       </p>
                     ) : null}
                     
-                    {/* Like button row */}
-                    <div className="flex items-center mb-4">
+                    {/* Like button and Story Behind row */}
+                    <div className="flex items-center justify-between mb-4">
                       <button
                         onClick={() => handleLikeArtwork(artwork.id)}
                         className={`flex items-center gap-1.5 transition-colors ${
@@ -898,6 +900,17 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                         </svg>
                         <span className="text-xs">{artwork.likeCount}</span>
                       </button>
+                      {artwork.story && (
+                        <button
+                          onClick={() => setViewStoryArtwork(artwork)}
+                          className="flex items-center gap-1 text-sm text-[#1E2A3B] hover:text-[#C9A24A] font-medium transition-colors"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                          </svg>
+                          Story Behind
+                        </button>
+                      )}
                     </div>
                     
                     {/* CTA Buttons - equal width, side by side */}
@@ -1395,6 +1408,41 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
               }}
               draggable={false}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Story View Modal */}
+      {viewStoryArtwork && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl w-full max-w-3xl p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-[#1E2A3B]">Story Behind</h3>
+              <button
+                type="button"
+                onClick={() => setViewStoryArtwork(null)}
+                className="p-1 text-gray-400 hover:text-[#1E2A3B] rounded-full hover:bg-gray-100 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="mb-4">
+              <p className="text-base font-semibold text-[#C9A24A] mb-1">{viewStoryArtwork.title}</p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-5 border border-gray-200 max-h-[60vh] overflow-y-auto">
+              <p className="text-base text-[#1E2A3B] whitespace-pre-wrap leading-relaxed">{viewStoryArtwork.story}</p>
+            </div>
+            <div className="mt-6 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setViewStoryArtwork(null)}
+                className="px-5 py-2.5 bg-[#1E2A3B] text-white text-sm font-semibold rounded-lg hover:bg-[#2A3A4F] transition-colors"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
