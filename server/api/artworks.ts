@@ -61,13 +61,13 @@ router.get('/artworks', authenticateToken, async (req: any, res) => {
     let queryParams;
 
     if (effectivePlan === 'admin') {
-      queryText = `SELECT a.id, a.artist_id, a.title, a.image_url, a.storage_key, a.width, a.height, a.dimension_unit, a.price_amount, a.price_currency, a.buy_url, a.tags, a.orientation, a.style_tags, a.dominant_colors, a.medium, a.availability, a.visible_to_designers, a.visible_to_galleries, a.variants, a.card_image_id, a.clean_image_id, a.created_at, a.updated_at, u.email as artist_email
+      queryText = `SELECT a.id, a.artist_id, a.title, a.image_url, a.storage_key, a.width, a.height, a.dimension_unit, a.price_amount, a.price_currency, a.buy_url, a.tags, a.orientation, a.style_tags, a.dominant_colors, a.medium, a.availability, a.visible_to_designers, a.visible_to_galleries, a.variants, a.card_image_id, a.clean_image_id, a.story, a.created_at, a.updated_at, u.email as artist_email
                    FROM artworks a
                    LEFT JOIN users u ON a.artist_id = u.id
                    ORDER BY a.created_at DESC`;
       queryParams = [];
     } else {
-      queryText = `SELECT id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, visible_to_designers, visible_to_galleries, variants, card_image_id, clean_image_id, created_at, updated_at
+      queryText = `SELECT id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, visible_to_designers, visible_to_galleries, variants, card_image_id, clean_image_id, story, created_at, updated_at
                    FROM artworks 
                    WHERE artist_id = $1 
                    ORDER BY created_at DESC`;
@@ -410,9 +410,9 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
       role: req.user?.role
     });
 
-    const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, artistId, orientation, styleTags, dominantColors, medium, availability, variants, cardImageId, cleanImageId } = req.body;
+    const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, artistId, orientation, styleTags, dominantColors, medium, availability, variants, cardImageId, cleanImageId, story } = req.body;
 
-    console.log('[UPLOAD] Artwork data:', { title, width, height, dimensionUnit, buyUrl, orientation, medium, availability, cardImageId, cleanImageId });
+    console.log('[UPLOAD] Artwork data:', { title, width, height, dimensionUnit, buyUrl, orientation, medium, availability, cardImageId, cleanImageId, hasStory: !!story });
 
     if (!title || !width || !height) {
       console.error('[UPLOAD] Missing required fields:', { title: !!title, width: !!width, height: !!height });
@@ -487,14 +487,17 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
       ? parseInt(cleanImageId) 
       : null;
 
+    // Story is optional - use provided value or null
+    const artworkStory = story && typeof story === 'string' && story.trim() ? story.trim() : null;
+
     console.log('[Upload] Inserting artwork into database...');
     let result;
     try {
       result = await query(
-        `INSERT INTO artworks (artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, variants, visible_to_designers, visible_to_galleries, card_image_id, clean_image_id, updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, FALSE, FALSE, $18, $19, CURRENT_TIMESTAMP)
-         RETURNING id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, variants, visible_to_designers, visible_to_galleries, card_image_id, clean_image_id, created_at, updated_at`,
-        [targetArtistId, title, imageUrl, storageKey, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, tags, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability, variantsJson, artworkCardImageId, artworkCleanImageId]
+        `INSERT INTO artworks (artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, variants, visible_to_designers, visible_to_galleries, card_image_id, clean_image_id, story, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, FALSE, FALSE, $18, $19, $20, CURRENT_TIMESTAMP)
+         RETURNING id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, variants, visible_to_designers, visible_to_galleries, card_image_id, clean_image_id, story, created_at, updated_at`,
+        [targetArtistId, title, imageUrl, storageKey, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, tags, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability, variantsJson, artworkCardImageId, artworkCleanImageId, artworkStory]
       );
     } catch (dbError: any) {
       console.error('[Upload] DB insert failed, cleaning up storage:', dbError.message);
@@ -546,7 +549,7 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
     const artworkId = parseInt(req.params.id);
-    const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, orientation, styleTags, dominantColors, medium, availability, visibleToDesigners, visibleToGalleries, variants, promotedGalleryImageId, cardImageId, cleanImageId } = req.body;
+    const { title, width, height, dimensionUnit, priceAmount, priceCurrency, buyUrl, orientation, styleTags, dominantColors, medium, availability, visibleToDesigners, visibleToGalleries, variants, promotedGalleryImageId, cardImageId, cleanImageId, story } = req.body;
 
     let existingArtwork;
     if (effectivePlan === 'admin') {
@@ -673,13 +676,18 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
     const artworkCleanImageId = cleanImageId !== undefined 
       ? (cleanImageId === '' || cleanImageId === null ? null : parseInt(cleanImageId))
       : existingArtwork.rows[0].clean_image_id;
+    
+    // Story is optional - if provided update it, otherwise keep existing
+    const artworkStory = story !== undefined 
+      ? (story === '' || story === null ? null : story.trim())
+      : existingArtwork.rows[0].story;
 
     const result = await query(
       `UPDATE artworks 
-       SET title = $1, image_url = $2, storage_key = $3, width = $4, height = $5, dimension_unit = $6, price_amount = $7, price_currency = $8, buy_url = $9, orientation = $10, style_tags = $11, dominant_colors = $12, medium = $13, availability = $14, visible_to_designers = $15, visible_to_galleries = $16, variants = $17, card_image_id = $18, clean_image_id = $19, updated_at = CURRENT_TIMESTAMP
-       WHERE id = $20
-       RETURNING id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, orientation, style_tags, dominant_colors, medium, availability, visible_to_designers, visible_to_galleries, variants, card_image_id, clean_image_id, created_at, updated_at`,
-      [title, imageUrl, storageKey, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability, artworkVisibleToDesigners, artworkVisibleToGalleries, variantsJson, artworkCardImageId, artworkCleanImageId, artworkId]
+       SET title = $1, image_url = $2, storage_key = $3, width = $4, height = $5, dimension_unit = $6, price_amount = $7, price_currency = $8, buy_url = $9, orientation = $10, style_tags = $11, dominant_colors = $12, medium = $13, availability = $14, visible_to_designers = $15, visible_to_galleries = $16, variants = $17, card_image_id = $18, clean_image_id = $19, story = $20, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $21
+       RETURNING id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, orientation, style_tags, dominant_colors, medium, availability, visible_to_designers, visible_to_galleries, variants, card_image_id, clean_image_id, story, created_at, updated_at`,
+      [title, imageUrl, storageKey, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability, artworkVisibleToDesigners, artworkVisibleToGalleries, variantsJson, artworkCardImageId, artworkCleanImageId, artworkStory, artworkId]
     );
 
     // Return the API endpoint URL for frontend compatibility (actual path is stored in DB)

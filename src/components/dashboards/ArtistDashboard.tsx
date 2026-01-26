@@ -61,6 +61,7 @@ interface Artwork {
   card_image_url?: string;
   clean_image_url?: string;
   hasCleanImage?: boolean;
+  story?: string | null;
   created_at: string;
   updated_at: string;
   artist_email?: string;
@@ -173,9 +174,12 @@ export function ArtistDashboard() {
     hasVariants: false,
     variants: [] as Array<{ width: string; height: string; unit: string; price: string; currency: string; availability: string }>,
     cardImageId: null as number | null,
-    cleanImageId: null as number | null
+    cleanImageId: null as number | null,
+    story: ''
   });
   const [promotedGalleryImageId, setPromotedGalleryImageId] = useState<number | null>(null);
+  const [showStoryModal, setShowStoryModal] = useState(false);
+  const [viewStoryArtwork, setViewStoryArtwork] = useState<Artwork | null>(null);
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
 
   useEffect(() => {
@@ -731,6 +735,11 @@ export function ArtistDashboard() {
       if (formData.hasVariants && formData.variants.length > 0) {
         formDataObj.append('variants', JSON.stringify(formData.variants));
       }
+      
+      // Include story if provided
+      if (formData.story && formData.story.trim()) {
+        formDataObj.append('story', formData.story.trim());
+      }
 
       const url = editingArtwork
         ? `${API_URL}/api/artist/artworks/${editingArtwork.id}`
@@ -851,7 +860,8 @@ export function ArtistDashboard() {
         hasVariants: false,
         variants: [],
         cardImageId: null,
-        cleanImageId: null
+        cleanImageId: null,
+        story: ''
       });
       setGalleryImages([]);
       setPromotedGalleryImageId(null);
@@ -911,7 +921,8 @@ export function ArtistDashboard() {
       hasVariants: artworkVariants.length > 0,
       variants: artworkVariants,
       cardImageId: artwork.card_image_id ?? null,
-      cleanImageId: artwork.clean_image_id ?? null
+      cleanImageId: artwork.clean_image_id ?? null,
+      story: artwork.story || ''
     });
     
     try {
@@ -963,7 +974,8 @@ export function ArtistDashboard() {
       hasVariants: false,
       variants: [],
       cardImageId: null,
-      cleanImageId: null
+      cleanImageId: null,
+      story: ''
     });
     setGalleryImages([]);
     setError('');
@@ -1756,6 +1768,42 @@ export function ArtistDashboard() {
                 </div>
               </div>
 
+              {/* Story Behind Section */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-semibold mb-2 text-rv-text">
+                  Story Behind <span className="font-normal text-rv-textMuted">(optional)</span>
+                </label>
+                <p className="text-xs text-rv-textMuted mb-3">
+                  Share the inspiration, emotion or story behind this artwork.
+                </p>
+                {formData.story ? (
+                  <div className="bg-rv-surface rounded-rvMd p-4 border border-rv-neutral">
+                    <p className="text-sm text-rv-text whitespace-pre-wrap line-clamp-3">{formData.story}</p>
+                    <button
+                      type="button"
+                      onClick={() => setShowStoryModal(true)}
+                      className="mt-2 text-sm text-rv-primary hover:text-rv-primaryHover font-medium flex items-center gap-1"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Edit story
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowStoryModal(true)}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-rv-surface text-rv-text rounded-rvMd border border-rv-neutral hover:border-rv-primary hover:text-rv-primary transition-colors text-sm font-medium"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add story
+                  </button>
+                )}
+              </div>
+
               <div className="md:col-span-2 pt-4 border-t border-rv-neutral">
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
@@ -2095,6 +2143,23 @@ export function ArtistDashboard() {
                         </p>
                       );
                     })()}
+                    
+                    {/* Story Behind link - only show if story exists */}
+                    {artwork.story && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setViewStoryArtwork(artwork);
+                        }}
+                        className="text-sm text-rv-primary hover:text-rv-primaryHover font-medium flex items-center gap-1 mb-2"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                        Story Behind
+                      </button>
+                    )}
                     
                     {artwork.tags && artwork.tags.length > 0 && (
                       <div className="mb-3">
@@ -2881,6 +2946,90 @@ export function ArtistDashboard() {
             suggestedPlan="artist"
             onClose={() => setShowUpgradeModal(false)}
           />
+        )}
+
+        {/* Story Edit Modal */}
+        {showStoryModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl max-w-lg w-full p-6 shadow-xl">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-rv-text">Story Behind</h3>
+                <button
+                  type="button"
+                  onClick={() => setShowStoryModal(false)}
+                  className="p-1 text-rv-textMuted hover:text-rv-text rounded-full hover:bg-rv-surface transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <textarea
+                value={formData.story}
+                onChange={(e) => setFormData(prev => ({ ...prev, story: e.target.value }))}
+                placeholder="What inspired this piece?&#10;Was there a specific moment, feeling or story behind it?"
+                rows={6}
+                className="w-full px-4 py-3 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary resize-none text-rv-text"
+              />
+              <p className="text-xs text-rv-textMuted mt-2 mb-4">
+                This story will be visible to visitors on your artwork page.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData(prev => ({ ...prev, story: '' }));
+                    setShowStoryModal(false);
+                  }}
+                  className="flex-1 px-4 py-2.5 border border-rv-neutral text-rv-text text-sm font-semibold rounded-lg hover:bg-rv-surface transition-colors"
+                >
+                  Clear
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowStoryModal(false)}
+                  className="flex-1 px-4 py-2.5 bg-rv-primary text-white text-sm font-semibold rounded-lg hover:bg-rv-primaryHover transition-colors"
+                >
+                  Save Story
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Story View Modal (for viewing story from artwork card) */}
+        {viewStoryArtwork && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl max-w-lg w-full p-6 shadow-xl">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-rv-text">Story Behind</h3>
+                <button
+                  type="button"
+                  onClick={() => setViewStoryArtwork(null)}
+                  className="p-1 text-rv-textMuted hover:text-rv-text rounded-full hover:bg-rv-surface transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="mb-4">
+                <p className="text-sm font-semibold text-rv-primary mb-1">{viewStoryArtwork.title}</p>
+              </div>
+              <div className="bg-rv-surface rounded-lg p-4 border border-rv-neutral">
+                <p className="text-sm text-rv-text whitespace-pre-wrap">{viewStoryArtwork.story}</p>
+              </div>
+              <div className="mt-6 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setViewStoryArtwork(null)}
+                  className="px-4 py-2 bg-rv-primary text-white text-sm font-semibold rounded-lg hover:bg-rv-primaryHover transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Studio Warning Modal */}
