@@ -701,10 +701,14 @@ export function DesignerDashboard() {
                 />
               </div>
             </div>
+            <div className="mb-2">
+              <p className="text-sm font-medium text-slate-600">Wall dimensions (optional)</p>
+              <p className="text-xs text-slate-500">Enter the real wall width and height to scale artworks accurately in Studio.</p>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label htmlFor="artworkWidth" className="block text-sm font-semibold text-slate-700 mb-2" title="Optional - helps scale artworks accurately in Studio">
-                  Width (optional)
+                  Wall width (optional)
                 </label>
                 <input
                   type="number"
@@ -718,7 +722,7 @@ export function DesignerDashboard() {
               </div>
               <div>
                 <label htmlFor="artworkHeight" className="block text-sm font-semibold text-slate-700 mb-2" title="Optional - helps scale artworks accurately in Studio">
-                  Height (optional)
+                  Wall height (optional)
                 </label>
                 <input
                   type="number"
