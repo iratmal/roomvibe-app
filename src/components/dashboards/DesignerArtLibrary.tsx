@@ -177,7 +177,7 @@ export function DesignerArtLibrary({ onArtworkSelect, projects = [] }: DesignerA
             Art Library
           </h2>
           <p className="text-sm text-slate-500 mt-1">
-            Discover artwork from artists who share their work with designers
+            Discover artworks shared by artists and try them in your projects.
           </p>
         </div>
         <button
@@ -334,11 +334,11 @@ export function DesignerArtLibrary({ onArtworkSelect, projects = [] }: DesignerA
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-slate-700 mb-1">No artworks found</h3>
+          <h3 className="text-lg font-semibold text-slate-700 mb-1">No artworks available yet</h3>
           <p className="text-slate-500 text-sm">
             {activeFilterCount > 0 
               ? 'Try adjusting your filters to see more results'
-              : 'Artists who enable designer visibility will appear here'}
+              : 'No artworks available yet. Artists who enable designer visibility will appear here.'}
           </p>
         </div>
       ) : (

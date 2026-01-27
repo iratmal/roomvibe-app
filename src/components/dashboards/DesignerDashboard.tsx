@@ -55,6 +55,7 @@ export function DesignerDashboard() {
     title: '',
     clientName: '',
     roomType: '',
+    customRoomType: '',
     notes: ''
   });
 
@@ -142,6 +143,7 @@ export function DesignerDashboard() {
         title: '',
         clientName: '',
         roomType: '',
+        customRoomType: '',
         notes: ''
       });
       await fetchProjects();
@@ -209,7 +211,7 @@ export function DesignerDashboard() {
     }
 
     if (isAtArtworkLimit) {
-      setError(`You've reached your limit of ${maxArtworks} artworks. Upgrade your plan for more.`);
+      setError(`You've reached your limit of ${maxArtworks} room photos. Upgrade your plan for more.`);
       return;
     }
 
@@ -233,10 +235,10 @@ export function DesignerDashboard() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || errorData.error || 'Failed to upload artwork');
+        throw new Error(errorData.message || errorData.error || 'Failed to upload room photo');
       }
 
-      setSuccess('Artwork uploaded successfully!');
+      setSuccess('Room photo uploaded successfully!');
       setArtworkForm({
         title: '',
         width: '',
@@ -265,10 +267,10 @@ export function DesignerDashboard() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete artwork');
+        throw new Error('Failed to delete room photo');
       }
 
-      setSuccess('Artwork deleted successfully!');
+      setSuccess('Room photo deleted successfully!');
       setShowArtworkDeleteConfirm(null);
       await fetchArtworks();
       setTimeout(() => setSuccess(''), 5000);
@@ -471,7 +473,7 @@ export function DesignerDashboard() {
                   <option value="Dining Room">Dining Room</option>
                   <option value="Office">Office</option>
                   <option value="Bathroom">Bathroom</option>
-                  <option value="Other">Other</option>
+                  <option value="Custom">Custom room</option>
                 </select>
                 <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
                   <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -479,6 +481,19 @@ export function DesignerDashboard() {
                   </svg>
                 </div>
               </div>
+              {formData.roomType === 'Custom' && (
+                <div className="mt-3">
+                  <input
+                    type="text"
+                    id="customRoomType"
+                    name="customRoomType"
+                    value={formData.customRoomType}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] focus:border-transparent transition-all bg-slate-50 hover:bg-white"
+                    placeholder="Enter custom room type"
+                  />
+                </div>
+              )}
             </div>
 
             <div>
@@ -518,9 +533,12 @@ export function DesignerDashboard() {
 
         {/* My Projects Section */}
         <div className="mb-12">
-          <h2 className="text-2xl font-semibold mb-6 text-[#264C61]" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <h2 className="text-2xl font-semibold mb-2 text-[#264C61]" style={{ fontFamily: 'Inter, sans-serif' }}>
             My Projects
           </h2>
+          <p className="text-sm text-slate-500 mb-6">
+            Projects help you organize client rooms, selected artworks, and visual presentations.
+          </p>
           
           {projects.length === 0 ? (
             /* Premium Empty State */
@@ -537,10 +555,10 @@ export function DesignerDashboard() {
                 </svg>
               </div>
               <h3 className="text-xl font-semibold text-slate-700 mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
-                You don't have any projects yet
+                No projects yet
               </h3>
               <p className="text-slate-400 max-w-md mx-auto" style={{ fontFamily: 'Inter, sans-serif' }}>
-                Create your first project above to organize your client work and start visualizing artwork in their spaces.
+                You don't have any projects yet. Create your first project above to organize your client work and start visualizing artworks.
               </p>
             </div>
           ) : (
@@ -638,17 +656,17 @@ export function DesignerDashboard() {
           )}
         </div>
 
-        {/* Upload Artwork & Photos Section */}
+        {/* Upload Client Room Photos Section */}
         <div className="mb-12 p-8 bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100">
           <div className="flex justify-between items-start mb-6">
             <div>
               <h2 className="text-2xl font-semibold mb-2 text-[#264C61]" style={{ fontFamily: 'Inter, sans-serif' }}>
-                Upload Artwork & Photos
+                Upload Client Room Photos
               </h2>
-              <p className="text-sm text-slate-400">Upload images to use in Studio visualizations</p>
+              <p className="text-sm text-slate-400">Upload photos of your client's space to visualize artworks in real rooms.</p>
             </div>
             <div className="text-sm text-slate-500">
-              {artworks.length} / {maxArtworks === -1 ? '∞' : maxArtworks} uploads
+              {artworks.length} / {maxArtworks === -1 ? '∞' : maxArtworks} room photos
             </div>
           </div>
           
@@ -665,7 +683,7 @@ export function DesignerDashboard() {
                   value={artworkForm.title}
                   onChange={handleArtworkInputChange}
                   className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] focus:border-transparent transition-all bg-slate-50 hover:bg-white"
-                  placeholder="e.g., Client Room Photo"
+                  placeholder="e.g., Living room wall - daylight"
                   required
                 />
               </div>
@@ -685,7 +703,7 @@ export function DesignerDashboard() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label htmlFor="artworkWidth" className="block text-sm font-semibold text-slate-700 mb-2">
+                <label htmlFor="artworkWidth" className="block text-sm font-semibold text-slate-700 mb-2" title="Optional - helps scale artworks accurately in Studio">
                   Width (optional)
                 </label>
                 <input
@@ -699,7 +717,7 @@ export function DesignerDashboard() {
                 />
               </div>
               <div>
-                <label htmlFor="artworkHeight" className="block text-sm font-semibold text-slate-700 mb-2">
+                <label htmlFor="artworkHeight" className="block text-sm font-semibold text-slate-700 mb-2" title="Optional - helps scale artworks accurately in Studio">
                   Height (optional)
                 </label>
                 <input
@@ -733,16 +751,16 @@ export function DesignerDashboard() {
               disabled={artworkLoading || isAtArtworkLimit}
               className="px-8 py-3.5 bg-[#264C61] text-white rounded-xl hover:bg-[#1D3A4A] transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#264C61]/25"
             >
-              {artworkLoading ? 'Uploading...' : isAtArtworkLimit ? 'Limit Reached' : 'Upload Artwork'}
+              {artworkLoading ? 'Uploading...' : isAtArtworkLimit ? 'Limit Reached' : 'Upload Room Photo'}
             </button>
           </form>
         </div>
 
-        {/* My Artworks Grid */}
+        {/* My Room Photos Grid */}
         {artworks.length > 0 && (
           <div className="mb-12">
             <h2 className="text-2xl font-semibold mb-6 text-[#264C61]" style={{ fontFamily: 'Inter, sans-serif' }}>
-              My Artworks
+              My Room Photos
             </h2>
             <div className="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {artworks.map((artwork) => (
@@ -772,7 +790,7 @@ export function DesignerDashboard() {
                     </div>
                     {showArtworkDeleteConfirm === artwork.id && (
                       <div className="mt-3 p-3 bg-red-50 rounded-lg">
-                        <p className="text-xs text-red-700 mb-2">Delete this artwork?</p>
+                        <p className="text-xs text-red-700 mb-2">Delete this room photo?</p>
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleArtworkDelete(artwork.id)}
@@ -803,8 +821,11 @@ export function DesignerDashboard() {
               <h2 className="text-2xl font-semibold mb-2" style={{ fontFamily: 'Inter, sans-serif' }}>
                 Studio
               </h2>
-              <p className="text-white/80 mb-6 max-w-md">
-                Visualize your projects with premium mockup rooms. Access 100+ premium rooms, high-resolution exports, and PDF generation.
+              <p className="text-white/80 mb-4 max-w-md">
+                Visualize artworks in mockup rooms or your client's real space.
+              </p>
+              <p className="text-white/60 text-sm mb-6 max-w-md">
+                Studio uses artworks from the Art Library and photos from your projects.
               </p>
               <a
                 href="#/studio"
@@ -824,25 +845,25 @@ export function DesignerDashboard() {
           </div>
         </div>
 
-        {/* Your Plan Section */}
+        {/* Designer Plan Section */}
         <div className="mb-12 p-8 bg-white rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-semibold text-[#264C61]" style={{ fontFamily: 'Inter, sans-serif' }}>
-              Your Plan
+              Designer Plan
             </h2>
             <span className="px-4 py-1.5 bg-purple-100 text-purple-800 text-sm font-semibold rounded-full">
               Designer
             </span>
           </div>
           <p className="text-slate-600 mb-6">
-            You're on the Designer plan. Perfect for interior designers presenting concepts to clients.
+            Perfect for interior designers who want to present artwork concepts professionally to clients.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
             <div className="flex items-center gap-2 text-sm text-slate-700">
               <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              Upload up to 100 artworks
+              Upload up to 100 client room photos
             </div>
             <div className="flex items-center gap-2 text-sm text-slate-700">
               <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -854,31 +875,19 @@ export function DesignerDashboard() {
               <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              High-resolution export (3000px+)
+              High-resolution exports for client presentations
             </div>
             <div className="flex items-center gap-2 text-sm text-slate-700">
               <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              PDF export
+              PDF exports & mockup downloads
             </div>
             <div className="flex items-center gap-2 text-sm text-slate-700">
               <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              Designer Studio tools
-            </div>
-            <div className="flex items-center gap-2 text-sm text-slate-700">
-              <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              Mockup downloads
-            </div>
-            <div className="flex items-center gap-2 text-sm text-slate-700">
-              <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              Unlimited previews
+              Unlimited visual previews
             </div>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -915,17 +924,30 @@ export function DesignerDashboard() {
                 <span className="font-medium text-slate-600">Email</span>
                 <span className="text-slate-800">{user?.email}</span>
               </div>
-              <div className="flex items-center justify-between py-2 border-b border-slate-200">
+              <div className="flex items-center justify-between py-2">
                 <span className="font-medium text-slate-600">Role</span>
                 <span className="px-2.5 py-0.5 bg-purple-100 text-purple-800 text-xs font-semibold rounded-full">Designer</span>
               </div>
-              <div className="flex items-center justify-between py-2 border-b border-slate-200">
-                <span className="font-medium text-slate-600">Artworks</span>
-                <span className="text-slate-800 font-semibold">{artworks.length}</span>
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="font-medium text-slate-600">Projects</span>
-                <span className="text-slate-800 font-semibold">{projects.length}</span>
+            </div>
+
+            {/* Usage Overview */}
+            <div className="mt-6 pt-5 border-t border-slate-200">
+              <h4 className="text-sm font-semibold text-[#264C61] mb-4" style={{ fontFamily: 'Inter, sans-serif' }}>
+                Usage Overview
+              </h4>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center justify-between py-2 border-b border-slate-200">
+                  <span className="font-medium text-slate-600">Projects created</span>
+                  <span className="text-slate-800 font-semibold">{projects.length}</span>
+                </div>
+                <div className="flex items-center justify-between py-2 border-b border-slate-200">
+                  <span className="font-medium text-slate-600">Room photos uploaded</span>
+                  <span className="text-slate-800 font-semibold">{artworks.length}</span>
+                </div>
+                <div className="flex items-center justify-between py-2">
+                  <span className="font-medium text-slate-600">Artworks used</span>
+                  <span className="text-slate-800 font-semibold">—</span>
+                </div>
               </div>
             </div>
           </div>

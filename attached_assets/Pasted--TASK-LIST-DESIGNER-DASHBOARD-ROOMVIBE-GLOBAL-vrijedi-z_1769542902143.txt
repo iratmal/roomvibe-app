@@ -1,0 +1,181 @@
+✅ TASK LIST – DESIGNER DASHBOARD (ROOMVIBE)
+🔹 GLOBAL (vrijedi za cijeli Designer dashboard)
+
+TASK 0 – UX copy consistency
+
+Provjeriti da se svugdje koristi termin Project, Client Room Photo, Artwork (from Art Library), Studio
+
+Izbjegavati miješanje “artwork upload” za designere
+
+1️⃣ MY PROJECTS – Create & List Projects
+TASK 1.1 – Project creation UX
+
+U sekciji Create New Project:
+
+Dodati opciju “Custom room” u Room Type dropdown
+
+Ako je “Custom room” odabrano → prikazati text input
+
+TASK 1.2 – Micro-copy ispod naslova
+
+Ispod “My Projects” dodati tekst:
+
+Projects help you organize client rooms, selected artworks, and visual presentations.
+
+TASK 1.3 – Empty state (My Projects)
+
+Zamijeniti postojeći empty tekst sa:
+
+You don’t have any projects yet. Create your first project above to organize your client work and start visualizing artworks.
+
+2️⃣ UPLOAD ARTWORK & PHOTOS → PREIMENOVATI
+🚨 OVO JE KRITIČAN TASK
+TASK 2.1 – Rename section
+
+Promijeniti naslov:
+❌ “Upload Artwork & Photos”
+✅ “Upload Client Room Photos”
+
+TASK 2.2 – Subtitle update
+
+Zamijeniti podnaslov sa:
+
+Upload photos of your client’s space to visualize artworks in real rooms.
+
+TASK 2.3 – Button rename
+
+Promijeniti CTA gumb:
+❌ “Upload Artwork”
+✅ “Upload Room Photo”
+
+TASK 2.4 – Field placeholder cleanup
+
+Title placeholder:
+
+From: “Client Room Photo” (OK)
+
+Optional: “Living room wall – daylight”
+
+Width / Height:
+
+Tooltip (ako postoji):
+
+Optional – helps scale artworks accurately in Studio
+
+TASK 2.5 – Logic clarification (no backend change)
+
+Ovo je client room photo, ne artwork
+
+Ne povezivati s Art Library uploadima
+
+3️⃣ ART LIBRARY (Designer view)
+TASK 3.1 – Micro-copy clarification
+
+Ispod “Art Library” dodati:
+
+Discover artworks shared by artists and try them in your projects.
+
+TASK 3.2 – Empty state (Art Library)
+
+Ako nema dostupnih radova:
+
+No artworks available yet. Artists who enable designer visibility will appear here.
+
+4️⃣ STUDIO ACCESS (Visualize your project)
+TASK 4.1 – Studio CTA copy
+
+Zamijeniti tekst u Studio bloku sa:
+
+Visualize artworks in mockup rooms or your client’s real space.
+
+TASK 4.2 – Empty Studio state
+
+Kada se Studio otvori bez sadržaja:
+❌ “No artworks yet, go to dashboard”
+✅
+
+Start by opening a project or selecting artworks from the Art Library.
+
+TASK 4.3 – Logical hint (text-only)
+
+Dodati mali helper text:
+
+Studio uses artworks from the Art Library and photos from your projects.
+
+5️⃣ YOUR PLAN – Copy refinement
+TASK 5.1 – Plan title
+
+“Your Plan” → “Designer Plan”
+
+TASK 5.2 – Description rewrite
+
+Zamijeniti opis sa:
+
+Perfect for interior designers who want to present artwork concepts professionally to clients.
+
+TASK 5.3 – Feature list update
+
+Zamijeniti postojeće bullet pointove sa:
+
+✔️ Upload up to 100 client room photos
+
+✔️ Access to 100+ premium mockup rooms
+
+✔️ High-resolution exports for client presentations
+
+✔️ PDF exports & mockup downloads
+
+✔️ Unlimited visual previews
+
+6️⃣ ACCOUNT DETAILS – Small UX upgrade
+TASK 6.1 – Usage Overview block (frontend only)
+
+Dodati novi mali block ispod Account Details:
+
+Title: Usage Overview
+Fields:
+
+Projects created: X
+
+Room photos uploaded: X
+
+Artworks used: X
+
+Ako backend još nema sve podatke → privremeno staviti 0 ili —
+
+7️⃣ NAVIGATION & ROLE CLARITY
+TASK 7.1 – Role badge consistency
+
+Provjeriti da “Designer” badge:
+
+postoji u headeru
+
+postoji u Account Details
+
+koristi istu boju / stil
+
+8️⃣ COPY CLEANUP (FINAL PASS)
+TASK 8.1 – Zabranjeni pojmovi u Designer dashboardu
+
+Agent treba ukloniti ili izbjeći:
+
+“Upload artwork” (za designera)
+
+“Your artworks” (designer nema svoje artworks)
+
+Sve što implicira da je designer = artist
+
+🧩 OUT OF SCOPE (ne dirati sada)
+
+Saved artworks
+
+Project boards advanced logic
+
+Messaging automation
+
+Backend refactor
+
+✅ FINALNA NAPOMENA ZA AGENTA
+
+Fokus je na UX jasnoći za designere, bez mijenjanja backend strukture.
+Sve promjene su copy, naming i UI-level.
