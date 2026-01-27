@@ -856,9 +856,15 @@ export function DesignerDashboard() {
             </span>
           </div>
           <p className="text-slate-600 mb-6">
-            Perfect for interior designers who want to present artwork concepts professionally to clients.
+            Perfect for interior designers presenting artwork concepts to clients.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
+            <div className="flex items-center gap-2 text-sm text-slate-700">
+              <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Create unlimited client projects
+            </div>
             <div className="flex items-center gap-2 text-sm text-slate-700">
               <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -875,19 +881,19 @@ export function DesignerDashboard() {
               <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              High-resolution exports for client presentations
+              Browse and use artworks from the Art Library
             </div>
             <div className="flex items-center gap-2 text-sm text-slate-700">
               <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              PDF exports & mockup downloads
+              PDF presentations for clients
             </div>
             <div className="flex items-center gap-2 text-sm text-slate-700">
               <svg className="w-5 h-5 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              Unlimited visual previews
+              Contact artists directly
             </div>
           </div>
           <div className="flex flex-wrap gap-3">

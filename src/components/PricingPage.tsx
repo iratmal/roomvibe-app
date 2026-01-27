@@ -68,11 +68,12 @@ const PLANS: PlanConfig[] = [
     whoItsFor: 'Interior designers working with clients.',
     entitlement: 'designer_access',
     features: [
-      'Upload up to 100 artworks',
-      '100+ premium mockup rooms',
-      'Upload client wall photos or use premium rooms',
-      'Create visual concepts and PDF presentations',
-      'Unlimited previews while designing',
+      'Create unlimited client projects',
+      'Upload up to 100 client room photos',
+      'Access to 100+ premium mockup rooms',
+      'Browse and use artworks from the Art Library',
+      'PDF presentations for clients',
+      'Contact artists directly',
     ],
     highlightFeature: 'Find and connect with artists for your interior projects using RoomVibe',
     buttonText: 'Unlock Designer Tools',
@@ -424,7 +425,8 @@ interface FeatureRow {
 }
 
 const FEATURE_ROWS: FeatureRow[] = [
-  { feature: 'Artwork uploads', free: '3 + 7 branded', artist: '50', designer: '100', gallery: 'Unlimited', allAccess: 'Unlimited' },
+  { feature: 'Artwork uploads', free: '3 + 7 branded', artist: '50', designer: '—', gallery: 'Unlimited', allAccess: 'Unlimited' },
+  { feature: 'Client room photos', free: '—', artist: '—', designer: '100', gallery: '—', allAccess: '100' },
   { feature: 'Mockup rooms', free: '10 basic', artist: '40 standard', designer: '100+ premium', gallery: '100+ premium', allAccess: 'All rooms' },
   { feature: 'Upload own wall photos', free: true, artist: true, designer: true, gallery: true, allAccess: true },
   { feature: 'Frame styling controls', free: true, artist: true, designer: true, gallery: true, allAccess: true },

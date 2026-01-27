@@ -241,7 +241,7 @@ function Screen1() {
     {
       icon: <LayoutIcon className="w-8 h-8 sm:w-10 sm:h-10" />,
       title: 'Designer Module',
-      description: 'Use premium rooms, mockups, high-resolution export and PDF presentations.',
+      description: 'Create client projects, browse the Art Library, and share PDF presentations.',
     },
     {
       icon: <ImageIcon className="w-8 h-8 sm:w-10 sm:h-10" />,

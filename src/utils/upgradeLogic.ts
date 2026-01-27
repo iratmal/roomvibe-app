@@ -48,7 +48,6 @@ const UPGRADE_MATRIX: Record<PlanKey, Partial<Record<FeatureKey, PlanKey>>> = {
   },
   artist: {
     premiumRooms: 'designer',
-    highResExport: 'designer',
     designerTools: 'designer',
     galleryTools: 'gallery',
     exhibitions: 'gallery',
@@ -109,7 +108,7 @@ export function getUpgradeMessageForFeature(feature: FeatureKey, recommendedPlan
   const messages: Record<FeatureKey, string> = {
     premiumRooms: `Premium mockup rooms (100+) are available on the ${planName} plan and above. Upgrade to access all rooms.`,
     standardRooms: `Access to up to 40 standard mockup rooms is available on the ${planName} plan and above.`,
-    highResExport: `High-resolution exports (3000px) are available on the ${planName} plan and above. Upgrade to download professional-quality images.`,
+    highResExport: `High-resolution exports (3000px) are available on the Artist plan and above. Upgrade to download professional-quality images.`,
     pdfExport: `PDF exports are available on the ${planName} plan and above. Upgrade to create professional PDF visualizations.`,
     galleryTools: `Gallery tools (exhibitions, multi-art walls) are available on the ${planName} plan and above.`,
     exhibitions: `Virtual exhibitions are available on the ${planName} plan and above.`,

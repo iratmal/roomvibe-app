@@ -37,10 +37,10 @@ const MODULES: ModuleConfig[] = [
     entitlement: 'designer_access',
     price: '€29/mo',
     features: [
-      'Unlimited artwork and mockups',
-      'Client folders & project organization',
-      'Professional PDF proposals',
-      'Upload client room photos',
+      'Create unlimited client projects',
+      'Upload up to 100 client room photos',
+      'Access to 100+ premium mockup rooms',
+      'PDF presentations for clients',
     ],
   },
   {
