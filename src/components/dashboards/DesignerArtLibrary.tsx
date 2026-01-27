@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 
 const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
+const ARTWORKS_PER_PAGE = 24;
 
 interface Artist {
   id: number;
   name: string;
   email: string;
+  slug?: string;
   city?: string;
   country?: string;
   bio?: string;
@@ -54,6 +56,15 @@ interface DesignerArtLibraryProps {
   projects?: Project[];
 }
 
+const getInitialPage = (): number => {
+  if (typeof window !== 'undefined') {
+    const params = new URLSearchParams(window.location.search);
+    const page = parseInt(params.get('artLibPage') || '1', 10);
+    return isNaN(page) || page < 1 ? 1 : page;
+  }
+  return 1;
+};
+
 export function DesignerArtLibrary({ onArtworkSelect, projects = [] }: DesignerArtLibraryProps) {
   const [artworks, setArtworks] = useState<LibraryArtwork[]>([]);
   const [filterOptions, setFilterOptions] = useState<FilterOptions | null>(null);
@@ -63,6 +74,10 @@ export function DesignerArtLibrary({ onArtworkSelect, projects = [] }: DesignerA
   const [addToProjectId, setAddToProjectId] = useState<number | null>(null);
   const [addingToProject, setAddingToProject] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(getInitialPage);
+  const [showContactModal, setShowContactModal] = useState<{ artist: Artist; artwork: LibraryArtwork } | null>(null);
+  const [contactForm, setContactForm] = useState({ subject: '', body: '' });
+  const [sendingMessage, setSendingMessage] = useState(false);
 
   const [filters, setFilters] = useState({
     style: '',
@@ -125,6 +140,7 @@ export function DesignerArtLibrary({ onArtworkSelect, projects = [] }: DesignerA
   };
 
   const applyFilters = () => {
+    handlePageChange(1);
     fetchArtworks();
   };
 
@@ -139,7 +155,69 @@ export function DesignerArtLibrary({ onArtworkSelect, projects = [] }: DesignerA
       minHeight: '',
       maxHeight: ''
     });
+    setCurrentPage(1);
     setTimeout(fetchArtworks, 0);
+  };
+
+  const totalPages = Math.ceil(artworks.length / ARTWORKS_PER_PAGE);
+  const paginatedArtworks = artworks.slice(
+    (currentPage - 1) * ARTWORKS_PER_PAGE,
+    currentPage * ARTWORKS_PER_PAGE
+  );
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    const url = new URL(window.location.href);
+    if (page === 1) {
+      url.searchParams.delete('artLibPage');
+    } else {
+      url.searchParams.set('artLibPage', String(page));
+    }
+    window.history.replaceState({}, '', url.toString());
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleContactArtist = (artist: Artist, artwork: LibraryArtwork) => {
+    setContactForm({ subject: `Inquiry about "${artwork.title}"`, body: '' });
+    setShowContactModal({ artist, artwork });
+    setSelectedArtwork(null);
+  };
+
+  const handleSendMessage = async () => {
+    if (!showContactModal || !contactForm.subject.trim() || !contactForm.body.trim()) return;
+    
+    setSendingMessage(true);
+    try {
+      const response = await fetch(`${API_URL}/api/messages/send`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          recipientId: showContactModal.artist.id,
+          artworkId: showContactModal.artwork.id,
+          subject: contactForm.subject,
+          body: contactForm.body
+        })
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to send message');
+      }
+
+      alert('Message sent successfully!');
+      setShowContactModal(null);
+      setContactForm({ subject: '', body: '' });
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
+  const getArtistProfileUrl = (artist: Artist) => {
+    if (artist.slug) return `/artist/${artist.slug}`;
+    return `/artist/${artist.id}`;
   };
 
   const handleAddToProject = async (artworkId: number, projectId: number) => {
@@ -342,43 +420,95 @@ export function DesignerArtLibrary({ onArtworkSelect, projects = [] }: DesignerA
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {artworks.map((artwork) => (
-            <div
-              key={artwork.id}
-              className="group bg-white rounded-xl border border-slate-100 overflow-hidden hover:shadow-lg hover:shadow-slate-200/50 transition-all cursor-pointer"
-              onClick={() => {
-                setSelectedArtwork(artwork);
-                onArtworkSelect?.(artwork);
-              }}
-            >
-              <div className="aspect-square relative overflow-hidden bg-slate-100">
-                <img
-                  src={artwork.imageUrl}
-                  alt={artwork.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="absolute bottom-3 left-3 right-3">
-                    <p className="text-white text-xs font-medium truncate">
-                      {artwork.artist.name}
-                    </p>
+        <>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {paginatedArtworks.map((artwork) => (
+              <div
+                key={artwork.id}
+                className="group bg-white rounded-xl border border-slate-100 overflow-hidden hover:shadow-lg hover:shadow-slate-200/50 transition-all cursor-pointer"
+                onClick={() => {
+                  setSelectedArtwork(artwork);
+                  onArtworkSelect?.(artwork);
+                }}
+              >
+                <div className="aspect-square relative overflow-hidden bg-slate-100">
+                  <img
+                    src={artwork.imageUrl}
+                    alt={artwork.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <span className="px-4 py-2 bg-white/90 rounded-lg text-sm font-medium text-[#264C61]">
+                      View details
+                    </span>
                   </div>
                 </div>
+                <div className="p-3">
+                  <h3 className="font-medium text-slate-800 text-sm truncate">{artwork.title}</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    by {artwork.artist.name}
+                  </p>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {artwork.width} × {artwork.height} {artwork.dimensionUnit}
+                  </p>
+                  {artwork.medium && (
+                    <p className="text-xs text-[#D8B46A] mt-1 truncate">{artwork.medium}</p>
+                  )}
+                </div>
               </div>
-              <div className="p-3">
-                <h3 className="font-medium text-slate-800 text-sm truncate">{artwork.title}</h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  {artwork.width} × {artwork.height} {artwork.dimensionUnit}
-                </p>
-                {artwork.medium && (
-                  <p className="text-xs text-[#D8B46A] mt-1 truncate">{artwork.medium}</p>
-                )}
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-8">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-[#264C61] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                ← Previous
+              </button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(page => {
+                    if (totalPages <= 7) return true;
+                    if (page === 1 || page === totalPages) return true;
+                    if (Math.abs(page - currentPage) <= 1) return true;
+                    return false;
+                  })
+                  .map((page, idx, arr) => (
+                    <span key={page} className="flex items-center">
+                      {idx > 0 && arr[idx - 1] !== page - 1 && (
+                        <span className="px-2 text-slate-400">...</span>
+                      )}
+                      <button
+                        onClick={() => handlePageChange(page)}
+                        className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors ${
+                          currentPage === page
+                            ? 'bg-[#264C61] text-white'
+                            : 'text-slate-600 hover:bg-slate-100'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    </span>
+                  ))}
               </div>
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-[#264C61] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Next →
+              </button>
             </div>
-          ))}
-        </div>
+          )}
+
+          <p className="text-center text-sm text-slate-500 mt-4">
+            Showing {((currentPage - 1) * ARTWORKS_PER_PAGE) + 1}–{Math.min(currentPage * ARTWORKS_PER_PAGE, artworks.length)} of {artworks.length} artworks
+          </p>
+        </>
       )}
 
       {selectedArtwork && (
@@ -430,6 +560,14 @@ export function DesignerArtLibrary({ onArtworkSelect, projects = [] }: DesignerA
                       {[selectedArtwork.artist.city, selectedArtwork.artist.country].filter(Boolean).join(', ')}
                     </p>
                   )}
+                  <a
+                    href={getArtistProfileUrl(selectedArtwork.artist)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-[#264C61] hover:underline"
+                  >
+                    View artist profile
+                  </a>
                 </div>
               </div>
 
@@ -480,9 +618,16 @@ export function DesignerArtLibrary({ onArtworkSelect, projects = [] }: DesignerA
                 </div>
               )}
 
-              <div className="flex flex-wrap gap-3">
+              <div className="space-y-4">
+                <button
+                  onClick={() => handleContactArtist(selectedArtwork.artist, selectedArtwork)}
+                  className="w-full px-6 py-3 bg-[#264C61] text-white rounded-xl hover:bg-[#1D3A4A] transition-colors font-medium"
+                >
+                  Contact Artist
+                </button>
+
                 {projects.length > 0 && (
-                  <div className="flex-1 min-w-[200px]">
+                  <div>
                     <label className="block text-xs text-slate-500 mb-1">Add to Project</label>
                     <div className="flex gap-2">
                       <select
@@ -506,7 +651,7 @@ export function DesignerArtLibrary({ onArtworkSelect, projects = [] }: DesignerA
                   </div>
                 )}
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 pt-2 border-t border-slate-100">
                   {selectedArtwork.artist.websiteUrl && (
                     <a
                       href={selectedArtwork.artist.websiteUrl}
@@ -528,6 +673,69 @@ export function DesignerArtLibrary({ onArtworkSelect, projects = [] }: DesignerA
                     </a>
                   )}
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showContactModal && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowContactModal(null)}
+        >
+          <div 
+            className="bg-white rounded-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 border-b border-slate-100">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-[#264C61]">Contact Artist</h3>
+                <button
+                  onClick={() => setShowContactModal(null)}
+                  className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="mb-6">
+                <p className="text-sm text-slate-500 mb-1">Contacting</p>
+                <p className="font-medium text-slate-800">{showContactModal.artist.name}</p>
+                <p className="text-sm text-[#D8B46A] mt-1">Re: {showContactModal.artwork.title}</p>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Subject</label>
+                  <input
+                    type="text"
+                    value={contactForm.subject}
+                    onChange={(e) => setContactForm({ ...contactForm, subject: e.target.value })}
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] bg-slate-50"
+                    placeholder="Subject of your message"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Message</label>
+                  <textarea
+                    value={contactForm.body}
+                    onChange={(e) => setContactForm({ ...contactForm, body: e.target.value })}
+                    rows={5}
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#264C61] bg-slate-50 resize-none"
+                    placeholder="Write your message to the artist..."
+                  />
+                </div>
+                <button
+                  onClick={handleSendMessage}
+                  disabled={sendingMessage || !contactForm.subject.trim() || !contactForm.body.trim()}
+                  className="w-full px-6 py-3 bg-[#264C61] text-white rounded-xl hover:bg-[#1D3A4A] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {sendingMessage ? 'Sending...' : 'Send Message'}
+                </button>
               </div>
             </div>
           </div>
