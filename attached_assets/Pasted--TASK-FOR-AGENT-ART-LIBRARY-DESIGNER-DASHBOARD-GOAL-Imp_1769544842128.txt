@@ -1,0 +1,111 @@
+🛠️ TASK FOR AGENT – ART LIBRARY (DESIGNER DASHBOARD)
+🎯 GOAL
+
+Improve usability and conversion of the Art Library for Designers by preventing endless scrolling, improving artwork cards, and enabling direct artist contact — without implementing filters or sorting logic.
+
+1️⃣ PAGINATION (REQUIRED)
+TASK 1.1 – Replace infinite scroll with pagination
+
+Implement pagination for Art Library
+
+Display max 24 artworks per page (grid-based)
+
+Add pagination controls at the bottom:
+
+← Previous | 1 | 2 | 3 | Next →
+
+Ensure pagination state is preserved on page reload
+
+⚠️ Do not implement infinite scroll.
+
+2️⃣ ARTWORK CARD – HOVER IMPROVEMENT
+TASK 2.1 – Card hover state
+
+Add hover effect to artwork cards:
+
+Subtle overlay
+
+CTA text: “View details”
+
+Clicking the card or CTA opens artwork detail modal
+
+3️⃣ ARTWORK DETAIL MODAL – FUNCTIONAL UPGRADES
+TASK 3.1 – Add “Contact Artist” button
+
+Add primary CTA button in artwork detail modal:
+
+Contact Artist
+
+Button opens existing messaging flow
+
+Available only to Designer role
+
+TASK 3.2 – Add “View Artist Profile” link
+
+Add secondary link below artist name:
+
+View artist profile
+
+Link opens public artist profile page
+
+Shows:
+
+artist bio
+
+other artworks by the same artist
+
+TASK 3.3 – Optional CTA: Use in Studio
+
+If technically feasible without refactor:
+
+Add CTA: Use in Studio
+
+Behavior:
+
+If project exists → continue to Studio
+
+If no project → prompt to create/select a project
+
+If not feasible now → skip (non-blocking)
+
+4️⃣ EMPTY & EDGE STATES
+TASK 4.1 – No artworks state
+
+If no artworks are available:
+
+No artworks available yet. Artists who enable designer visibility will appear here.
+
+5️⃣ COPY CLEANUP & CONSISTENCY
+TASK 5.1 – Terminology consistency
+
+Ensure the following terms are used consistently:
+
+Artwork = artist-owned work
+
+Artist = creator of artwork
+
+Designer = viewer / presenter
+
+Avoid:
+
+“Your artworks” (for designers)
+
+Artist-related upload language
+
+6️⃣ OUT OF SCOPE (DO NOT IMPLEMENT)
+
+Agent must NOT implement:
+
+Filters
+
+Sorting
+
+Favorites / save logic
+
+Artist metadata changes
+
+These will be handled in a separate task after reviewing Artist Dashboard structure.
+
+📌 CONTEXT NOTE FOR AGENT
+
+Art Library is a professional selection tool for designers. Focus on clarity, navigation, and direct artist contact. Do not add discovery complexity yet.
