@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { query } from '../db/database.js';
+import { getEffectivePlan } from '../config/planLimits.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
@@ -56,15 +57,7 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
     }
     
     const user = result.rows[0];
-    
-    let effectivePlan = user.subscription_plan || 'user';
     const status = user.subscription_status || 'free';
-    
-    if (user.is_admin) {
-      effectivePlan = 'admin';
-    } else if (status !== 'active' && status !== 'free') {
-      effectivePlan = 'user';
-    }
     
     // Build entitlements object - admins get all access
     const entitlements: UserEntitlements = {
@@ -73,12 +66,24 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
       gallery_access: user.is_admin ? true : (user.gallery_access || false),
     };
     
+    // Use the proper getEffectivePlan function which considers access flags
+    const effectivePlan = getEffectivePlan({
+      id: user.id,
+      is_admin: user.is_admin || false,
+      subscription_status: status,
+      subscription_plan: user.subscription_plan || 'user',
+      artist_access: user.artist_access || false,
+      designer_access: user.designer_access || false,
+      gallery_access: user.gallery_access || false,
+      role: user.role
+    });
+    
     req.user = {
       id: user.id,
       email: user.email,
       role: user.is_admin ? 'admin' : user.role,
       is_admin: user.is_admin || false,
-      subscription_status: user.subscription_status || 'free',
+      subscription_status: status,
       subscription_plan: user.subscription_plan || 'user',
       effectivePlan,
       isActiveSubscriber: status === 'active' || status === 'free',
