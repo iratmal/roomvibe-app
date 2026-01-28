@@ -13,9 +13,9 @@ function MenuIcon({ className }: { className?: string }) {
 function getPlanDisplayName(effectivePlan: string | undefined): string {
   switch (effectivePlan) {
     case 'artist': return 'Artist';
+    case 'artist_pro': return 'Artist Pro';
     case 'designer': return 'Designer';
     case 'gallery': return 'Gallery';
-    case 'all-access': return 'All-Access';
     case 'free':
     case 'user':
     default:
@@ -26,9 +26,9 @@ function getPlanDisplayName(effectivePlan: string | undefined): string {
 function getPlanBadgeColor(effectivePlan: string | undefined): string {
   switch (effectivePlan) {
     case 'artist': return 'bg-rv-primary/10 text-rv-primary';
+    case 'artist_pro': return 'bg-amber-100 text-amber-700';
     case 'designer': return 'bg-indigo-100 text-indigo-700';
     case 'gallery': return 'bg-green-100 text-green-700';
-    case 'all-access': return 'bg-amber-100 text-amber-700';
     default:
       return 'bg-gray-100 text-gray-600';
   }
@@ -43,7 +43,7 @@ export function SiteHeader({ showPlanBadge = false }: SiteHeaderProps) {
   const { user, logout, impersonatedRole } = useAuth();
   
   const effectivePlan = impersonatedRole 
-    ? (impersonatedRole === 'allin' ? 'all-access' : impersonatedRole)
+    ? impersonatedRole
     : (user?.effectivePlan || user?.role || 'free');
   const planName = getPlanDisplayName(effectivePlan);
   const badgeColor = getPlanBadgeColor(effectivePlan);

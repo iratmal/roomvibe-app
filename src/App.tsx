@@ -902,7 +902,7 @@ function Studio() {
   
   // Filter rooms by plan tier:
   // - Admin: All rooms (no filtering)
-  // - Designer/Gallery/All-Access: All rooms (premium access)
+  // - Artist Pro/Designer/Gallery: All rooms (premium access)
   // - Artist: Standard rooms (40 total - includes basicFree)
   // - Free/User: Basic only (10 rooms with basicFree: true)
   const filterRoomsByPlan = (rooms: typeof premiumRooms) => {
@@ -960,7 +960,7 @@ function Studio() {
     
     const recommendedPlan = getRecommendedUpgradePlan(effectivePlan as PlanKey, feature);
     if (!recommendedPlan) {
-      // User already has access (All-Access or Admin)
+      // User already has access (Artist Pro or Admin)
       return;
     }
     setUpgradeFeature(feature);
@@ -1999,7 +1999,7 @@ function Studio() {
       if (!trackResponse.ok) {
         const errorData = await trackResponse.json();
         if (trackResponse.status === 403) {
-          // Monthly limit reached - show upgrade to All-Access
+          // Monthly limit reached - show upgrade to Artist Pro
           showUpgradeFor('unlimitedPDF', errorData.message);
           return;
         }

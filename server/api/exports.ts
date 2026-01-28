@@ -70,10 +70,10 @@ router.post('/pdf/track', authenticateToken, async (req: any, res) => {
       if (currentCount >= monthlyLimit) {
         return res.status(403).json({
           error: 'Monthly PDF limit reached',
-          message: `You've reached your limit of ${monthlyLimit} PDF exports this month. Upgrade to All-Access for unlimited exports.`,
+          message: `You've reached your limit of ${monthlyLimit} PDF exports this month. Upgrade to Artist Pro for unlimited exports.`,
           currentCount,
           monthlyLimit,
-          suggested_plan: 'allaccess',
+          suggested_plan: 'artist_pro',
           upgrade_url: '/pricing'
         });
       }

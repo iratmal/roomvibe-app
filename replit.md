@@ -35,8 +35,11 @@ The application is built with React 18, TypeScript, Vite, and Tailwind CSS.
   - Sent Messages: Track inquiries sent to artists about exhibitions and collaborations
   - Connect status widget showing available artists and contacted count
   - Note: Gallery sees only Artists (not Designers), no designer projects/interiors visible
-- **Subscription Management**: Full Stripe integration for five plans (Free, Artist, Designer, Gallery, All-Access) handling checkout, customer portal, and webhook events to manage user roles and entitlements.
-- **Multi-Entitlement System**: Users can accumulate and retain access to multiple modules (Artist, Designer, Gallery) via additive subscriptions.
+- **Subscription Management**: Full Stripe integration for five plans (Free, Artist, Artist Pro, Designer, Gallery) handling checkout, customer portal, and webhook events to manage user roles and entitlements.
+  - **Artist Pro (€29/month)**: Unlimited artworks, unlimited exhibitions, unlimited PDF exports, all premium rooms, visibility to designers/galleries, priority support, early access
+  - **Artist (€9/month)**: 50 artworks, 1 exhibition, 10 PDF exports/month, 40 standard rooms, 20 visibility limit for designers/galleries
+  - **Designer (€29/month)**: 100 artworks, unlimited client room photos, all premium rooms, PDF presentations, Art Library access
+  - **Gallery (€49/month)**: Unlimited artworks, 3 exhibitions, all premium rooms, Artist Directory access
 - **Unified Widget System**: A single embeddable JavaScript widget adapts its functionality based on user entitlements (Artist, Designer, Gallery modes).
 - **Virtual Exhibition Editor**: MVP feature for Gallery plan users to create immersive virtual exhibitions. It includes preset selection, artwork placement via drag-and-drop, and scene persistence.
 - **360° Virtual Exhibition**: Immersive 3D gallery experience using React Three Fiber (R3F) featuring:

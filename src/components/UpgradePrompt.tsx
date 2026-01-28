@@ -13,18 +13,18 @@ interface UpgradePromptProps {
 const PLAN_NAMES: Record<string, string> = {
   user: 'Free',
   artist: 'Artist',
+  artist_pro: 'Artist Pro',
   designer: 'Designer',
   gallery: 'Gallery',
-  allaccess: 'All-Access',
   admin: 'Admin',
 };
 
 const PLAN_PRICES: Record<string, string> = {
   user: 'Free',
   artist: '€9/month',
+  artist_pro: '€29/month',
   designer: '€29/month',
   gallery: '€49/month',
-  allaccess: '€79/month',
 };
 
 export function UpgradePrompt({

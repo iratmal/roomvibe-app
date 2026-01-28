@@ -92,9 +92,7 @@ router.post('/register', async (req: Request, res: Response) => {
 
     // Calculate effectivePlan based on entitlements
     let effectivePlan = 'user';
-    if (entitlements.artist_access && entitlements.designer_access && entitlements.gallery_access) {
-      effectivePlan = 'allaccess';
-    } else if (entitlements.gallery_access) {
+    if (entitlements.gallery_access) {
       effectivePlan = 'gallery';
     } else if (entitlements.designer_access) {
       effectivePlan = 'designer';
@@ -156,8 +154,6 @@ router.post('/login', async (req: Request, res: Response) => {
     let effectivePlan = 'user';
     if (user.is_admin) {
       effectivePlan = 'admin';
-    } else if (entitlements.artist_access && entitlements.designer_access && entitlements.gallery_access) {
-      effectivePlan = 'allaccess';
     } else if (entitlements.gallery_access) {
       effectivePlan = 'gallery';
     } else if (entitlements.designer_access) {

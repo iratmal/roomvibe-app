@@ -1,4 +1,4 @@
-export type PlanType = 'free' | 'user' | 'artist' | 'designer' | 'gallery' | 'allaccess' | 'admin';
+export type PlanType = 'free' | 'user' | 'artist' | 'artist_pro' | 'designer' | 'gallery' | 'admin';
 
 export type RoomTier = 'basic10' | 'standard40' | 'all';
 
@@ -94,7 +94,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     pdfMonthlyLimit: 10,
     designerTools: false,
     galleryTools: false,
-    exhibitions: 0,
+    exhibitions: 1,
     clientFolders: false,
     galleryDashboard: false,
     multiArtistCollections: false,
@@ -154,7 +154,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     prioritySupport: false,
     earlyAccess: false,
   },
-  allaccess: {
+  artist_pro: {
     maxArtworks: -1,
     maxWallPhotos: -1,
     maxProjects: -1,
@@ -167,15 +167,15 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     highResExport: true,
     pdfExport: true,
     pdfMonthlyLimit: -1,
-    designerTools: true,
-    galleryTools: true,
+    designerTools: false,
+    galleryTools: false,
     exhibitions: -1,
-    clientFolders: true,
-    galleryDashboard: true,
-    multiArtistCollections: true,
-    customBranding: true,
-    pdfProposals: true,
-    publicGalleryPages: true,
+    clientFolders: false,
+    galleryDashboard: false,
+    multiArtistCollections: false,
+    customBranding: false,
+    pdfProposals: false,
+    publicGalleryPages: false,
     prioritySupport: true,
     earlyAccess: true,
   },
@@ -210,9 +210,9 @@ export const PLAN_HIERARCHY: Record<PlanType, number> = {
   free: 0,
   user: 0,
   artist: 1,
-  designer: 2,
-  gallery: 3,
-  allaccess: 4,
+  artist_pro: 2,
+  designer: 3,
+  gallery: 4,
   admin: 99,
 };
 
@@ -220,9 +220,9 @@ export const PLAN_NAMES: Record<PlanType, string> = {
   free: 'Free',
   user: 'Free',
   artist: 'Artist',
+  artist_pro: 'Artist Pro',
   designer: 'Designer',
   gallery: 'Gallery',
-  allaccess: 'All-Access',
   admin: 'Admin',
 };
 
@@ -230,9 +230,9 @@ export const PLAN_PRICES: Record<PlanType, string> = {
   free: 'Free',
   user: 'Free',
   artist: '€9/month',
+  artist_pro: '€29/month',
   designer: '€29/month',
   gallery: '€49/month',
-  allaccess: '€79/month',
   admin: 'N/A',
 };
 
@@ -270,27 +270,23 @@ export function getEffectivePlan(user: {
 
   // Check for cancelled/past_due - fallback to entitlements
   if (status !== 'active' && status !== 'free') {
-    if (user.entitlements?.artist_access && user.entitlements?.designer_access && user.entitlements?.gallery_access) {
-      return 'allaccess';
-    }
     if (user.entitlements?.gallery_access) return 'gallery';
     if (user.entitlements?.designer_access) return 'designer';
     if (user.entitlements?.artist_access) return 'artist';
     return 'user';
   }
 
-  // All-access check
-  if (user.entitlements?.artist_access && user.entitlements?.designer_access && user.entitlements?.gallery_access) {
-    return 'allaccess';
-  }
-
-  // Single entitlement check
+  // Single entitlement check - priority: gallery > designer > artist
   if (user.entitlements?.gallery_access) return 'gallery';
   if (user.entitlements?.designer_access) return 'designer';
-  if (user.entitlements?.artist_access) return 'artist';
+  if (user.entitlements?.artist_access) {
+    // Check if artist_pro based on subscription plan
+    if (plan === 'artist_pro') return 'artist_pro';
+    return 'artist';
+  }
 
   // Fall back to subscription_plan
-  if (['user', 'artist', 'designer', 'gallery', 'allaccess'].includes(plan)) {
+  if (['user', 'artist', 'artist_pro', 'designer', 'gallery'].includes(plan)) {
     return plan;
   }
 
@@ -355,11 +351,11 @@ export function getUpgradeMessage(currentPlan: PlanType, feature: string): { mes
       message: currentPlan === 'user' 
         ? "You've reached the limit for the free plan. Upgrade to Artist to upload up to 50 artworks."
         : currentPlan === 'artist'
-        ? "You've reached your 50 artwork limit. Upgrade to Designer for up to 100 artworks, or Gallery for unlimited."
+        ? "You've reached your 50 artwork limit. Upgrade to Artist Pro for unlimited artworks."
         : currentPlan === 'designer'
-        ? "You've reached your 100 artwork limit. Upgrade to Gallery or All-Access for unlimited artworks."
+        ? "You've reached your 100 artwork limit. Upgrade to Gallery for unlimited artworks."
         : "You've reached your artwork limit.",
-      suggestedPlan: currentPlan === 'user' ? 'artist' : currentPlan === 'artist' ? 'designer' : 'gallery',
+      suggestedPlan: currentPlan === 'user' ? 'artist' : currentPlan === 'artist' ? 'artist_pro' : 'gallery',
     },
     maxWallPhotos: {
       message: "You've reached your wall photo limit. Upgrade to unlock more uploads.",
@@ -378,8 +374,8 @@ export function getUpgradeMessage(currentPlan: PlanType, feature: string): { mes
       suggestedPlan: 'artist',
     },
     pdfMonthlyLimit: {
-      message: "You've reached your monthly PDF export limit. Upgrade to All-Access for unlimited PDF exports.",
-      suggestedPlan: 'allaccess',
+      message: "You've reached your monthly PDF export limit. Upgrade to Artist Pro for unlimited PDF exports.",
+      suggestedPlan: 'artist_pro',
     },
     premiumRoomsAccess: {
       message: "Premium mockup rooms (100+) are available on Designer plan and above. Upgrade to access all rooms.",
@@ -394,29 +390,31 @@ export function getUpgradeMessage(currentPlan: PlanType, feature: string): { mes
       suggestedPlan: 'designer',
     },
     designerTools: {
-      message: "Designer Studio tools are available on Designer and All-Access plans.",
+      message: "Designer Studio tools are available on the Designer plan.",
       suggestedPlan: 'designer',
     },
     galleryTools: {
-      message: "Gallery tools (multi-art walls, exhibitions) are available on Gallery and All-Access plans.",
+      message: "Gallery tools (multi-art walls, exhibitions) are available on the Gallery plan.",
       suggestedPlan: 'gallery',
     },
     exhibitions: {
-      message: currentPlan === 'gallery'
-        ? "You've reached your limit of 3 active exhibitions. Upgrade to All-Access for unlimited exhibitions."
-        : "Virtual exhibitions are available on Gallery and All-Access plans.",
-      suggestedPlan: currentPlan === 'gallery' ? 'allaccess' : 'gallery',
+      message: currentPlan === 'artist'
+        ? "You've reached your limit of 1 exhibition. Upgrade to Artist Pro for unlimited exhibitions."
+        : currentPlan === 'gallery'
+        ? "You've reached your limit of 3 active exhibitions. Upgrade to Artist Pro for unlimited exhibitions."
+        : "Virtual exhibitions are available on Artist and Gallery plans.",
+      suggestedPlan: (currentPlan === 'artist' || currentPlan === 'gallery') ? 'artist_pro' : 'artist',
     },
     clientFolders: {
       message: "Client folders are available on Designer plan and above.",
       suggestedPlan: 'designer',
     },
     galleryDashboard: {
-      message: "The Gallery dashboard is reserved for Gallery and All-Access plans.",
+      message: "The Gallery dashboard is reserved for Gallery plan users.",
       suggestedPlan: 'gallery',
     },
     multiArtistCollections: {
-      message: "Multi-artist collections are available on Gallery and All-Access plans.",
+      message: "Multi-artist collections are available on the Gallery plan.",
       suggestedPlan: 'gallery',
     },
     customBranding: {
@@ -428,16 +426,16 @@ export function getUpgradeMessage(currentPlan: PlanType, feature: string): { mes
       suggestedPlan: 'designer',
     },
     publicGalleryPages: {
-      message: "Public gallery pages are available on Gallery and All-Access plans.",
+      message: "Public gallery pages are available on Gallery and Artist Pro plans.",
       suggestedPlan: 'gallery',
     },
     prioritySupport: {
-      message: "Priority support is available exclusively on the All-Access plan.",
-      suggestedPlan: 'allaccess',
+      message: "Priority support is available on Artist Pro and Gallery plans.",
+      suggestedPlan: 'artist_pro',
     },
     earlyAccess: {
-      message: "Early access to new features is available exclusively on the All-Access plan.",
-      suggestedPlan: 'allaccess',
+      message: "Early access to new features is available on Artist Pro and Gallery plans.",
+      suggestedPlan: 'artist_pro',
     },
   };
 

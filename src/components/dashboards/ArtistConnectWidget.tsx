@@ -20,7 +20,7 @@ export function ArtistConnectWidget({ onViewInbox, onEditProfile }: ArtistConnec
   const [stats, setStats] = useState<ConnectStats | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const hasArtistAccess = user?.entitlements?.artist_access || user?.effectivePlan === 'artist' || user?.effectivePlan === 'allaccess';
+  const hasArtistAccess = user?.entitlements?.artist_access || user?.effectivePlan === 'artist' || user?.effectivePlan === 'artist_pro';
 
   useEffect(() => {
     fetchStats();

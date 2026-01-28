@@ -71,9 +71,9 @@ router.post('/collections', authenticateToken, requireGalleryFeature, async (req
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
     
-    if (!['gallery', 'allaccess', 'admin'].includes(effectivePlan) && 
+    if (!['gallery', 'admin'].includes(effectivePlan) && 
         !(req.user.entitlements?.gallery_access)) {
-      return res.status(403).json({ error: 'Only gallery, all-access, and admins can create collections' });
+      return res.status(403).json({ error: 'Only gallery plan users and admins can create collections' });
     }
 
     const { title, subtitle, description, status } = req.body;
@@ -98,10 +98,10 @@ router.post('/collections', authenticateToken, requireGalleryFeature, async (req
       if (currentCount >= exhibitionLimit) {
         return res.status(403).json({
           error: 'Exhibition limit reached',
-          message: `You've reached your limit of ${exhibitionLimit} active (published) exhibitions. Upgrade to All-Access for unlimited exhibitions.`,
+          message: `You've reached your limit of ${exhibitionLimit} active (published) exhibitions. Upgrade to Artist Pro for unlimited exhibitions.`,
           current_count: currentCount,
           limit: exhibitionLimit,
-          suggested_plan: 'allaccess',
+          suggested_plan: 'artist_pro',
           upgrade_url: '/pricing'
         });
       }
@@ -576,7 +576,7 @@ router.get('/collections/:id/scene', authenticateToken, requireGalleryFeature, a
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
     
-    if (!['gallery', 'allaccess', 'admin'].includes(effectivePlan) && 
+    if (!['gallery', 'admin'].includes(effectivePlan) && 
         !(req.user.entitlements?.gallery_access)) {
       return res.status(403).json({ error: 'Gallery access required' });
     }
@@ -615,7 +615,7 @@ router.put('/collections/:id/scene', authenticateToken, requireGalleryFeature, a
   try {
     const effectivePlan = req.user.effectivePlan || getEffectivePlan(req.user);
     
-    if (!['gallery', 'allaccess', 'admin'].includes(effectivePlan) && 
+    if (!['gallery', 'admin'].includes(effectivePlan) && 
         !(req.user.entitlements?.gallery_access)) {
       return res.status(403).json({ error: 'Gallery access required' });
     }

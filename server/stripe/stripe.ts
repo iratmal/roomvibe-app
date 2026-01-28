@@ -11,14 +11,16 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
 export const STRIPE_PRICE_IDS: Record<string, string> = {
   user: process.env.STRIPE_PRICE_USER || 'prod_TWYCZTwBGyatt8',
   artist: process.env.STRIPE_PRICE_ARTIST || 'prod_TWYDkK6OaSaj4C',
+  'artist-pro': process.env.STRIPE_PRICE_ARTIST_PRO || '',
   designer: process.env.STRIPE_PRICE_DESIGNER || 'prod_TWYDnd6eV54oMN',
   gallery: process.env.STRIPE_PRICE_GALLERY || 'prod_TWYEqX7PHujFrO',
-  'all-access': process.env.STRIPE_PRICE_ALL_ACCESS || '',
 };
 
 export const PRICE_ID_TO_PLAN: Record<string, string> = Object.entries(STRIPE_PRICE_IDS).reduce(
   (acc, [plan, priceId]) => {
-    acc[priceId] = plan;
+    if (priceId) {
+      acc[priceId] = plan;
+    }
     return acc;
   },
   {} as Record<string, string>
@@ -31,17 +33,17 @@ export function getPlanFromPriceId(priceId: string): string | null {
 export const PLAN_NAMES: Record<string, string> = {
   user: 'RoomVibe User',
   artist: 'RoomVibe Artist',
+  'artist-pro': 'RoomVibe Artist Pro',
   designer: 'RoomVibe Designer',
   gallery: 'RoomVibe Gallery',
-  'all-access': 'RoomVibe All-Access',
 };
 
 export const PLAN_PRICES: Record<string, number> = {
   user: 0,
   artist: 9,
+  'artist-pro': 29,
   designer: 29,
   gallery: 49,
-  'all-access': 79,
 };
 
 export default stripe;

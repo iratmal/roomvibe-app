@@ -15,7 +15,7 @@ interface PlanConfig {
   highlightFeature?: string;
   buttonText: string;
   entitlement?: 'artist_access' | 'designer_access' | 'gallery_access';
-  isAllAccess?: boolean;
+  isArtistPro?: boolean;
   recommended?: boolean;
 }
 
@@ -98,23 +98,26 @@ const PLANS: PlanConfig[] = [
     buttonText: 'Unlock Exhibition Tools',
   },
   {
-    id: 'allaccess',
-    name: 'All-Access',
-    price: '€79',
-    priceValue: 79,
-    valuePromise: 'Everything RoomVibe offers – without limits.',
-    whoItsFor: 'Full-time professionals, studios, galleries, and power users.',
-    isAllAccess: true,
+    id: 'artist_pro',
+    name: 'Artist Pro',
+    price: '€29',
+    priceValue: 29,
+    valuePromise: 'All artist features – unlimited and without restrictions.',
+    whoItsFor: 'Professional artists and creatives who need unlimited capacity.',
+    entitlement: 'artist_access',
     recommended: true,
     features: [
-      'Unlimited artworks, walls, exhibitions & exports',
-      'Full Artist + Designer + Gallery tools',
+      'Unlimited artworks',
       'Unlimited virtual exhibitions',
+      'Unlimited PDF exports',
+      'All premium mockup rooms (100+)',
+      'Your own public artist page',
+      'Be visible to designers and galleries using RoomVibe',
       'Priority support',
       'Early access to new features',
-      'Tell the story behind your artwork (optional)',
     ],
-    buttonText: 'Upgrade to All-Access',
+    highlightFeature: 'Everything from Artist plan – without limits',
+    buttonText: 'Go Pro',
   },
 ];
 
@@ -169,10 +172,8 @@ export function PricingPage() {
       return true;
     }
     
-    if (plan.isAllAccess) {
-      return hasEntitlement('artist_access') && 
-             hasEntitlement('designer_access') && 
-             hasEntitlement('gallery_access');
+    if (plan.id === 'artist_pro') {
+      return user?.effectivePlan === 'artist_pro';
     }
     
     if (plan.entitlement) {
@@ -391,7 +392,7 @@ function HorizontalPlanCard({ plan, isActive, isLoading, onSelect }: HorizontalP
                 style={{ backgroundColor: '#E8EBF7', color: '#264C61', fontWeight: 600 }}
               >
                 <CheckIcon className="w-5 h-5" color="#264C61" />
-                {plan.isAllAccess ? 'All Modules Active' : 'Active'}
+                {plan.isArtistPro ? 'Artist Pro Active' : 'Active'}
               </div>
             ) : (
               <button
@@ -466,7 +467,7 @@ function FeatureComparisonTable() {
             <th className="text-center py-4 px-2 sm:px-4 font-semibold text-[#0B1F2A] text-sm min-w-[80px]">Artist</th>
             <th className="text-center py-4 px-2 sm:px-4 font-semibold text-[#0B1F2A] text-sm min-w-[80px]">Designer</th>
             <th className="text-center py-4 px-2 sm:px-4 font-semibold text-[#0B1F2A] text-sm min-w-[80px]">Gallery</th>
-            <th className="text-center py-4 px-2 sm:px-4 font-semibold text-sm min-w-[100px]" style={{ backgroundColor: 'rgba(201, 162, 77, 0.1)', color: '#0B1F2A' }}>All-Access</th>
+            <th className="text-center py-4 px-2 sm:px-4 font-semibold text-sm min-w-[100px]" style={{ backgroundColor: 'rgba(201, 162, 77, 0.1)', color: '#0B1F2A' }}>Artist Pro</th>
           </tr>
         </thead>
         <tbody>
