@@ -1,0 +1,159 @@
+ROOMVIBE – TERMS OF SERVICE
+
+Last updated: [upisati datum]
+
+Welcome to RoomVibe.
+By accessing or using the RoomVibe platform (“Platform”, “Service”), you agree to be bound by these Terms of Service (“Terms”). If you do not agree, please do not use the Platform.
+
+1. ABOUT ROOMVIBE
+
+RoomVibe is a digital visualization platform that allows artists, designers, galleries, and other users to upload, display, visualize, and export artworks in interior environments, including but not limited to previews, mockups, galleries, and PDF exports.
+
+RoomVibe provides tools only. RoomVibe does not act as a marketplace, rights manager, or legal representative for users.
+
+2. USER ACCOUNTS
+
+You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account.
+
+You agree to provide accurate and complete information and to keep your account information up to date.
+
+RoomVibe reserves the right to suspend or terminate accounts that violate these Terms.
+
+3. OWNERSHIP & COPYRIGHT
+3.1 User Content Ownership
+
+All artworks, images, designs, and other content uploaded to RoomVibe (“User Content”) remain the exclusive property of the original creator or rights holder.
+
+RoomVibe does not claim ownership over any User Content.
+
+3.2 License to RoomVibe
+
+By uploading content, you grant RoomVibe a non-exclusive, worldwide, royalty-free, limited license to host, store, display, and process the content solely for the purpose of operating and providing the Service.
+
+This license ends when the content is deleted from the Platform, except where retention is required for technical, legal, or backup purposes.
+
+4. CONTENT RESPONSIBILITY
+
+You confirm that:
+
+You own the rights to the content you upload, or
+
+You have obtained all necessary permissions and licenses.
+
+You may not upload content that:
+
+infringes copyright or intellectual property rights,
+
+belongs to third parties without authorization,
+
+is unlawful, misleading, or abusive.
+
+RoomVibe reserves the right to remove content and suspend accounts that violate these rules.
+
+5. SHARING, EXPORTING & DISTRIBUTION
+
+RoomVibe enables features such as:
+
+visual previews,
+
+share links,
+
+galleries,
+
+PDF exports,
+
+presentation and visualization tools.
+
+By using these features, you acknowledge and agree that:
+
+Exported or shared content may be downloaded, copied, forwarded, or redistributed by third parties.
+
+RoomVibe cannot control or prevent further use or distribution of content once it is shared or exported.
+
+RoomVibe is not responsible for unauthorized use, redistribution, or misuse of content after it has been shared, exported, or accessed by third parties.
+
+You accept full responsibility for deciding when and how your content is shared.
+
+6. NO GUARANTEE OF CONTENT PROTECTION
+
+While RoomVibe applies reasonable technical measures to protect the Platform, no digital system can guarantee absolute protection.
+
+RoomVibe does not guarantee that:
+
+content will not be copied,
+
+screenshots will not be taken,
+
+files will not be downloaded,
+
+content will not appear elsewhere on the internet.
+
+Use of the Platform is at your own risk.
+
+7. SUBSCRIPTIONS & PAYMENTS
+
+Certain features require a paid subscription.
+
+Payments are processed via third-party payment providers (e.g. Stripe).
+
+RoomVibe does not store full payment details.
+
+Access to features depends on the active subscription status.
+
+Subscriptions may be modified, suspended, or canceled according to the selected plan.
+
+8. PLATFORM AVAILABILITY
+
+RoomVibe is provided on an “as is” and “as available” basis.
+
+RoomVibe does not guarantee uninterrupted availability and may:
+
+perform maintenance,
+
+update features,
+
+temporarily suspend access.
+
+9. LIMITATION OF LIABILITY
+
+To the maximum extent permitted by law:
+
+RoomVibe shall not be liable for:
+
+loss of data,
+
+loss of business or revenue,
+
+unauthorized use of content,
+
+indirect, incidental, or consequential damages.
+
+Your use of the Platform is at your sole risk.
+
+10. TERMINATION
+
+RoomVibe may suspend or terminate access:
+
+for violation of these Terms,
+
+for misuse of the Platform,
+
+for legal or security reasons.
+
+Users may stop using the Platform at any time.
+
+11. CHANGES TO TERMS
+
+RoomVibe may update these Terms from time to time.
+
+Continued use of the Platform after changes constitutes acceptance of the updated Terms.
+
+12. GOVERNING LAW
+
+These Terms are governed by the laws of the European Union and the applicable local jurisdiction of the company operating RoomVibe.
+
+13. CONTACT
+
+For questions regarding these Terms, please contact:
+[support@roomvibe.com
+]
