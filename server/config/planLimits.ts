@@ -168,7 +168,7 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
     pdfMonthlyLimit: 20,
     designerTools: false,
     galleryTools: true,
-    exhibitions: 3,
+    exhibitions: -1, // Unlimited for Gallery plan
     clientFolders: true,
     galleryDashboard: true,
     multiArtistCollections: true,
@@ -367,8 +367,6 @@ export function getUpgradeMessage(currentPlan: PlanType, feature: string): { mes
     exhibitions: {
       message: currentPlan === 'artist'
         ? "You've reached your limit of 1 active exhibition. Upgrade to Artist Pro for unlimited exhibitions."
-        : currentPlan === 'gallery'
-        ? "You've reached your limit of 3 active exhibitions. Contact support for more options."
         : "Virtual exhibitions are available on Artist and Gallery plans.",
       suggestedPlan: currentPlan === 'artist' ? 'artist_pro' : 'gallery',
     },

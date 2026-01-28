@@ -402,10 +402,8 @@ export function getUpgradeMessage(currentPlan: PlanType, feature: string): { mes
     exhibitions: {
       message: currentPlan === 'artist'
         ? "You've reached your limit of 1 exhibition. Upgrade to Artist Pro for unlimited exhibitions."
-        : currentPlan === 'gallery'
-        ? "You've reached your limit of 3 active exhibitions. Upgrade to Artist Pro for unlimited exhibitions."
         : "Virtual exhibitions are available on Artist and Gallery plans.",
-      suggestedPlan: (currentPlan === 'artist' || currentPlan === 'gallery') ? 'artist_pro' : 'artist',
+      suggestedPlan: currentPlan === 'artist' ? 'artist_pro' : 'artist',
     },
     clientFolders: {
       message: "Client folders are available on Designer plan and above.",
