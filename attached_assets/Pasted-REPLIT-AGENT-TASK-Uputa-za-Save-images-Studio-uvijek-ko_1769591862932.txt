@@ -1,0 +1,98 @@
+REPLIT AGENT TASK – Uputa za Save images + Studio uvijek koristi Exhibition & Studio image
+ZADATAK 1 – DODATI UPUTU: “NAKON SAVE IMAGES KLIKNITE UPDATE ARTWORK”
+Problem
+
+Korisnik klikne Save images i očekuje da se promjene odmah vide na kartici, ali u praksi se promjena “finalizira” tek kad se klikne Update Artwork.
+
+To stvara konfuziju jer user misli da Save images “nije radio”.
+
+Goal
+
+Dodati jasan helper tekst uz Save images koji objašnjava da je potrebno kliknuti Update Artwork da bi promjene bile primijenjene.
+
+Copy (predloženi tekst – kratko i jasno)
+
+Postaviti tekst odmah ispod gumba Save images (ili iznad, ali blizu gumba):
+
+Tip: After saving image roles, click Update Artwork to apply changes to your artwork card and Studio.
+
+(Alternativa, još jednostavnije)
+
+Important: Click Update Artwork after Save images to apply changes.
+
+Acceptance criteria
+
+ Tekst je vidljiv i blizu gumba Save images
+
+ Korisnik odmah shvaća da treba kliknuti Update Artwork
+
+ Nema promjene dizajna osim dodatnog helper teksta
+
+ZADATAK 2 – VIEW IN STUDIO MORA KORISTITI EXHIBITION & STUDIO IMAGE (NE CARD IMAGE)
+Problem (trenutno stanje)
+
+Čak i kad user:
+
+postavi Exhibition & Studio Image
+
+klikne Save images
+
+klikne Update Artwork
+
+…kad ode na View in Studio / Open in Studio, Studio ponekad:
+
+povuče Card Image umjesto Exhibition & Studio Image
+
+ili povuče krivu sliku (nekonzistentno)
+
+Goal
+
+Studio uvijek mora koristiti isključivo sliku definiranu u:
+
+Exhibition & Studio Image
+
+Nikad ne smije koristiti:
+
+Card Image
+
+prvu uploadanu sliku
+
+bilo kakav fallback ako je Exhibition & Studio Image postavljen
+
+Requirements
+
+Provjeriti payload / state kada se ide na “View in Studio”
+
+Studio open action mora slati / čitati exhibitionStudioImageId (ili ekvivalent)
+
+Ne smije koristiti cardImageId
+
+U Studiju, pri inicijalnom učitavanju artworka:
+
+image source = exhibitionStudioImageId
+
+ako nije setan → pokaži upozorenje ili fallback (ali samo ako baš mora; preferirano: blokiraj i reci useru da odabere Studio image)
+
+Osigurati konzistentnost nakon Save images + Update Artwork
+
+Nakon Update Artwork, refetch / refresh artwork data u studiju ili osigurati da se koristi updated vrijednost
+
+Acceptance criteria (obavezno test)
+
+ Postavim Exhibition & Studio Image = Gallery 3
+
+ Save images
+
+ Update Artwork
+
+ Klik View in Studio
+
+ Studio učita točno Gallery 3 (Studio image)
+
+ Card Image može biti druga (npr. Gallery 5) i ne smije utjecati na Studio
+
+ Testirano na najmanje 2 različita artworka
+
+Stop condition
+
+Kad je Studio 100% vezan na Exhibition & Studio Image i više nikad ne povlači Card Image.

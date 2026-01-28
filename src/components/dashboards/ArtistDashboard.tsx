@@ -1594,39 +1594,48 @@ export function ArtistDashboard() {
                   
                   {/* Save Images Button - Only show when editing existing artwork */}
                   {editingArtwork && (
-                  <div className="flex items-center gap-3 mt-4 pt-4 border-t border-gray-200">
-                    <button
-                      type="button"
-                      onClick={handleSaveImages}
-                      disabled={savingImages}
-                      className="px-4 py-2 bg-rv-primary text-white text-sm font-medium rounded-lg hover:bg-rv-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                    >
-                      {savingImages ? (
-                        <>
-                          <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Saving...
-                        </>
-                      ) : (
-                        <>
+                  <>
+                    <div className="flex items-center gap-3 mt-4 pt-4 border-t border-gray-200">
+                      <button
+                        type="button"
+                        onClick={handleSaveImages}
+                        disabled={savingImages}
+                        className="px-4 py-2 bg-rv-primary text-white text-sm font-medium rounded-lg hover:bg-rv-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      >
+                        {savingImages ? (
+                          <>
+                            <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                            </svg>
+                            Save images
+                          </>
+                        )}
+                      </button>
+                      {imageSaveSuccess && (
+                        <span className="text-sm text-green-600 flex items-center gap-1">
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
-                          Save images
-                        </>
+                          Images saved successfully
+                        </span>
                       )}
-                    </button>
-                    {imageSaveSuccess && (
-                      <span className="text-sm text-green-600 flex items-center gap-1">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                        Images saved successfully
-                      </span>
-                    )}
-                  </div>
+                    </div>
+                    {/* Helper tip for Save images */}
+                    <p className="text-xs text-gray-500 mt-2 flex items-start gap-1">
+                      <svg className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>Click <strong>Update Artwork</strong> after saving to apply changes to your artwork card and Studio.</span>
+                    </p>
+                  </>
                   )}
                   
                   {/* Info text for new uploads */}
@@ -3098,16 +3107,37 @@ export function ArtistDashboard() {
                   type="button"
                   onClick={() => {
                     if (pendingStudioArtwork) {
+                      // Always use Exhibition & Studio Image for Studio
+                      // Priority: clean_image_url (pre-computed by API) > image_url fallback
+                      let studioImageUrl: string;
+                      
+                      if (pendingStudioArtwork.clean_image_url) {
+                        // Use the pre-computed clean_image_url from API
+                        studioImageUrl = pendingStudioArtwork.clean_image_url.startsWith('http') 
+                          ? pendingStudioArtwork.clean_image_url 
+                          : `${API_URL}${pendingStudioArtwork.clean_image_url}`;
+                      } else {
+                        // Fallback to cover image if no clean_image_url
+                        studioImageUrl = pendingStudioArtwork.image_url.startsWith('http') 
+                          ? pendingStudioArtwork.image_url 
+                          : `${API_URL}${pendingStudioArtwork.image_url}`;
+                      }
+                      
                       const params = new URLSearchParams({
                         artworkId: pendingStudioArtwork.id.toString(),
                         title: pendingStudioArtwork.title,
-                        imageUrl: pendingStudioArtwork.image_url.startsWith('http') 
-                          ? pendingStudioArtwork.image_url 
-                          : `${API_URL}${pendingStudioArtwork.image_url}`,
+                        imageUrl: studioImageUrl,
                         width: pendingStudioArtwork.width.toString(),
                         height: pendingStudioArtwork.height.toString(),
                         unit: pendingStudioArtwork.dimension_unit || 'cm'
                       });
+                      
+                      // Also pass imageId for server-side validation (if clean_image_id is set)
+                      const cleanImageId = pendingStudioArtwork.clean_image_id;
+                      if (cleanImageId !== null && cleanImageId !== undefined) {
+                        params.append('imageId', cleanImageId.toString());
+                      }
+                      
                       window.location.hash = `#/studio?${params.toString()}`;
                     }
                     setShowStudioWarning(false);
