@@ -2532,7 +2532,7 @@ export function ArtistDashboard() {
                 </>
               )}
             </div>
-          ) : (
+          ) : exhibition ? (
             <div className="space-y-6">
               <div className="bg-white border border-rv-neutral rounded-rvLg shadow-rvSoft overflow-hidden">
                 <div className="relative h-56 sm:h-80 bg-gradient-to-br from-rv-primary/10 to-[#C9A24A]/10 flex items-center justify-center overflow-hidden">
@@ -2913,7 +2913,7 @@ export function ArtistDashboard() {
                 )}
               </div>
             </div>
-          )}
+          ) : null}
         </div>
 
         <div className="mb-10 p-6 bg-rv-primary/5 rounded-rvLg border border-rv-primary/20">
