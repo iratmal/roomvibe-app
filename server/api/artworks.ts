@@ -693,9 +693,15 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
     // Return the API endpoint URL for frontend compatibility (actual path is stored in DB)
     result.rows[0].image_url = `/api/artwork-image/${artworkId}`;
     res.json({ artwork: result.rows[0], message: 'Artwork updated successfully' });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating artwork:', error);
-    res.status(500).json({ error: 'Failed to update artwork' });
+    console.error('[Update] Error details:', {
+      message: error.message,
+      code: error.code,
+      detail: error.detail,
+      constraint: error.constraint
+    });
+    res.status(500).json({ error: 'Failed to update artwork', detail: error.message });
   }
 });
 
