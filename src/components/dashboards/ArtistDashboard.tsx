@@ -1025,11 +1025,22 @@ export function ArtistDashboard() {
       formDataObj.append('height', formData.height);
       formDataObj.append('dimensionUnit', formData.dimensionUnit);
       
-      await fetch(`${API_URL}/api/artist/artworks/${editingArtwork.id}`, {
+      console.log('[Save Images] Saving cardImageId:', actualCardImageId, 'cleanImageId:', actualCleanImageId);
+      
+      const saveResponse = await fetch(`${API_URL}/api/artist/artworks/${editingArtwork.id}`, {
         method: 'PUT',
         credentials: 'include',
         body: formDataObj
       });
+      
+      if (!saveResponse.ok) {
+        const errorData = await saveResponse.json().catch(() => ({}));
+        console.error('[Save Images] Save failed:', saveResponse.status, errorData);
+        throw new Error(errorData.error || 'Failed to save image settings');
+      }
+      
+      const savedArtwork = await saveResponse.json();
+      console.log('[Save Images] Saved artwork:', savedArtwork.artwork?.card_image_id, savedArtwork.artwork?.clean_image_id);
       
       // Update editingArtwork with new card image URL for immediate preview
       if (actualCardImageId !== null && editingArtwork) {
