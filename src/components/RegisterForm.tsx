@@ -48,10 +48,10 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
 
   const roles = [
     { value: 'user', label: 'User (Free)', description: 'Browse and visualize artwork' },
-    { value: 'artist', label: 'Artist', description: 'Upload and manage your artwork' },
-    { value: 'designer', label: 'Designer', description: 'Create custom room designs' },
-    { value: 'gallery', label: 'Gallery', description: 'Manage gallery collections' },
-    { value: 'artist_pro', label: 'Artist Pro', description: 'Unlimited artist features' },
+    { value: 'artist', label: 'Artist (€9/month)', description: 'Upload and manage your artwork' },
+    { value: 'artist_pro', label: 'Artist Pro (€29/month)', description: 'Unlimited artist features' },
+    { value: 'designer', label: 'Designer (€29/month)', description: 'Create custom room designs' },
+    { value: 'gallery', label: 'Gallery (€49/month)', description: 'Manage gallery collections' },
   ];
 
   return (

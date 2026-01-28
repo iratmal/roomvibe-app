@@ -30,11 +30,15 @@ router.post('/register', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Password must be at least 6 characters' });
     }
 
-    const validRoles = ['user', 'artist', 'designer', 'gallery', 'admin'];
+    const validRoles = ['user', 'artist', 'artist_pro', 'designer', 'gallery', 'admin'];
     if (!validRoles.includes(role)) {
       console.log('❌ Registration failed: Invalid role:', role);
       return res.status(400).json({ error: 'Invalid role' });
     }
+    
+    // For artist_pro, set role as artist but with artist_pro plan
+    const actualRole = role === 'artist_pro' ? 'artist' : role;
+    const subscriptionPlan = role === 'artist_pro' ? 'artist_pro' : role;
 
     const existingUser = await query(
       'SELECT id FROM users WHERE email = $1',
@@ -52,15 +56,16 @@ router.post('/register', async (req: Request, res: Response) => {
     const now = new Date();
 
     // Set role-based access flags - grants dashboard access based on selected role
-    const artistAccess = role === 'artist';
-    const designerAccess = role === 'designer';
-    const galleryAccess = role === 'gallery';
+    // For artist_pro, grant artist_access like artist plan
+    const artistAccess = actualRole === 'artist';
+    const designerAccess = actualRole === 'designer';
+    const galleryAccess = actualRole === 'gallery';
 
     const result = await query(
-      `INSERT INTO users (email, password_hash, role, confirmation_token, email_confirmed, tos_accepted_at, privacy_accepted_at, tos_version, marketing_opt_in, marketing_opt_in_at, artist_access, designer_access, gallery_access)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-       RETURNING id, email, role, email_confirmed, artist_access, designer_access, gallery_access`,
-      [email.toLowerCase(), passwordHash, role, confirmationToken, true, now, now, tosVersion, marketingOptIn, marketingOptIn ? now : null, artistAccess, designerAccess, galleryAccess]
+      `INSERT INTO users (email, password_hash, role, subscription_plan, confirmation_token, email_confirmed, tos_accepted_at, privacy_accepted_at, tos_version, marketing_opt_in, marketing_opt_in_at, artist_access, designer_access, gallery_access)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+       RETURNING id, email, role, subscription_plan, email_confirmed, artist_access, designer_access, gallery_access`,
+      [email.toLowerCase(), passwordHash, actualRole, subscriptionPlan, confirmationToken, true, now, now, tosVersion, marketingOptIn, marketingOptIn ? now : null, artistAccess, designerAccess, galleryAccess]
     );
 
     const user = result.rows[0];

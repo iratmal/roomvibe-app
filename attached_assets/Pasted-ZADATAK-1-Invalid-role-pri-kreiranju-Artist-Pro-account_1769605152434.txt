@@ -1,0 +1,76 @@
+ZADATAK 1 — “Invalid role” pri kreiranju Artist Pro accounta (signup)
+
+Problem
+Na signup formi, kad izaberem Account Type: “Artist Pro – Unlimited artist features”, nakon klika na “Create Account” dobijem error “Invalid role” (vidi screenshot 1).
+
+Očekivano
+Kreiranje accounta za Artist Pro mora proći normalno, bez greške.
+
+Što treba provjeriti i popraviti
+
+Frontend → backend payload
+
+Provjeri koja vrijednost se šalje za role/tier (npr. role, plan, accountType).
+
+Vjerojatno frontend šalje nešto tipa artist_pro, a backend ne prepoznaje (ili očekuje artistPro / pro_artist / drugo).
+
+Backend validacija rola
+
+U mjestu gdje backend validira dozvoljene role/tierove (enum/validator) dodati Artist Pro kao dozvoljenu opciju.
+
+Ako sustav ima odvojeno:
+
+role = artist/designer/gallery
+
+plan = free/artist/artist_pro…
+onda Artist Pro ne smije biti role, nego plan za role=artist.
+
+Model u bazi
+
+Provjeriti da user record može spremiti Artist Pro (kolona subscription_tier, plan, tier, itd.)
+
+Acceptance criteria
+
+Mogu kreirati novi account s “Artist Pro” bez errora
+
+Novi user dobije ispravan tier/plan i ponaša se kao Artist Pro
+
+ZADATAK 2 — Redoslijed planova (Pricing + Compare table + Signup dropdown)
+
+Problem
+Na pricing stranici i u compare tablici, Artist Pro je trenutno zadnji (poslije Gallery), a treba biti odmah iza Artist plana.
+
+Očekivani redoslijed svugdje
+Free → Artist → Artist Pro → Designer → Gallery
+
+Scope
+
+Pricing cards (gornji dio stranice)
+
+Promijeniti render order planova na: Free, Artist, Artist Pro, Designer, Gallery.
+
+Compare table (donja tablica “Compare All Features”)
+
+Promijeniti redoslijed kolumni na: Free, Artist, Artist Pro, Designer, Gallery.
+
+Signup dropdown (Account Type)
+
+Redoslijed opcija u dropdownu:
+
+Artist (9€)
+
+Artist Pro (29€)
+
+Designer
+
+Gallery
+
+(Free obično nema u dropdownu ako je “Get Started Free” poseban flow — ali ako postoji, onda Free ide prvi.)
+
+Acceptance criteria
+
+Na pricing page planovi su u traženom redoslijedu
+
+Compare tablica ima isti redoslijed
+
+Signup dropdown ima isti redoslijed i izgleda logično

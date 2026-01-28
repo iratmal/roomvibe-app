@@ -60,6 +60,28 @@ const PLANS: PlanConfig[] = [
     buttonText: 'Activate Artist Plan',
   },
   {
+    id: 'artist_pro',
+    name: 'Artist Pro',
+    price: '€29',
+    priceValue: 29,
+    valuePromise: 'All artist features – unlimited and without restrictions.',
+    whoItsFor: 'Professional artists and creatives who need unlimited capacity.',
+    entitlement: 'artist_access',
+    recommended: true,
+    features: [
+      'Unlimited artworks',
+      'Unlimited virtual exhibitions',
+      'Unlimited PDF exports',
+      'All premium mockup rooms (100+)',
+      'Your own public artist page',
+      'Be visible to designers and galleries using RoomVibe',
+      'Priority support',
+      'Early access to new features',
+    ],
+    highlightFeature: 'Everything from Artist plan – without limits',
+    buttonText: 'Go Pro',
+  },
+  {
     id: 'designer',
     name: 'Designer',
     price: '€29',
@@ -96,28 +118,6 @@ const PLANS: PlanConfig[] = [
     ],
     highlightFeature: 'Discover and work with artists through the RoomVibe platform',
     buttonText: 'Unlock Exhibition Tools',
-  },
-  {
-    id: 'artist_pro',
-    name: 'Artist Pro',
-    price: '€29',
-    priceValue: 29,
-    valuePromise: 'All artist features – unlimited and without restrictions.',
-    whoItsFor: 'Professional artists and creatives who need unlimited capacity.',
-    entitlement: 'artist_access',
-    recommended: true,
-    features: [
-      'Unlimited artworks',
-      'Unlimited virtual exhibitions',
-      'Unlimited PDF exports',
-      'All premium mockup rooms (100+)',
-      'Your own public artist page',
-      'Be visible to designers and galleries using RoomVibe',
-      'Priority support',
-      'Early access to new features',
-    ],
-    highlightFeature: 'Everything from Artist plan – without limits',
-    buttonText: 'Go Pro',
   },
 ];
 
@@ -466,9 +466,9 @@ function FeatureComparisonTable() {
             <th className="text-left py-4 px-4 sm:px-6 font-semibold text-[#0B1F2A] text-sm min-w-[200px]">Feature</th>
             <th className="text-center py-4 px-2 sm:px-4 font-semibold text-[#0B1F2A] text-sm min-w-[80px]">Free</th>
             <th className="text-center py-4 px-2 sm:px-4 font-semibold text-[#0B1F2A] text-sm min-w-[80px]">Artist</th>
+            <th className="text-center py-4 px-2 sm:px-4 font-semibold text-sm min-w-[100px]" style={{ backgroundColor: 'rgba(201, 162, 77, 0.1)', color: '#0B1F2A' }}>Artist Pro</th>
             <th className="text-center py-4 px-2 sm:px-4 font-semibold text-[#0B1F2A] text-sm min-w-[80px]">Designer</th>
             <th className="text-center py-4 px-2 sm:px-4 font-semibold text-[#0B1F2A] text-sm min-w-[80px]">Gallery</th>
-            <th className="text-center py-4 px-2 sm:px-4 font-semibold text-sm min-w-[100px]" style={{ backgroundColor: 'rgba(201, 162, 77, 0.1)', color: '#0B1F2A' }}>Artist Pro</th>
           </tr>
         </thead>
         <tbody>
@@ -480,9 +480,9 @@ function FeatureComparisonTable() {
               <td className="py-3.5 px-4 sm:px-6 text-sm text-gray-700">{row.feature}</td>
               <td className="py-3.5 px-2 sm:px-4 text-center">{renderCell(row.free)}</td>
               <td className="py-3.5 px-2 sm:px-4 text-center">{renderCell(row.artist)}</td>
+              <td className="py-3.5 px-2 sm:px-4 text-center" style={{ backgroundColor: 'rgba(201, 162, 77, 0.05)' }}>{renderCell(row.artistPro)}</td>
               <td className="py-3.5 px-2 sm:px-4 text-center">{renderCell(row.designer)}</td>
               <td className="py-3.5 px-2 sm:px-4 text-center">{renderCell(row.gallery)}</td>
-              <td className="py-3.5 px-2 sm:px-4 text-center" style={{ backgroundColor: 'rgba(201, 162, 77, 0.05)' }}>{renderCell(row.artistPro)}</td>
             </tr>
           ))}
         </tbody>
