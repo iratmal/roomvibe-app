@@ -422,28 +422,29 @@ interface FeatureRow {
   artist: string | boolean;
   designer: string | boolean;
   gallery: string | boolean;
-  allAccess: string | boolean;
+  artistPro: string | boolean;
 }
 
 const FEATURE_ROWS: FeatureRow[] = [
-  { feature: 'Artwork uploads', free: '3 + 7 branded', artist: '50', designer: '—', gallery: 'Unlimited', allAccess: 'Unlimited' },
-  { feature: 'Client room photos', free: '—', artist: '—', designer: '100', gallery: '—', allAccess: '100' },
-  { feature: 'Mockup rooms', free: '10 basic', artist: '40 standard', designer: '100+ premium', gallery: '100+ premium', allAccess: 'All rooms' },
-  { feature: 'Upload own wall photos', free: true, artist: true, designer: true, gallery: true, allAccess: true },
-  { feature: 'Frame styling controls', free: true, artist: true, designer: true, gallery: true, allAccess: true },
-  { feature: 'Image downloads', free: true, artist: true, designer: true, gallery: true, allAccess: true },
-  { feature: 'PDF exports', free: false, artist: true, designer: true, gallery: true, allAccess: true },
-  { feature: 'Widget embed', free: true, artist: true, designer: true, gallery: true, allAccess: true },
-  { feature: 'Buy button integration', free: true, artist: true, designer: true, gallery: true, allAccess: true },
-  { feature: 'Virtual exhibitions', free: false, artist: '1 active', designer: false, gallery: '3 active', allAccess: 'Unlimited' },
-  { feature: 'Public exhibition links', free: false, artist: true, designer: false, gallery: true, allAccess: true },
-  { feature: 'Designer Studio tools', free: false, artist: false, designer: true, gallery: false, allAccess: true },
-  { feature: 'Gallery Hub', free: false, artist: false, designer: false, gallery: true, allAccess: true },
-  { feature: 'Connect with designers', free: false, artist: true, designer: false, gallery: false, allAccess: true },
-  { feature: 'Connect with galleries', free: false, artist: true, designer: false, gallery: false, allAccess: true },
-  { feature: 'Browse artist directory', free: false, artist: false, designer: true, gallery: true, allAccess: true },
-  { feature: 'Priority support', free: false, artist: false, designer: false, gallery: false, allAccess: true },
-  { feature: 'Early access to features', free: false, artist: false, designer: false, gallery: false, allAccess: true },
+  { feature: 'Artwork uploads', free: '3 + 7 branded', artist: '50', designer: '100', gallery: 'Unlimited', artistPro: 'Unlimited' },
+  { feature: 'Client room photos', free: '—', artist: '—', designer: 'Unlimited', gallery: '—', artistPro: '—' },
+  { feature: 'Mockup rooms', free: '10 basic', artist: '40 standard', designer: '100+ premium', gallery: '100+ premium', artistPro: '100+ premium' },
+  { feature: 'Upload own wall photos', free: true, artist: true, designer: true, gallery: true, artistPro: true },
+  { feature: 'Frame styling controls', free: true, artist: true, designer: true, gallery: true, artistPro: true },
+  { feature: 'Image downloads', free: true, artist: true, designer: true, gallery: true, artistPro: true },
+  { feature: 'PDF exports', free: false, artist: '10/month', designer: true, gallery: true, artistPro: 'Unlimited' },
+  { feature: 'Widget embed', free: true, artist: true, designer: true, gallery: true, artistPro: true },
+  { feature: 'Buy button integration', free: true, artist: true, designer: true, gallery: true, artistPro: true },
+  { feature: 'Virtual exhibitions', free: false, artist: '1 active', designer: false, gallery: '3 active', artistPro: 'Unlimited' },
+  { feature: 'Public exhibition links', free: false, artist: true, designer: false, gallery: true, artistPro: true },
+  { feature: 'Designer Studio tools', free: false, artist: false, designer: true, gallery: false, artistPro: false },
+  { feature: 'Gallery Hub', free: false, artist: false, designer: false, gallery: true, artistPro: false },
+  { feature: 'Connect with designers', free: false, artist: 'Up to 20', designer: false, gallery: false, artistPro: 'Unlimited' },
+  { feature: 'Connect with galleries', free: false, artist: 'Up to 20', designer: false, gallery: false, artistPro: 'Unlimited' },
+  { feature: 'Browse Art Library', free: false, artist: false, designer: true, gallery: false, artistPro: false },
+  { feature: 'Browse Artist Directory', free: false, artist: false, designer: false, gallery: true, artistPro: false },
+  { feature: 'Priority support', free: false, artist: false, designer: false, gallery: false, artistPro: true },
+  { feature: 'Early access to features', free: false, artist: false, designer: false, gallery: false, artistPro: true },
 ];
 
 function FeatureComparisonTable() {
@@ -481,7 +482,7 @@ function FeatureComparisonTable() {
               <td className="py-3.5 px-2 sm:px-4 text-center">{renderCell(row.artist)}</td>
               <td className="py-3.5 px-2 sm:px-4 text-center">{renderCell(row.designer)}</td>
               <td className="py-3.5 px-2 sm:px-4 text-center">{renderCell(row.gallery)}</td>
-              <td className="py-3.5 px-2 sm:px-4 text-center" style={{ backgroundColor: 'rgba(201, 162, 77, 0.05)' }}>{renderCell(row.allAccess)}</td>
+              <td className="py-3.5 px-2 sm:px-4 text-center" style={{ backgroundColor: 'rgba(201, 162, 77, 0.05)' }}>{renderCell(row.artistPro)}</td>
             </tr>
           ))}
         </tbody>
