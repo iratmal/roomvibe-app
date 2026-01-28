@@ -220,6 +220,12 @@ function OnboardingRouter() {
     return null;
   }
 
+  // If onboarding already completed, redirect to dashboard
+  if (user.onboardingCompleted) {
+    window.location.hash = '#/dashboard';
+    return null;
+  }
+
   const handleComplete = () => {
     window.location.hash = '#/dashboard';
   };

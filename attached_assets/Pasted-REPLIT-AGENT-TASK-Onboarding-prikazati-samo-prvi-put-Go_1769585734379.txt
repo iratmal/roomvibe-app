@@ -1,0 +1,86 @@
+REPLIT AGENT TASK — Onboarding prikazati samo prvi put
+
+Goal
+Onboarding ekrani (/onboarding flow: “Welcome to RoomVibe” + koraci) moraju se prikazati samo jednom po korisniku — prvi put nakon kreiranja accounta / prvog logina. Nakon toga, user uvijek ide direktno u dashboard.
+
+Context (trenutno stanje)
+
+Svaki put kad se user ulogira kao Artist, otvara se onboarding flow (3 ekrana).
+
+To je frustrirajuće i izgleda kao bug.
+
+Requirements (što napraviti)
+
+Dodaj persistent flag za korisnika:
+
+npr. onboardingCompleted: boolean (default: false za nove korisnike)
+
+Prikaz onboarding flow-a
+
+Ako onboardingCompleted === false:
+
+pokaži onboarding kao i sada
+
+Ako onboardingCompleted === true:
+
+preskoči onboarding i vodi usera direktno u dashboard (ili početnu stranicu role-a)
+
+Kada setati onboardingCompleted = true
+
+Kad user klikne Go to Dashboard
+
+Kad user klikne Skip onboarding
+
+(Optional ok) kad dođe do zadnjeg koraka i klikne Next/Finish
+
+Ne smije se resetirati
+
+logout/login ne resetira
+
+refresh ne resetira
+
+promjena role-a ne resetira (osim ako baš imamo koncept “role onboarding”, ali za sada NE)
+
+Implementation notes (da agent ne luta)
+
+Preferirano: spremiti flag u DB (user/profile).
+
+Ako već imate user profile endpoint, proširiti ga da vraća onboardingCompleted.
+
+Dodati endpoint za update npr. PATCH /api/users/me ili specifično POST /api/onboarding/complete.
+
+Frontend route guard:
+
+ako user ide na /onboarding a onboardingCompleted=true → redirect na dashboard
+
+ako user ide na dashboard a onboardingCompleted=false → redirect na /onboarding (samo prvi put)
+
+Out of scope (NE raditi)
+
+Ne mijenjati dizajn onboarding ekrana
+
+Ne raditi refaktor auth-a
+
+Ne uvoditi nove role-onboarding tokove
+
+Ne dirati Stripe, billing, deploy logiku
+
+Acceptance criteria (obavezno testirati)
+
+Novi user: vidi onboarding jednom → nakon završetka ide u dashboard
+
+Isti user: logout/login → ide direktno u dashboard (nema onboarding)
+
+Refresh na dashboardu → onboarding se ne vraća
+
+Direktan odlazak na /onboarding nakon completion → redirect na dashboard
+
+Stop condition
+
+Kada je gore navedeno implementirano i testirano (barem s 1 novim userom i 1 postojećim userom), stani i napiši:
+
+koji su fileovi promijenjeni
+
+koji endpoint / model je dodan ili proširen
+
+kratko kako testirati ručno
