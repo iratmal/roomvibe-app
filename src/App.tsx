@@ -1085,6 +1085,7 @@ function Studio() {
         const queryString = hash.substring(queryIndex + 1);
         const params = new URLSearchParams(queryString);
         const artworkIdParam = params.get('artworkId');
+        const imageIdParam = params.get('imageId');
         
         if (!artworkIdParam) return;
         
@@ -1098,8 +1099,12 @@ function Studio() {
         if (!isNaN(numericId)) {
           setIsLoadingArtwork(true);
           try {
-            // Use public artwork endpoint (no auth required for widget)
-            const response = await fetch(`${API_URL}/api/artwork/${numericId}`);
+            // Build API URL with optional imageId parameter for Exhibition & Studio Image
+            let apiUrl = `${API_URL}/api/artwork/${numericId}`;
+            if (imageIdParam) {
+              apiUrl += `?imageId=${imageIdParam}`;
+            }
+            const response = await fetch(apiUrl);
             if (response.ok) {
               const data = await response.json();
               if (data.artwork) {

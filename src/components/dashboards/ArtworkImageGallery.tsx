@@ -20,6 +20,7 @@ interface ArtworkImageGalleryProps {
   onGalleryImagesChange: (images: GalleryImage[]) => void;
   isEditing: boolean;
   maxImages?: number;
+  cleanImageId?: number | null;
 }
 
 export function ArtworkImageGallery({
@@ -29,7 +30,8 @@ export function ArtworkImageGallery({
   onPrimaryImageChange,
   onGalleryImagesChange,
   isEditing,
-  maxImages = 5
+  maxImages = 5,
+  cleanImageId
 }: ArtworkImageGalleryProps) {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
@@ -527,24 +529,24 @@ export function ArtworkImageGallery({
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl">
             <div className="flex items-start gap-4 mb-4">
-              <div className="flex-shrink-0 w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center">
-                <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-rv-text mb-1">Before Opening Studio</h3>
+                <h3 className="text-lg font-bold text-rv-text mb-1">Opening in Studio</h3>
                 <p className="text-sm text-rv-textMuted">
-                  The Studio uses your <strong>first artwork image</strong> as the original artwork.
+                  The Studio will use the image you selected in <strong>Exhibition & Studio Image</strong>.
                 </p>
               </div>
             </div>
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-              <p className="text-sm text-amber-800">
-                Please make sure your first image is the <strong>original artwork photo</strong>, not a room mockup.
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <p className="text-sm text-blue-800">
+                Make sure your <strong>Exhibition & Studio Image</strong> is a clean artwork photo (not a room mockup).
               </p>
-              <p className="text-sm text-amber-700 mt-2">
-                Otherwise, the artwork will appear as a <em>mockup inside another mockup</em>.
+              <p className="text-sm text-blue-700 mt-2">
+                You can change this in the <strong>Image Roles</strong> section above.
               </p>
             </div>
             <div className="flex gap-3">
@@ -556,7 +558,16 @@ export function ArtworkImageGallery({
                 Cancel
               </button>
               <a
-                href={`/#/studio?artworkId=${artworkId}`}
+                href={(() => {
+                  // Compute effective imageId: explicit selection > first non-mockup gallery image > 0 (cover)
+                  let effectiveImageId = cleanImageId;
+                  if (effectiveImageId === null || effectiveImageId === undefined) {
+                    // Find first non-mockup gallery image, otherwise use cover (id=0)
+                    const nonMockupGallery = galleryImages.filter(g => !g.is_mockup && g.id && g.id > 0);
+                    effectiveImageId = nonMockupGallery.length > 0 ? nonMockupGallery[0].id! : 0;
+                  }
+                  return `/#/studio?artworkId=${artworkId}&imageId=${effectiveImageId}`;
+                })()}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setShowStudioWarning(false)}

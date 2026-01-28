@@ -832,13 +832,14 @@ app.get('/api/image-proxy', async (req: any, res) => {
 app.get('/api/artwork/:id', async (req: any, res) => {
   try {
     const artworkId = parseInt(req.params.id);
+    const imageIdParam = req.query.imageId;
     
     if (isNaN(artworkId)) {
       return res.status(400).json({ error: 'Invalid artwork ID' });
     }
 
     const result = await query(
-      `SELECT id, title, image_url, width, height, dimension_unit, price_amount, price_currency, buy_url
+      `SELECT id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, clean_image_id
        FROM artworks WHERE id = $1`,
       [artworkId]
     );
@@ -848,11 +849,45 @@ app.get('/api/artwork/:id', async (req: any, res) => {
     }
 
     const artwork = result.rows[0];
+    
+    // Determine the image URL to use for Studio visualization
+    // Priority: 1) imageId query param (immediate selection), 2) clean_image_id (saved), 3) cover image
+    let overlayImageUrl = `/api/artwork-image/${artwork.id}`;
+    
+    // Check for explicit imageId from URL (takes highest priority)
+    if (imageIdParam !== undefined && imageIdParam !== null && imageIdParam !== '') {
+      const imageId = parseInt(imageIdParam);
+      if (!isNaN(imageId)) {
+        if (imageId === 0) {
+          // imageId=0 means cover image
+          overlayImageUrl = `/api/artwork-image/${artwork.id}`;
+        } else {
+          // Validate that this gallery image belongs to this artwork
+          const galleryCheck = await query(
+            'SELECT id FROM artwork_gallery_images WHERE id = $1 AND artwork_id = $2',
+            [imageId, artworkId]
+          );
+          if (galleryCheck.rows.length > 0) {
+            overlayImageUrl = `/api/artwork-gallery-image/${imageId}`;
+          }
+          // If validation fails, fall through to default (cover image)
+        }
+      }
+    } else if (artwork.clean_image_id !== null && artwork.clean_image_id !== undefined) {
+      // Use persisted clean_image_id (Exhibition & Studio Image)
+      if (artwork.clean_image_id === 0) {
+        overlayImageUrl = `/api/artwork-image/${artwork.id}`;
+      } else {
+        overlayImageUrl = `/api/artwork-gallery-image/${artwork.clean_image_id}`;
+      }
+    }
+    // Default already set above: cover image
+    
     res.json({
       artwork: {
         id: `db-${artwork.id}`,
         title: artwork.title,
-        overlayImageUrl: artwork.image_url,
+        overlayImageUrl,
         widthCm: parseFloat(artwork.width),
         heightCm: parseFloat(artwork.height),
         buyUrl: artwork.buy_url,

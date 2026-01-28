@@ -1434,6 +1434,7 @@ export function ArtistDashboard() {
                   }}
                   onGalleryImagesChange={setGalleryImages}
                   isEditing={!!editingArtwork}
+                  cleanImageId={formData.cleanImageId}
                 />
               </div>
 
