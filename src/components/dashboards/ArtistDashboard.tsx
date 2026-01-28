@@ -2085,6 +2085,7 @@ export function ArtistDashboard() {
                       return baseUrl.includes('?') ? baseUrl : `${baseUrl}?t=${Date.now()}`;
                     })()}
                     title={artwork.title}
+                    cardImageId={artwork.card_image_id}
                   />
                   <div className="p-4">
                     <h3 className="font-bold text-lg mb-2 text-rv-text">{artwork.title}</h3>

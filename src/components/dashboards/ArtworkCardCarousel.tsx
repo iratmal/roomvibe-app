@@ -14,9 +14,10 @@ interface ArtworkCardCarouselProps {
   artworkId: number;
   primaryImageUrl: string;
   title: string;
+  cardImageId?: number | null;
 }
 
-export function ArtworkCardCarousel({ artworkId, primaryImageUrl, title }: ArtworkCardCarouselProps) {
+export function ArtworkCardCarousel({ artworkId, primaryImageUrl, title, cardImageId }: ArtworkCardCarouselProps) {
   const [images, setImages] = useState<ArtworkImage[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,18 +33,28 @@ export function ArtworkCardCarousel({ artworkId, primaryImageUrl, title }: Artwo
         if (response.ok) {
           const data = await response.json();
           if (data.images && data.images.length > 0) {
-            // Sort images so the card image (matching primaryImageUrl) is first
-            const sortedImages = [...data.images].sort((a, b) => {
-              const aUrl = a.image_url.startsWith('http') ? a.image_url : `${API_URL}${a.image_url}`;
-              const bUrl = b.image_url.startsWith('http') ? b.image_url : `${API_URL}${b.image_url}`;
-              const primaryNorm = primaryImageUrl.split('?')[0]; // Remove cache-bust params for comparison
-              const aMatch = aUrl.split('?')[0] === primaryNorm || a.image_url.includes(primaryNorm.split('/').pop() || '');
-              const bMatch = bUrl.split('?')[0] === primaryNorm || b.image_url.includes(primaryNorm.split('/').pop() || '');
-              if (aMatch && !bMatch) return -1;
-              if (bMatch && !aMatch) return 1;
-              return a.display_order - b.display_order;
-            });
-            setImages(sortedImages);
+            // Use cardImageId directly to find the correct image
+            // cardImageId: 0 = cover image, positive number = gallery image ID, null/undefined = default to first
+            let orderedImages = [...data.images];
+            
+            if (cardImageId !== null && cardImageId !== undefined) {
+              // Find the image matching cardImageId directly by ID
+              const matchIndex = orderedImages.findIndex((img: ArtworkImage) => {
+                if (cardImageId === 0) {
+                  return img.id === 0 || img.is_cover;
+                }
+                return img.id === cardImageId;
+              });
+              
+              // Move matched image to first position
+              if (matchIndex > 0) {
+                const [matchedImg] = orderedImages.splice(matchIndex, 1);
+                orderedImages.unshift(matchedImg);
+              }
+            }
+            // If cardImageId is null/undefined, keep original order (cover first by default)
+            
+            setImages(orderedImages);
           } else {
             setImages([{
               id: 0,
@@ -77,7 +88,7 @@ export function ArtworkCardCarousel({ artworkId, primaryImageUrl, title }: Artwo
     };
 
     fetchImages();
-  }, [artworkId, primaryImageUrl]);
+  }, [artworkId, cardImageId, primaryImageUrl]);
 
   const getImageUrl = (url: string) => {
     if (url.startsWith('http')) return url;
@@ -104,12 +115,12 @@ export function ArtworkCardCarousel({ artworkId, primaryImageUrl, title }: Artwo
     setImageLoaded(false);
   }, [currentIndex]);
 
-  // Reset to first image when primaryImageUrl changes (e.g., after card image update)
+  // Reset to first image when cardImageId or primaryImageUrl changes (e.g., after card image update)
   useEffect(() => {
     setCurrentIndex(0);
     setImageLoadError(false);
     setImageLoaded(false);
-  }, [primaryImageUrl]);
+  }, [cardImageId, primaryImageUrl]);
 
   if (isLoading) {
     return (

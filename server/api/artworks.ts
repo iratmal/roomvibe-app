@@ -758,6 +758,11 @@ router.patch('/artworks/:id/visibility', authenticateToken, async (req: any, res
 });
 
 router.get('/artworks/:id/images', authenticateToken, async (req: any, res) => {
+  // Prevent caching to ensure fresh data after card image changes
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  
   try {
     const artworkId = parseInt(req.params.id);
     const userId = req.user.id;
@@ -766,9 +771,9 @@ router.get('/artworks/:id/images', authenticateToken, async (req: any, res) => {
       return res.status(400).json({ error: 'Invalid artwork ID' });
     }
 
-    // Verify ownership
+    // Verify ownership (include updated_at for cache-busting)
     const artworkResult = await query(
-      'SELECT id, image_url, storage_key FROM artworks WHERE id = $1 AND artist_id = $2',
+      'SELECT id, image_url, storage_key, updated_at FROM artworks WHERE id = $1 AND artist_id = $2',
       [artworkId, userId]
     );
 
