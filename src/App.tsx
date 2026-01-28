@@ -999,6 +999,8 @@ function Studio() {
   const [artId, setArtId] = useState<string>("whispers-of-the-ring-100-120-cm-roomvibe");
   const artIdRef = useRef<string>(artId);
   const [isLoadingArtwork, setIsLoadingArtwork] = useState<boolean>(false);
+  // Track if artId was set from URL params - don't overwrite with default selection
+  const [artIdFromUrl, setArtIdFromUrl] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -1030,9 +1032,10 @@ function Studio() {
             }));
             setUserArtworks(transformedArtworks);
             
-            // Set first user artwork as selected if user has artworks
-            if (transformedArtworks.length > 0 && !isFreePlan) {
-              setArtId(transformedArtworks[0].id);
+            // Only set first artwork as default if NO artwork was specified in URL
+            // This prevents overwriting URL-based artwork selection
+            if (transformedArtworks.length > 0 && !isFreePlan && !artIdFromUrl) {
+              setArtId(String(transformedArtworks[0].id));
             }
           }
         }
@@ -1044,7 +1047,7 @@ function Studio() {
     };
     
     fetchUserArtworks();
-  }, [user]);
+  }, [user, artIdFromUrl]);
   
   // Set artworks based on authentication state and plan
   useEffect(() => {
@@ -1056,18 +1059,43 @@ function Studio() {
         // Authenticated paid users: show ONLY their artworks (no demo fallback)
         setArtworksState(userArtworks);
         // Auto-select first artwork if current selection doesn't exist
+        // BUT only if no artwork was specified in URL
         if (userArtworks.length > 0) {
-          const currentExists = userArtworks.some((a: any) => a.id === artId);
-          if (!currentExists) {
-            setArtId(userArtworks[0].id);
+          const currentExists = userArtworks.some((a: any) => String(a.id) === String(artId));
+          // Don't overwrite artId if it was set from URL
+          if (!currentExists && !artIdFromUrl) {
+            setArtId(String(userArtworks[0].id));
           }
-        } else {
-          // No artworks - clear artId to avoid stale references
+        } else if (!artIdFromUrl) {
+          // No artworks - clear artId to avoid stale references (only if not from URL)
           setArtId('');
         }
       }
     }
-  }, [userArtworks, hasLoadedUserArtworks, user, isFreePlan]);
+  }, [userArtworks, hasLoadedUserArtworks, user, isFreePlan, artIdFromUrl]);
+  
+  // Check URL params immediately on mount to set artIdFromUrl flag AND artId
+  // This runs ONCE and sets both immediately before other effects can overwrite
+  useEffect(() => {
+    try {
+      const hash = window.location.hash;
+      const queryIndex = hash.indexOf('?');
+      if (queryIndex !== -1) {
+        const queryString = hash.substring(queryIndex + 1);
+        const params = new URLSearchParams(queryString);
+        const artworkIdParam = params.get('artworkId');
+        if (artworkIdParam) {
+          console.log('[Studio] Found artworkId in URL:', artworkIdParam);
+          // Set BOTH the flag AND the artId immediately
+          // This ensures artId is correct from the start
+          setArtIdFromUrl(artworkIdParam);
+          setArtId(artworkIdParam); // Set artId to string version immediately
+        }
+      }
+    } catch (e) {
+      console.warn('[Studio] Error checking URL params:', e);
+    }
+  }, []); // Run once on mount
   
   useEffect(() => {
     const loadArtworkFromUrl = async () => {
@@ -1076,6 +1104,9 @@ function Studio() {
       if (isFreePlan) {
         return;
       }
+      
+      // Only load if we have artIdFromUrl set
+      if (!artIdFromUrl) return;
       
       try {
         const hash = window.location.hash;
@@ -1114,8 +1145,15 @@ function Studio() {
                     ? data.artwork.overlayImageUrl 
                     : `${API_URL}${data.artwork.overlayImageUrl}`
                 };
-                setArtworksState(prev => [dbArtwork, ...prev]);
-                setArtId(dbArtwork.id);
+                setArtworksState(prev => {
+                  // Avoid duplicates - check if artwork already exists
+                  const exists = prev.some(a => String(a.id) === String(dbArtwork.id));
+                  if (exists) return prev;
+                  return [dbArtwork, ...prev];
+                });
+                // Use String() for consistent type matching
+                setArtId(String(dbArtwork.id));
+                console.log('[Studio] Loaded artwork from URL:', dbArtwork.id, dbArtwork.title);
               }
             }
           } catch (err) {
@@ -1130,7 +1168,7 @@ function Studio() {
     };
     
     loadArtworkFromUrl();
-  }, [isFreePlan]);
+  }, [isFreePlan, artIdFromUrl]);
   
   // Enforce placeholder artwork for free users
   useEffect(() => {
