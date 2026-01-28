@@ -23,6 +23,40 @@ const upload = multer({
   }
 });
 
+// Get all exhibitions for artist (for Artist Pro multiple exhibitions)
+router.get('/exhibitions', authenticateToken, async (req: any, res) => {
+  try {
+    const userId = req.user.id;
+    
+    const result = await query(
+      `SELECT id, title, subtitle, gallery_type, status, cover_image_url, created_at, updated_at,
+       (SELECT COUNT(*) FROM artist_exhibition_artworks WHERE exhibition_id = artist_exhibitions.id) as artwork_count
+       FROM artist_exhibitions 
+       WHERE artist_id = $1 
+       ORDER BY created_at DESC`,
+      [userId]
+    );
+
+    const exhibitions = result.rows.map(exhibition => ({
+      id: exhibition.id,
+      title: exhibition.title,
+      subtitle: exhibition.subtitle,
+      galleryType: exhibition.gallery_type,
+      status: exhibition.status,
+      coverImageUrl: exhibition.cover_image_url,
+      artworkCount: parseInt(exhibition.artwork_count) || 0,
+      createdAt: exhibition.created_at,
+      updatedAt: exhibition.updated_at
+    }));
+
+    res.json({ exhibitions });
+  } catch (error: any) {
+    console.error('Error fetching artist exhibitions:', error);
+    res.status(500).json({ error: 'Failed to fetch exhibitions', details: error.message });
+  }
+});
+
+// Legacy single exhibition endpoint (for backward compatibility)
 router.get('/exhibition', authenticateToken, async (req: any, res) => {
   try {
     const userId = req.user.id;
@@ -70,13 +104,25 @@ router.post('/exhibition', authenticateToken, async (req: any, res) => {
       return res.status(400).json({ error: 'Exhibition title is required' });
     }
 
+    // Get user's effective plan to check exhibition limits
+    const effectivePlan = await getEffectivePlan(userId);
+    const isUnlimitedPlan = effectivePlan === 'artist_pro' || effectivePlan === 'gallery' || effectivePlan === 'admin';
+    
+    // Check existing exhibitions count
     const existingResult = await query(
-      'SELECT id FROM artist_exhibitions WHERE artist_id = $1',
+      'SELECT COUNT(*) as count FROM artist_exhibitions WHERE artist_id = $1',
       [userId]
     );
+    const currentCount = parseInt(existingResult.rows[0].count) || 0;
 
-    if (existingResult.rows.length > 0) {
-      return res.status(400).json({ error: 'You already have an exhibition. Each artist can have one virtual exhibition.' });
+    // For plans without unlimited exhibitions, enforce the limit (1 for artist)
+    if (!isUnlimitedPlan && currentCount >= 1) {
+      return res.status(400).json({ 
+        error: 'Exhibition limit reached',
+        message: 'You have reached your limit of 1 exhibition. Upgrade to Artist Pro for unlimited exhibitions.',
+        limit: 1,
+        currentCount
+      });
     }
 
     const validGalleryType = galleryType || 'classic';
@@ -89,7 +135,7 @@ router.post('/exhibition', authenticateToken, async (req: any, res) => {
     );
 
     const exhibition = result.rows[0];
-    console.log('Artist exhibition created:', { id: exhibition.id, artistId: userId, title: exhibition.title });
+    console.log('Artist exhibition created:', { id: exhibition.id, artistId: userId, title: exhibition.title, plan: effectivePlan });
 
     res.status(201).json({
       exhibition: {

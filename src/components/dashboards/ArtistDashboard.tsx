@@ -130,6 +130,8 @@ export function ArtistDashboard() {
   const [copySuccess, setCopySuccess] = useState('');
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [exhibition, setExhibition] = useState<Exhibition | null>(null);
+  const [exhibitions, setExhibitions] = useState<Exhibition[]>([]); // For Artist Pro multiple exhibitions
+  const [selectedExhibition, setSelectedExhibition] = useState<Exhibition | null>(null); // Currently selected for editing
   const [showCreateExhibition, setShowCreateExhibition] = useState(false);
   const [showEditExhibition, setShowEditExhibition] = useState(false);
   const [exhibitionFormData, setExhibitionFormData] = useState({ title: '', subtitle: '' });
@@ -152,6 +154,7 @@ export function ArtistDashboard() {
   
   const effectivePlan = user?.effectivePlan || user?.role || 'user';
   const isFreePlan = effectivePlan === 'user' || effectivePlan === 'free';
+  const isArtistPro = effectivePlan === 'artist_pro';
   const planLimits = PLAN_LIMITS[effectivePlan as keyof typeof PLAN_LIMITS] || PLAN_LIMITS.user;
   const maxArtworks = planLimits.maxArtworks;
   const isAtLimit = maxArtworks !== -1 && artworks.length >= maxArtworks;
@@ -254,14 +257,35 @@ export function ArtistDashboard() {
 
   const fetchExhibition = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/artist/exhibition`, {
-        credentials: 'include'
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setExhibition(data.exhibition || null);
-        if (data.exhibition) {
-          fetchExhibitionArtworks(data.exhibition.id);
+      // For Artist Pro, fetch all exhibitions
+      if (isArtistPro) {
+        const response = await fetch(`${API_URL}/api/artist/exhibitions`, {
+          credentials: 'include'
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setExhibitions(data.exhibitions || []);
+          // Set first exhibition as selected for backward compatibility
+          if (data.exhibitions && data.exhibitions.length > 0) {
+            setExhibition(data.exhibitions[0]);
+            setSelectedExhibition(data.exhibitions[0]);
+            fetchExhibitionArtworks(data.exhibitions[0].id);
+          } else {
+            setExhibition(null);
+            setSelectedExhibition(null);
+          }
+        }
+      } else {
+        // Legacy single exhibition for non-Pro users
+        const response = await fetch(`${API_URL}/api/artist/exhibition`, {
+          credentials: 'include'
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setExhibition(data.exhibition || null);
+          if (data.exhibition) {
+            fetchExhibitionArtworks(data.exhibition.id);
+          }
         }
       }
     } catch (err) {
@@ -396,9 +420,15 @@ export function ArtistDashboard() {
       
       const data = await response.json();
       setExhibition(data.exhibition);
+      setSelectedExhibition(data.exhibition);
       setExhibitionArtworks([]);
       setShowCreateExhibition(false);
       setExhibitionFormData({ title: '', subtitle: '' });
+      
+      // For Artist Pro, refresh the exhibitions list
+      if (isArtistPro) {
+        setExhibitions(prev => [data.exhibition, ...prev]);
+      }
       
       if (pendingExhibitionArtwork && data.exhibition?.id) {
         try {
@@ -1173,8 +1203,12 @@ export function ArtistDashboard() {
       <div className="max-w-7xl mx-auto px-4 py-10">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold mb-2 text-rv-primary">Artist Dashboard</h1>
-            <p className="text-rv-textMuted">Upload and manage your artworks</p>
+            <h1 className="text-3xl font-bold mb-2 text-rv-primary">
+              {isArtistPro ? 'Artist Pro Dashboard' : 'Artist Dashboard'}
+            </h1>
+            <p className="text-rv-textMuted">
+              {isArtistPro ? 'Unlimited artworks, exhibitions, and premium features' : 'Upload and manage your artworks'}
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <a
@@ -1283,9 +1317,9 @@ export function ArtistDashboard() {
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-rv-primary">
-                      {artworks.length}{maxArtworks !== -1 ? `/${maxArtworks}` : ''}
+                      {artworks.length}{maxArtworks !== -1 && !isArtistPro ? `/${maxArtworks}` : ''}
                     </p>
-                    <p className="text-xs text-rv-textMuted">Artworks</p>
+                    <p className="text-xs text-rv-textMuted">{isArtistPro ? 'Artworks (Unlimited)' : 'Artworks'}</p>
                   </div>
                 </div>
               </div>
@@ -1312,8 +1346,10 @@ export function ArtistDashboard() {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-[#C9A24A]">{exhibition ? 1 : 0} / 1</p>
-                    <p className="text-xs text-rv-textMuted">Exhibitions</p>
+                    <p className="text-2xl font-bold text-[#C9A24A]">
+                      {isArtistPro ? exhibitions.length : (exhibition ? 1 : 0)}{isArtistPro ? '' : ' / 1'}
+                    </p>
+                    <p className="text-xs text-rv-textMuted">{isArtistPro ? 'Exhibitions (Unlimited)' : 'Exhibitions'}</p>
                   </div>
                 </div>
               </div>
@@ -1364,8 +1400,8 @@ export function ArtistDashboard() {
               />
             </div>
 
-        {/* Usage indicator for free users */}
-        {maxArtworks !== -1 && (
+        {/* Usage indicator for free/artist users (hide for Artist Pro) */}
+        {maxArtworks !== -1 && !isArtistPro && (
           <div className={`mb-6 p-4 rounded-rvMd border ${isAtLimit ? 'bg-amber-50 border-amber-200' : 'bg-rv-primary/5 border-rv-primary/20'}`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -2352,17 +2388,69 @@ export function ArtistDashboard() {
         </div>
 
         <div className="mb-10" data-section="exhibition" ref={exhibitionSectionRef}>
-          <h2 className="text-2xl font-bold mb-2 text-rv-primary">My Exhibition</h2>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-2xl font-bold text-rv-primary">{isArtistPro ? 'My Exhibitions' : 'My Exhibition'}</h2>
+            {isArtistPro && exhibitions.length > 0 && (
+              <button
+                onClick={() => setShowCreateExhibition(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#C9A24A] text-white rounded-rvMd text-sm font-semibold hover:bg-[#B8913A] transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                New Exhibition
+              </button>
+            )}
+          </div>
           <div className="mb-6 p-4 bg-rv-surface/50 border border-rv-neutral/50 rounded-rvMd">
             <p className="text-sm text-rv-text font-medium mb-1">How it works:</p>
             <p className="text-sm text-rv-textMuted">
               First upload your artworks in the <span className="font-medium">Artworks</span> section.
-              Then click <span className="font-medium">"Add to My Exhibition"</span> on any artwork you want to include.
+              Then click <span className="font-medium">"Add to {isArtistPro ? 'Exhibition' : 'My Exhibition'}"</span> on any artwork you want to include.
             </p>
             <p className="text-xs text-rv-textMuted mt-2">You can edit or remove artworks from your exhibition at any time.</p>
           </div>
+
+          {/* Artist Pro: Show list of exhibitions when multiple exist */}
+          {isArtistPro && exhibitions.length > 1 && (
+            <div className="mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {exhibitions.map((exh) => (
+                <div 
+                  key={exh.id}
+                  onClick={() => {
+                    setExhibition(exh);
+                    setSelectedExhibition(exh);
+                    fetchExhibitionArtworks(exh.id);
+                  }}
+                  className={`p-4 bg-white rounded-rvLg border-2 cursor-pointer transition-all hover:shadow-md ${
+                    exhibition?.id === exh.id ? 'border-[#C9A24A] shadow-md' : 'border-rv-neutral'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-full bg-[#C9A24A]/10 flex items-center justify-center flex-shrink-0">
+                      <svg className="w-5 h-5 text-[#C9A24A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-rv-text truncate">{exh.title}</h4>
+                      {exh.subtitle && <p className="text-xs text-rv-textMuted truncate">{exh.subtitle}</p>}
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${
+                          exh.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                        }`}>
+                          {exh.status === 'published' ? 'Published' : 'Draft'}
+                        </span>
+                        <span className="text-xs text-rv-textMuted">{exh.artworkCount} artworks</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
           
-          {!exhibition ? (
+          {(!exhibition && (!isArtistPro || exhibitions.length === 0)) ? (
             <div className="text-center py-12 bg-white rounded-rvLg border border-rv-neutral shadow-rvSoft">
               {showCreateExhibition ? (
                 <form onSubmit={handleCreateExhibition} className="max-w-md mx-auto px-6">

@@ -1,0 +1,126 @@
+ZADATAK ZA AGENTA – Artist Pro Dashboard (UI + logika)
+KONTEKST
+
+Uveli smo Artist Pro plan (29 €/mj) koji ima unlimited features za artista.
+Korisnik je sada ulogiran kao Artist Pro, ali dashboard se i dalje ponaša kao obični Artist.
+
+1️⃣ Role + oznaka plana (gore desno)
+
+Problem:
+
+Dashboard se prikazuje kao obični Artist
+
+Gore desno ne piše Artist Pro
+
+Zadatak:
+
+Ako je user role = artist_pro:
+
+gore desno u headeru prikazati badge / label: Artist Pro
+
+osigurati da se role ispravno prepoznaje (nema fallbacka na artist)
+
+Acceptance:
+
+Nakon login-a s Artist Pro accountom jasno piše Artist Pro
+
+Nema “Invalid role” ni fallback ponašanja
+
+2️⃣ Artworks – unlimited logika + UI
+
+Problem:
+
+Prikazuje se:
+
+0/50 Artworks
+
+Artwork Upload Limit
+
+To nema smisla za Artist Pro (unlimited)
+
+Zadatak:
+
+Za artist_pro:
+
+ukloniti brojčanik tipa 0/50
+
+ukloniti ili zamijeniti “Artwork Upload Limit” sekciju
+
+umjesto toga prikazati:
+
+Unlimited artworks
+
+ili jednostavno sakriti limit UI elemente
+
+VAŽNO:
+
+Backend limit = unlimited
+
+Frontend ne smije prikazivati nikakav hard limit
+
+Acceptance:
+
+Nema nigdje “50”, “limit”, “counter”
+
+UI jasno komunicira unlimited stanje (ili je neutralan)
+
+3️⃣ Exhibitions – plural + unlimited ponašanje
+
+Problem:
+
+Piše My Exhibition (singular)
+
+Logika je kao da je max 1 izložba
+
+Zadatak:
+Za artist_pro:
+
+Promijeniti:
+
+My Exhibition → My Exhibitions
+
+Omogućiti:
+
+kreiranje više / unlimited virtual exhibitions
+
+UI:
+
+lista izložbi (ne single blok)
+
+CTA može ostati Create Exhibition, ali mora raditi višestruko
+
+Acceptance:
+
+Artist Pro može imati više aktivnih izložbi
+
+UI je gramatički i logički ispravan (plural)
+
+Nema ograničenja na 1 exhibition
+
+4️⃣ Sitni, ali bitni detalji (polish)
+
+Provjeriti da:
+
+svi tooltips / helper tekstovi ne spominju limite
+
+nigdje ne piše “1 active” ili slično za Artist Pro
+
+Dashboard treba djelovati:
+
+profesionalno
+
+“power user” friendly
+
+bez ikakvih upsell poruka (jer je već Pro)
+
+DEFINICIJA GOTOVOG ZADATKA ✅
+
+Zadatak je gotov kad:
+
+Artist Pro dashboard izgleda i ponaša se drugačije od Artist plana
+
+Nema limit UI elemenata
+
+Exhibitions su plural + unlimited
+
+Role i badge su ispravni i konzistentni
