@@ -293,11 +293,17 @@ function DashboardRouter() {
 
   // Free users redirect to /dashboard/user for routing consistency
   const effectivePlan = user?.effectivePlan || 'user';
+  const subscriptionPlan = user?.subscriptionPlan || 'user';
   const isFreePlan = effectivePlan === 'user' || effectivePlan === 'free';
   
   if (isFreePlan) {
     window.location.hash = '#/dashboard/user';
     return null;
+  }
+
+  // Artist Pro users always go to Artist dashboard (regardless of legacy entitlements)
+  if (effectivePlan === 'artist_pro' || subscriptionPlan === 'artist_pro') {
+    return <ArtistDashboard />;
   }
 
   // Count how many role entitlements the user has

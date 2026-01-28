@@ -378,16 +378,18 @@ export function getUpgradeMessage(currentPlan: PlanType, feature: string): { mes
       suggestedPlan: 'artist_pro',
     },
     premiumRoomsAccess: {
-      message: "Premium mockup rooms (100+) are available on Designer plan and above. Upgrade to access all rooms.",
-      suggestedPlan: 'designer',
+      message: (currentPlan === 'user' || currentPlan === 'artist')
+        ? "Premium mockup rooms (100+) are available on the Artist Pro plan. Upgrade to unlock all rooms."
+        : "Premium mockup rooms (100+) are available on the Designer plan and above. Upgrade to access all rooms.",
+      suggestedPlan: (currentPlan === 'user' || currentPlan === 'artist') ? 'artist_pro' : 'designer',
     },
     maxPremiumRooms: {
       message: currentPlan === 'user' 
-        ? "Upgrade to Designer to access premium rooms."
+        ? "Upgrade to Artist Pro to access premium rooms."
         : currentPlan === 'artist'
-        ? "Upgrade to Designer to access all 100+ premium rooms."
+        ? "Upgrade to Artist Pro to access all 100+ premium rooms."
         : "Upgrade to access more premium rooms.",
-      suggestedPlan: 'designer',
+      suggestedPlan: (currentPlan === 'user' || currentPlan === 'artist') ? 'artist_pro' : 'designer',
     },
     designerTools: {
       message: "Designer Studio tools are available on the Designer plan.",
