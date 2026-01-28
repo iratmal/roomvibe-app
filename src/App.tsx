@@ -711,6 +711,29 @@ function SimpleVisualizer() {
 /* ------------- Studio Header (shown when NOT in iframe) ------------- */
 
 function StudioHeader() {
+  // Get the 'from' parameter from URL to navigate back properly
+  const getBackUrl = () => {
+    try {
+      const hash = window.location.hash;
+      const queryIndex = hash.indexOf('?');
+      if (queryIndex !== -1) {
+        const queryString = hash.substring(queryIndex + 1);
+        const params = new URLSearchParams(queryString);
+        const fromParam = params.get('from');
+        if (fromParam) {
+          // Decode the URL-encoded from parameter
+          return decodeURIComponent(fromParam);
+        }
+      }
+    } catch (e) {
+      // Ignore
+    }
+    // Default: go to dashboard with My Artworks tab
+    return '#/dashboard?tab=my-artworks';
+  };
+
+  const backUrl = getBackUrl();
+
   return (
     <header className="sticky top-0 z-50 border-b border-rv-neutral bg-white/80 backdrop-blur">
       <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
@@ -723,14 +746,14 @@ function StudioHeader() {
             />
           </a>
           <a
-            href="#/dashboard"
+            href={backUrl}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 md:px-4 md:py-2 bg-[#264C61] text-white text-[13px] md:text-sm font-medium rounded-md md:rounded-lg hover:bg-[#1D3A4A] transition-colors min-h-[44px] sm:min-h-0"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.75">
               <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            <span className="hidden sm:inline">Back to Dashboard</span>
-            <span className="sm:hidden">Dashboard</span>
+            <span className="hidden sm:inline">Back to My Artworks</span>
+            <span className="sm:hidden">Back</span>
           </a>
         </div>
       </div>
@@ -1001,6 +1024,8 @@ function Studio() {
   const [isLoadingArtwork, setIsLoadingArtwork] = useState<boolean>(false);
   // Track if artId was set from URL params - don't overwrite with default selection
   const [artIdFromUrl, setArtIdFromUrl] = useState<string | null>(null);
+  // Track imageId from URL - for Exhibition & Studio Image override
+  const [imageIdFromUrl, setImageIdFromUrl] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -1057,7 +1082,30 @@ function Studio() {
         setArtworksState(localArtworks as any[]);
       } else {
         // Authenticated paid users: show ONLY their artworks (no demo fallback)
-        setArtworksState(userArtworks);
+        // If there's an imageIdFromUrl, override the overlayImageUrl for matching artwork
+        let artworksToSet = userArtworks;
+        if (imageIdFromUrl && artIdFromUrl) {
+          const numericArtId = parseInt(artIdFromUrl.replace('db-', ''));
+          const imageId = parseInt(imageIdFromUrl);
+          if (!isNaN(numericArtId) && !isNaN(imageId)) {
+            artworksToSet = userArtworks.map((a: any) => {
+              // Match artwork by id (can be numeric or "db-X" format)
+              const artworkNumericId = typeof a.id === 'string' && a.id.startsWith('db-') 
+                ? parseInt(a.id.replace('db-', ''))
+                : parseInt(String(a.id));
+              if (artworkNumericId === numericArtId) {
+                // Override overlayImageUrl with the imageId from URL
+                const newOverlayUrl = imageId === 0 
+                  ? `${API_URL}/api/artwork-image/${numericArtId}`
+                  : `${API_URL}/api/artwork-gallery-image/${imageId}`;
+                console.log('[Studio] Overriding overlayImageUrl for artwork', numericArtId, 'to use imageId', imageId, ':', newOverlayUrl);
+                return { ...a, overlayImageUrl: newOverlayUrl };
+              }
+              return a;
+            });
+          }
+        }
+        setArtworksState(artworksToSet);
         // Auto-select first artwork if current selection doesn't exist
         // BUT only if no artwork was specified in URL
         if (userArtworks.length > 0) {
@@ -1072,7 +1120,7 @@ function Studio() {
         }
       }
     }
-  }, [userArtworks, hasLoadedUserArtworks, user, isFreePlan, artIdFromUrl]);
+  }, [userArtworks, hasLoadedUserArtworks, user, isFreePlan, artIdFromUrl, imageIdFromUrl]);
   
   // Check URL params immediately on mount to set artIdFromUrl flag AND artId
   // This runs ONCE and sets both immediately before other effects can overwrite
@@ -1084,12 +1132,17 @@ function Studio() {
         const queryString = hash.substring(queryIndex + 1);
         const params = new URLSearchParams(queryString);
         const artworkIdParam = params.get('artworkId');
+        const imageIdParam = params.get('imageId');
         if (artworkIdParam) {
-          console.log('[Studio] Found artworkId in URL:', artworkIdParam);
+          console.log('[Studio] Found artworkId in URL:', artworkIdParam, 'imageId:', imageIdParam);
           // Set BOTH the flag AND the artId immediately
           // This ensures artId is correct from the start
           setArtIdFromUrl(artworkIdParam);
           setArtId(artworkIdParam); // Set artId to string version immediately
+          // Also capture imageId for Exhibition & Studio Image override
+          if (imageIdParam) {
+            setImageIdFromUrl(imageIdParam);
+          }
         }
       }
     } catch (e) {
@@ -1146,9 +1199,20 @@ function Studio() {
                     : `${API_URL}${data.artwork.overlayImageUrl}`
                 };
                 setArtworksState(prev => {
-                  // Avoid duplicates - check if artwork already exists
-                  const exists = prev.some(a => String(a.id) === String(dbArtwork.id));
-                  if (exists) return prev;
+                  // Check if artwork already exists by matching id formats
+                  const existingIndex = prev.findIndex(a => {
+                    const aId = String(a.id).replace('db-', '');
+                    const dbId = String(dbArtwork.id).replace('db-', '');
+                    return aId === dbId;
+                  });
+                  if (existingIndex >= 0) {
+                    // Update existing artwork with correct overlayImageUrl from API
+                    const updated = [...prev];
+                    updated[existingIndex] = { ...prev[existingIndex], overlayImageUrl: dbArtwork.overlayImageUrl };
+                    console.log('[Studio] Updated existing artwork with URL-based overlayImageUrl:', dbArtwork.overlayImageUrl);
+                    return updated;
+                  }
+                  // Add new artwork
                   return [dbArtwork, ...prev];
                 });
                 // Use String() for consistent type matching
@@ -3813,7 +3877,7 @@ function Exhibition360Viewer() {
                 </p>
               )}
               <a
-                href={`#/studio?artwork=${selectedArtwork.artworkId}`}
+                href={`#/studio?artwork=${selectedArtwork.artworkId}&from=${encodeURIComponent(window.location.hash || '#/')}`}
                 className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-[#264C61] text-white rounded-lg hover:bg-[#1D3A4A] transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -4223,7 +4287,7 @@ function PublicExhibitionPage() {
               </div>
               <div className="flex gap-3">
                 <a
-                  href={`#/studio?artworkId=${selectedArtwork.id}`}
+                  href={`#/studio?artworkId=${selectedArtwork.id}&from=${encodeURIComponent(window.location.hash || '#/')}`}
                   className="flex-1 py-3 px-4 bg-[#264C61] text-white text-center rounded-lg font-semibold hover:bg-[#1D3A4A] transition-colors"
                 >
                   View In Your Room
@@ -4282,7 +4346,8 @@ function ArtistPublicProfilePage() {
         externalImage: imageUrl,
         width: String(pendingArtwork.width || 50),
         height: String(pendingArtwork.height || 50),
-        unit: pendingArtwork.dimensionUnit || 'cm'
+        unit: pendingArtwork.dimensionUnit || 'cm',
+        from: '#/artist/' + (pendingArtwork.artistSlug || '')
       });
       window.location.hash = `#/studio?${params.toString()}`;
     }

@@ -3137,6 +3137,8 @@ export function ArtistDashboard() {
                       if (cleanImageId !== null && cleanImageId !== undefined) {
                         params.append('imageId', cleanImageId.toString());
                       }
+                      // Add from parameter for proper back navigation
+                      params.append('from', '#/dashboard?tab=my-artworks');
                       
                       window.location.hash = `#/studio?${params.toString()}`;
                     }

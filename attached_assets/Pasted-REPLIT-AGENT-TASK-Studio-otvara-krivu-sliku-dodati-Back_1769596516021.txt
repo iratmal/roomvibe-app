@@ -1,0 +1,136 @@
+REPLIT AGENT TASK – Studio otvara krivu sliku + dodati Back u Studio
+ZADATAK 1 – VIEW IN STUDIO MORA UVIJEK UČITATI TOČNU STUDIO SLIKU (EXHIBITION & STUDIO IMAGE)
+Problem (trenutno)
+
+Kad kliknem View in Studio (s kartice ili iz Edit Artwork):
+
+Studio ne učita ni Card image ni Exhibition & Studio image
+
+nego učita neku “treću” sliku (pogrešan image source)
+
+To znači da logika odabira slike u Studiju nije povezana sa “source of truth”.
+
+Goal (pravilo)
+
+Studio mora koristiti isključivo: Exhibition & Studio Image za taj artwork.
+
+Ako je Exhibition & Studio Image postavljena:
+
+nikakav drugi image ne smije biti korišten
+
+nema fallbacka na card image
+
+nema fallbacka na first upload
+
+nema random/cached image
+
+Requirements
+
+Source of truth
+
+U backendu potvrditi da artwork ima polje npr:
+
+exhibitionStudioImageId (ili ekvivalent)
+
+Studio mora koristiti upravo to.
+
+Studio URL parametri (kritično)
+
+Kad se klikne View in Studio:
+
+u URL se mora slati artworkId
+
+i preporučeno studioImageId (tj. exhibitionStudioImageId) da ne postoji ambigvitet
+
+Primjer (konceptualno):
+
+/studio?artworkId=69&studioImageId=<id>
+
+Studio init
+
+Pri loadu studija:
+
+ako postoji studioImageId u URL → koristi njega
+
+inače fetchaj artwork i koristi exhibitionStudioImageId
+
+Ukloniti/zaobići staru logiku
+
+Ako postoji stara logika tipa:
+
+“use first artwork image”
+
+“use card image”
+
+“use first in gallery list”
+→ to mora biti overrideano kad Exhibition & Studio image postoji.
+
+Acceptance criteria
+
+ Postavim: Card Image = Gallery 5, Exhibition & Studio Image = Gallery 3
+
+ Save images + Update Artwork
+
+ Klik View in Studio
+
+ Studio učita Gallery 3 (studio image), uvijek
+
+ Testirano na najmanje 2 artworka
+
+ Nema slučajeva “treća slika”
+
+Stop condition
+
+Kad Studio 100% deterministički uvijek učita Exhibition & Studio image.
+
+ZADATAK 2 – DODATI BACK STRELICU U STUDIO (POVRATAK NA “MY ARTWORKS”)
+Problem
+
+U Studiju nema “Back” gumba/strelice.
+
+Browser back vraća na krivu poziciju (footer/anchor), što je loš UX.
+
+Goal
+
+Dodati u Studio UI jasan “Back” (strelica) koji vraća usera na mjesto odakle je došao:
+
+idealno: Dashboard → My Artworks (ili prethodna stranica)
+
+Requirements
+
+U header Studija (lijevo, pored “RoomVibe Studio” ili logo):
+
+dodati ← Back to My Artworks (ili samo ikona strelice + tekst)
+
+Back ponašanje:
+
+Ako Studio ima from= parametar u URL (npr. from=/dashboard ili from=/dashboard#my-artworks):
+
+back vodi tamo
+
+Ako nema from:
+
+fallback vodi na /dashboard (ili /dashboard#my-artworks)
+
+Ne koristiti browser history kao jedini način (jer je nestabilno zbog anchor/scroll).
+
+Copy (tekst gumba)
+
+“← Back to My Artworks”
+ili kraće:
+
+“← Back”
+
+Acceptance criteria
+
+ U Studiju vidim Back strelicu
+
+ Klik Back → vraća me na My Artworks (dashboard)
+
+ Ne završavam na footeru / krivoj poziciji
+
+ Radi i kad se Studio otvori iz kartice i iz Edit screen-a
+
+Stop condition
+
+Kad povratak iz Studija radi uvijek predvidljivo.

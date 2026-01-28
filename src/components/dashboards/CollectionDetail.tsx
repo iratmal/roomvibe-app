@@ -331,7 +331,8 @@ export default function CollectionDetail() {
 
   const handlePreviewInStudio = (artworkId: number) => {
     const baseUrl = window.location.origin + window.location.pathname;
-    window.open(`${baseUrl}#/studio?artworkId=${artworkId}&source=gallery`, '_blank');
+    const fromParam = encodeURIComponent('#/dashboard/gallery');
+    window.open(`${baseUrl}#/studio?artworkId=${artworkId}&source=gallery&from=${fromParam}`, '_blank');
   };
 
   const handleEditArtwork = (artworkId: number) => {

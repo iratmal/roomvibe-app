@@ -360,7 +360,8 @@ export default function ProjectDetail() {
                     <button
                       onClick={() => {
                         const roomImageUrl = `${API_URL}${room.image_url}`;
-                        const studioUrl = `#/studio?roomImage=${encodeURIComponent(roomImageUrl)}&entry=designer`;
+                        const fromParam = encodeURIComponent('#/dashboard?tab=my-projects');
+                        const studioUrl = `#/studio?roomImage=${encodeURIComponent(roomImageUrl)}&entry=designer&from=${fromParam}`;
                         window.location.hash = studioUrl;
                       }}
                       className="w-full px-4 py-2 text-sm bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-colors font-semibold flex items-center justify-center gap-2"

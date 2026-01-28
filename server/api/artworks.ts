@@ -188,7 +188,7 @@ router.get('/mine', authenticateToken, async (req: any, res) => {
     console.log('[/mine] Fetching artworks for logged-in user:', req.user.id);
     
     const result = await query(
-      `SELECT id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, variants, created_at
+      `SELECT id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, variants, created_at, clean_image_id
        FROM artworks 
        WHERE artist_id = $1 
        ORDER BY created_at DESC`,
@@ -198,10 +198,20 @@ router.get('/mine', authenticateToken, async (req: any, res) => {
     // Transform to Studio-friendly format - gracefully handle empty results
     const rows = result.rows || [];
     const artworks = rows.map((row: any) => {
-      // Normalize image_url to API endpoint format
-      const imageUrl = row.image_url && row.image_url.startsWith('/objects/')
-        ? `/api/artwork-image/${row.id}`
-        : row.image_url;
+      // For Studio, use clean_image_id (Exhibition & Studio Image) if set
+      // This ensures Studio always shows the correct non-mockup image
+      let overlayImageUrl: string;
+      if (row.clean_image_id !== null && row.clean_image_id !== undefined) {
+        // Use the Exhibition & Studio Image
+        overlayImageUrl = row.clean_image_id === 0 
+          ? `/api/artwork-image/${row.id}`  // Cover image
+          : `/api/artwork-gallery-image/${row.clean_image_id}`;  // Gallery image
+      } else {
+        // Fallback to cover image if no clean_image_id set
+        overlayImageUrl = row.image_url && row.image_url.startsWith('/objects/')
+          ? `/api/artwork-image/${row.id}`
+          : row.image_url;
+      }
       
       // Check if artwork needs re-upload (missing storage_key)
       const hasValidStorageKey = row.storage_key && row.storage_key.trim() !== '';
@@ -211,7 +221,7 @@ router.get('/mine', authenticateToken, async (req: any, res) => {
       return {
         id: `db-${row.id}`,
         title: row.title,
-        overlayImageUrl: imageUrl,
+        overlayImageUrl,
         widthCm: parseFloat(row.width),
         heightCm: parseFloat(row.height),
         dimensionUnit: row.dimension_unit || 'cm',

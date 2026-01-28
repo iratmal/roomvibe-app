@@ -557,7 +557,9 @@ export function ArtworkImageGallery({
                     const nonMockupGallery = galleryImages.filter(g => !g.is_mockup && g.id && g.id > 0);
                     effectiveImageId = nonMockupGallery.length > 0 ? nonMockupGallery[0].id! : 0;
                   }
-                  return `/#/studio?artworkId=${artworkId}&imageId=${effectiveImageId}`;
+                  // Include from parameter for proper back navigation
+                  const fromParam = encodeURIComponent('#/dashboard?tab=my-artworks');
+                  return `/#/studio?artworkId=${artworkId}&imageId=${effectiveImageId}&from=${fromParam}`;
                 })()}
                 target="_blank"
                 rel="noopener noreferrer"

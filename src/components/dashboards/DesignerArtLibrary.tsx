@@ -271,6 +271,8 @@ export function DesignerArtLibrary({ onArtworkSelect, projects = [] }: DesignerA
     if (projectId) {
       params.set('projectId', String(projectId));
     }
+    // Add from parameter for proper back navigation
+    params.set('from', '#/dashboard?tab=art-library');
     window.location.hash = `#/studio?${params.toString()}`;
   };
 
