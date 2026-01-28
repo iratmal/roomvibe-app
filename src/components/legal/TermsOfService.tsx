@@ -174,8 +174,8 @@ export default function TermsOfService() {
             <h2 className="text-2xl font-bold text-rv-primary mb-3">13. CONTACT</h2>
             <p className="leading-relaxed">
               For questions regarding these Terms, please contact:{' '}
-              <a href="mailto:support@roomvibe.com" className="text-rv-primary hover:text-rv-primaryHover underline font-semibold">
-                support@roomvibe.com
+              <a href="mailto:support@roomvibe.app" className="text-rv-primary hover:text-rv-primaryHover underline font-semibold">
+                support@roomvibe.app
               </a>
             </p>
           </section>
