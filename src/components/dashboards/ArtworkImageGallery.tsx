@@ -528,25 +528,16 @@ export function ArtworkImageGallery({
       {showStudioWarning && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl">
-            <div className="flex items-start gap-4 mb-4">
-              <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-rv-text mb-1">Opening in Studio</h3>
-                <p className="text-sm text-rv-textMuted">
-                  The Studio will use the image you selected in <strong>Exhibition & Studio Image</strong>.
-                </p>
-              </div>
-            </div>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <p className="text-sm text-blue-800">
-                Make sure your <strong>Exhibition & Studio Image</strong> is a clean artwork photo (not a room mockup).
+            <h3 className="text-lg font-bold text-rv-text mb-4">Before Opening Studio</h3>
+            <div className="space-y-4 mb-6">
+              <p className="text-sm text-rv-textMuted">
+                The Studio uses the image you selected as the <strong>Exhibition & Studio Image</strong> as the original artwork.
               </p>
-              <p className="text-sm text-blue-700 mt-2">
-                You can change this in the <strong>Image Roles</strong> section above.
+              <p className="text-sm text-rv-textMuted">
+                Please make sure the image you selected for the Studio is an original artwork photo, not a room mockup.
+              </p>
+              <p className="text-sm text-rv-textMuted">
+                Otherwise, the artwork will appear as a mockup inside another mockup.
               </p>
             </div>
             <div className="flex gap-3">
