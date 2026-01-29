@@ -1,0 +1,157 @@
+🚀 TASK: Artist Pro – UI consistency, visibility fix & exhibition assignment from artworks
+Scope
+
+This task applies ONLY to Artist Pro users.
+Ignore Artist (basic) dashboard unless explicitly mentioned for plan limits.
+
+PART 1 — Fix: “No visible changes” on Artist Pro My Exhibitions
+Problem
+
+User reports that after previous implementation, no visible UI changes appear on:
+/dashboard → My Exhibitions
+
+Current UI still shows the old empty state:
+
+“Create your virtual exhibition”
+
+No indication of Artist Pro
+
+No visible change compared to before
+
+Required Fix
+
+Make Artist Pro changes visibly obvious, even when user has 0 exhibitions.
+
+Requirements
+
+On My Exhibitions (Artist Pro):
+
+Always show (even in empty state):
+
+Top-right primary button: + New Exhibition
+
+Small label or helper text under title:
+
+“Unlimited exhibitions (Artist Pro)”
+
+Ensure:
+
+This is visible without creating an exhibition
+
+No ambiguity whether Artist Pro logic is active
+
+Verify deployment:
+
+Confirm changes are deployed to the same environment user is testing (app.roomvibe.app or staging)
+
+Provide commit hash or deployment reference
+
+PART 2 — Update “How it works” text (Artist Pro only)
+Current text (outdated)
+
+First upload your artworks in the Artworks section. Then click “Add to Exhibition” on any artwork you want to include.
+
+This text assumes only one exhibition and is incorrect for Artist Pro.
+
+Replace with (exact text):
+
+How it works:
+
+Upload your artworks once, then curate them into one or multiple exhibitions.
+Each artwork can be added to any exhibition you choose, and you can update your exhibitions at any time.
+
+Notes
+
+This text must appear on Artist Pro My Exhibitions
+
+Do NOT reuse old Artist text
+
+Artist Pro UX must clearly imply multiple exhibitions
+
+PART 3 — Artwork cards: assign artwork to exhibition (CRITICAL)
+Problem
+
+Artist Pro users need a way to decide which exhibition an artwork belongs to.
+Currently, artworks implicitly go into a single exhibition.
+
+Required Feature
+
+On Artwork cards (Artist Pro only):
+
+Add an action/button such as:
+
+“Add to Exhibition”
+
+or “Manage Exhibitions”
+
+On click:
+
+Open a selector (dropdown or modal)
+
+Show list of user’s exhibitions
+
+Allow:
+
+Selecting one or multiple exhibitions
+
+Or creating a new exhibition from there (optional but preferred)
+
+Behavior:
+
+Artwork can be added to any selected exhibition
+
+Changes are saved immediately
+
+User can later change/remove artwork from exhibitions
+
+Important
+
+This replaces the old assumption of “one exhibition”
+
+This is core to Artist Pro value
+
+UX should be simple, not over-engineered
+
+Explicitly DO NOT
+
+Do NOT redesign the exhibition widget
+
+Do NOT change embed logic
+
+Do NOT touch Artist (basic) dashboard UI
+
+Do NOT modify pricing or Stripe
+
+Do NOT introduce new plan types
+
+Stop Conditions (must be verifiable)
+
+Login as Artist Pro
+
+Go to My Exhibitions:
+
+See + New Exhibition
+
+See “Unlimited exhibitions (Artist Pro)”
+
+See updated “How it works” text
+
+Go to Artworks:
+
+Each artwork has an option to assign it to an exhibition
+
+Assign an artwork to an exhibition
+
+Open that exhibition → artwork appears correctly
+
+Deliverable
+
+List of files changed
+
+Confirmation of environment deployed
+
+Short explanation:
+
+how Artist Pro exhibitions are handled
+
+how artworks are assigned to exhibitions

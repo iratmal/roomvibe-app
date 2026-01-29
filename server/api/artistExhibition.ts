@@ -56,6 +56,45 @@ router.get('/exhibitions', authenticateToken, async (req: any, res) => {
   }
 });
 
+// Get exhibition memberships for a specific artwork (Artist Pro feature)
+router.get('/artwork/:artworkId/exhibitions', authenticateToken, async (req: any, res) => {
+  try {
+    const userId = req.user.id;
+    const artworkId = parseInt(req.params.artworkId);
+
+    if (isNaN(artworkId)) {
+      return res.status(400).json({ error: 'Invalid artwork ID' });
+    }
+
+    // Get all exhibitions for this artist with membership status for the specified artwork
+    const result = await query(
+      `SELECT 
+        ae.id, 
+        ae.title, 
+        ae.status,
+        CASE WHEN aea.id IS NOT NULL THEN true ELSE false END as is_member
+       FROM artist_exhibitions ae
+       LEFT JOIN artist_exhibition_artworks aea 
+         ON ae.id = aea.exhibition_id AND aea.source_artwork_id = $2
+       WHERE ae.artist_id = $1
+       ORDER BY ae.created_at DESC`,
+      [userId, artworkId]
+    );
+
+    const exhibitions = result.rows.map(row => ({
+      id: row.id,
+      title: row.title,
+      status: row.status,
+      isMember: row.is_member
+    }));
+
+    res.json({ exhibitions });
+  } catch (error: any) {
+    console.error('Error fetching artwork exhibitions:', error);
+    res.status(500).json({ error: 'Failed to fetch artwork exhibitions', details: error.message });
+  }
+});
+
 // Legacy single exhibition endpoint (for backward compatibility)
 router.get('/exhibition', authenticateToken, async (req: any, res) => {
   try {
