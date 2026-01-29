@@ -429,6 +429,26 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
       return res.status(400).json({ error: 'Missing required fields: title, width, height' });
     }
 
+    // Validate numeric fields
+    const parsedWidth = parseFloat(width);
+    const parsedHeight = parseFloat(height);
+    const parsedPrice = priceAmount ? parseFloat(priceAmount) : null;
+    
+    if (isNaN(parsedWidth) || parsedWidth <= 0 || parsedWidth > 99999999) {
+      console.error('[UPLOAD] Invalid width:', { width, parsedWidth });
+      return res.status(400).json({ error: `Invalid width value: ${width}. Must be a positive number.` });
+    }
+    if (isNaN(parsedHeight) || parsedHeight <= 0 || parsedHeight > 99999999) {
+      console.error('[UPLOAD] Invalid height:', { height, parsedHeight });
+      return res.status(400).json({ error: `Invalid height value: ${height}. Must be a positive number.` });
+    }
+    if (parsedPrice !== null && (isNaN(parsedPrice) || parsedPrice < 0 || parsedPrice > 99999999)) {
+      console.error('[UPLOAD] Invalid price:', { priceAmount, parsedPrice });
+      return res.status(400).json({ error: `Invalid price value: ${priceAmount}. Must be a non-negative number.` });
+    }
+    
+    console.log('[UPLOAD] Validated numeric fields:', { parsedWidth, parsedHeight, parsedPrice });
+
     const targetArtistId = effectivePlan === 'admin' && artistId ? parseInt(artistId) : req.user.id;
     const currency = priceCurrency || 'EUR';
     const unit = dimensionUnit || 'cm';
@@ -489,28 +509,56 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
     }
     const variantsJson = JSON.stringify(artworkVariants);
     
-    // Parse image role IDs - these will be resolved to actual image IDs after gallery upload
-    const artworkCardImageId = cardImageId !== undefined && cardImageId !== '' && cardImageId !== null 
-      ? parseInt(cardImageId) 
-      : null;
-    const artworkCleanImageId = cleanImageId !== undefined && cleanImageId !== '' && cleanImageId !== null 
-      ? parseInt(cleanImageId) 
-      : null;
+    // Parse image role IDs - validate to ensure they're valid integers or null
+    let artworkCardImageId: number | null = null;
+    let artworkCleanImageId: number | null = null;
+    
+    if (cardImageId !== undefined && cardImageId !== '' && cardImageId !== null) {
+      const parsed = parseInt(cardImageId, 10);
+      if (!isNaN(parsed) && parsed >= 0 && parsed <= 2147483647) {
+        artworkCardImageId = parsed;
+      } else {
+        console.warn('[Upload] Invalid cardImageId, ignoring:', cardImageId);
+      }
+    }
+    
+    if (cleanImageId !== undefined && cleanImageId !== '' && cleanImageId !== null) {
+      const parsed = parseInt(cleanImageId, 10);
+      if (!isNaN(parsed) && parsed >= 0 && parsed <= 2147483647) {
+        artworkCleanImageId = parsed;
+      } else {
+        console.warn('[Upload] Invalid cleanImageId, ignoring:', cleanImageId);
+      }
+    }
+    
+    console.log('[Upload] Parsed image IDs:', { artworkCardImageId, artworkCleanImageId });
 
     // Story is optional - use provided value or null
     const artworkStory = story && typeof story === 'string' && story.trim() ? story.trim() : null;
 
-    console.log('[Upload] Inserting artwork into database...');
+    console.log('[Upload] Inserting artwork into database with values:', {
+      targetArtistId, title, imageUrl: imageUrl?.substring(0, 50), storageKey: storageKey?.substring(0, 50),
+      parsedWidth, parsedHeight, unit, parsedPrice, currency, buyUrl: buyUrl?.substring(0, 30),
+      tagsCount: tags?.length, artworkCardImageId, artworkCleanImageId
+    });
+    
     let result;
     try {
       result = await query(
         `INSERT INTO artworks (artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, variants, visible_to_designers, visible_to_galleries, card_image_id, clean_image_id, story, updated_at)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, FALSE, FALSE, $18, $19, $20, CURRENT_TIMESTAMP)
          RETURNING id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, variants, visible_to_designers, visible_to_galleries, card_image_id, clean_image_id, story, created_at, updated_at`,
-        [targetArtistId, title, imageUrl, storageKey, parseFloat(width), parseFloat(height), unit, priceAmount ? parseFloat(priceAmount) : null, currency, buyUrl, tags, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability, variantsJson, artworkCardImageId, artworkCleanImageId, artworkStory]
+        [targetArtistId, title, imageUrl, storageKey, parsedWidth, parsedHeight, unit, parsedPrice, currency, buyUrl || null, tags, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability, variantsJson, artworkCardImageId, artworkCleanImageId, artworkStory]
       );
     } catch (dbError: any) {
-      console.error('[Upload] DB insert failed, cleaning up storage:', dbError.message);
+      console.error('[Upload] DB insert failed:', {
+        message: dbError.message,
+        code: dbError.code,
+        detail: dbError.detail,
+        column: dbError.column,
+        constraint: dbError.constraint
+      });
+      
       // Cleanup orphaned storage file
       try {
         await objectStorage.deleteObject(storageKey);
@@ -522,13 +570,19 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
       let errorMessage = 'Failed to save artwork';
       if (dbError.code === '23505') {
         errorMessage = 'Duplicate artwork detected.';
+      } else if (dbError.code === '22003') {
+        errorMessage = `A numeric value is out of range. Please check dimensions and price.`;
+      } else if (dbError.code === '23502') {
+        errorMessage = `Missing required field: ${dbError.column || 'unknown'}`;
       } else if (dbError.code?.startsWith('23')) {
-        errorMessage = 'Database constraint error. Please check your input.';
+        errorMessage = 'Database validation error. Please check your input.';
+      } else if (dbError.code?.startsWith('22')) {
+        errorMessage = `Data format error: ${dbError.message}`;
       }
       
       return res.status(500).json({ 
         error: errorMessage, 
-        details: process.env.APP_ENV === 'staging' ? dbError.message : undefined,
+        details: dbError.message,
         code: dbError.code 
       });
     }
