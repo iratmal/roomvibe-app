@@ -36,6 +36,21 @@ const PLAN_DISPLAYS: Record<string, PlanDisplay> = {
     description: 'For artists who want professional mockups and exports.',
     bullets: ['Up to 50 artworks', 'Premium mockup rooms', 'PDF export (10/month)'],
   },
+  artist_pro: {
+    badge: 'Artist Pro',
+    badgeColor: 'bg-[#C9A24A]/10 text-[#C9A24A]',
+    description: 'All artist features – unlimited and without restrictions.',
+    bullets: [
+      'Unlimited artworks',
+      'Unlimited virtual exhibitions',
+      'Unlimited PDF exports',
+      'All premium mockup rooms (100+)',
+      'Your own public artist page',
+      'Be visible to designers and galleries',
+      'Priority support',
+      'Early access to new features',
+    ],
+  },
   designer: {
     badge: 'Designer',
     badgeColor: 'bg-blue-100 text-blue-800',

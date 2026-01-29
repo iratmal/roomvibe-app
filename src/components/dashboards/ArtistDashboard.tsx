@@ -2968,7 +2968,7 @@ export function ArtistDashboard() {
                 <h3 className="text-lg font-bold mb-3 text-rv-primary">Artist Account</h3>
                 <div className="space-y-2 text-sm">
                   <p><span className="font-semibold text-rv-text">Email:</span> <span className="text-rv-textMuted">{user?.email}</span></p>
-                  <p><span className="font-semibold text-rv-text">Role:</span> <span className="text-rv-textMuted">Artist</span></p>
+                  <p><span className="font-semibold text-rv-text">Role:</span> <span className="text-rv-textMuted">{isArtistPro ? 'Artist Pro' : 'Artist'}</span></p>
                   <p><span className="font-semibold text-rv-text">Status:</span> {user?.emailConfirmed ? <span className="text-[#C9A24A] font-semibold">✓ Verified</span> : <span className="text-amber-600 font-semibold">⚠ Pending</span>}</p>
                   <p><span className="font-semibold text-rv-text">Artworks:</span> <span className="text-rv-textMuted">{artworks.length}</span></p>
                 </div>

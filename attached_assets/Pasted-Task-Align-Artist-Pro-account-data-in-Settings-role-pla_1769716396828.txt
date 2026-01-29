@@ -1,0 +1,130 @@
+Task: Align Artist Pro account data in Settings (role + plan mismatch)
+
+Goal
+Ensure that Artist Pro users see fully consistent data across:
+
+Dashboard
+
+Settings → Your Plan
+
+Settings → Artist Account
+
+Pricing page
+
+There must be no mismatch between role, plan, and UI labels.
+
+Context
+
+Project: RoomVibe
+
+Current issue:
+
+User is clearly Artist Pro:
+
+Artist Pro dashboard is shown
+
+Pricing page shows Artist Pro as Active
+
+BUT in Settings:
+
+“Your Plan” shows Free
+
+“Artist Account” shows Role: Artist instead of Artist Pro
+
+This indicates that Settings page is reading outdated or wrong data source (likely base user role instead of effective plan).
+
+Expected Correct Behavior (Artist Pro user)
+
+In Settings:
+
+Your Plan
+
+Plan name: Artist Pro
+
+Status: Active
+
+Features: Unlimited artworks, exhibitions, etc.
+
+NO reference to Free plan or trial copy.
+
+Artist Account
+
+Role: Artist Pro (not Artist)
+
+Status remains Verified (OK)
+
+All data must be derived from the same source of truth:
+
+effective user role / plan
+
+not mixed between user.role, user.type, subscription.plan, etc.
+
+Scope – DO ONLY THIS
+
+Inspect Settings page data source(s):
+
+Where does “Your Plan” data come from?
+
+Where does “Role” in Artist Account come from?
+
+Identify mismatch:
+
+Is it reading from base user instead of activePlan / effectiveRole?
+
+Fix logic so:
+
+Artist Pro account always resolves as:
+
+Role = artist_pro
+
+Plan = Artist Pro
+
+Ensure Settings uses the same resolved role/plan as:
+
+Dashboard routing
+
+Pricing page “Active” badge
+
+Update labels/text only if needed (no redesign).
+
+Explicitly DO NOT
+
+Do not change Stripe logic.
+
+Do not change plan pricing.
+
+Do not refactor dashboards.
+
+Do not introduce new roles.
+
+Do not touch staging → live deploy rules.
+
+Stop Condition (MANDATORY TEST)
+
+Login as Artist Pro user.
+
+Go to:
+
+Dashboard → shows Artist Pro
+
+Settings → Your Plan → shows Artist Pro (not Free)
+
+Settings → Artist Account → Role: Artist Pro
+
+Pricing page → Artist Pro marked Active
+
+Logout / login again.
+
+All values remain consistent.
+
+Deliverable
+
+List of files changed
+
+Short explanation:
+
+what was inconsistent
+
+which field is now the single source of truth
+
+how Artist Pro is resolved in Settings
