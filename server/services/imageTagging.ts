@@ -15,12 +15,23 @@ import Anthropic from '@anthropic-ai/sdk';
 const DEFAULT_MODEL_STR = "claude-sonnet-4-20250514";
 // </important_do_not_delete>
 
-// Replit's Anthropic integration auto-configures the API key
-const anthropic = new Anthropic();
+// Lazy-initialized Anthropic client (only created when API key is available)
+let anthropicClient: Anthropic | null = null;
+
+function getAnthropicClient(): Anthropic | null {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return null;
+  }
+  if (!anthropicClient) {
+    anthropicClient = new Anthropic();
+  }
+  return anthropicClient;
+}
 
 export async function generateTagsFromImage(base64Image: string, mimeType: string = 'image/jpeg'): Promise<string[]> {
   // Silently skip if API key not configured
-  if (!process.env.ANTHROPIC_API_KEY) {
+  const anthropic = getAnthropicClient();
+  if (!anthropic) {
     return [];
   }
 

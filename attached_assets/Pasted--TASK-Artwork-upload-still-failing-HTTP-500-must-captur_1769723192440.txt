@@ -1,0 +1,96 @@
+🚨 TASK: Artwork upload still failing (HTTP 500) — must capture server error + fix production DB migration
+Current state (confirmed by user)
+
+Artwork upload still fails with:
+
+POST /api/artist/artworks
+
+Response: HTTP 500
+
+Frontend console shows request is made correctly, but server returns 500.
+
+User screenshot proves the endpoint is still failing on production.
+
+Requirements (do in this exact order)
+1) Capture the real server-side error (no guessing)
+
+Check server logs for the failing request:
+
+Identify the exact exception + stack trace
+
+Paste the key error message in the reply
+
+Add temporary structured logging around the handler (if needed):
+
+userId
+
+payload fields present
+
+image metadata
+
+DB insert result
+
+2) Verify production database schema is actually updated
+
+You said you made buy_url optional — verify it is true in production:
+
+Confirm the migration ran on prod DB
+
+Confirm column constraints match new schema
+
+If using Prisma/Drizzle/Knex/etc:
+
+ensure migration is applied
+
+ensure generated client is up to date
+
+Provide proof:
+
+migration id applied / schema snapshot / describe table output (redact sensitive info)
+
+3) Fix the 500 completely
+
+After you identify the real error:
+
+implement the fix (validation, schema, image upload, auth, etc.)
+
+return proper errors:
+
+4xx for validation issues
+
+5xx only for unexpected server issues
+
+4) Improve client-visible error message (small but important)
+
+Replace generic “Failed to save artwork” with the server error reason when it’s a 4xx.
+(Do NOT expose internal stack traces, just meaningful message.)
+
+5) Retest end-to-end on production
+
+Upload an artwork with:
+
+title + width + height + image
+
+without buy_url
+
+Confirm:
+
+returns 200/201
+
+artwork appears in My Artworks
+
+no console errors
+
+Stop condition
+
+User can upload an artwork successfully on app.roomvibe.app and it appears in My Artworks.
+
+Deliverable
+
+Root cause (exact error message)
+
+Files changed
+
+Confirmation migration applied on production
+
+Screenshot/video of successful upload

@@ -948,7 +948,15 @@ export function ArtistDashboard() {
         let isLimitError = false;
         try {
           const errorData = await response.json();
-          errorMessage = errorData.message || errorData.error || errorMessage;
+          console.log('[ArtistDashboard] Server error response:', errorData);
+          
+          // Get the most specific error message available
+          errorMessage = errorData.error || errorData.message || errorMessage;
+          
+          // If there's additional detail, append it (but not for sensitive info)
+          if (errorData.details && !errorData.details.includes('password') && !errorData.details.includes('token')) {
+            errorMessage = `${errorMessage}: ${errorData.details}`;
+          }
           
           // Check if this is an artwork limit error
           if (errorData.error === 'Artwork limit reached' || response.status === 403 && errorData.limit !== undefined) {

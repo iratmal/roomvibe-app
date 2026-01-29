@@ -544,13 +544,31 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
       message: error.message,
       code: error.code,
       detail: error.detail,
-      stack: error.stack
+      constraint: error.constraint,
+      table: error.table,
+      column: error.column,
+      stack: error.stack?.split('\n').slice(0, 5).join('\n')
     });
     
+    // Provide meaningful error message to client
+    let userMessage = 'Failed to create artwork';
+    if (error.code === '23505') {
+      userMessage = 'This artwork already exists';
+    } else if (error.code === '23503') {
+      userMessage = 'Invalid reference - please check your data';
+    } else if (error.code === '23502') {
+      userMessage = `Missing required field: ${error.column || 'unknown'}`;
+    } else if (error.code?.startsWith('23')) {
+      userMessage = 'Database validation error';
+    } else if (error.message?.includes('storage') || error.message?.includes('upload')) {
+      userMessage = 'Image upload failed - please try again';
+    }
+    
     res.status(500).json({ 
-      error: 'Failed to create artwork', 
-      details: process.env.APP_ENV === 'staging' ? error.message : undefined,
-      code: error.code 
+      error: userMessage, 
+      details: error.message,
+      code: error.code,
+      constraint: error.constraint
     });
   }
 });
