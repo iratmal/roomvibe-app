@@ -80,6 +80,7 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [artistId, setArtistId] = useState<number | null>(null);
   const [publishedExhibition, setPublishedExhibition] = useState<PublishedExhibition | null>(null);
+  const [publishedExhibitions, setPublishedExhibitions] = useState<PublishedExhibition[]>([]);
   const [showContactModal, setShowContactModal] = useState(false);
   const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(null);
   const [detailImageIndex, setDetailImageIndex] = useState(0);
@@ -176,6 +177,7 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
       setArtworks(data.artworks.map((a: any) => ({ ...a, likeCount: a.likeCount || 0 })));
       setArtistId(data.artistId);
       setPublishedExhibition(data.publishedExhibition || null);
+      setPublishedExhibitions(data.publishedExhibitions || []);
     } catch (err) {
       console.error('Error fetching artist profile:', err);
       setError('Failed to load artist profile');
@@ -546,10 +548,10 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
 
             {/* CTA Buttons - black text/icons on white panel */}
             <div className="flex flex-wrap items-center justify-center gap-3">
-              {/* Primary CTA: Enter 360° Exhibition */}
-              {publishedExhibition && (
+              {/* Primary CTA: Enter 360° Exhibition(s) */}
+              {publishedExhibitions.length === 1 && (
                 <a
-                  href={`#/embed/exhibitions/${publishedExhibition.id}`}
+                  href={`#/embed/exhibitions/${publishedExhibitions[0].id}`}
                   className="cta-exhibition group inline-flex items-center justify-center gap-2 h-12 px-8 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-full transition-all duration-300 shadow-md hover:shadow-lg"
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -558,6 +560,23 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                   </svg>
                   Enter 360° Exhibition
                 </a>
+              )}
+              {publishedExhibitions.length > 1 && (
+                <button
+                  onClick={() => {
+                    const exhibitionsSection = document.querySelector('[data-section="exhibitions-list"]');
+                    if (exhibitionsSection) {
+                      exhibitionsSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                  }}
+                  className="cta-exhibition group inline-flex items-center justify-center gap-2 h-12 px-8 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-full transition-all duration-300 shadow-md hover:shadow-lg"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 10l3-3m0 0l3 3m-3-3v12" style={{transform: 'rotate(90deg)', transformOrigin: '12px 12px'}} />
+                  </svg>
+                  View {publishedExhibitions.length} Exhibitions
+                </button>
               )}
               
               {/* Secondary CTA: View Artworks */}
@@ -949,22 +968,43 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
               })}
             </div>
             
-            {/* Explore Exhibition CTA - only shown if artist has published exhibition */}
-            {publishedExhibition && (
-              <div className="mt-16 mb-4">
+            {/* Explore Exhibitions CTA - only shown if artist has published exhibitions */}
+            {publishedExhibitions.length > 0 && (
+              <div className="mt-16 mb-4" data-section="exhibitions-list">
                 <p className="text-center text-sm text-[#1E2A3B] mb-4">
-                  Experience the artist's work in a fully immersive virtual exhibition.
+                  {publishedExhibitions.length === 1 
+                    ? "Experience the artist's work in a fully immersive virtual exhibition."
+                    : `Explore ${publishedExhibitions.length} immersive virtual exhibitions by this artist.`
+                  }
                 </p>
-                <a
-                  href={`#/embed/exhibitions/${publishedExhibition.id}`}
-                  className="group w-full flex items-center justify-center gap-3 px-8 py-4 bg-white border-2 border-[#1E2A3B] text-[#1E2A3B] rounded-rvMd hover:bg-[#C9A24A] hover:border-[#C9A24A] hover:text-white transition-all duration-150"
-                >
-                  <svg className="w-5 h-5 flex-shrink-0 transition-colors duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                  <span className="font-semibold">View Artist's 360° Exhibition</span>
-                </a>
+                {publishedExhibitions.length === 1 ? (
+                  <a
+                    href={`#/embed/exhibitions/${publishedExhibitions[0].id}`}
+                    className="group w-full flex items-center justify-center gap-3 px-8 py-4 bg-white border-2 border-[#1E2A3B] text-[#1E2A3B] rounded-rvMd hover:bg-[#C9A24A] hover:border-[#C9A24A] hover:text-white transition-all duration-150"
+                  >
+                    <svg className="w-5 h-5 flex-shrink-0 transition-colors duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    <span className="font-semibold">View 360° Exhibition</span>
+                  </a>
+                ) : (
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {publishedExhibitions.map((exhibition) => (
+                      <a
+                        key={exhibition.id}
+                        href={`#/embed/exhibitions/${exhibition.id}`}
+                        className="group flex items-center justify-center gap-3 px-6 py-4 bg-white border-2 border-[#1E2A3B] text-[#1E2A3B] rounded-rvMd hover:bg-[#C9A24A] hover:border-[#C9A24A] hover:text-white transition-all duration-150"
+                      >
+                        <svg className="w-5 h-5 flex-shrink-0 transition-colors duration-150" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 10l3-3m0 0l3 3m-3-3v12" style={{transform: 'rotate(90deg)', transformOrigin: '12px 12px'}} />
+                        </svg>
+                        <span className="font-semibold truncate">{exhibition.title}</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

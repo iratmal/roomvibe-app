@@ -453,8 +453,12 @@ export function ArtistDashboard() {
       
       setTimeout(() => setSuccess(''), 5000);
     } catch (err: any) {
-      setError(err.message);
-      setTimeout(() => setError(''), 5000);
+      if (err.message?.includes('Exhibition limit reached') || err.message?.includes('limit of 1 exhibition')) {
+        setError('You have reached your exhibition limit. Upgrade to Artist Pro for unlimited exhibitions.');
+      } else {
+        setError(err.message);
+      }
+      setTimeout(() => setError(''), 8000);
     } finally {
       setLoading(false);
     }
@@ -2417,16 +2421,18 @@ export function ArtistDashboard() {
               {exhibitions.map((exh) => (
                 <div 
                   key={exh.id}
-                  onClick={() => {
-                    setExhibition(exh);
-                    setSelectedExhibition(exh);
-                    fetchExhibitionArtworks(exh.id);
-                  }}
-                  className={`p-4 bg-white rounded-rvLg border-2 cursor-pointer transition-all hover:shadow-md ${
+                  className={`p-4 bg-white rounded-rvLg border-2 transition-all hover:shadow-md ${
                     exhibition?.id === exh.id ? 'border-[#C9A24A] shadow-md' : 'border-rv-neutral'
                   }`}
                 >
-                  <div className="flex items-start gap-3">
+                  <div 
+                    className="flex items-start gap-3 cursor-pointer"
+                    onClick={() => {
+                      setExhibition(exh);
+                      setSelectedExhibition(exh);
+                      fetchExhibitionArtworks(exh.id);
+                    }}
+                  >
                     <div className="w-10 h-10 rounded-full bg-[#C9A24A]/10 flex items-center justify-center flex-shrink-0">
                       <svg className="w-5 h-5 text-[#C9A24A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
@@ -2445,8 +2451,84 @@ export function ArtistDashboard() {
                       </div>
                     </div>
                   </div>
+                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-rv-neutral/50">
+                    {exh.status === 'published' && (
+                      <>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const publicUrl = `${window.location.origin}/#/embed/exhibitions/${exh.id}`;
+                            navigator.clipboard.writeText(publicUrl);
+                            setSuccess('Public link copied!');
+                            setTimeout(() => setSuccess(''), 3000);
+                          }}
+                          className="flex items-center gap-1 px-2 py-1 text-xs text-rv-textMuted hover:text-rv-primary hover:bg-rv-surface rounded transition-colors"
+                          title="Copy Public Link"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                          </svg>
+                          Link
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const embedCode = `<iframe\n  src="${window.location.origin}/#/embed/exhibitions/${exh.id}"\n  width="100%"\n  height="720"\n  style="border:0; border-radius:12px;"\n  loading="lazy"\n  allowfullscreen>\n</iframe>`;
+                            navigator.clipboard.writeText(embedCode);
+                            setSuccess('Embed code copied!');
+                            setTimeout(() => setSuccess(''), 3000);
+                          }}
+                          className="flex items-center gap-1 px-2 py-1 text-xs text-rv-textMuted hover:text-rv-primary hover:bg-rv-surface rounded transition-colors"
+                          title="Copy Embed Code"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                          </svg>
+                          Embed
+                        </button>
+                      </>
+                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExhibition(exh);
+                        setSelectedExhibition(exh);
+                        setShowExhibitionDeleteConfirm(true);
+                      }}
+                      className="flex items-center gap-1 px-2 py-1 text-xs text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors ml-auto"
+                      title="Delete Exhibition"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Delete
+                    </button>
+                  </div>
                 </div>
               ))}
+            </div>
+          )}
+          
+          {/* Artist (basic) plan: Show upgrade message when they have 1 exhibition */}
+          {!isArtistPro && exhibitions.length >= 1 && exhibition && (
+            <div className="mb-6 p-4 bg-[#C9A24A]/10 border border-[#C9A24A]/30 rounded-rvMd">
+              <div className="flex items-start gap-3">
+                <svg className="w-5 h-5 text-[#C9A24A] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <div>
+                  <p className="text-sm font-semibold text-[#C9A24A]">Want more exhibitions?</p>
+                  <p className="text-sm text-rv-textMuted mt-1">
+                    Upgrade to <span className="font-semibold">Artist Pro</span> for unlimited exhibitions, unlimited artworks, and all premium features.
+                  </p>
+                  <a 
+                    href="#/pricing" 
+                    className="inline-block mt-2 text-sm font-semibold text-[#C9A24A] hover:text-[#B8913A] underline"
+                  >
+                    View upgrade options
+                  </a>
+                </div>
+              </div>
             </div>
           )}
           

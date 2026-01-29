@@ -103,9 +103,14 @@ router.get('/artist/:slug', async (req, res) => {
     const exhibitionResult = await query(
       `SELECT id, title FROM artist_exhibitions 
        WHERE artist_id = $1 AND (status = 'published' OR is_published = TRUE)
-       ORDER BY updated_at DESC LIMIT 1`,
+       ORDER BY updated_at DESC`,
       [artist.id]
     );
+    
+    const publishedExhibitions = exhibitionResult.rows.map(row => ({
+      id: row.id,
+      title: row.title
+    }));
 
     // Add cache-busting timestamp for profile/header images to ensure instant updates
     const cacheBust = artist.updated_at ? new Date(artist.updated_at).getTime() : Date.now();
@@ -211,7 +216,8 @@ router.get('/artist/:slug', async (req, res) => {
       profile,
       artworks,
       artistId: artist.id,
-      publishedExhibition: exhibitionResult.rows[0] || null
+      publishedExhibition: publishedExhibitions[0] || null,
+      publishedExhibitions: publishedExhibitions
     });
   } catch (error: any) {
     console.error('Error fetching public artist profile:', error);

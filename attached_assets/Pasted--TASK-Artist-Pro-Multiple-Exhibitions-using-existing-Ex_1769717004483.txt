@@ -1,0 +1,235 @@
+🚀 TASK: Artist Pro – Multiple Exhibitions using existing Exhibition Widget
+Goal
+
+Enable Artist Pro users to create and manage multiple exhibitions, where each exhibition uses the existing exhibition widget/view, exactly as it already exists today for a single exhibition.
+
+NO new widget. NO new embed system.
+Just reuse and scale the existing logic.
+
+Context
+
+Project: RoomVibe
+
+Current state:
+
+System already supports ONE exhibition per artist
+
+There is an existing Exhibition detail view with:
+
+Edit Exhibition
+
+Publish / Unpublish
+
+Delete
+
+Public link
+
+iframe Embed code
+
+This view works correctly and must remain unchanged
+
+Limitation:
+
+UI and routing assume only one exhibition exists
+
+New requirement:
+
+Artist Pro plan allows unlimited exhibitions
+
+Each exhibition = independent object with its own widget
+
+What needs to be built
+1️⃣ Refactor “My Exhibitions” into LIST + DETAIL
+A) My Exhibitions = INDEX (list page)
+
+Create an index/list page for exhibitions.
+
+Behavior:
+
+Fetch all exhibitions for the logged-in artist
+
+Display a list/grid of exhibitions
+
+If user has 0 exhibitions
+
+Show empty state:
+
+Text: “Create your first exhibition”
+
+Button: + Create Exhibition
+
+If user has ≥1 exhibition
+
+Show:
+
+Header: “My Exhibitions”
+
+Primary button: + New Exhibition
+
+List/grid of exhibition cards
+
+Each exhibition card shows:
+
+Exhibition title
+
+Status badge: Draft / Published
+
+Artworks count
+
+Created / Updated date
+
+Primary action: Open
+
+Secondary actions (icons or menu):
+
+Copy Public Link
+
+Embed
+
+Delete
+
+Click Open → goes to Exhibition DETAIL view (see below).
+
+2️⃣ Exhibition DETAIL view (REUSE EXISTING VIEW)
+
+Important:
+This is the exact view that already exists today for the single exhibition.
+
+For each exhibition:
+
+Show:
+
+Cover image
+
+Title, description
+
+Artworks count
+
+Buttons:
+
+Edit Exhibition
+
+Publish / Unpublish
+
+Delete
+
+Show Embed this Exhibition section with iframe code:
+
+<iframe
+  src="https://app.roomvibe.app/#/embed/exhibitions/{EXHIBITION_ID}"
+  width="100%"
+  height="720"
+  style="border:0; border-radius:12px;"
+  loading="lazy"
+  allowfullscreen>
+</iframe>
+
+
+Copy Code button must work per exhibition
+
+⚠️ Do NOT redesign this view
+⚠️ Do NOT change embed logic
+⚠️ Just make it work for multiple exhibitions via routing
+
+3️⃣ Routing
+
+Introduce proper routing:
+
+/dashboard/exhibitions → My Exhibitions (index)
+
+/dashboard/exhibitions/:id → Exhibition detail (existing view)
+
+Existing single-exhibition logic must be adapted to use :id.
+
+4️⃣ Plan rules (IMPORTANT)
+Artist (Basic plan)
+
+Can create only 1 exhibition
+
+If exhibition exists:
+
+Hide or disable + New Exhibition
+
+Show message: “Upgrade to Artist Pro to create multiple exhibitions”
+
+Artist Pro
+
+Unlimited exhibitions
+
+Full access to:
+
+Create
+
+Publish
+
+Embed
+
+Delete
+
+Public links
+
+5️⃣ Public Artist Profile
+
+On the public artist profile page:
+
+Add section “Exhibitions”
+
+Automatically list ALL exhibitions where:
+
+status = Published
+
+Each item links to its public exhibition view
+
+Draft exhibitions must NOT appear
+
+Explicitly DO NOT
+
+Do NOT create new widgets
+
+Do NOT create new embed systems
+
+Do NOT change iframe logic
+
+Do NOT refactor exhibition editor
+
+Do NOT touch Stripe or pricing
+
+Do NOT change staging/live rules
+
+Stop Conditions (MANDATORY TEST)
+
+Login as Artist Pro
+
+Create 3 exhibitions
+
+/dashboard/exhibitions shows all 3
+
+Open each exhibition → existing widget view loads correctly
+
+Each exhibition has:
+
+unique public link
+
+unique embed iframe
+
+Publish 2 exhibitions, leave 1 draft
+
+Public artist profile shows only the 2 published exhibitions
+
+Login as Artist (basic):
+
+Can create 1 exhibition
+
+Cannot create a second
+
+Deliverable
+
+List of files changed
+
+Short explanation:
+
+how exhibitions are listed
+
+how routing was adjusted
+
+how plan limit is enforced
