@@ -500,7 +500,7 @@ export async function initializeDatabase() {
         width DECIMAL(10, 2) NOT NULL,
         height DECIMAL(10, 2) NOT NULL,
         price DECIMAL(10, 2),
-        buy_url TEXT NOT NULL,
+        buy_url TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
