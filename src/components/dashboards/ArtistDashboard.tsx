@@ -2526,7 +2526,7 @@ export function ArtistDashboard() {
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                           </svg>
-                          Add to My Exhibition
+                          Add to Exhibition
                         </button>
                       )}
                     </div>
@@ -2614,7 +2614,7 @@ export function ArtistDashboard() {
               <>
                 <p className="text-sm text-rv-textMuted">
                   First upload your artworks in the <span className="font-medium">Artworks</span> section.
-                  Then click <span className="font-medium">"Add to My Exhibition"</span> on any artwork you want to include.
+                  Then use <span className="font-medium">"Add to Exhibition"</span> on any artwork you want to include.
                 </p>
                 <p className="text-xs text-rv-textMuted mt-2">You can edit or remove artworks from your exhibition at any time.</p>
               </>
@@ -3142,7 +3142,7 @@ export function ArtistDashboard() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     <p className="font-medium">No artworks in exhibition yet</p>
-                    <p className="text-sm mt-1">Go to your <span className="font-medium">Artworks</span> section and click "Add to My Exhibition" on the artworks you want to include.</p>
+                    <p className="text-sm mt-1">Go to your <span className="font-medium">Artworks</span> section and add artworks to this exhibition.</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
