@@ -856,10 +856,16 @@ export function ArtistDashboard() {
       return;
     }
 
-    const hasImage = formData.image || editingArtwork?.image_url;
-    if (!hasImage) {
-      setError('Please select an image');
-      console.log('[ArtistDashboard] Validation failed: no image');
+    // Check for valid image: either a File object, a promoted gallery image, or editing an existing artwork
+    const hasValidImage = (formData.image && formData.image instanceof File) || promotedGalleryImageId || editingArtwork?.image_url;
+    if (!hasValidImage) {
+      setError('Please select an image file');
+      console.log('[ArtistDashboard] Validation failed: no valid image', { 
+        imageType: typeof formData.image, 
+        isFile: formData.image instanceof File,
+        promotedGalleryImageId,
+        editingArtworkHasImage: !!editingArtwork?.image_url
+      });
       return;
     }
 
