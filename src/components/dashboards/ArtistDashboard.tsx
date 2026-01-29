@@ -151,6 +151,8 @@ export function ArtistDashboard() {
   const [showExhibitionSelector, setShowExhibitionSelector] = useState<number | null>(null); // Artwork ID for exhibition selector
   const [artworkExhibitionsMap, setArtworkExhibitionsMap] = useState<Record<number, {id: number; title: string; status: string; isMember: boolean}[]>>({}); // Exhibition memberships per artwork ID
   const [loadingArtworkExhibitions, setLoadingArtworkExhibitions] = useState(false);
+  const [selectedExhibitionByArtwork, setSelectedExhibitionByArtwork] = useState<Record<number, number | null>>({}); // Selected exhibition per artwork for single-select
+  const [savingExhibitionAssignment, setSavingExhibitionAssignment] = useState(false);
   
   const exhibitionSectionRef = React.useRef<HTMLDivElement>(null);
   const editFormRef = React.useRef<HTMLDivElement>(null);
@@ -199,6 +201,29 @@ export function ArtistDashboard() {
       fetchUnreadCount();
     }
   }, [activeTab]);
+  
+  // Preload exhibition assignments for Artist Pro
+  useEffect(() => {
+    if (isArtistPro && artworks.length > 0) {
+      artworks.forEach(artwork => {
+        if (!artworkExhibitionsMap[artwork.id]) {
+          fetch(`${API_URL}/api/artist/artwork/${artwork.id}/exhibitions`, {
+            credentials: 'include'
+          })
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+              if (data?.exhibitions) {
+                setArtworkExhibitionsMap(prev => ({
+                  ...prev,
+                  [artwork.id]: data.exhibitions
+                }));
+              }
+            })
+            .catch(() => {});
+        }
+      });
+    }
+  }, [isArtistPro, artworks]);
 
   const prevDimensionUnit = React.useRef(formData.dimensionUnit);
   useEffect(() => {
@@ -408,10 +433,20 @@ export function ArtistDashboard() {
       });
       if (response.ok) {
         const data = await response.json();
+        const exhibitions = data.exhibitions || [];
         setArtworkExhibitionsMap(prev => ({
           ...prev,
-          [artworkId]: data.exhibitions || []
+          [artworkId]: exhibitions
         }));
+        // Auto-select for this specific artwork: current assignment or first if only 1 exhibition
+        const currentAssignment = exhibitions.find((e: {isMember: boolean}) => e.isMember);
+        if (currentAssignment) {
+          setSelectedExhibitionByArtwork(prev => ({ ...prev, [artworkId]: currentAssignment.id }));
+        } else if (exhibitions.length === 1) {
+          setSelectedExhibitionByArtwork(prev => ({ ...prev, [artworkId]: exhibitions[0].id }));
+        } else {
+          setSelectedExhibitionByArtwork(prev => ({ ...prev, [artworkId]: null }));
+        }
       }
     } catch (err) {
       console.error('Error fetching artwork exhibitions:', err);
@@ -420,45 +455,65 @@ export function ArtistDashboard() {
     }
   };
 
-  const handleToggleArtworkExhibition = async (artworkId: number, exhibitionId: number, isMember: boolean) => {
+  const handleSaveExhibitionAssignment = async (artworkId: number) => {
+    const selectedExhibitionId = selectedExhibitionByArtwork[artworkId];
+    if (selectedExhibitionId === null || selectedExhibitionId === undefined) return;
+    
     const currentExhibitions = artworkExhibitionsMap[artworkId] || [];
+    const currentAssignment = currentExhibitions.find(e => e.isMember);
+    const newExhibition = currentExhibitions.find(e => e.id === selectedExhibitionId);
+    
+    // If already assigned to this exhibition, just close
+    if (currentAssignment?.id === selectedExhibitionId) {
+      setShowExhibitionSelector(null);
+      setSelectedExhibitionByArtwork(prev => ({ ...prev, [artworkId]: null }));
+      return;
+    }
+    
+    setSavingExhibitionAssignment(true);
     try {
-      const url = isMember 
-        ? `${API_URL}/api/artist/exhibition/${exhibitionId}/artworks/unlink/${artworkId}`
-        : `${API_URL}/api/artist/exhibition/${exhibitionId}/artworks/link/${artworkId}`;
+      // First, unlink from current exhibition if exists
+      if (currentAssignment) {
+        await fetch(`${API_URL}/api/artist/exhibition/${currentAssignment.id}/artworks/unlink/${artworkId}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+      }
       
-      const response = await fetch(url, {
-        method: isMember ? 'DELETE' : 'POST',
+      // Then link to new exhibition
+      const response = await fetch(`${API_URL}/api/artist/exhibition/${selectedExhibitionId}/artworks/link/${artworkId}`, {
+        method: 'POST',
         credentials: 'include'
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update exhibition');
+        throw new Error(errorData.error || 'Failed to assign exhibition');
       }
 
-      const exh = currentExhibitions.find(e => e.id === exhibitionId);
-      setSuccess(isMember 
-        ? `Removed from "${exh?.title || 'exhibition'}"` 
-        : `Added to "${exh?.title || 'exhibition'}"`
-      );
+      setSuccess(`Assigned to "${newExhibition?.title || 'exhibition'}"`);
       
-      // Update local state for this specific artwork
+      // Update local state - set only new exhibition as member
       setArtworkExhibitionsMap(prev => ({
         ...prev,
-        [artworkId]: (prev[artworkId] || []).map(e => 
-          e.id === exhibitionId ? { ...e, isMember: !isMember } : e
-        )
+        [artworkId]: (prev[artworkId] || []).map(e => ({
+          ...e,
+          isMember: e.id === selectedExhibitionId
+        }))
       }));
       
+      setShowExhibitionSelector(null);
+      setSelectedExhibitionByArtwork(prev => ({ ...prev, [artworkId]: null }));
       fetchExhibition();
-      if (exhibition?.id === exhibitionId) {
-        fetchExhibitionArtworks(exhibitionId);
+      if (exhibition?.id === selectedExhibitionId || (currentAssignment && exhibition?.id === currentAssignment.id)) {
+        fetchExhibitionArtworks(exhibition?.id || selectedExhibitionId);
       }
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
       setError(err.message);
       setTimeout(() => setError(''), 5000);
+    } finally {
+      setSavingExhibitionAssignment(false);
     }
   };
 
@@ -2330,6 +2385,24 @@ export function ArtistDashboard() {
                       </div>
                     )}
                     
+                    {/* Exhibition assignment badge (Artist Pro) */}
+                    {isArtistPro && (() => {
+                      const exhibitionsForArtwork = artworkExhibitionsMap[artwork.id];
+                      const assignedExhibition = exhibitionsForArtwork?.find(e => e.isMember);
+                      if (assignedExhibition) {
+                        return (
+                          <div className="mb-3 flex items-center gap-1.5 text-xs">
+                            <svg className="w-3.5 h-3.5 text-[#C9A24A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span className="text-rv-textMuted">Exhibition:</span>
+                            <span className="font-semibold text-[#C9A24A]">{assignedExhibition.title}</span>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
+                    
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -2425,7 +2498,7 @@ export function ArtistDashboard() {
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            Manage Exhibitions
+                            Select Exhibition
                             <svg className={`w-3 h-3 ml-1 transition-transform ${showExhibitionSelector === artwork.id ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
@@ -2435,56 +2508,8 @@ export function ArtistDashboard() {
                               {loadingArtworkExhibitions ? (
                                 <div className="px-3 py-4 text-center text-sm text-rv-textMuted">Loading...</div>
                               ) : (artworkExhibitionsMap[artwork.id] || []).length === 0 ? (
-                                <button
-                                  onClick={() => {
-                                    setShowExhibitionSelector(null);
-                                    setPendingExhibitionArtwork(artwork);
-                                    setShowCreateExhibition(true);
-                                    setTimeout(() => {
-                                      if (exhibitionSectionRef.current) {
-                                        exhibitionSectionRef.current.scrollIntoView({ behavior: 'smooth' });
-                                      }
-                                    }, 100);
-                                  }}
-                                  className="w-full px-3 py-2.5 text-left text-sm text-[#C9A24A] font-medium hover:bg-[#C9A24A]/10 flex items-center gap-2"
-                                >
-                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                  </svg>
-                                  Create First Exhibition
-                                </button>
-                              ) : (
-                                <>
-                                  <div className="px-3 py-2 bg-rv-surface/50 border-b border-rv-neutral">
-                                    <p className="text-xs text-rv-textMuted font-medium">Toggle exhibitions for this artwork:</p>
-                                  </div>
-                                  <div className="max-h-48 overflow-y-auto">
-                                    {(artworkExhibitionsMap[artwork.id] || []).map(exh => (
-                                      <button
-                                        key={exh.id}
-                                        onClick={() => handleToggleArtworkExhibition(artwork.id, exh.id, exh.isMember)}
-                                        className={`w-full px-3 py-2.5 text-left text-sm flex items-center justify-between gap-2 border-b border-rv-neutral/30 last:border-b-0 transition-colors ${
-                                          exh.isMember ? 'bg-[#C9A24A]/10 hover:bg-[#C9A24A]/20' : 'hover:bg-rv-surface'
-                                        }`}
-                                      >
-                                        <div className="flex items-center gap-2 min-w-0">
-                                          <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${
-                                            exh.isMember ? 'bg-[#C9A24A] border-[#C9A24A]' : 'border-rv-neutral'
-                                          }`}>
-                                            {exh.isMember && (
-                                              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                              </svg>
-                                            )}
-                                          </div>
-                                          <span className={`truncate ${exh.isMember ? 'font-semibold text-rv-text' : 'text-rv-text'}`}>{exh.title}</span>
-                                        </div>
-                                        <span className={`text-xs px-1.5 py-0.5 rounded flex-shrink-0 ${exh.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-                                          {exh.status === 'published' ? 'Live' : 'Draft'}
-                                        </span>
-                                      </button>
-                                    ))}
-                                  </div>
+                                <div className="p-3">
+                                  <p className="text-xs text-rv-textMuted mb-2">Create an exhibition first</p>
                                   <button
                                     onClick={() => {
                                       setShowExhibitionSelector(null);
@@ -2496,13 +2521,62 @@ export function ArtistDashboard() {
                                         }
                                       }, 100);
                                     }}
-                                    className="w-full px-3 py-2.5 text-left text-sm text-[#C9A24A] font-medium hover:bg-[#C9A24A]/10 flex items-center gap-2 border-t border-rv-neutral"
+                                    className="w-full px-3 py-2 text-sm text-[#C9A24A] font-medium bg-[#C9A24A]/10 hover:bg-[#C9A24A]/20 rounded-rvMd flex items-center justify-center gap-2"
                                   >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                                     </svg>
-                                    Create New Exhibition
+                                    Create Exhibition
                                   </button>
+                                </div>
+                              ) : (
+                                <>
+                                  <div className="px-3 py-2 bg-rv-surface/50 border-b border-rv-neutral">
+                                    <p className="text-xs text-rv-textMuted font-medium">Select exhibition:</p>
+                                  </div>
+                                  <div className="max-h-48 overflow-y-auto">
+                                    {(artworkExhibitionsMap[artwork.id] || []).map(exh => (
+                                      <button
+                                        key={exh.id}
+                                        onClick={() => setSelectedExhibitionByArtwork(prev => ({ ...prev, [artwork.id]: exh.id }))}
+                                        className={`w-full px-3 py-2.5 text-left text-sm flex items-center justify-between gap-2 border-b border-rv-neutral/30 last:border-b-0 transition-colors ${
+                                          selectedExhibitionByArtwork[artwork.id] === exh.id ? 'bg-[#C9A24A]/10' : 'hover:bg-rv-surface'
+                                        }`}
+                                      >
+                                        <div className="flex items-center gap-2 min-w-0">
+                                          <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                                            selectedExhibitionByArtwork[artwork.id] === exh.id ? 'border-[#C9A24A]' : 'border-rv-neutral'
+                                          }`}>
+                                            {selectedExhibitionByArtwork[artwork.id] === exh.id && (
+                                              <div className="w-2 h-2 rounded-full bg-[#C9A24A]" />
+                                            )}
+                                          </div>
+                                          <span className={`truncate ${selectedExhibitionByArtwork[artwork.id] === exh.id ? 'font-semibold text-rv-text' : 'text-rv-text'}`}>{exh.title}</span>
+                                        </div>
+                                        <span className={`text-xs px-1.5 py-0.5 rounded flex-shrink-0 ${exh.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                                          {exh.status === 'published' ? 'Live' : 'Draft'}
+                                        </span>
+                                      </button>
+                                    ))}
+                                  </div>
+                                  <div className="p-2 border-t border-rv-neutral flex gap-2">
+                                    <button
+                                      onClick={() => {
+                                        setShowExhibitionSelector(null);
+                                        setSelectedExhibitionByArtwork(prev => ({ ...prev, [artwork.id]: null }));
+                                      }}
+                                      className="flex-1 px-3 py-2 text-sm text-rv-textMuted hover:bg-rv-surface rounded-rvMd transition-colors"
+                                    >
+                                      Cancel
+                                    </button>
+                                    <button
+                                      onClick={() => handleSaveExhibitionAssignment(artwork.id)}
+                                      disabled={selectedExhibitionByArtwork[artwork.id] === null || selectedExhibitionByArtwork[artwork.id] === undefined || savingExhibitionAssignment}
+                                      className="flex-1 px-3 py-2 text-sm bg-[#C9A24A] text-white rounded-rvMd hover:bg-[#B8913A] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                      {savingExhibitionAssignment ? 'Saving...' : 'Save'}
+                                    </button>
+                                  </div>
                                 </>
                               )}
                             </div>

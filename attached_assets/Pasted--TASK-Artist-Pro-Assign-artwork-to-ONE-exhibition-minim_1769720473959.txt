@@ -1,0 +1,133 @@
+🚀 TASK: Artist Pro – Assign artwork to ONE exhibition (minimal MVP)
+Scope
+
+This task applies ONLY to Artist Pro.
+Goal is to enable assigning an artwork to one exhibition at upload / artwork card level.
+
+Multiple exhibitions per artwork are explicitly out of scope for now.
+
+PART 1 — Where this feature lives (IMPORTANT)
+Location in UI
+
+This must be added in My Artworks section, on each artwork card, AFTER an artwork exists.
+
+👉 Since user may have 0 artworks, this feature will only appear:
+
+once at least one artwork is uploaded
+
+on each artwork card (not global)
+
+PART 2 — Minimal MVP behavior (DO THIS)
+On each Artwork Card (Artist Pro only)
+
+Add a button or action, e.g.:
+
+“Select exhibition”
+or
+
+“Add to exhibition”
+
+On click
+
+Open a simple dropdown or modal with:
+
+List of existing exhibitions (title only)
+
+One selection only (radio / dropdown)
+
+Save button
+
+Behavior
+
+Artwork can be assigned to ONE exhibition
+
+Saving:
+
+associates artwork → exhibition
+
+overwrites previous assignment if exists
+
+No multiselect
+
+No drag & drop
+
+No advanced logic
+
+PART 3 — Defaults & edge cases
+If user has:
+
+0 exhibitions
+
+Disable button
+
+Show helper text:
+
+“Create an exhibition first”
+
+If user has:
+
+1 exhibition
+
+Auto-select it in dropdown
+
+Still require Save (explicit action)
+
+PART 4 — Visual feedback (simple but required)
+
+On artwork card, after assignment:
+
+Show small label/badge:
+
+“Exhibition: [Exhibition Name]”
+
+This confirms to the user where the artwork currently lives.
+
+PART 5 — Data rules (for now)
+
+One artwork belongs to one exhibition
+
+This is intentional MVP limitation
+
+Architecture should not block future extension to multiple exhibitions per artwork
+
+Explicitly DO NOT
+
+Do NOT support multiple exhibitions per artwork
+
+Do NOT redesign artwork cards
+
+Do NOT add bulk actions
+
+Do NOT change Artist (basic) behavior
+
+Do NOT refactor exhibition editor
+
+Stop condition
+
+Upload an artwork
+
+Artwork card shows Select exhibition
+
+Select one exhibition → Save
+
+Artwork appears in that exhibition
+
+Artwork card shows assigned exhibition label
+
+Notes for future (DO NOT implement now)
+
+Multiple exhibitions per artwork
+
+Bulk assign
+
+Drag & drop
+
+Auto-suggest exhibitions
+
+Final clarification (so agent doesn’t overthink)
+
+This is intentionally simple:
+
+One artwork → one exhibition → explicit save.
+
+We will iterate later based on real usage.
