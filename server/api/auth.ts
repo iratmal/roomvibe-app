@@ -131,7 +131,7 @@ router.post('/login', async (req: Request, res: Response) => {
     }
 
     const result = await query(
-      'SELECT id, email, password_hash, role, email_confirmed, is_admin, artist_access, designer_access, gallery_access FROM users WHERE email = $1',
+      'SELECT id, email, password_hash, role, email_confirmed, is_admin, artist_access, designer_access, gallery_access, subscription_plan, subscription_status FROM users WHERE email = $1',
       [email.toLowerCase()]
     );
 
@@ -155,17 +155,9 @@ router.post('/login', async (req: Request, res: Response) => {
       gallery_access: user.is_admin ? true : (user.gallery_access || user.role === 'gallery'),
     };
 
-    // Calculate effectivePlan based on entitlements
-    let effectivePlan = 'user';
-    if (user.is_admin) {
-      effectivePlan = 'admin';
-    } else if (entitlements.gallery_access) {
-      effectivePlan = 'gallery';
-    } else if (entitlements.designer_access) {
-      effectivePlan = 'designer';
-    } else if (entitlements.artist_access) {
-      effectivePlan = 'artist';
-    }
+    // Use shared getEffectivePlan to properly handle artist_pro and other plans
+    const { getEffectivePlan } = await import('../config/planLimits.js');
+    const effectivePlan = getEffectivePlan(user);
 
     const token = jwt.sign(
       { id: user.id, email: user.email, role: effectiveRole },
@@ -191,6 +183,7 @@ router.post('/login', async (req: Request, res: Response) => {
         isAdmin: user.is_admin || false,
         emailConfirmed: user.email_confirmed,
         effectivePlan,
+        subscriptionPlan: user.subscription_plan || 'user',
         entitlements
       }
     });
