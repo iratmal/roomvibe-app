@@ -2214,7 +2214,7 @@ export function ArtistDashboard() {
               </p>
               <button
                 type="button"
-                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                onClick={() => editFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-colors text-sm font-semibold"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
