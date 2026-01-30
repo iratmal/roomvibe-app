@@ -3270,11 +3270,10 @@ export function ArtistDashboard() {
                       </div>
                     </>
                   )}
-                </div>
-              </div>
 
-              <div className="bg-white border border-rv-neutral rounded-rvLg shadow-rvSoft p-6">
-                <h3 className="text-lg font-bold text-rv-primary mb-4">Exhibition Artworks</h3>
+                  {/* Exhibition Artworks Section - inside same card */}
+                  <div className="mt-6 pt-6 border-t border-rv-neutral">
+                    <h3 className="text-lg font-bold text-rv-primary mb-4">Exhibition Artworks</h3>
 
                 {exhibitionArtworks.length === 0 ? (
                   <div className="text-center py-8 text-rv-textMuted">
@@ -3339,6 +3338,8 @@ export function ArtistDashboard() {
                     ))}
                   </div>
                 )}
+                  </div>
+                </div>
               </div>
             </div>
           ) : null}
