@@ -126,6 +126,7 @@ export function ArtistDashboard() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [editingArtwork, setEditingArtwork] = useState<Artwork | null>(null);
+  const [showAddArtworkForm, setShowAddArtworkForm] = useState(true); // Controls Add Artwork form visibility
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
   const [showWidgetModal, setShowWidgetModal] = useState<Artwork | null>(null);
   const [copySuccess, setCopySuccess] = useState('');
@@ -1064,6 +1065,11 @@ export function ArtistDashboard() {
       
       setSuccess(data.message || (editingArtwork ? 'Artwork updated successfully!' : 'Artwork uploaded successfully!'));
       
+      // For new artwork: collapse the form so user sees their artwork list clearly
+      if (!editingArtwork) {
+        setShowAddArtworkForm(false);
+      }
+      
       setFormData({
         title: '',
         width: '',
@@ -1629,6 +1635,25 @@ export function ArtistDashboard() {
           </div>
         )}
 
+        {/* Collapsed state: Show button to expand the form */}
+        {!showAddArtworkForm && !editingArtwork && (
+          <div className="mb-6">
+            <button
+              type="button"
+              onClick={() => setShowAddArtworkForm(true)}
+              disabled={isAtLimit}
+              className="inline-flex items-center gap-2 px-5 py-3 bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-colors font-semibold shadow-rvSoft disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Add New Artwork
+            </button>
+          </div>
+        )}
+
+        {/* Add/Edit Artwork Form */}
+        {(showAddArtworkForm || editingArtwork) && (
         <div ref={editFormRef} className="mb-10 p-6 bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral">
           <h2 className="text-2xl font-bold mb-6 text-rv-primary">
             {editingArtwork ? 'Edit Artwork' : 'Add New Artwork'}
@@ -2294,6 +2319,7 @@ export function ArtistDashboard() {
             </div>
           </form>
         </div>
+        )}
 
         <div className="mb-10">
           <h2 className="text-2xl font-bold mb-6 text-rv-primary">My Artworks</h2>
