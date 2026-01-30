@@ -1,0 +1,111 @@
+🎯 TASK: Fix “Select exhibition” button UX on Artwork cards (Artist Pro)
+Context
+
+On Artwork cards (Artist Pro dashboard) we now have a “Select exhibition” button, but:
+
+Dropdown opens cut off / clipped (half visible, half hidden)
+
+Current dot icon (●) is unclear and visually weak
+
+UX does not feel deliberate or premium
+
+See attached screenshot for reference.
+
+Problems to fix
+1️⃣ Dropdown rendering issue (CRITICAL)
+
+Current behavior:
+
+Dropdown opens partially
+
+Content is clipped (likely overflow / z-index / container issue)
+
+Required fix:
+
+Dropdown must open fully visible
+
+Options must be clearly readable
+
+Preferred solutions (choose one):
+
+a) Proper dropdown menu positioned below the button (with correct z-index & overflow handling)
+
+b) Small popover / menu component anchored to the button
+
+Must work inside card layout without breaking grid
+
+2️⃣ Icon improvement for “Select exhibition”
+
+Current:
+
+Small dot icon (●) — unclear meaning
+
+Required change:
+
+Replace dot with a meaningful icon, e.g.:
+
+🖼️ gallery / exhibition icon
+
+🏛️ museum-style icon
+
+📁 collection icon
+
+Icon should visually align with:
+
+“View in Studio” (house icon)
+
+Keep style consistent with existing icon set (same library)
+
+3️⃣ Button + dropdown UX refinement
+
+Expected behavior:
+
+Button label: Select exhibition
+
+On click:
+
+Dropdown opens cleanly
+
+Shows list of user’s exhibitions
+
+Single-select only (MVP – one artwork → one exhibition)
+
+After selection:
+
+Selection is saved immediately OR via explicit “Save” (your choice, but be consistent)
+
+User clearly sees which exhibition the artwork belongs to
+
+4️⃣ Visual polish (light)
+
+Dropdown width should align nicely with button
+
+No overlapping text
+
+No clipped corners
+
+Feels “intentional”, not hacked
+
+Scope reminder (IMPORTANT)
+
+This is Artist Pro only
+
+Single exhibition per artwork (no multi-select yet)
+
+No need to redesign the whole card — focus only on:
+
+dropdown visibility
+
+icon
+
+interaction clarity
+
+Acceptance criteria
+
+Dropdown opens fully and correctly
+
+Icon is meaningful and visually consistent
+
+UX feels clean and understandable without explanation
+
+Tested with multiple exhibitions

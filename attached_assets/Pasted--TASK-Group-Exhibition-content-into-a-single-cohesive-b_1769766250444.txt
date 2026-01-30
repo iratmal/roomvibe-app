@@ -1,0 +1,106 @@
+🎯 TASK: Group Exhibition content into a single cohesive block (Artist Pro)
+Context
+
+Artist Pro users can have multiple exhibitions.
+Each exhibition has:
+
+Exhibition header (title, status, actions)
+
+Embed code
+
+Exhibition artworks list (or empty state)
+
+Currently, these elements are visually separated into multiple sections, which makes it unclear what belongs to which exhibition.
+
+Problem
+
+Right now the UI shows:
+
+Exhibition title + actions
+
+Embed code
+
+Spacer / visual break
+
+“Exhibition Artworks” section
+
+This creates confusion when there are multiple exhibitions, because:
+
+It’s not immediately clear which artworks belong to which exhibition
+
+The page feels fragmented instead of modular
+
+Required UX change (IMPORTANT)
+✅ One exhibition = one visual block (card / container)
+
+Each exhibition should be rendered as one self-contained block, containing all related elements, in this order:
+
+Exhibition Header
+
+Exhibition title
+
+Status (Published / Draft)
+
+Actions (Edit, Unpublish, Delete)
+
+Embed this Exhibition
+
+Embed code
+
+Copy code button
+
+Exhibition Artworks
+
+List of artworks belonging to this exhibition
+
+OR empty state:
+
+“No artworks in this exhibition yet. Go to your Artworks section and add artworks to this exhibition.”
+
+Layout behavior
+
+All three parts above must be inside the same visual container
+
+Container can be:
+
+Card
+
+Panel
+
+Box with subtle background / border / shadow
+
+Clear visual separation between exhibitions, not inside one exhibition
+
+Example structure:
+
+[ Exhibition Block #1 ]
+  - Header
+  - Embed code
+  - Exhibition artworks
+
+[ Exhibition Block #2 ]
+  - Header
+  - Embed code
+  - Exhibition artworks
+
+Explicitly DO NOT
+
+Do not separate “Exhibition Artworks” into a global section
+
+Do not reuse one artworks section for all exhibitions
+
+Do not change business logic
+
+This is purely layout + structure
+
+Acceptance criteria
+
+User can visually understand:
+
+“This embed + these artworks belong to THIS exhibition”
+
+Multiple exhibitions are clearly separated
+
+Page still scales cleanly with many exhibitions
+
+No ambiguity when scrolling

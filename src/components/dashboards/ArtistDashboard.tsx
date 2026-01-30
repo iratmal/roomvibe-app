@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { useAuth } from '../../context/AuthContext';
 import { ChangePassword } from '../ChangePassword';
 import { ImpersonationBanner } from '../ImpersonationBanner';
@@ -153,6 +154,8 @@ export function ArtistDashboard() {
   const [loadingArtworkExhibitions, setLoadingArtworkExhibitions] = useState(false);
   const [selectedExhibitionByArtwork, setSelectedExhibitionByArtwork] = useState<Record<number, number | null>>({}); // Selected exhibition per artwork for single-select
   const [savingExhibitionAssignment, setSavingExhibitionAssignment] = useState(false);
+  const [exhibitionDropdownPosition, setExhibitionDropdownPosition] = useState<{ top: number; left: number; width: number } | null>(null);
+  const exhibitionButtonRefs = React.useRef<Record<number, HTMLButtonElement | null>>({});
   
   const exhibitionSectionRef = React.useRef<HTMLDivElement>(null);
   const editFormRef = React.useRef<HTMLDivElement>(null);
@@ -224,6 +227,28 @@ export function ArtistDashboard() {
       });
     }
   }, [isArtistPro, artworks]);
+
+  // Click-outside handler for exhibition dropdown
+  useEffect(() => {
+    if (!showExhibitionSelector) return;
+    
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      // Check if click is outside the dropdown and the button
+      const buttonEl = exhibitionButtonRefs.current[showExhibitionSelector];
+      if (buttonEl && buttonEl.contains(target)) return;
+      
+      // Check if click is inside the dropdown (portal)
+      const dropdown = document.querySelector('[data-exhibition-dropdown]');
+      if (dropdown && dropdown.contains(target)) return;
+      
+      setShowExhibitionSelector(null);
+      setExhibitionDropdownPosition(null);
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showExhibitionSelector]);
 
   const prevDimensionUnit = React.useRef(formData.dimensionUnit);
   useEffect(() => {
@@ -466,6 +491,7 @@ export function ArtistDashboard() {
     // If already assigned to this exhibition, just close
     if (currentAssignment?.id === selectedExhibitionId) {
       setShowExhibitionSelector(null);
+      setExhibitionDropdownPosition(null);
       setSelectedExhibitionByArtwork(prev => ({ ...prev, [artworkId]: null }));
       return;
     }
@@ -503,6 +529,7 @@ export function ArtistDashboard() {
       }));
       
       setShowExhibitionSelector(null);
+      setExhibitionDropdownPosition(null);
       setSelectedExhibitionByArtwork(prev => ({ ...prev, [artworkId]: null }));
       fetchExhibition();
       if (exhibition?.id === selectedExhibitionId || (currentAssignment && exhibition?.id === currentAssignment.id)) {
@@ -536,6 +563,7 @@ export function ArtistDashboard() {
         fetchExhibitionArtworks(exhibitionId);
       }
       setShowExhibitionSelector(null);
+      setExhibitionDropdownPosition(null);
       setTimeout(() => setSuccess(''), 5000);
     } catch (err: any) {
       setError(err.message);
@@ -2407,7 +2435,7 @@ export function ArtistDashboard() {
                         return (
                           <div className="mb-3 flex items-center gap-1.5 text-xs">
                             <svg className="w-3.5 h-3.5 text-[#C9A24A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                             </svg>
                             <span className="text-rv-textMuted">Exhibition:</span>
                             <span className="font-semibold text-[#C9A24A]">{assignedExhibition.title}</span>
@@ -2497,12 +2525,23 @@ export function ArtistDashboard() {
                         View in Studio
                       </button>
                       {isArtistPro ? (
-                        <div className="flex-1 relative">
+                        <div className="flex-1">
                           <button
+                            ref={(el) => { exhibitionButtonRefs.current[artwork.id] = el; }}
                             onClick={() => {
                               if (showExhibitionSelector === artwork.id) {
                                 setShowExhibitionSelector(null);
+                                setExhibitionDropdownPosition(null);
                               } else {
+                                const buttonEl = exhibitionButtonRefs.current[artwork.id];
+                                if (buttonEl) {
+                                  const rect = buttonEl.getBoundingClientRect();
+                                  setExhibitionDropdownPosition({
+                                    top: rect.bottom + window.scrollY + 4,
+                                    left: rect.left + window.scrollX,
+                                    width: Math.max(rect.width, 240)
+                                  });
+                                }
                                 setShowExhibitionSelector(artwork.id);
                                 fetchArtworkExhibitions(artwork.id);
                               }
@@ -2510,15 +2549,25 @@ export function ArtistDashboard() {
                             className="w-full h-11 px-3 text-sm bg-[#C9A24A] text-white rounded-rvMd hover:bg-[#B8913A] transition-colors font-semibold flex items-center justify-center gap-1.5"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                             </svg>
-                            Select Exhibition
-                            <svg className={`w-3 h-3 ml-1 transition-transform ${showExhibitionSelector === artwork.id ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            Exhibition
+                            <svg className={`w-3 h-3 ml-auto transition-transform ${showExhibitionSelector === artwork.id ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                             </svg>
                           </button>
-                          {showExhibitionSelector === artwork.id && (
-                            <div className="absolute z-20 mt-1 w-full bg-white border border-rv-neutral rounded-rvMd shadow-lg overflow-hidden">
+                          {showExhibitionSelector === artwork.id && exhibitionDropdownPosition && ReactDOM.createPortal(
+                            <div 
+                              data-exhibition-dropdown
+                              className="bg-white border border-rv-neutral rounded-rvMd shadow-xl"
+                              style={{ 
+                                position: 'absolute',
+                                top: exhibitionDropdownPosition.top,
+                                left: exhibitionDropdownPosition.left,
+                                width: exhibitionDropdownPosition.width,
+                                zIndex: 9999
+                              }}
+                            >
                               {loadingArtworkExhibitions ? (
                                 <div className="px-3 py-4 text-center text-sm text-rv-textMuted">Loading...</div>
                               ) : (artworkExhibitionsMap[artwork.id] || []).length === 0 ? (
@@ -2527,6 +2576,7 @@ export function ArtistDashboard() {
                                   <button
                                     onClick={() => {
                                       setShowExhibitionSelector(null);
+                                      setExhibitionDropdownPosition(null);
                                       setPendingExhibitionArtwork(artwork);
                                       setShowCreateExhibition(true);
                                       setTimeout(() => {
@@ -2577,6 +2627,7 @@ export function ArtistDashboard() {
                                     <button
                                       onClick={() => {
                                         setShowExhibitionSelector(null);
+                                        setExhibitionDropdownPosition(null);
                                         setSelectedExhibitionByArtwork(prev => ({ ...prev, [artwork.id]: null }));
                                       }}
                                       className="flex-1 px-3 py-2 text-sm text-rv-textMuted hover:bg-rv-surface rounded-rvMd transition-colors"
@@ -2593,7 +2644,8 @@ export function ArtistDashboard() {
                                   </div>
                                 </>
                               )}
-                            </div>
+                            </div>,
+                            document.body
                           )}
                         </div>
                       ) : isArtworkInExhibition(artwork.id) ? (
