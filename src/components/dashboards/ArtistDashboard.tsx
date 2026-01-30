@@ -1959,7 +1959,7 @@ export function ArtistDashboard() {
                   className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
                   placeholder="https://your-shop.com/product"
                 />
-                <p className="mt-1 text-xs text-rv-textMuted">Leave empty to use Contact Artist for inquiries</p>
+                <p className="mt-1 text-xs text-rv-textMuted">You can add a link to your website or product page so collectors can learn more or purchase the artwork directly from you.</p>
               </div>
 
               <div>
