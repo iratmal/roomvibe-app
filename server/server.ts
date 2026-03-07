@@ -25,6 +25,7 @@ import { requireGalleryFeature, requireStripeFeature } from './middleware/featur
 import { authenticateToken } from './middleware/auth.js';
 import { envBool, envBoolDefaultTrue } from './utils/envBool.js';
 import { getAppEnv, getRequestHost, isProdHost, isStagingHost } from './utils/envDetection.js';
+import { sitePasswordMiddleware, sitePasswordAuthHandler } from './middleware/sitePassword.js';
 
 dotenv.config();
 
@@ -84,7 +85,11 @@ app.use(cors({
 app.use('/api/stripe', webhookRoutes);
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+app.use(sitePasswordMiddleware);
+app.post('/__site_auth', sitePasswordAuthHandler);
 
 app.use(express.static(path.join(__dirname, '../public')));
 
