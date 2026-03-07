@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
+import crypto from 'crypto';
 import { isStagingHost, getRequestHost } from '../utils/envDetection.js';
 
 const COOKIE_NAME = 'rv_site_access';
 const COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
 
 function generateToken(password: string): string {
-  const crypto = require('crypto');
   return crypto.createHash('sha256').update(`rv_site_${password}`).digest('hex').slice(0, 32);
 }
 
