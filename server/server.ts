@@ -27,6 +27,7 @@ import { requireGalleryFeature, requireStripeFeature } from './middleware/featur
 import { authenticateToken } from './middleware/auth.js';
 import { envBool, envBoolDefaultTrue } from './utils/envBool.js';
 import { getAppEnv, getRequestHost, isProdHost, isStagingHost } from './utils/envDetection.js';
+import { sitePasswordMiddleware, sitePasswordAuthHandler } from './middleware/sitePassword.js';
 
 dotenv.config();
 
@@ -87,6 +88,12 @@ app.use('/api/stripe', webhookRoutes);
 
 app.use(express.json());
 app.use(cookieParser());
+
+// --- Site password protection (temporary) ---
+// To disable: remove SITE_PASSWORD from environment variables
+app.post('/__site_auth', express.urlencoded({ extended: false }), sitePasswordAuthHandler);
+app.use(sitePasswordMiddleware);
+// --- End site password protection ---
 
 app.use(express.static(path.join(__dirname, '../public')));
 
