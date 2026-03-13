@@ -230,17 +230,19 @@ export function PricingPage() {
     <div className="min-h-screen bg-gray-50">
       <SiteHeader showPlanBadge={false} />
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6">
-        <a
-          href="#/dashboard"
-          className="inline-flex items-center gap-2 text-sm font-medium text-rv-textMuted hover:text-rv-primary transition-colors"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Back to Dashboard
-        </a>
-      </div>
+      {user && (
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-6">
+          <a
+            href="#/dashboard"
+            className="inline-flex items-center gap-2 text-sm font-medium text-rv-textMuted hover:text-rv-primary transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Dashboard
+          </a>
+        </div>
+      )}
 
       <main className="py-8 sm:py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
