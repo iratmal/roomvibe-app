@@ -855,14 +855,14 @@ function ConcreteFloor({ width, depth, color }: { width: number; depth: number; 
 
   return (
     <group position={[0, 0.001, 0]}>
-      {/* Main concrete floor - enhanced PBR */}
+      {/* Main concrete floor - polished PBR */}
       <mesh name="concreteFloorMain" rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[width, depth]} />
         <meshStandardMaterial 
           color={color} 
-          roughness={0.72} 
-          metalness={0.08}
-          envMapIntensity={0.3}
+          roughness={0.50} 
+          metalness={0.14}
+          envMapIntensity={0.6}
         />
       </mesh>
       {/* Concrete variation patches - subtle texture */}
@@ -947,20 +947,27 @@ function BrickWall({
 
   return (
     <group position={position} rotation={rotation}>
-      <mesh>
+      {/* Mortar base - light-responsive */}
+      <mesh receiveShadow>
         <planeGeometry args={[width, height]} />
-        <meshBasicMaterial color={mortarColor} side={THREE.DoubleSide} />
+        <meshStandardMaterial color={mortarColor} roughness={0.85} metalness={0} side={THREE.DoubleSide} />
       </mesh>
       {brickData.bricks.map((brick, i) => {
         const brickColor = baseBrickColor.clone().multiplyScalar(brick.shade);
-        brickColor.offsetHSL(brick.hueShift - 0.075, 0, 0);
+        brickColor.offsetHSL(brick.hueShift - 0.06, 0, 0);
         return (
           <mesh
             key={i}
-            position={[brick.x, brick.y - height / 2, 0.002]}
+            position={[brick.x, brick.y - height / 2, 0.003]}
+            receiveShadow
           >
             <planeGeometry args={[brickData.brickW, brickData.brickH]} />
-            <meshBasicMaterial color={brickColor} side={THREE.DoubleSide} />
+            <meshStandardMaterial
+              color={brickColor}
+              roughness={0.82}
+              metalness={0.01}
+              side={THREE.DoubleSide}
+            />
           </mesh>
         );
       })}
@@ -1260,18 +1267,18 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
             </group>
           ))}
           
-          {/* Steel trusses with PBR material */}
+          {/* Steel trusses with PBR material - light silver like reference */}
           {[-depth/3, 0, depth/3].map((zPos, i) => (
             <group key={`truss-${i}`}>
-              {/* Bottom chord - PBR steel */}
+              {/* Bottom chord - silvery steel */}
               <mesh position={[0, height - 0.55, zPos]} castShadow>
                 <boxGeometry args={[width + 0.3, 0.08, 0.08]} />
-                <meshStandardMaterial color="#4A4A4A" roughness={0.4} metalness={0.7} />
+                <meshStandardMaterial color="#8A8E96" roughness={0.35} metalness={0.75} />
               </mesh>
               {/* Top chord */}
               <mesh position={[0, height - 0.05, zPos]} castShadow>
                 <boxGeometry args={[width + 0.3, 0.05, 0.05]} />
-                <meshStandardMaterial color="#4A4A4A" roughness={0.4} metalness={0.7} />
+                <meshStandardMaterial color="#8A8E96" roughness={0.35} metalness={0.75} />
               </mesh>
               {/* Diagonal V-members */}
               {Array.from({ length: 7 }, (_, j) => {
@@ -1285,7 +1292,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
                     castShadow
                   >
                     <boxGeometry args={[0.05, 0.55, 0.05]} />
-                    <meshStandardMaterial color="#4A4A4A" roughness={0.4} metalness={0.7} />
+                    <meshStandardMaterial color="#8A8E96" roughness={0.35} metalness={0.75} />
                   </mesh>
                 );
               })}
@@ -1293,17 +1300,17 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
               {[-width/3, 0, width/3].map((xPos, k) => (
                 <mesh key={`vert-${i}-${k}`} position={[xPos, height - 0.30, zPos]} castShadow>
                   <boxGeometry args={[0.05, 0.50, 0.05]} />
-                  <meshStandardMaterial color="#4A4A4A" roughness={0.4} metalness={0.7} />
+                  <meshStandardMaterial color="#8A8E96" roughness={0.35} metalness={0.75} />
                 </mesh>
               ))}
             </group>
           ))}
           
-          {/* Cross braces */}
+          {/* Cross braces - silvery */}
           {[-width/3, 0, width/3].map((xPos, i) => (
             <mesh key={`cross-brace-${i}`} position={[xPos, height - 0.5, 0]} castShadow>
               <boxGeometry args={[0.06, 0.06, depth - 3]} />
-              <meshStandardMaterial color="#4A4A4A" roughness={0.4} metalness={0.7} />
+              <meshStandardMaterial color="#8A8E96" roughness={0.35} metalness={0.75} />
             </mesh>
           ))}
           
@@ -1337,14 +1344,14 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
                   envMapIntensity={0.8}
                 />
               </mesh>
-              {/* Sky/daylight behind glass - bright gradient */}
+              {/* Sky/daylight behind glass - very bright */}
               <mesh position={[0, 0.3, 0.02]}>
                 <planeGeometry args={[3.0, 3.4]} />
-                <meshBasicMaterial color="#E8F0F8" />
+                <meshBasicMaterial color="#F4FAFF" />
               </mesh>
               <mesh position={[0, -0.8, 0.025]}>
                 <planeGeometry args={[3.0, 1.8]} />
-                <meshBasicMaterial color="#F0F4F8" />
+                <meshBasicMaterial color="#FFFFFF" />
               </mesh>
               {/* Steel mullions - industrial grid */}
               <mesh position={[0, 0, 0.20]}>
@@ -1373,15 +1380,15 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
           {/* Daylight patches on floor from North windows - realistic falloff */}
           {[-6, 6].map((xPos, i) => (
             <group key={`daylight-north-${i}`}>
-              {/* Main light patch */}
+              {/* Main light patch - brighter */}
               <mesh position={[xPos, 0.008, -halfD + 3.5]} rotation={[-Math.PI / 2, 0, 0]}>
                 <planeGeometry args={[3.5, 5]} />
-                <meshBasicMaterial color="#FFFEF8" transparent opacity={0.18} />
+                <meshBasicMaterial color="#FFFEF8" transparent opacity={0.30} />
               </mesh>
               {/* Gradient falloff */}
               <mesh position={[xPos, 0.006, -halfD + 6]} rotation={[-Math.PI / 2, 0, 0]}>
                 <planeGeometry args={[4.5, 4]} />
-                <meshBasicMaterial color="#FAFAF4" transparent opacity={0.10} />
+                <meshBasicMaterial color="#FAFAF4" transparent opacity={0.18} />
               </mesh>
             </group>
           ))}
@@ -1418,10 +1425,10 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
                       envMapIntensity={0.8}
                     />
                   </mesh>
-                  {/* Daylight behind */}
+                  {/* Daylight behind - very bright */}
                   <mesh position={[0, 0.2, 0.02]}>
                     <planeGeometry args={[2.6, 3.2]} />
-                    <meshBasicMaterial color="#E8F0F8" />
+                    <meshBasicMaterial color="#F4FAFF" />
                   </mesh>
                   {/* Mullions */}
                   <mesh position={[0, 0, 0.20]}>
@@ -1456,28 +1463,39 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
             </group>
           ))}
           
-          {/* ENHANCED LIGHTING SYSTEM */}
-          {/* Ambient - low intensity base */}
-          <ambientLight intensity={0.35} color="#F8F6F0" />
-          {/* Hemisphere - sky/ground gradient */}
-          <hemisphereLight args={['#E8F0F8', '#D0CCC4', 0.7]} position={[0, height, 0]} />
-          {/* Directional daylight from windows - soft shadows */}
+          {/* INDUSTRIAL LOFT LIGHTING - bright daylit warehouse feel */}
+          {/* Soft ambient base - warm white */}
+          <ambientLight intensity={0.65} color="#FFF8F2" />
+          {/* Hemisphere - bright sky top, warm ground */}
+          <hemisphereLight args={['#EEF4FF', '#C8BEB0', 1.3]} position={[0, height, 0]} />
+          {/* Main directional daylight from north windows */}
           <directionalLight
-            position={[0, height * 0.8, -halfD + 2]}
-            intensity={0.6}
-            color="#FFF8F0"
+            position={[0, height * 0.85, -halfD + 2]}
+            intensity={1.1}
+            color="#FFF5E8"
             castShadow
             shadow-mapSize-width={1024}
             shadow-mapSize-height={1024}
             shadow-camera-near={0.5}
-            shadow-camera-far={50}
-            shadow-camera-left={-15}
-            shadow-camera-right={15}
-            shadow-camera-top={10}
+            shadow-camera-far={60}
+            shadow-camera-left={-16}
+            shadow-camera-right={16}
+            shadow-camera-top={12}
             shadow-camera-bottom={-2}
             shadow-bias={-0.0005}
-            shadow-radius={4}
+            shadow-radius={5}
           />
+          {/* North wall window fill lights - bright daylight entering */}
+          <pointLight position={[-6, height * 0.55, -halfD + 1.5]} intensity={1.2} color="#F0F6FF" distance={16} decay={2} />
+          <pointLight position={[6, height * 0.55, -halfD + 1.5]} intensity={1.2} color="#F0F6FF" distance={16} decay={2} />
+          {/* East side window fill lights */}
+          <pointLight position={[halfW - 1.5, height * 0.55, -4]} intensity={0.9} color="#FFF8F0" distance={14} decay={2} />
+          <pointLight position={[halfW - 1.5, height * 0.55, 4]} intensity={0.9} color="#FFF8F0" distance={14} decay={2} />
+          {/* West side window fill lights */}
+          <pointLight position={[-halfW + 1.5, height * 0.55, -4]} intensity={0.9} color="#FFF8F0" distance={14} decay={2} />
+          <pointLight position={[-halfW + 1.5, height * 0.55, 4]} intensity={0.9} color="#FFF8F0" distance={14} decay={2} />
+          {/* Ceiling fill - simulate industrial track lighting glow */}
+          <pointLight position={[0, height - 0.4, 0]} intensity={0.5} color="#FFF9F0" distance={20} decay={1.5} />
         </>
       ) : preset.id === 'modern-gallery-v2' ? (
         <>
@@ -1708,7 +1726,7 @@ function GalleryRoom({ preset }: { preset: Gallery360Preset }) {
         halfD={halfD}
         portalW={3.5}
         portalH={3.5}
-        wallColor={preset.wallType === 'brick' ? '#8B4513' : (preset.id === 'modern-gallery-v2' ? preset.wallColor : (preset.id === 'hybrid-studio' ? preset.wallColor : GALLERY_WALL_COLOR))}
+        wallColor={preset.wallType === 'brick' ? preset.wallColor : (preset.id === 'modern-gallery-v2' ? preset.wallColor : (preset.id === 'hybrid-studio' ? preset.wallColor : GALLERY_WALL_COLOR))}
         isModern={preset.id === 'modern-gallery-v2'}
         isHybrid={preset.id === 'hybrid-studio'}
         isBrick={preset.wallType === 'brick'}

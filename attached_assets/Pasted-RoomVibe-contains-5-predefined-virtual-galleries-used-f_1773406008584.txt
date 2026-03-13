@@ -1,0 +1,122 @@
+RoomVibe contains 5 predefined virtual galleries used for exhibitions.
+This task applies ONLY to Industrial Loft Gallery.
+The current Industrial Loft gallery looks too primitive and flat (simple textures, weak lighting, low realism).
+We want a more realistic industrial exhibition environment like a real loft gallery (like in the screenshot attached).
+Reference inspiration:
+•	exposed brick walls
+•	large industrial windows
+•	steel beams
+•	soft daylight
+•	polished concrete floor
+•	gallery partitions
+ 
+IMPORTANT CONSTRAINT
+DO NOT change:
+•	camera navigation
+•	exhibition placement logic
+•	wall slot system
+•	artwork placement
+•	exhibition editor logic
+•	street-view navigation points
+Only improve visual rendering and environment realism.
+ 
+IMPLEMENTATION APPROACH
+Improve the Industrial Loft gallery using Three.js realism techniques.
+1. Replace Basic Materials with PBR Materials
+Use MeshStandardMaterial or MeshPhysicalMaterial.
+Add realistic maps where possible:
+•	base color map
+•	normal map
+•	roughness map
+•	ambient occlusion map
+Materials to improve:
+•	brick walls
+•	concrete floor
+•	steel beams
+•	partition walls
+ 
+2. Improve Lighting
+Current lighting is flat.
+Add realistic lighting:
+•	soft skylight
+•	directional sunlight from windows
+•	subtle shadow casting
+Recommended setup:
+HemisphereLight
+DirectionalLight
+AmbientLight (very soft)
+Enable shadows.
+ 
+3. Improve Windows and Daylight
+Add realistic industrial windows:
+•	tall loft windows
+•	soft daylight entering space
+•	subtle light bounce
+Optional:
+•	light plane outside windows
+•	HDR environment lighting
+ 
+4. Improve Gallery Partitions
+Current partitions look like simple cubes.
+Improve them:
+•	correct proportions
+•	subtle bevel edges
+•	soft shadows on floor
+•	matte gallery paint material
+ 
+5. Improve Floor
+Replace flat color floor with polished concrete material.
+Add:
+•	roughness variation
+•	subtle reflection
+•	ambient occlusion
+ 
+6. Improve Scale and Proportions
+Ensure:
+•	ceiling height feels realistic
+•	partition spacing feels like a real exhibition
+•	artworks appear correctly scaled relative to walls
+ 
+7. Add Soft Ambient Environment
+Add HDR environment if possible:
+PMREMGenerator
+HDR environment map
+Goal: natural light reflection.
+ 
+VISUAL TARGET
+The Industrial Loft gallery should feel like:
+•	a real converted warehouse gallery
+•	realistic materials
+•	believable lighting
+•	strong architectural character
+Reference style:
+•	exposed brick
+•	metal beams
+•	daylight from windows
+•	polished concrete floor
+•	minimal white partitions
+ 
+PERFORMANCE REQUIREMENT
+Do not add heavy geometry.
+Focus on:
+•	better materials
+•	lighting
+•	textures
+Scene must remain smooth for browser rendering.
+ 
+FILES TO MODIFY
+Likely files:
+IndustrialGalleryScene.tsx
+IndustrialGallery.ts
+360Viewer.tsx
+galleryPresets.ts
+Only modify the Industrial Loft preset.
+ 
+STOP CONDITION
+Task is complete when:
+•	Industrial Loft gallery looks significantly more realistic
+•	lighting and materials feel premium
+•	artwork placement still works
+•	navigation still works
+•	other galleries remain unchanged
+
