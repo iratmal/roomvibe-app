@@ -176,14 +176,15 @@ export function ArtistDashboard() {
   const maxArtworks = planLimits.maxArtworks;
   const isAtLimit = maxArtworks !== -1 && artworks.length >= maxArtworks;
 
-  const FREE_CLEAN_LIMIT = 3;
-  const FREE_BRANDED_LIMIT = 7;
+  const cleanLimit = planLimits.cleanArtworksLimit;
+  const watermarkedLimit = planLimits.watermarkedArtworksLimit;
 
   const cleanArtworkIds: Set<number> = React.useMemo(() => {
     if (!isFreePlan) return new Set<number>();
     const sorted = [...artworks].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-    return new Set(sorted.slice(0, FREE_CLEAN_LIMIT).map(a => a.id));
-  }, [isFreePlan, artworks]);
+    const cleanSlice = cleanLimit === -1 ? sorted : sorted.slice(0, cleanLimit);
+    return new Set(cleanSlice.map(a => a.id));
+  }, [isFreePlan, artworks, cleanLimit]);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -1617,14 +1618,20 @@ export function ArtistDashboard() {
             {/* Free plan: clean / branded artwork sub-row */}
             {isFreePlan && (
               <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className={`p-4 rounded-rvLg border shadow-rvSoft ${cleanArtworkIds.size >= FREE_CLEAN_LIMIT ? 'bg-amber-50 border-amber-200' : 'bg-white border-rv-neutral'}`}>
+                <div className={`p-4 rounded-rvLg border shadow-rvSoft ${cleanLimit !== -1 && cleanArtworkIds.size >= cleanLimit ? 'bg-amber-50 border-amber-200' : 'bg-white border-rv-neutral'}`}>
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm font-semibold text-rv-text">Clean Artworks</span>
                     <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full">No watermark</span>
                   </div>
-                  <p className="text-2xl font-bold text-rv-primary">{cleanArtworkIds.size} <span className="text-base font-normal text-rv-textMuted">/ {FREE_CLEAN_LIMIT}</span></p>
+                  <p className="text-2xl font-bold text-rv-primary">
+                    {cleanArtworkIds.size}
+                    {' '}
+                    <span className="text-base font-normal text-rv-textMuted">
+                      {cleanLimit === -1 ? '(unlimited)' : `/ ${cleanLimit}`}
+                    </span>
+                  </p>
                   <div className="mt-2 h-1 bg-rv-neutral rounded-full overflow-hidden">
-                    <div className="h-full bg-green-500 rounded-full" style={{ width: `${Math.min((cleanArtworkIds.size / FREE_CLEAN_LIMIT) * 100, 100)}%` }} />
+                    <div className="h-full bg-green-500 rounded-full" style={{ width: cleanLimit === -1 ? '100%' : `${Math.min((cleanArtworkIds.size / cleanLimit) * 100, 100)}%` }} />
                   </div>
                 </div>
                 <div className="p-4 rounded-rvLg border bg-white border-rv-neutral shadow-rvSoft">
@@ -1632,9 +1639,15 @@ export function ArtistDashboard() {
                     <span className="text-sm font-semibold text-rv-text">RoomVibe Artworks</span>
                     <span className="px-2 py-0.5 bg-rv-primary/10 text-rv-primary text-xs font-semibold rounded-full">Branded</span>
                   </div>
-                  <p className="text-2xl font-bold text-rv-primary">{Math.max(artworks.length - FREE_CLEAN_LIMIT, 0)} <span className="text-base font-normal text-rv-textMuted">/ {FREE_BRANDED_LIMIT}</span></p>
+                  <p className="text-2xl font-bold text-rv-primary">
+                    {Math.max(artworks.length - cleanArtworkIds.size, 0)}
+                    {' '}
+                    <span className="text-base font-normal text-rv-textMuted">
+                      {watermarkedLimit === 0 ? '(none)' : `/ ${watermarkedLimit}`}
+                    </span>
+                  </p>
                   <div className="mt-2 h-1 bg-rv-neutral rounded-full overflow-hidden">
-                    <div className="h-full bg-rv-primary rounded-full" style={{ width: `${Math.min((Math.max(artworks.length - FREE_CLEAN_LIMIT, 0) / FREE_BRANDED_LIMIT) * 100, 100)}%` }} />
+                    <div className="h-full bg-rv-primary rounded-full" style={{ width: watermarkedLimit === 0 ? '0%' : `${Math.min((Math.max(artworks.length - cleanArtworkIds.size, 0) / watermarkedLimit) * 100, 100)}%` }} />
                   </div>
                 </div>
               </div>

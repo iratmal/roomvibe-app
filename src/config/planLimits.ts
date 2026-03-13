@@ -4,6 +4,10 @@ export type RoomTier = 'basic10' | 'standard40' | 'all';
 
 export interface PlanLimits {
   maxArtworks: number;
+  /** How many artworks render without a RoomVibe watermark. -1 = unlimited (all clean). */
+  cleanArtworksLimit: number;
+  /** How many artworks render with a RoomVibe watermark. 0 = none (all clean). */
+  watermarkedArtworksLimit: number;
   maxWallPhotos: number;
   maxProjects: number;
   maxMockupRooms: number;
@@ -31,6 +35,8 @@ export interface PlanLimits {
 export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
   free: {
     maxArtworks: 10,
+    cleanArtworksLimit: 3,
+    watermarkedArtworksLimit: 7,
     maxWallPhotos: 1,
     maxProjects: 1,
     maxMockupRooms: 10,
@@ -56,6 +62,8 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
   },
   user: {
     maxArtworks: 10,
+    cleanArtworksLimit: 3,
+    watermarkedArtworksLimit: 7,
     maxWallPhotos: 1,
     maxProjects: 1,
     maxMockupRooms: 10,
@@ -81,6 +89,8 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
   },
   artist: {
     maxArtworks: 50,
+    cleanArtworksLimit: -1,
+    watermarkedArtworksLimit: 0,
     maxWallPhotos: 100,
     maxProjects: 100,
     maxMockupRooms: 40,
@@ -106,6 +116,8 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
   },
   designer: {
     maxArtworks: 100,
+    cleanArtworksLimit: -1,
+    watermarkedArtworksLimit: 0,
     maxWallPhotos: -1,
     maxProjects: -1,
     maxMockupRooms: -1,
@@ -131,6 +143,8 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
   },
   gallery: {
     maxArtworks: -1,
+    cleanArtworksLimit: -1,
+    watermarkedArtworksLimit: 0,
     maxWallPhotos: -1,
     maxProjects: -1,
     maxMockupRooms: -1,
@@ -156,6 +170,8 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
   },
   artist_pro: {
     maxArtworks: -1,
+    cleanArtworksLimit: -1,
+    watermarkedArtworksLimit: 0,
     maxWallPhotos: -1,
     maxProjects: -1,
     maxMockupRooms: -1,
@@ -181,6 +197,8 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
   },
   admin: {
     maxArtworks: -1,
+    cleanArtworksLimit: -1,
+    watermarkedArtworksLimit: 0,
     maxWallPhotos: -1,
     maxProjects: -1,
     maxMockupRooms: -1,
@@ -442,5 +460,47 @@ export function getUpgradeMessage(currentPlan: PlanType, feature: string): { mes
   return upgradeMap[feature] || {
     message: "This feature requires a higher subscription plan.",
     suggestedPlan: 'artist',
+  };
+}
+
+/**
+ * Returns true if an artwork at `sortedIndex` (0-based, oldest first) should render
+ * without a watermark for the given plan.
+ *
+ * - cleanArtworksLimit === -1  → all artworks are clean (no watermark ever)
+ * - cleanArtworksLimit >=  0  → only the first N artworks (by upload date) are clean
+ */
+export function isArtworkClean(sortedIndex: number, plan: PlanType): boolean {
+  const { cleanArtworksLimit } = PLAN_LIMITS[plan];
+  if (cleanArtworksLimit === -1) return true;
+  return sortedIndex < cleanArtworksLimit;
+}
+
+/**
+ * Returns the set of artwork IDs that should render without a watermark.
+ * `artworks` must be sorted oldest-first (ascending `created_at`).
+ */
+export function getCleanArtworkIds(
+  artworks: Array<{ id: number }>,
+  plan: PlanType,
+): Set<number> {
+  const { cleanArtworksLimit } = PLAN_LIMITS[plan];
+  if (cleanArtworksLimit === -1) return new Set(artworks.map(a => a.id));
+  return new Set(artworks.slice(0, cleanArtworksLimit).map(a => a.id));
+}
+
+/**
+ * Returns a human-readable summary of the artwork tier breakdown for a plan.
+ */
+export function getArtworkTierSummary(plan: PlanType): {
+  cleanLabel: string;
+  watermarkedLabel: string;
+  hasWatermarking: boolean;
+} {
+  const { cleanArtworksLimit, watermarkedArtworksLimit } = PLAN_LIMITS[plan];
+  return {
+    cleanLabel: cleanArtworksLimit === -1 ? 'Unlimited' : String(cleanArtworksLimit),
+    watermarkedLabel: watermarkedArtworksLimit === 0 ? 'None' : String(watermarkedArtworksLimit),
+    hasWatermarking: watermarkedArtworksLimit > 0,
   };
 }
