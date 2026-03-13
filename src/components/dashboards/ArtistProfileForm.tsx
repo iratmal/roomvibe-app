@@ -421,30 +421,30 @@ export function ArtistProfileForm() {
     }
   };
 
-  const calculateProfileCompleteness = () => {
-    const fields = [
-      { name: 'displayName', value: profile.displayName },
-      { name: 'city', value: profile.locationCity },
-      { name: 'country', value: profile.locationCountry },
-      { name: 'bio', value: profile.bio },
-      { name: 'primaryMedium', value: profile.primaryMedium },
-      { name: 'profilePhoto', value: profile.profileImageUrl },
-      { name: 'styleTags', value: profile.primaryStyleTags?.length > 0 },
-      { name: 'languages', value: profile.languages?.length > 0 },
-      { name: 'website', value: profile.websiteUrl },
-      { name: 'instagram', value: profile.instagramUrl },
-    ];
-    
-    const filledCount = fields.filter(f => {
-      if (typeof f.value === 'boolean') return f.value;
-      if (typeof f.value === 'string') return f.value?.trim().length > 0;
-      return false;
-    }).length;
-    
-    return Math.round((filledCount / fields.length) * 100);
-  };
+  const hasSocialLink = !!(
+    profile.websiteUrl?.trim() ||
+    profile.instagramUrl?.trim() ||
+    profile.facebookUrl?.trim() ||
+    profile.tiktokUrl?.trim() ||
+    profile.linkedinUrl?.trim() ||
+    profile.pinterestUrl?.trim() ||
+    profile.etsyUrl?.trim()
+  );
 
-  const profileCompleteness = calculateProfileCompleteness();
+  const checklistItems = [
+    { label: 'Profile photo', done: !!profile.profileImageUrl?.trim() },
+    { label: 'Header image', done: !!profile.headerImageUrl?.trim() },
+    { label: 'Display name', done: !!profile.displayName?.trim() },
+    { label: 'City or country', done: !!(profile.locationCity?.trim() || profile.locationCountry?.trim()) },
+    { label: 'Bio', done: !!profile.bio?.trim() },
+    { label: 'Primary medium', done: !!profile.primaryMedium?.trim() },
+    { label: 'At least 1 style tag', done: (profile.primaryStyleTags?.length ?? 0) > 0 },
+    { label: 'Website or social link', done: hasSocialLink },
+  ];
+
+  const profileCompleteness = Math.round(
+    (checklistItems.filter(i => i.done).length / checklistItems.length) * 100
+  );
 
   if (loading) {
     return (
@@ -480,14 +480,32 @@ export function ArtistProfileForm() {
             {profileCompleteness}%
           </span>
         </div>
-        <div className="w-full h-2 bg-rv-neutral rounded-full overflow-hidden">
+        <div className="w-full h-2 bg-rv-neutral rounded-full overflow-hidden mb-3">
           <div 
             className="h-full transition-all duration-500 rounded-full bg-[#C9A24A]"
             style={{ width: `${profileCompleteness}%` }}
           />
         </div>
-        <p className="text-xs text-rv-textMuted mt-2">
-          Profiles with 100% completeness get more visibility
+        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5 mb-3">
+          {checklistItems.map((item) => (
+            <li key={item.label} className="flex items-center gap-2 text-sm">
+              {item.done ? (
+                <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4 text-rv-neutral flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <circle cx="12" cy="12" r="9" strokeWidth={2} />
+                </svg>
+              )}
+              <span className={item.done ? 'text-rv-text' : 'text-rv-textMuted'}>{item.label}</span>
+            </li>
+          ))}
+        </ul>
+        <p className="text-xs text-rv-textMuted">
+          {profileCompleteness === 100
+            ? 'Your profile is complete — you have maximum visibility.'
+            : 'Complete your profile to improve visibility with collectors, designers and galleries.'}
         </p>
       </div>
 
