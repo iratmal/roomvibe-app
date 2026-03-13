@@ -1,0 +1,99 @@
+Goal:
+Fix several UI/content issues in the Free/User artwork edit/upload form.
+
+Context:
+On the Free/User dashboard, inside the artwork edit/upload form, there are still a few incorrect or inconsistent details:
+
+1. Buy URL field incorrectly shows "null"
+2. Artist Connect visibility section still shows the wrong helper text for Free users
+3. Success message "Images saved successfully" is green instead of RoomVibe yellow
+
+This task applies ONLY to the Free/User dashboard flow.
+
+Important rules:
+- Do NOT modify Artist dashboard
+- Do NOT modify Artist Pro dashboard
+- Do NOT change pricing logic
+- Do NOT change upload logic
+- Do NOT redesign the form
+- Keep the same layout and components
+- This is UI/content polish only for the Free/User form
+
+Scope:
+
+1. Fix Buy URL placeholder / null value
+Current problem:
+In the Buy URL (optional) input, the field shows:
+null
+
+This is incorrect and looks broken.
+
+Required fix:
+If there is no saved Buy URL, the input must NOT display "null".
+
+Instead, it should display the normal placeholder text already used on Artist / Artist Pro forms.
+
+Use the same placeholder pattern as the other plans.
+
+Example:
+https://your-shop.com/product
+
+The field must behave like a normal empty optional input.
+
+2. Fix Artist Connect visibility helper text on Free/User form
+Current problem:
+Below:
+Visibility in Artist Connect
+
+the helper text currently says:
+Turn on profile visibility first in the Profile tab to enable artwork visibility.
+
+This is incorrect for Free/User because Free users do not have access to Artist Connect visibility at all.
+
+Required fix:
+Keep the section visually disabled if needed, but replace the helper text with a Free-plan-appropriate locked explanation.
+
+Suggested wording:
+Available on Artist and Artist Pro plans.
+
+Alternative wording is acceptable if concise and clear, but it must clearly communicate:
+this feature is not available on Free/User plan.
+
+Do NOT keep the old "Turn on profile visibility first..." message on Free.
+
+3. Change success message color from green to RoomVibe yellow
+Current problem:
+After saving image roles, the success message:
+Images saved successfully
+
+appears in green.
+
+Required fix:
+Change this success text color to the RoomVibe yellow/gold accent color.
+
+Keep:
+- same wording
+- same placement
+- same size
+
+Only change the color styling.
+
+Do NOT use green for this message on the Free/User plan.
+
+4. Keep all existing functionality working
+Do NOT break:
+- image role saving
+- card image selection
+- exhibition & studio image selection
+- update artwork button
+- cancel edit button
+
+This task is only for content/placeholder/color fixes.
+
+Stop condition:
+- Buy URL no longer shows "null"
+- Buy URL shows a normal placeholder when empty
+- Free/User Artist Connect helper text is replaced with a locked-plan explanation
+- "Images saved successfully" uses RoomVibe yellow instead of green
+- No Artist / Artist Pro forms were changed
+- List all changed files

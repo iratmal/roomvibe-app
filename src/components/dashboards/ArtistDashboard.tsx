@@ -1160,7 +1160,7 @@ export function ArtistDashboard() {
       dimensionUnit: artwork.dimension_unit || 'cm',
       priceAmount: priceAmountStr,
       priceCurrency: artwork.price_currency || 'EUR',
-      buyUrl: artwork.buy_url,
+      buyUrl: artwork.buy_url || '',
       image: null,
       medium: artwork.medium || '',
       styleTags: artwork.style_tags || [],
@@ -1947,7 +1947,7 @@ export function ArtistDashboard() {
                         )}
                       </button>
                       {imageSaveSuccess && (
-                        <span className="text-sm text-green-600 flex items-center gap-1">
+                        <span className="text-sm text-[#C9A24A] flex items-center gap-1">
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
@@ -2225,7 +2225,11 @@ export function ArtistDashboard() {
                       </div>
                     </label>
                   </div>
-                  {(!dashboardStats.visibleToDesigners && !dashboardStats.visibleToGalleries) && (
+                  {isFreePlan ? (
+                    <p className="text-xs text-rv-textMuted mt-3">
+                      Available on Artist and Artist Pro plans.
+                    </p>
+                  ) : (!dashboardStats.visibleToDesigners && !dashboardStats.visibleToGalleries) && (
                     <p className="text-xs text-amber-600 mt-3">
                       Turn on profile visibility first in the Profile tab to enable artwork visibility.
                     </p>
