@@ -176,6 +176,15 @@ export function ArtistDashboard() {
   const maxArtworks = planLimits.maxArtworks;
   const isAtLimit = maxArtworks !== -1 && artworks.length >= maxArtworks;
 
+  const FREE_CLEAN_LIMIT = 3;
+  const FREE_BRANDED_LIMIT = 7;
+
+  const cleanArtworkIds: Set<number> = React.useMemo(() => {
+    if (!isFreePlan) return new Set<number>();
+    const sorted = [...artworks].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+    return new Set(sorted.slice(0, FREE_CLEAN_LIMIT).map(a => a.id));
+  }, [isFreePlan, artworks]);
+
   const [formData, setFormData] = useState({
     title: '',
     width: '',
@@ -1416,10 +1425,10 @@ export function ArtistDashboard() {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold mb-2 text-rv-primary">
-              {isArtistPro ? 'Artist Pro Dashboard' : 'Artist Dashboard'}
+              {isFreePlan ? 'My Dashboard' : isArtistPro ? 'Artist Pro Dashboard' : 'Artist Dashboard'}
             </h1>
             <p className="text-rv-textMuted">
-              {isArtistPro ? 'Unlimited artworks, exhibitions, and premium features' : 'Upload and manage your artworks'}
+              {isFreePlan ? 'Upload and visualize your artworks — Free plan' : isArtistPro ? 'Unlimited artworks, exhibitions, and premium features' : 'Upload and manage your artworks'}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -1604,6 +1613,32 @@ export function ArtistDashboard() {
                 </div>
               </div>
             </div>
+
+            {/* Free plan: clean / branded artwork sub-row */}
+            {isFreePlan && (
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className={`p-4 rounded-rvLg border shadow-rvSoft ${cleanArtworkIds.size >= FREE_CLEAN_LIMIT ? 'bg-amber-50 border-amber-200' : 'bg-white border-rv-neutral'}`}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-semibold text-rv-text">Clean Artworks</span>
+                    <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full">No watermark</span>
+                  </div>
+                  <p className="text-2xl font-bold text-rv-primary">{cleanArtworkIds.size} <span className="text-base font-normal text-rv-textMuted">/ {FREE_CLEAN_LIMIT}</span></p>
+                  <div className="mt-2 h-1 bg-rv-neutral rounded-full overflow-hidden">
+                    <div className="h-full bg-green-500 rounded-full" style={{ width: `${Math.min((cleanArtworkIds.size / FREE_CLEAN_LIMIT) * 100, 100)}%` }} />
+                  </div>
+                </div>
+                <div className="p-4 rounded-rvLg border bg-white border-rv-neutral shadow-rvSoft">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-semibold text-rv-text">RoomVibe Artworks</span>
+                    <span className="px-2 py-0.5 bg-rv-primary/10 text-rv-primary text-xs font-semibold rounded-full">Branded</span>
+                  </div>
+                  <p className="text-2xl font-bold text-rv-primary">{Math.max(artworks.length - FREE_CLEAN_LIMIT, 0)} <span className="text-base font-normal text-rv-textMuted">/ {FREE_BRANDED_LIMIT}</span></p>
+                  <div className="mt-2 h-1 bg-rv-neutral rounded-full overflow-hidden">
+                    <div className="h-full bg-rv-primary rounded-full" style={{ width: `${Math.min((Math.max(artworks.length - FREE_CLEAN_LIMIT, 0) / FREE_BRANDED_LIMIT) * 100, 100)}%` }} />
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="mb-6">
               <ArtistConnectWidget 
@@ -2381,7 +2416,12 @@ export function ArtistDashboard() {
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {artworks.map((artwork) => (
-                <div key={`${artwork.id}-${artwork.card_image_id || 'default'}-${artwork.updated_at || ''}`} className="bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral overflow-hidden">
+                <div key={`${artwork.id}-${artwork.card_image_id || 'default'}-${artwork.updated_at || ''}`} className="bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral overflow-hidden relative">
+                  {isFreePlan && !cleanArtworkIds.has(artwork.id) && (
+                    <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded text-xs font-semibold bg-rv-primary/90 text-white shadow-sm pointer-events-none">
+                      RoomVibe Branded
+                    </div>
+                  )}
                   <ArtworkCardCarousel
                     artworkId={artwork.id}
                     primaryImageUrl={(() => {
@@ -2963,7 +3003,28 @@ export function ArtistDashboard() {
           
           {(!exhibition && (!isArtistPro || exhibitions.length === 0)) ? (
             <div className="text-center py-12 bg-white rounded-rvLg border border-rv-neutral shadow-rvSoft">
-              {showCreateExhibition ? (
+              {planLimits.exhibitions === 0 ? (
+                <div className="px-6 max-w-md mx-auto">
+                  <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-rv-primary/10 flex items-center justify-center">
+                    <svg className="w-7 h-7 text-rv-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-bold text-rv-text mb-2">Virtual Exhibitions</h3>
+                  <p className="text-rv-textMuted text-sm mb-4">
+                    Create an immersive 3D gallery and share your artworks as a curated exhibition. Available on the Artist plan.
+                  </p>
+                  <a
+                    href="#/pricing"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-colors text-sm font-semibold"
+                  >
+                    Upgrade to Artist
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </a>
+                </div>
+              ) : showCreateExhibition ? (
                 <form onSubmit={handleCreateExhibition} className="max-w-md mx-auto px-6">
                   {pendingExhibitionArtwork && (
                     <div className="mb-6 p-4 bg-[#C9A24A]/10 border border-[#C9A24A]/30 rounded-rvMd">
