@@ -1,0 +1,115 @@
+Goal:
+Fix the artwork image uploader on the User dashboard so image slots behave correctly.
+
+Current problems observed:
+- The uploader shows more than the allowed number of images
+- Image numbering becomes incorrect (example: 1, 2, 2, 3, 4)
+- Deleting images does not reindex the remaining images
+- The upload slot logic becomes inconsistent
+
+This needs to be corrected so the uploader behaves predictably and cleanly.
+
+Important rules:
+- Do NOT redesign the UI
+- Do NOT change the maximum image limit
+- Do NOT change how image roles work
+- Do NOT change upload storage logic
+- Only fix slot logic and numbering
+- Keep existing styling
+
+Image slot rules (correct behavior):
+
+1. Maximum images per artwork = 5
+
+The uploader must never allow more than 5 images.
+
+2. Slot numbering must always be sequential.
+
+Correct example:
+1
+2
+3
+4
+5
+
+There must never be duplicates like:
+1,2,2,3,4
+
+3. When an image is deleted:
+
+Example before delete:
+1 2 3 4
+
+Delete image 2
+
+Correct result:
+1 2 3
+
+Images must automatically reindex.
+
+4. Upload placeholder logic:
+
+If there are fewer than 5 images,
+show exactly ONE upload slot.
+
+Example:
+
+3 images uploaded →
+
+[1] [2] [3] [+ upload]
+
+NOT multiple empty placeholders.
+
+5. Prevent over-upload
+
+If 5 images are already uploaded:
+- hide the upload placeholder
+- block additional uploads
+
+6. Fix state synchronization
+
+Ensure the internal image array and UI slots stay synchronized after:
+
+- upload
+- delete
+- replace image
+- reorder (if supported)
+
+The slot numbering must always be derived from the current array order.
+
+7. Ensure the UI counter is correct.
+
+Example:
+Artwork Images (4/5 images)
+
+This counter must always match the actual array length.
+
+Stop condition:
+
+The uploader must behave like this:
+
+Upload 1 → shows 1/5  
+Upload 2 → shows 2/5  
+Upload 3 → shows 3/5  
+
+Delete 2 → shows:
+
+1
+2
+(+ upload)
+
+Upload again → becomes:
+
+1
+2
+3
+
+Never exceed 5 images.
+
+Final output required:
+- Correct slot numbering
+- No duplicate numbers
+- No more than 5 images
+- One upload placeholder only
+- Consistent behavior after delete
+- List of modified files

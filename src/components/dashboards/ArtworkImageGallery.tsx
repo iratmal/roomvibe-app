@@ -174,7 +174,9 @@ export function ArtworkImageGallery({
       onPrimaryImageChange(null);
     } else {
       const adjustedIndex = (primaryImage || newPrimaryFile) ? index - 1 : index;
-      const updated = galleryImages.filter((_, i) => i !== adjustedIndex);
+      const updated = galleryImages
+        .filter((_, i) => i !== adjustedIndex)
+        .map((img, i) => ({ ...img, display_order: i }));
       onGalleryImagesChange(updated);
     }
   }, [primaryImage, newPrimaryFile, galleryImages, onPrimaryImageChange, onGalleryImagesChange]);
@@ -369,35 +371,7 @@ export function ArtworkImageGallery({
         </label>
       ) : (
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        {Array.from({ length: maxImages }).map((_, slotIndex) => {
-          const img = allImages[slotIndex];
-          const isEmptySlot = !img;
-          const isFirstSlot = slotIndex === 0;
-          
-          if (isEmptySlot) {
-            return (
-              <label
-                key={`empty-${slotIndex}`}
-                className="aspect-square bg-rv-surface rounded-rvMd border-2 border-dashed border-rv-neutral hover:border-rv-primary/50 flex flex-col items-center justify-center cursor-pointer transition-colors"
-              >
-                <svg className="w-8 h-8 text-rv-textMuted mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
-                </svg>
-                <span className="text-sm text-rv-textMuted font-medium">
-                  Artwork {slotIndex + 1}
-                </span>
-                <span className="text-xs text-rv-textMuted mt-1">Click to add</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleMultiFileUpload(e, false)}
-                  className="hidden"
-                  multiple
-                />
-              </label>
-            );
-          }
-          
+        {allImages.map((img, slotIndex) => {
           return (
             <div
               key={img.id || `new-${slotIndex}`}
@@ -497,6 +471,26 @@ export function ArtworkImageGallery({
             </div>
           );
         })}
+        {allImages.length < maxImages && (
+          <label
+            className="aspect-square bg-rv-surface rounded-rvMd border-2 border-dashed border-rv-neutral hover:border-rv-primary/50 flex flex-col items-center justify-center cursor-pointer transition-colors"
+          >
+            <svg className="w-8 h-8 text-rv-textMuted mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+            </svg>
+            <span className="text-sm text-rv-textMuted font-medium">
+              Artwork {allImages.length + 1}
+            </span>
+            <span className="text-xs text-rv-textMuted mt-1">Click to add</span>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleMultiFileUpload(e, false)}
+              className="hidden"
+              multiple
+            />
+          </label>
+        )}
       </div>
       )}
 
