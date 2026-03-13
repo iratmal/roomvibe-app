@@ -97,7 +97,7 @@ export function ArtistConnectWidget({ onViewInbox, onEditProfile }: ArtistConnec
             href="#/pricing"
             className="inline-flex items-center gap-2 px-4 py-2 bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-colors text-sm font-semibold"
           >
-            View Plans
+            Upgrade
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>

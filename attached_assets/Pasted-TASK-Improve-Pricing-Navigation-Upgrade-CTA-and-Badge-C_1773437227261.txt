@@ -1,0 +1,194 @@
+TASK — Improve Pricing Navigation, Upgrade CTA, and Badge Color
+
+We need to improve navigation and visual consistency across the RoomVibe dashboard and pricing page.
+
+This task includes three UI improvements:
+
+Add a Back button on the Pricing page
+
+Standardize Upgrade CTA buttons
+
+Replace the green "No watermark" badge color with the RoomVibe yellow brand color
+
+These changes must not affect application logic.
+
+1️⃣ Add Back Button on Pricing Page
+
+Problem:
+
+When users click:
+
+View Plans
+
+Upgrade
+
+Upgrade to Artist
+
+they are redirected to the Pricing page (/pricing).
+
+However, the Pricing page currently does not provide a way to return to the dashboard, forcing users to use the browser back button.
+
+Solution
+
+Add a Back to Dashboard button at the top of the Pricing page.
+
+Place it:
+
+under the navbar
+
+above the pricing headline
+
+Example UI:
+
+← Back to Dashboard
+Behavior
+
+If user came from dashboard:
+
+/dashboard/*
+
+button should go to:
+
+/dashboard
+
+If referrer is not available, fallback should still be:
+
+/dashboard
+Example design
+
+Use existing button style but lighter secondary style.
+
+Text:
+
+← Back to Dashboard
+
+or
+
+Back to Dashboard
+
+Icon optional.
+
+2️⃣ Standardize Upgrade Buttons
+
+Currently some upgrade CTAs say:
+
+Upgrade to Artist
+
+This is limiting because the user may want to upgrade directly to Artist Pro.
+
+Change button label everywhere in Free dashboard
+
+Replace:
+
+Upgrade to Artist
+
+with:
+
+Upgrade
+This applies to
+
+Locations such as:
+
+Inbox empty state
+
+Virtual Exhibitions locked section
+
+Artist Connect card
+
+Any other Free-plan upgrade prompt
+
+Behavior
+
+All Upgrade buttons should open:
+
+/pricing
+
+The user can then choose:
+
+Artist
+
+Artist Pro
+
+3️⃣ Change "No watermark" Badge Color
+
+Currently the Clean Artworks badge uses a green label:
+
+No watermark
+
+The green color does not match the RoomVibe brand palette.
+
+Replace green badge color with RoomVibe yellow
+
+The badge should use the same yellow/gold accent used elsewhere in the RoomVibe UI.
+
+Example label remains:
+
+No watermark
+
+But the color should match the RoomVibe accent palette instead of green.
+
+Requirements
+
+keep badge size
+
+keep typography
+
+only change color
+
+keep good contrast for readability
+
+4️⃣ Do NOT change
+
+Do not modify:
+
+pricing structure
+
+upgrade logic
+
+dashboard structure
+
+Free plan limits
+
+artwork upload logic
+
+exhibition logic
+
+Artist / Artist Pro dashboards
+
+This is UI polish only.
+
+Expected Result
+
+After this task:
+
+Pricing page
+
+Users can easily return:
+
+← Back to Dashboard
+Upgrade CTAs
+
+All upgrade buttons say:
+
+Upgrade
+
+instead of forcing "Upgrade to Artist".
+
+Clean Artwork badge
+No watermark
+
+uses RoomVibe yellow instead of green.
+
+Stop Condition
+
+Task is complete when:
+
+Pricing page contains a Back to Dashboard button
+
+All Free dashboard upgrade buttons say Upgrade
+
+All upgrade buttons redirect to /pricing
+
+"No watermark" badge uses RoomVibe yellow
+
+No dashboard functionality is broken

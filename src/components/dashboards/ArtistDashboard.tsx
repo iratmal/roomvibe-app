@@ -1622,7 +1622,7 @@ export function ArtistDashboard() {
                 <div className={`p-4 rounded-rvLg border shadow-rvSoft ${cleanLimit !== -1 && cleanArtworkIds.size >= cleanLimit ? 'bg-amber-50 border-amber-200' : 'bg-white border-rv-neutral'}`}>
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm font-semibold text-rv-text">Clean Artworks</span>
-                    <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full">No watermark</span>
+                    <span className="px-2 py-0.5 bg-[#C9A24A]/10 text-[#C9A24A] text-xs font-semibold rounded-full">No watermark</span>
                   </div>
                   <p className="text-2xl font-bold text-rv-primary">
                     {cleanArtworkIds.size}
@@ -3052,7 +3052,7 @@ export function ArtistDashboard() {
                     href="#/pricing"
                     className="inline-flex items-center gap-2 px-5 py-2.5 bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-colors text-sm font-semibold"
                   >
-                    Upgrade to Artist
+                    Upgrade
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
