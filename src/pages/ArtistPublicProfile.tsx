@@ -679,37 +679,37 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
               {(profile.websiteUrl || profile.instagramUrl || profile.facebookUrl || profile.tiktokUrl || profile.linkedinUrl || profile.pinterestUrl || profile.etsyUrl) && (
                 <div className="flex flex-wrap gap-2">
                   {profile.websiteUrl && (
-                    <a href={profile.websiteUrl} target="_blank" rel="noopener noreferrer" className="p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors" title="Website">
+                    <a href={profile.websiteUrl} target="_blank" rel="nofollow noopener noreferrer" className="p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors" title="Website">
                       <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>
                     </a>
                   )}
                   {profile.instagramUrl && (
-                    <a href={profile.instagramUrl} target="_blank" rel="noopener noreferrer" className="p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors" title="Instagram">
+                    <a href={profile.instagramUrl} target="_blank" rel="nofollow noopener noreferrer" className="p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors" title="Instagram">
                       <svg className="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
                     </a>
                   )}
                   {profile.facebookUrl && (
-                    <a href={profile.facebookUrl} target="_blank" rel="noopener noreferrer" className="p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors" title="Facebook">
+                    <a href={profile.facebookUrl} target="_blank" rel="nofollow noopener noreferrer" className="p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors" title="Facebook">
                       <svg className="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                     </a>
                   )}
                   {profile.tiktokUrl && (
-                    <a href={profile.tiktokUrl} target="_blank" rel="noopener noreferrer" className="p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors" title="TikTok">
+                    <a href={profile.tiktokUrl} target="_blank" rel="nofollow noopener noreferrer" className="p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors" title="TikTok">
                       <svg className="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z"/></svg>
                     </a>
                   )}
                   {profile.linkedinUrl && (
-                    <a href={profile.linkedinUrl} target="_blank" rel="noopener noreferrer" className="p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors" title="LinkedIn">
+                    <a href={profile.linkedinUrl} target="_blank" rel="nofollow noopener noreferrer" className="p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors" title="LinkedIn">
                       <svg className="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
                     </a>
                   )}
                   {profile.pinterestUrl && (
-                    <a href={profile.pinterestUrl} target="_blank" rel="noopener noreferrer" className="p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors" title="Pinterest">
+                    <a href={profile.pinterestUrl} target="_blank" rel="nofollow noopener noreferrer" className="p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors" title="Pinterest">
                       <svg className="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="currentColor"><path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.401.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.354-.629-2.758-1.379l-.749 2.848c-.269 1.045-1.004 2.352-1.498 3.146 1.123.345 2.306.535 3.55.535 6.607 0 11.985-5.365 11.985-11.987C23.97 5.39 18.592.026 11.985.026L12.017 0z"/></svg>
                     </a>
                   )}
                   {profile.etsyUrl && (
-                    <a href={profile.etsyUrl} target="_blank" rel="noopener noreferrer" className="p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors" title="Etsy Shop">
+                    <a href={profile.etsyUrl} target="_blank" rel="nofollow noopener noreferrer" className="p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors" title="Etsy Shop">
                       <svg className="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="currentColor"><path d="M8.559 3.89c-.502.156-.623.201-.968.499-.345.301-.401.523-.401 1.878v1.68H5.191v2.015l1.999.091v7.873c0 .903.045 1.436.133 1.68.134.378.345.624.857.99.523.38 1.269.591 2.227.691.712.056 2.237 0 3.24-.134v-2.217c-.759.156-1.414.156-1.904.067-.502-.1-.68-.29-.769-.757-.045-.223-.067-1.771-.067-3.475V10.053h2.884V8.038h-2.884V4.93c0-.045-.267 0-.501.056-.223.067-.812.234-1.292.412l-.835.29v2.306H6.535v2.015h1.744v7.395c0 1.703.089 2.762.267 3.163.179.401.535.769 1.07 1.103.536.334 1.181.535 1.949.624.769.089 1.893.044 2.918-.134l.111-.022V19.48c-.935.178-1.748.2-2.361.044-.613-.156-.924-.49-1.002-1.025-.045-.312-.067-1.47-.067-3.508v-4.938h3.04V8.038h-3.04V4.707c0-.045-.134 0-.356.067l-1.249.391z"/></svg>
                     </a>
                   )}
@@ -952,7 +952,7 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                           <a
                             href={artwork.buyUrl}
                             target="_blank"
-                            rel="noopener noreferrer"
+                            rel="nofollow noopener noreferrer"
                             className="flex-1 px-4 py-2.5 text-sm font-medium text-center border border-[#1E2A3B] text-[#1E2A3B] rounded-lg hover:bg-gray-50 transition-colors"
                           >
                             View & Buy
@@ -1272,7 +1272,7 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                     <a
                       href={selectedArtwork.buyUrl}
                       target="_blank"
-                      rel="noopener noreferrer"
+                      rel="nofollow noopener noreferrer"
                       className="w-full px-4 py-3 font-semibold bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-colors flex items-center justify-center gap-2"
                     >
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

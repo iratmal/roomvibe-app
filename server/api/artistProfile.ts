@@ -114,28 +114,82 @@ router.put('/profile', authenticateToken, async (req: any, res) => {
       return res.status(400).json({ error: 'Bio must not exceed 1200 characters' });
     }
 
+    const DANGEROUS = ['javascript:', 'data:', 'file:'];
+
+    const hasDangerousProtocol = (url: string): boolean => {
+      const lower = url.toLowerCase().trim();
+      return DANGEROUS.some(p => lower.startsWith(p));
+    };
+
     const cleanUrl = (url: string | null | undefined): string | null => {
       if (!url) return null;
-      if (url.startsWith('http://') || url.startsWith('https://')) return url;
-      return 'https://' + url;
+      const trimmed = url.trim();
+      if (hasDangerousProtocol(trimmed)) return null;
+      if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+      return 'https://' + trimmed;
+    };
+
+    const validateDomain = (url: string | null, allowed: string[]): boolean => {
+      if (!url) return true;
+      try {
+        const hostname = new URL(url).hostname.replace(/^www\./, '');
+        return allowed.some(d => d.replace(/^www\./, '') === hostname);
+      } catch {
+        return false;
+      }
     };
 
     let websiteUrlClean = cleanUrl(websiteUrl);
+    if (websiteUrl && hasDangerousProtocol(websiteUrl)) {
+      return res.status(400).json({ error: 'Website URL contains a disallowed protocol.' });
+    }
 
-    let instagramUrlClean = instagramUrl || null;
+    let instagramUrlClean: string | null = instagramUrl?.trim() || null;
     if (instagramUrlClean) {
       if (instagramUrlClean.startsWith('@')) {
         instagramUrlClean = 'https://instagram.com/' + instagramUrlClean.slice(1);
       } else if (!instagramUrlClean.startsWith('http')) {
         instagramUrlClean = 'https://instagram.com/' + instagramUrlClean;
       }
+      if (hasDangerousProtocol(instagramUrlClean)) {
+        return res.status(400).json({ error: 'Instagram URL contains a disallowed protocol.' });
+      }
+      if (!validateDomain(instagramUrlClean, ['instagram.com', 'www.instagram.com'])) {
+        return res.status(400).json({ error: 'Please enter a valid Instagram URL (instagram.com/yourusername).' });
+      }
     }
 
     const facebookUrlClean = cleanUrl(facebookUrl);
-    const tiktokUrlClean = cleanUrl(tiktokUrl);
+    if (facebookUrlClean && !validateDomain(facebookUrlClean, ['facebook.com', 'www.facebook.com'])) {
+      return res.status(400).json({ error: 'Please enter a valid Facebook URL (facebook.com/yourpage).' });
+    }
+
+    let tiktokUrlClean: string | null = tiktokUrl?.trim() || null;
+    if (tiktokUrlClean) {
+      if (tiktokUrlClean.startsWith('@')) {
+        tiktokUrlClean = 'https://tiktok.com/@' + tiktokUrlClean.slice(1);
+      } else {
+        tiktokUrlClean = cleanUrl(tiktokUrlClean);
+      }
+      if (tiktokUrlClean && !validateDomain(tiktokUrlClean, ['tiktok.com', 'www.tiktok.com'])) {
+        return res.status(400).json({ error: 'Please enter a valid TikTok URL (tiktok.com/@yourusername).' });
+      }
+    }
+
     const linkedinUrlClean = cleanUrl(linkedinUrl);
+    if (linkedinUrlClean && !validateDomain(linkedinUrlClean, ['linkedin.com', 'www.linkedin.com'])) {
+      return res.status(400).json({ error: 'Please enter a valid LinkedIn URL (linkedin.com/in/yourprofile).' });
+    }
+
     const pinterestUrlClean = cleanUrl(pinterestUrl);
+    if (pinterestUrlClean && !validateDomain(pinterestUrlClean, ['pinterest.com', 'www.pinterest.com'])) {
+      return res.status(400).json({ error: 'Please enter a valid Pinterest URL (pinterest.com/yourusername).' });
+    }
+
     const etsyUrlClean = cleanUrl(etsyUrl);
+    if (etsyUrlClean && !validateDomain(etsyUrlClean, ['etsy.com', 'www.etsy.com'])) {
+      return res.status(400).json({ error: 'Please enter a valid Etsy URL (etsy.com/shop/yourshop).' });
+    }
 
     const styleTagsJson = Array.isArray(primaryStyleTags) ? JSON.stringify(primaryStyleTags) : '[]';
     const languagesJson = Array.isArray(languages) ? JSON.stringify(languages) : '[]';

@@ -169,6 +169,7 @@ export function ArtistProfileForm() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingHeaderImage, setUploadingHeaderImage] = useState(false);
   const [showSharePanel, setShowSharePanel] = useState(false);
+  const [linkErrors, setLinkErrors] = useState<Record<string, string>>({});
   
   const [profile, setProfile] = useState<ArtistProfile>({
     displayName: '',
@@ -371,11 +372,78 @@ export function ArtistProfileForm() {
     }
   };
 
+  const DANGEROUS_PROTOCOLS = ['javascript:', 'data:', 'file:'];
+
+  const normalizeLinkUrl = (url: string, defaultDomain?: string): string => {
+    const trimmed = url.trim();
+    if (!trimmed) return '';
+    const lower = trimmed.toLowerCase();
+    if (DANGEROUS_PROTOCOLS.some(p => lower.startsWith(p))) return '';
+    if (trimmed.startsWith('@') && defaultDomain) {
+      return `https://${defaultDomain}/${trimmed.slice(1)}`;
+    }
+    if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+      return 'https://' + trimmed;
+    }
+    return trimmed;
+  };
+
+  const validateSocialUrl = (url: string, allowedDomains: string[], friendlyExample: string): string | null => {
+    if (!url) return null;
+    if (DANGEROUS_PROTOCOLS.some(p => url.toLowerCase().startsWith(p))) {
+      return 'This URL contains a disallowed protocol.';
+    }
+    try {
+      const hostname = new URL(url).hostname.replace(/^www\./, '');
+      const isValid = allowedDomains.some(d => d.replace(/^www\./, '') === hostname);
+      if (!isValid) return `Please enter a valid URL (${friendlyExample}).`;
+    } catch {
+      return `Please enter a valid URL (${friendlyExample}).`;
+    }
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     setError('');
     setSuccess('');
+
+    const normalized = {
+      websiteUrl: normalizeLinkUrl(profile.websiteUrl),
+      instagramUrl: normalizeLinkUrl(profile.instagramUrl, 'instagram.com'),
+      facebookUrl: normalizeLinkUrl(profile.facebookUrl),
+      tiktokUrl: profile.tiktokUrl.trim().startsWith('@')
+        ? `https://tiktok.com/@${profile.tiktokUrl.trim().slice(1)}`
+        : normalizeLinkUrl(profile.tiktokUrl),
+      linkedinUrl: normalizeLinkUrl(profile.linkedinUrl),
+      pinterestUrl: normalizeLinkUrl(profile.pinterestUrl),
+      etsyUrl: normalizeLinkUrl(profile.etsyUrl),
+    };
+
+    const newErrors: Record<string, string> = {};
+    const ig = validateSocialUrl(normalized.instagramUrl, ['instagram.com'], 'instagram.com/yourusername');
+    if (ig) newErrors.instagramUrl = ig;
+    const fb = validateSocialUrl(normalized.facebookUrl, ['facebook.com'], 'facebook.com/yourpage');
+    if (fb) newErrors.facebookUrl = fb;
+    const tt = validateSocialUrl(normalized.tiktokUrl, ['tiktok.com'], 'tiktok.com/@yourusername');
+    if (tt) newErrors.tiktokUrl = tt;
+    const li = validateSocialUrl(normalized.linkedinUrl, ['linkedin.com'], 'linkedin.com/in/yourprofile');
+    if (li) newErrors.linkedinUrl = li;
+    const pi = validateSocialUrl(normalized.pinterestUrl, ['pinterest.com'], 'pinterest.com/yourusername');
+    if (pi) newErrors.pinterestUrl = pi;
+    const et = validateSocialUrl(normalized.etsyUrl, ['etsy.com'], 'etsy.com/shop/yourshop');
+    if (et) newErrors.etsyUrl = et;
+    if (normalized.websiteUrl && DANGEROUS_PROTOCOLS.some(p => normalized.websiteUrl.toLowerCase().startsWith(p))) {
+      newErrors.websiteUrl = 'This URL contains a disallowed protocol.';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setLinkErrors(newErrors);
+      setSaving(false);
+      return;
+    }
+    setLinkErrors({});
 
     try {
       const response = await fetch(`${API_URL}/api/artist/profile`, {
@@ -389,13 +457,13 @@ export function ArtistProfileForm() {
           bio: profile.bio,
           primaryStyleTags: profile.primaryStyleTags,
           primaryMedium: profile.primaryMedium,
-          websiteUrl: profile.websiteUrl,
-          instagramUrl: profile.instagramUrl,
-          facebookUrl: profile.facebookUrl,
-          tiktokUrl: profile.tiktokUrl,
-          linkedinUrl: profile.linkedinUrl,
-          pinterestUrl: profile.pinterestUrl,
-          etsyUrl: profile.etsyUrl,
+          websiteUrl: normalized.websiteUrl,
+          instagramUrl: normalized.instagramUrl,
+          facebookUrl: normalized.facebookUrl,
+          tiktokUrl: normalized.tiktokUrl,
+          linkedinUrl: normalized.linkedinUrl,
+          pinterestUrl: normalized.pinterestUrl,
+          etsyUrl: normalized.etsyUrl,
           languages: profile.languages
         })
       });
@@ -912,10 +980,11 @@ export function ArtistProfileForm() {
                 type="text"
                 name="websiteUrl"
                 value={profile.websiteUrl}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                onChange={(e) => { handleInputChange(e); setLinkErrors(prev => ({ ...prev, websiteUrl: '' })); }}
+                className={`w-full px-4 py-2.5 border rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary ${linkErrors.websiteUrl ? 'border-red-400' : 'border-rv-neutral'}`}
                 placeholder="https://yourwebsite.com"
               />
+              {linkErrors.websiteUrl && <p className="text-xs text-red-500 mt-1">{linkErrors.websiteUrl}</p>}
             </div>
 
             <div>
@@ -926,10 +995,11 @@ export function ArtistProfileForm() {
                 type="text"
                 name="instagramUrl"
                 value={profile.instagramUrl}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
-                placeholder="@yourusername"
+                onChange={(e) => { handleInputChange(e); setLinkErrors(prev => ({ ...prev, instagramUrl: '' })); }}
+                className={`w-full px-4 py-2.5 border rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary ${linkErrors.instagramUrl ? 'border-red-400' : 'border-rv-neutral'}`}
+                placeholder="@yourusername or instagram.com/username"
               />
+              {linkErrors.instagramUrl && <p className="text-xs text-red-500 mt-1">{linkErrors.instagramUrl}</p>}
             </div>
 
             <div>
@@ -940,10 +1010,11 @@ export function ArtistProfileForm() {
                 type="text"
                 name="facebookUrl"
                 value={profile.facebookUrl}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                onChange={(e) => { handleInputChange(e); setLinkErrors(prev => ({ ...prev, facebookUrl: '' })); }}
+                className={`w-full px-4 py-2.5 border rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary ${linkErrors.facebookUrl ? 'border-red-400' : 'border-rv-neutral'}`}
                 placeholder="https://facebook.com/yourpage"
               />
+              {linkErrors.facebookUrl && <p className="text-xs text-red-500 mt-1">{linkErrors.facebookUrl}</p>}
             </div>
 
             <div>
@@ -954,10 +1025,11 @@ export function ArtistProfileForm() {
                 type="text"
                 name="tiktokUrl"
                 value={profile.tiktokUrl}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
-                placeholder="@yourusername"
+                onChange={(e) => { handleInputChange(e); setLinkErrors(prev => ({ ...prev, tiktokUrl: '' })); }}
+                className={`w-full px-4 py-2.5 border rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary ${linkErrors.tiktokUrl ? 'border-red-400' : 'border-rv-neutral'}`}
+                placeholder="@yourusername or tiktok.com/@username"
               />
+              {linkErrors.tiktokUrl && <p className="text-xs text-red-500 mt-1">{linkErrors.tiktokUrl}</p>}
             </div>
 
             <div>
@@ -968,10 +1040,11 @@ export function ArtistProfileForm() {
                 type="text"
                 name="linkedinUrl"
                 value={profile.linkedinUrl}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                onChange={(e) => { handleInputChange(e); setLinkErrors(prev => ({ ...prev, linkedinUrl: '' })); }}
+                className={`w-full px-4 py-2.5 border rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary ${linkErrors.linkedinUrl ? 'border-red-400' : 'border-rv-neutral'}`}
                 placeholder="https://linkedin.com/in/yourprofile"
               />
+              {linkErrors.linkedinUrl && <p className="text-xs text-red-500 mt-1">{linkErrors.linkedinUrl}</p>}
             </div>
 
             <div>
@@ -982,10 +1055,11 @@ export function ArtistProfileForm() {
                 type="text"
                 name="pinterestUrl"
                 value={profile.pinterestUrl}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                onChange={(e) => { handleInputChange(e); setLinkErrors(prev => ({ ...prev, pinterestUrl: '' })); }}
+                className={`w-full px-4 py-2.5 border rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary ${linkErrors.pinterestUrl ? 'border-red-400' : 'border-rv-neutral'}`}
                 placeholder="https://pinterest.com/yourusername"
               />
+              {linkErrors.pinterestUrl && <p className="text-xs text-red-500 mt-1">{linkErrors.pinterestUrl}</p>}
             </div>
 
             <div>
@@ -996,10 +1070,11 @@ export function ArtistProfileForm() {
                 type="text"
                 name="etsyUrl"
                 value={profile.etsyUrl}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                onChange={(e) => { handleInputChange(e); setLinkErrors(prev => ({ ...prev, etsyUrl: '' })); }}
+                className={`w-full px-4 py-2.5 border rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary ${linkErrors.etsyUrl ? 'border-red-400' : 'border-rv-neutral'}`}
                 placeholder="https://etsy.com/shop/yourshop"
               />
+              {linkErrors.etsyUrl && <p className="text-xs text-red-500 mt-1">{linkErrors.etsyUrl}</p>}
             </div>
           </div>
         </div>
