@@ -93,7 +93,7 @@ router.get('/config', async (req: Request, res: Response) => {
 
     if (entitlements.artist_access) {
       const artworksResult = await query(
-        `SELECT id, title, image_url, width, height, price_amount, price_currency, buy_url, dimension_unit
+        `SELECT id, title, image_url, width, height, price_amount, price_currency, buy_url, dimension_unit, watermarked
          FROM artworks WHERE artist_id = $1 ORDER BY created_at DESC`,
         [user.id]
       );
@@ -107,6 +107,7 @@ router.get('/config', async (req: Request, res: Response) => {
         currency: artwork.price_currency || 'EUR',
         buyUrl: artwork.buy_url,
         dimensionUnit: artwork.dimension_unit || 'cm',
+        watermarked: artwork.watermarked || false,
       }));
     }
 

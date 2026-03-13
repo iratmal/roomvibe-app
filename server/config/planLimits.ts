@@ -4,6 +4,10 @@ export type RoomTier = 'basic10' | 'standard40' | 'all';
 
 export interface PlanLimits {
   maxArtworks: number;
+  /** How many artworks render without a RoomVibe watermark. -1 = unlimited (all clean). */
+  cleanArtworksLimit: number;
+  /** How many artworks render with a RoomVibe watermark. 0 = none (all clean). */
+  watermarkedArtworksLimit: number;
   maxWallPhotos: number;
   maxProjects: number;
   maxMockupRooms: number;
@@ -32,6 +36,8 @@ export interface PlanLimits {
 export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
   free: {
     maxArtworks: 10,
+    cleanArtworksLimit: 3,
+    watermarkedArtworksLimit: 7,
     maxWallPhotos: 1,
     maxProjects: 1,
     maxMockupRooms: 10,
@@ -56,6 +62,8 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
   },
   user: {
     maxArtworks: 10,
+    cleanArtworksLimit: 3,
+    watermarkedArtworksLimit: 7,
     maxWallPhotos: 1,
     maxProjects: 1,
     maxMockupRooms: 10,
@@ -80,6 +88,8 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
   },
   artist: {
     maxArtworks: 50,
+    cleanArtworksLimit: -1,
+    watermarkedArtworksLimit: 0,
     maxWallPhotos: 100,
     maxProjects: 100,
     maxMockupRooms: 40,
@@ -106,6 +116,8 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
   },
   artist_pro: {
     maxArtworks: -1,
+    cleanArtworksLimit: -1,
+    watermarkedArtworksLimit: 0,
     maxWallPhotos: -1,
     maxProjects: -1,
     maxMockupRooms: -1,
@@ -132,6 +144,8 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
   },
   designer: {
     maxArtworks: 100,
+    cleanArtworksLimit: -1,
+    watermarkedArtworksLimit: 0,
     maxWallPhotos: -1,
     maxProjects: -1,
     maxMockupRooms: -1,
@@ -156,6 +170,8 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
   },
   gallery: {
     maxArtworks: -1,
+    cleanArtworksLimit: -1,
+    watermarkedArtworksLimit: 0,
     maxWallPhotos: -1,
     maxProjects: -1,
     maxMockupRooms: -1,
@@ -180,6 +196,8 @@ export const PLAN_LIMITS: Record<PlanType, PlanLimits> = {
   },
   admin: {
     maxArtworks: -1,
+    cleanArtworksLimit: -1,
+    watermarkedArtworksLimit: 0,
     maxWallPhotos: -1,
     maxProjects: -1,
     maxMockupRooms: -1,

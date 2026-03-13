@@ -1263,37 +1263,18 @@ function Studio() {
   const effectiveArtId = isFreePlan ? placeholderArtId : artId;
   const art = artworksState.find((a) => a.id === effectiveArtId);
   
-  // Determine if current artwork is in "branded" slots (4-10) for Free users
-  // This applies when viewing artworks from the artworksState collection
-  // Sort by created_at ascending to determine slot position
+  // Determine if the current artwork should show the RoomVibe watermark.
+  // Uses the DB-persisted `watermarked` field (set at upload time for free plan users).
+  // Falls back to false for demo/local artworks that have no DB field.
   const isBrandedArtwork = useMemo(() => {
-    // Only apply branding for Free users viewing their own artworks
     if (!isFreePlan || !art) return false;
-    
-    // For artworks loaded from API (have created_at field), check slot position
-    if ((art as any).created_at) {
-      // Get all artworks with created_at (user's artworks from DB)
-      const artworksWithCreatedAt = artworksState.filter((a: any) => a.created_at);
-      
-      if (artworksWithCreatedAt.length === 0) return false;
-      
-      // Sort by created_at ascending (oldest first = slot 1)
-      const sortedArtworks = [...artworksWithCreatedAt].sort((a: any, b: any) => 
-        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-      );
-      
-      // Find the current artwork's index in sorted list
-      const artworkIndex = sortedArtworks.findIndex((a: any) => 
-        String(a.id) === String(art.id)
-      );
-      
-      // If artwork is in slots 4-10 (index >= 3), it's branded
-      return artworkIndex >= 3;
+    // DB artworks: trust the explicit watermarked field
+    if ((art as any).created_at !== undefined) {
+      return (art as any).watermarked === true;
     }
-    
-    // Demo/local artworks (no created_at) are never branded
+    // Demo/local artworks are never branded
     return false;
-  }, [isFreePlan, art, artworksState]);
+  }, [isFreePlan, art]);
   
   // AI Suggested Rooms - get top 3 rooms based on artwork tags, title keywords, or ID-based variation
   // useMemo ensures recalculation when artwork or filtered rooms change

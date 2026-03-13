@@ -52,7 +52,7 @@ router.get('/artist/:slug', async (req, res) => {
       `SELECT 
         id, title, image_url, width, height, dimension_unit,
         price_amount, price_currency, buy_url, medium, style_tags,
-        availability, like_count, variants, card_image_id, clean_image_id, story, updated_at
+        availability, like_count, variants, card_image_id, clean_image_id, story, watermarked, updated_at
       FROM artworks 
       WHERE artist_id = $1
       ORDER BY created_at DESC`,

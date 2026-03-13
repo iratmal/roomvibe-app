@@ -4,6 +4,7 @@ import path from 'path';
 import { query } from '../db/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { checkArtworkLimit, getEffectivePlan, requireMinimumPlan } from '../middleware/subscription.js';
+import { PLAN_LIMITS } from '../config/planLimits.js';
 import { generateTagsFromImage } from '../services/imageTagging.js';
 import { ObjectStorageService } from '../objectStorage.js';
 
@@ -61,13 +62,13 @@ router.get('/artworks', authenticateToken, async (req: any, res) => {
     let queryParams;
 
     if (effectivePlan === 'admin') {
-      queryText = `SELECT a.id, a.artist_id, a.title, a.image_url, a.storage_key, a.width, a.height, a.dimension_unit, a.price_amount, a.price_currency, a.buy_url, a.tags, a.orientation, a.style_tags, a.dominant_colors, a.medium, a.availability, a.visible_to_designers, a.visible_to_galleries, a.variants, a.card_image_id, a.clean_image_id, a.story, a.description, a.created_at, a.updated_at, u.email as artist_email
+      queryText = `SELECT a.id, a.artist_id, a.title, a.image_url, a.storage_key, a.width, a.height, a.dimension_unit, a.price_amount, a.price_currency, a.buy_url, a.tags, a.orientation, a.style_tags, a.dominant_colors, a.medium, a.availability, a.visible_to_designers, a.visible_to_galleries, a.variants, a.card_image_id, a.clean_image_id, a.story, a.description, a.watermarked, a.created_at, a.updated_at, u.email as artist_email
                    FROM artworks a
                    LEFT JOIN users u ON a.artist_id = u.id
                    ORDER BY a.created_at DESC`;
       queryParams = [];
     } else {
-      queryText = `SELECT id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, visible_to_designers, visible_to_galleries, variants, card_image_id, clean_image_id, story, description, created_at, updated_at
+      queryText = `SELECT id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, visible_to_designers, visible_to_galleries, variants, card_image_id, clean_image_id, story, description, watermarked, created_at, updated_at
                    FROM artworks 
                    WHERE artist_id = $1 
                    ORDER BY created_at DESC`;
@@ -537,19 +538,33 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
     const artworkStory = story && typeof story === 'string' && story.trim() ? story.trim() : null;
     const artworkDescription = description && typeof description === 'string' && description.trim() ? description.trim().substring(0, 500) : null;
 
+    // Determine watermarked flag based on plan limits
+    // Free/user plan: first 3 artworks are clean, rest are watermarked
+    // All other plans: always clean (watermarked = false)
+    let isWatermarked = false;
+    const planLimitsForUpload = PLAN_LIMITS[effectivePlan as keyof typeof PLAN_LIMITS] || PLAN_LIMITS.user;
+    if (planLimitsForUpload.watermarkedArtworksLimit > 0) {
+      const cleanCountResult = await query(
+        'SELECT COUNT(*) as count FROM artworks WHERE artist_id = $1 AND watermarked = FALSE',
+        [targetArtistId]
+      );
+      const cleanCount = parseInt(cleanCountResult.rows[0].count, 10);
+      isWatermarked = cleanCount >= planLimitsForUpload.cleanArtworksLimit;
+    }
+
     console.log('[Upload] Inserting artwork into database with values:', {
       targetArtistId, title, imageUrl: imageUrl?.substring(0, 50), storageKey: storageKey?.substring(0, 50),
       parsedWidth, parsedHeight, unit, parsedPrice, currency, buyUrl: buyUrl?.substring(0, 30),
-      tagsCount: tags?.length, artworkCardImageId, artworkCleanImageId
+      tagsCount: tags?.length, artworkCardImageId, artworkCleanImageId, isWatermarked
     });
     
     let result;
     try {
       result = await query(
-        `INSERT INTO artworks (artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, variants, visible_to_designers, visible_to_galleries, card_image_id, clean_image_id, story, description, updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, FALSE, FALSE, $18, $19, $20, $21, CURRENT_TIMESTAMP)
-         RETURNING id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, variants, visible_to_designers, visible_to_galleries, card_image_id, clean_image_id, story, description, created_at, updated_at`,
-        [targetArtistId, title, imageUrl, storageKey, parsedWidth, parsedHeight, unit, parsedPrice, currency, buyUrl || null, tags, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability, variantsJson, artworkCardImageId, artworkCleanImageId, artworkStory, artworkDescription]
+        `INSERT INTO artworks (artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, variants, visible_to_designers, visible_to_galleries, card_image_id, clean_image_id, story, description, watermarked, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, FALSE, FALSE, $18, $19, $20, $21, $22, CURRENT_TIMESTAMP)
+         RETURNING id, artist_id, title, image_url, storage_key, width, height, dimension_unit, price_amount, price_currency, buy_url, tags, orientation, style_tags, dominant_colors, medium, availability, variants, visible_to_designers, visible_to_galleries, card_image_id, clean_image_id, story, description, watermarked, created_at, updated_at`,
+        [targetArtistId, title, imageUrl, storageKey, parsedWidth, parsedHeight, unit, parsedPrice, currency, buyUrl || null, tags, artworkOrientation, styleTagsJson, dominantColorsJson, artworkMedium, artworkAvailability, variantsJson, artworkCardImageId, artworkCleanImageId, artworkStory, artworkDescription, isWatermarked]
       );
     } catch (dbError: any) {
       console.error('[Upload] DB insert failed:', {
