@@ -63,6 +63,7 @@ interface Artwork {
   clean_image_url?: string;
   hasCleanImage?: boolean;
   story?: string | null;
+  description?: string | null;
   created_at: string;
   updated_at: string;
   artist_email?: string;
@@ -187,7 +188,8 @@ export function ArtistDashboard() {
     variants: [] as Array<{ width: string; height: string; unit: string; price: string; currency: string; availability: string }>,
     cardImageId: null as number | null,
     cleanImageId: null as number | null,
-    story: ''
+    story: '',
+    description: ''
   });
   const [promotedGalleryImageId, setPromotedGalleryImageId] = useState<number | null>(null);
   const [showStoryModal, setShowStoryModal] = useState(false);
@@ -955,6 +957,8 @@ export function ArtistDashboard() {
       if (formData.story && formData.story.trim()) {
         formDataObj.append('story', formData.story.trim());
       }
+      // Include description (send empty string to clear it too)
+      formDataObj.append('description', formData.description.trim());
 
       const url = editingArtwork
         ? `${API_URL}/api/artist/artworks/${editingArtwork.id}`
@@ -1089,7 +1093,8 @@ export function ArtistDashboard() {
         variants: [],
         cardImageId: null,
         cleanImageId: null,
-        story: ''
+        story: '',
+        description: ''
       });
       setGalleryImages([]);
       setPromotedGalleryImageId(null);
@@ -1150,7 +1155,8 @@ export function ArtistDashboard() {
       variants: artworkVariants,
       cardImageId: artwork.card_image_id ?? null,
       cleanImageId: artwork.clean_image_id ?? null,
-      story: artwork.story || ''
+      story: artwork.story || '',
+      description: artwork.description || ''
     });
     
     try {
@@ -1203,7 +1209,8 @@ export function ArtistDashboard() {
       variants: [],
       cardImageId: null,
       cleanImageId: null,
-      story: ''
+      story: '',
+      description: ''
     });
     setGalleryImages([]);
     setError('');
@@ -1989,6 +1996,24 @@ export function ArtistDashboard() {
 
               <div>
                 <label className="block text-sm font-semibold mb-2 text-rv-text">
+                  Artwork Description <span className="font-normal text-rv-textMuted">(optional)</span>
+                </label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  rows={3}
+                  maxLength={500}
+                  className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary resize-y text-sm"
+                  placeholder="Short description of the artwork (technique, mood, inspiration)."
+                />
+                <p className={`text-xs mt-1 ${formData.description.length > 450 ? 'text-amber-600' : 'text-rv-textMuted'}`}>
+                  {formData.description.length} / 500
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-rv-text">
                   Medium
                 </label>
                 <select
@@ -2362,8 +2387,19 @@ export function ArtistDashboard() {
                     cardImageId={artwork.card_image_id}
                   />
                   <div className="p-4">
-                    <h3 className="font-bold text-lg mb-2 text-rv-text">{artwork.title}</h3>
-                    <p className="text-sm text-rv-textMuted mb-1">
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <h3 className="font-bold text-base leading-snug text-rv-text">{artwork.title}</h3>
+                      {artwork.availability && artwork.availability !== 'available' && (
+                        <span className={`flex-shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                          artwork.availability === 'sold'
+                            ? 'bg-red-100 text-red-600'
+                            : 'bg-amber-100 text-amber-700'
+                        }`}>
+                          {artwork.availability === 'sold' ? 'Sold' : 'On Request'}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-rv-textMuted mb-2">
                       {artwork.width} × {artwork.height} {artwork.dimension_unit || 'cm'}
                     </p>
                     {artwork.variants && Array.isArray(artwork.variants) && artwork.variants.length > 0 && (
@@ -2420,6 +2456,13 @@ export function ArtistDashboard() {
                       );
                     })()}
                     
+                    {/* Description preview */}
+                    {artwork.description && (
+                      <p className="text-xs text-rv-textMuted mb-2 leading-relaxed line-clamp-2">
+                        {artwork.description}
+                      </p>
+                    )}
+
                     {/* Story Behind link - only show if story exists */}
                     {artwork.story && (
                       <button
@@ -2471,22 +2514,24 @@ export function ArtistDashboard() {
                       return null;
                     })()}
                     
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        window.open(artwork.buy_url, '_blank', 'noopener,noreferrer');
-                      }}
-                      className="inline-block text-sm text-rv-primary hover:text-rv-primaryHover mb-3 underline cursor-pointer bg-transparent border-none p-0 text-left"
-                    >
-                      View & Buy →
-                    </button>
+                    {artwork.buy_url && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(artwork.buy_url, '_blank', 'noopener,noreferrer');
+                        }}
+                        className="inline-block text-sm text-rv-primary hover:text-rv-primaryHover mb-3 underline cursor-pointer bg-transparent border-none p-0 text-left"
+                      >
+                        View &amp; Buy →
+                      </button>
+                    )}
                     
                     {/* Visibility in Artist Connect */}
                     <div className="mb-4 p-3 bg-rv-surface rounded-rvMd border border-rv-neutral">
                       <p className="text-xs font-semibold text-rv-textMuted mb-2">Visibility in Artist Connect</p>
                       <div className="flex flex-col gap-2">
                         <label 
-                          className={`flex items-center gap-2 ${!dashboardStats.visibleToDesigners ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                          className={`flex items-start gap-2 ${!dashboardStats.visibleToDesigners ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                           title={!dashboardStats.visibleToDesigners ? 'Turn on profile visibility first in Profile tab' : ''}
                         >
                           <input
@@ -2494,12 +2539,15 @@ export function ArtistDashboard() {
                             checked={artwork.visible_to_designers || false}
                             disabled={!dashboardStats.visibleToDesigners}
                             onChange={(e) => handleVisibilityToggle(artwork.id, 'visibleToDesigners', e.target.checked)}
-                            className="checkbox-navy"
+                            className="checkbox-navy mt-0.5"
                           />
-                          <span className="text-sm text-rv-text">Visible to Designers</span>
+                          <div>
+                            <span className="text-sm text-rv-text font-medium">Visible to Designers</span>
+                            <p className="text-xs text-rv-textMuted leading-tight">Interior designers can discover and contact you.</p>
+                          </div>
                         </label>
                         <label 
-                          className={`flex items-center gap-2 ${!dashboardStats.visibleToGalleries ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                          className={`flex items-start gap-2 ${!dashboardStats.visibleToGalleries ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                           title={!dashboardStats.visibleToGalleries ? 'Turn on profile visibility first in Profile tab' : ''}
                         >
                           <input
@@ -2507,9 +2555,12 @@ export function ArtistDashboard() {
                             checked={artwork.visible_to_galleries || false}
                             disabled={!dashboardStats.visibleToGalleries}
                             onChange={(e) => handleVisibilityToggle(artwork.id, 'visibleToGalleries', e.target.checked)}
-                            className="checkbox-navy"
+                            className="checkbox-navy mt-0.5"
                           />
-                          <span className="text-sm text-rv-text">Visible to Galleries</span>
+                          <div>
+                            <span className="text-sm text-rv-text font-medium">Visible to Galleries</span>
+                            <p className="text-xs text-rv-textMuted leading-tight">Galleries can discover your work and contact you.</p>
+                          </div>
                         </label>
                       </div>
                       {(!dashboardStats.visibleToDesigners && !dashboardStats.visibleToGalleries) && (

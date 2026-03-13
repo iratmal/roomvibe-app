@@ -1,0 +1,87 @@
+Goal:
+Improve the My Artworks cards on the Artist dashboard so they feel clearer, more polished, and more informative without redesigning the whole page.
+
+Context:
+The My Artworks cards are one of the most visible parts of the Artist dashboard.
+They already show useful information, but they need a small UX polish to improve readability, consistency, and perceived product quality.
+
+Important rules:
+
+The Artist dashboard is the reference dashboard for this polish phase.
+
+Implement this task ONLY on the Artist dashboard.
+
+Do NOT modify Artist Pro dashboard in this task.
+Do NOT modify Free plan dashboard in this task.
+
+Do NOT change subscription logic, plan limits, or billing logic.
+Do NOT change Pro-only features such as multiple exhibitions or exhibition selection dropdowns.
+
+Focus only on the Artist dashboard implementation.
+Reuse existing shared components only if necessary, but do not apply UI changes to other plans yet.
+
+Use Fast Mode if available for small focused UI changes.
+
+If the task cannot be completed after 2–3 attempts, stop and explain the blocker.
+
+Scope:
+1. Review the My Artworks card layout and improve visual hierarchy only where needed.
+
+2. Make sure the following information is clearly structured and consistently spaced:
+   - artwork title
+   - dimensions
+   - price
+   - availability status badge
+   - description preview (if description exists)
+   - Story Behind link
+   - View & Buy link
+   - Artist Connect visibility block
+   - action buttons
+
+3. Add a short description preview to the card if description exists:
+   - max 1–2 lines
+   - truncate neatly if too long
+   - do not let the card become too tall or messy
+
+4. Improve spacing/alignment so the card feels cleaner:
+   - better separation between metadata and action sections
+   - better spacing between buttons
+   - consistent margins inside the card
+
+5. Ensure buttons are visually grouped in a logical way:
+   - primary actions together
+   - secondary actions together
+   - avoid cramped stacking if spacing is inconsistent
+
+6. Keep the existing RoomVibe visual style.
+Do not redesign the card into a new concept.
+This is a polish task, not a rebuild.
+
+7. Make sure cards still look good if:
+   - artwork has no price
+   - artwork has no description
+   - artwork has no story
+   - artwork is not in exhibition
+   - artwork is sold/reserved/available
+
+8. Preserve current functionality:
+   - Edit
+   - Delete
+   - View in Studio
+   - Exhibition action
+   - Get Widget Code
+
+Do not do:
+- do not redesign the whole dashboard
+- do not change exhibition logic
+- do not add new card actions
+- do not add filtering or sorting
+- do not touch Artist Pro or Free
+- do not change billing or limits
+
+Stop condition:
+- My Artworks cards look cleaner and more polished
+- Description preview appears correctly when available
+- Cards remain stable in all common states
+- All current actions still work
+- List all changed files

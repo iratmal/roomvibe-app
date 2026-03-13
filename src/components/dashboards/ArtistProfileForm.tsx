@@ -650,7 +650,7 @@ export function ArtistProfileForm() {
                   className="hidden"
                 />
               </label>
-              <p className="text-xs text-rv-textMuted mt-2">Max 5MB. JPG, PNG, or WebP.</p>
+              <p className="text-xs text-rv-textMuted mt-2">Recommended: square image (400×400 px). Max 5MB. JPG, PNG, or WebP.</p>
             </div>
           </div>
         </div>
@@ -776,7 +776,7 @@ export function ArtistProfileForm() {
                 placeholder="Share your artistic journey, medium, themes, and what inspires your work. This helps designers, galleries, and collectors understand your art better."
               />
               <p className="text-xs text-rv-textMuted mt-1.5">
-                {profile.bio.length} / 1200 characters
+                Tip: describe your artistic style, themes and medium. {profile.bio.length} / 1200 characters
               </p>
             </div>
           </div>
