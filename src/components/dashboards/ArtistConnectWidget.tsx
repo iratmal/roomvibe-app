@@ -89,8 +89,9 @@ export function ArtistConnectWidget({ onViewInbox, onEditProfile }: ArtistConnec
 
       {!hasArtistAccess ? (
         <div className="p-4 bg-white/60 rounded-rvMd border border-rv-primary/20">
-          <p className="text-sm text-rv-text mb-3">
-            Upgrade to the Artist plan to join Artist Connect and receive inquiries from designers and galleries.
+          <p className="text-sm font-semibold text-rv-text mb-1">Get discovered by designers and galleries.</p>
+          <p className="text-sm text-rv-textMuted mb-3">
+            Upgrade to the Artist plan to appear in designer and gallery searches and receive artwork inquiries.
           </p>
           <a
             href="#/pricing"

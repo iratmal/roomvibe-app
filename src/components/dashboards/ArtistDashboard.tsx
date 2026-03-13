@@ -1541,7 +1541,7 @@ export function ArtistDashboard() {
                     <p className="text-2xl font-bold text-rv-primary">
                       {artworks.length}{maxArtworks !== -1 && !isArtistPro ? `/${maxArtworks}` : ''}
                     </p>
-                    <p className="text-xs text-rv-textMuted">{isArtistPro ? 'Artworks (Unlimited)' : 'Artworks'}</p>
+                    <p className="text-xs text-rv-textMuted">{isArtistPro ? 'Artworks (Unlimited)' : isFreePlan ? 'Artworks uploaded' : 'Artworks'}</p>
                   </div>
                 </div>
               </div>
@@ -1617,7 +1617,8 @@ export function ArtistDashboard() {
 
             {/* Free plan: clean / branded artwork sub-row */}
             {isFreePlan && (
-              <div className="grid grid-cols-2 gap-4 mb-6">
+              <>
+              <div className="grid grid-cols-2 gap-4 mb-3">
                 <div className={`p-4 rounded-rvLg border shadow-rvSoft ${cleanLimit !== -1 && cleanArtworkIds.size >= cleanLimit ? 'bg-amber-50 border-amber-200' : 'bg-white border-rv-neutral'}`}>
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm font-semibold text-rv-text">Clean Artworks</span>
@@ -1651,6 +1652,17 @@ export function ArtistDashboard() {
                   </div>
                 </div>
               </div>
+              <div className="mb-6 px-1">
+                <p className="text-xs text-rv-textMuted">
+                  <span className="font-semibold">Free plan includes:</span> 3 artworks without watermark · 7 artworks with RoomVibe watermark
+                </p>
+                {artworks.length === 0 && (
+                  <p className="text-xs text-rv-primary mt-1">
+                    Upload your first artwork to start visualizing it in real interior spaces.
+                  </p>
+                )}
+              </div>
+              </>
             )}
 
             <div className="mb-6">
