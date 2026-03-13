@@ -879,6 +879,18 @@ const getFrameConfig = (frameId: string): FrameConfig => {
 
 const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
 
+function getStudioBackUrl(): string {
+  try {
+    const hash = window.location.hash;
+    const qi = hash.indexOf('?');
+    if (qi !== -1) {
+      const fromParam = new URLSearchParams(hash.substring(qi + 1)).get('from');
+      if (fromParam) return decodeURIComponent(fromParam);
+    }
+  } catch (_) {}
+  return '#/dashboard?tab=my-artworks';
+}
+
 function Studio() {
   const isInIframe = useIsInIframe();
   const { user } = useAuth();
@@ -2225,8 +2237,20 @@ function Studio() {
     <main className="flex flex-col">
       {!isInIframe && <SiteHeader showPlanBadge={false} />}
       <div className="mx-auto max-w-[1400px] w-full px-4 sm:px-6 lg:px-8 py-4 lg:py-6 lg:min-h-[calc(100vh-80px)] lg:flex lg:flex-col">
-        <div className="mb-4 text-sm text-rv-textMuted">
-          <span className="font-semibold text-rv-primary">RoomVibe Studio</span> · Upload a wall photo, pick a room preset, and see your art true-to-size.
+        <div className="mb-4 flex items-center gap-3 flex-wrap">
+          <a
+            href={getStudioBackUrl()}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[#264C61] border border-[#264C61]/40 rounded-lg hover:bg-[#264C61]/5 transition-colors whitespace-nowrap"
+            aria-label="Back"
+          >
+            <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span>Back</span>
+          </a>
+          <span className="text-sm text-rv-textMuted">
+            <span className="font-semibold text-rv-primary">RoomVibe Studio</span> · Upload a wall photo, pick a room preset, and see your art true-to-size.
+          </span>
         </div>
         <div className="grid grid-cols-12 gap-4 lg:gap-6 lg:flex-1">
           {/* Left: Scenes gallery - Shown last on mobile (order-3), first on desktop (lg:order-1) */}

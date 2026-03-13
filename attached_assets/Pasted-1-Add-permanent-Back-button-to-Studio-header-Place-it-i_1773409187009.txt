@@ -1,0 +1,110 @@
+1. Add permanent Back button to Studio header
+
+Place it in a consistent, visible area near the top of the Studio screen.
+
+It should feel like native page navigation, not like a random floating action.
+
+2. Reuse existing from support if already present
+
+If View in Studio links already pass a from parameter, use it.
+
+If not, keep support ready for it, but still make Back button always visible.
+
+3. Add fallback behavior
+
+If no from exists:
+
+use router back/history back where appropriate
+
+if router history is empty or not reliable, redirect to fallback page
+
+Do not leave the button non-functional.
+
+UX REQUIREMENTS
+Visual style
+
+The button should match RoomVibe UI styling.
+
+Suggested style:
+
+small inline button or ghost button
+
+placed above or near the Studio title/header
+
+unobtrusive but clearly visible
+
+Mobile and desktop
+
+Ensure it works on:
+
+desktop
+
+tablet
+
+mobile widths
+
+It should not overlap Studio controls.
+
+NON-SCOPE
+
+Do NOT:
+
+redesign Studio layout
+
+change artwork rendering
+
+change room selection logic
+
+change upload wall flow
+
+change frame controls
+
+refactor unrelated routing
+
+This is a focused Studio navigation improvement.
+
+VALIDATION CASES
+Case 1 — From gallery
+
+User opens Studio from 360 Gallery with from route.
+Back button returns to that exact gallery page.
+
+Case 2 — From dashboard
+
+User opens Studio from dashboard/artwork flow without explicit from.
+Back button returns via history or safe fallback.
+
+Case 3 — Direct open
+
+User lands directly on Studio URL.
+Back button still appears and sends user to safe fallback destination.
+
+STOP CONDITION
+
+Task is complete when:
+
+Studio always shows a Back button
+
+If from exists, button returns to that exact route
+
+If from does not exist, button still works via history/fallback
+
+No layout break on desktop or mobile
+
+Agent lists modified files and briefly explains the routing logic
+
+EXTRA INSTRUCTION
+
+Use Fast Mode if available.
+
+Keep implementation simple and robust.
+
+Prefer:
+
+explicit from route support
+
+reliable fallback
+
+minimal code changes
+
+Do not over-engineer this.
