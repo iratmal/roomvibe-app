@@ -83,9 +83,16 @@ const MEDIUM_OPTIONS = [
 
 const AVAILABILITY_OPTIONS = [
   { value: 'available', label: 'Available' },
-  { value: 'sold', label: 'Sold' },
-  { value: 'on_request', label: 'On Request' }
+  { value: 'on_request', label: 'Reserved' },
+  { value: 'sold', label: 'Sold' }
 ];
+
+function availabilityBadge(availability: string | undefined) {
+  const val = availability || 'available';
+  if (val === 'sold') return { label: 'Sold', cls: 'bg-red-100 text-red-600' };
+  if (val === 'on_request') return { label: 'Reserved', cls: 'bg-amber-100 text-amber-700' };
+  return { label: 'Available', cls: 'bg-green-100 text-green-700' };
+}
 
 function formatPrice(priceAmount: number | string | null | undefined, currency: string): string | null {
   if (priceAmount === null || priceAmount === undefined || priceAmount === '') {
@@ -2389,15 +2396,14 @@ export function ArtistDashboard() {
                   <div className="p-4">
                     <div className="flex items-start justify-between gap-2 mb-1">
                       <h3 className="font-bold text-base leading-snug text-rv-text">{artwork.title}</h3>
-                      {artwork.availability && artwork.availability !== 'available' && (
-                        <span className={`flex-shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-                          artwork.availability === 'sold'
-                            ? 'bg-red-100 text-red-600'
-                            : 'bg-amber-100 text-amber-700'
-                        }`}>
-                          {artwork.availability === 'sold' ? 'Sold' : 'On Request'}
-                        </span>
-                      )}
+                      {(() => {
+                        const b = availabilityBadge(artwork.availability);
+                        return (
+                          <span className={`flex-shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full ${b.cls}`}>
+                            {b.label}
+                          </span>
+                        );
+                      })()}
                     </div>
                     <p className="text-sm text-rv-textMuted mb-2">
                       {artwork.width} × {artwork.height} {artwork.dimension_unit || 'cm'}

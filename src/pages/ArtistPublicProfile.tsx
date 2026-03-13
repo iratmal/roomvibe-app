@@ -844,6 +844,11 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                         SOLD
                       </div>
                     )}
+                    {artwork.availability === 'on_request' && (
+                      <div className="absolute top-3 right-3 px-3 py-1 bg-amber-500 text-white text-xs font-bold rounded-full">
+                        RESERVED
+                      </div>
+                    )}
                   </div>
                   <div className="pt-5 pb-2">
                     <h3 
@@ -1157,11 +1162,11 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                       selectedArtwork.availability === 'sold' 
                         ? 'bg-red-100 text-red-600' 
                         : selectedArtwork.availability === 'on_request'
-                        ? 'bg-amber-100 text-amber-600'
-                        : 'bg-rv-primary/10 text-rv-primary'
+                        ? 'bg-amber-100 text-amber-700'
+                        : 'bg-green-100 text-green-700'
                     }`}>
                       {selectedArtwork.availability === 'sold' ? 'Sold' 
-                        : selectedArtwork.availability === 'on_request' ? 'On Request' 
+                        : selectedArtwork.availability === 'on_request' ? 'Reserved' 
                         : 'Available'}
                     </span>
                     
@@ -1232,11 +1237,11 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                               variant.availability === 'sold' 
                                 ? 'bg-red-100 text-red-600' 
                                 : variant.availability === 'on_request'
-                                ? 'bg-amber-100 text-amber-600'
-                                : 'bg-rv-primary/10 text-rv-primary'
+                                ? 'bg-amber-100 text-amber-700'
+                                : 'bg-green-100 text-green-700'
                             }`}>
                               {variant.availability === 'sold' ? 'Sold' 
-                                : variant.availability === 'on_request' ? 'On Request' 
+                                : variant.availability === 'on_request' ? 'Reserved' 
                                 : 'Available'}
                             </span>
                           </div>
