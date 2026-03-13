@@ -52,11 +52,20 @@ export function UserDashboard() {
   const [editingArtwork, setEditingArtwork] = useState<Artwork | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  
+  const [exhibitionCount, setExhibitionCount] = useState(0);
+
+  const FREE_CLEAN_LIMIT = 3;
+  const FREE_BRANDED_LIMIT = 7;
+  const FREE_EXHIBITION_LIMIT = 1;
+
   const effectivePlan = user?.effectivePlan || 'user';
   const planLimits = PLAN_LIMITS[effectivePlan as keyof typeof PLAN_LIMITS] || PLAN_LIMITS.user;
   const maxArtworks = planLimits.maxArtworks;
   const isAtLimit = maxArtworks !== -1 && artworks.length >= maxArtworks;
+
+  const cleanCount = Math.min(artworks.length, FREE_CLEAN_LIMIT);
+  const brandedCount = Math.max(artworks.length - FREE_CLEAN_LIMIT, 0);
+  const isCleanLimitReached = artworks.length >= FREE_CLEAN_LIMIT;
 
   const [formData, setFormData] = useState({
     title: '',
@@ -79,7 +88,22 @@ export function UserDashboard() {
 
   useEffect(() => {
     fetchArtworks();
+    fetchExhibitionCount();
   }, []);
+
+  const fetchExhibitionCount = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/artist/exhibitions`, {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setExhibitionCount(data.exhibitions?.length || 0);
+      }
+    } catch {
+      // Free plan may not have exhibition access — default stays 0
+    }
+  };
 
   const fetchArtworks = async () => {
     try {
@@ -395,43 +419,35 @@ export function UserDashboard() {
           </div>
         )}
 
-        {/* Usage indicator */}
-        {maxArtworks !== -1 && (
-          <div className={`mb-6 p-4 rounded-rvMd border ${isAtLimit ? 'bg-amber-50 border-amber-200' : artworks.length >= 3 ? 'bg-blue-50 border-blue-200' : 'bg-rv-primary/5 border-rv-primary/20'}`}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isAtLimit ? 'bg-amber-100' : artworks.length >= 3 ? 'bg-blue-100' : 'bg-rv-primary/10'}`}>
-                  <svg className={`w-5 h-5 ${isAtLimit ? 'text-amber-600' : artworks.length >= 3 ? 'text-blue-600' : 'text-rv-primary'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <div>
-                  <p className={`font-semibold ${isAtLimit ? 'text-amber-700' : artworks.length >= 3 ? 'text-blue-700' : 'text-rv-primary'}`}>
-                    {isAtLimit ? 'Free Plan Limit Reached' : artworks.length >= 3 ? 'Clean Uploads Used' : 'Artwork Usage'}
-                  </p>
-                  <p className={`text-sm ${isAtLimit ? 'text-amber-600' : artworks.length >= 3 ? 'text-blue-600' : 'text-rv-primary/80'}`}>
-                    {artworks.length}/{maxArtworks} artwork{maxArtworks !== 1 ? 's' : ''} uploaded (Free plan)
-                  </p>
-                </div>
-              </div>
-              {isAtLimit && (
-                <button
-                  onClick={() => setShowUpgradeModal(true)}
-                  className="px-4 py-2 bg-rv-primary text-white rounded-rvMd text-sm font-semibold hover:bg-rv-primaryHover transition-colors shadow-rvSoft"
-                >
-                  Upgrade Plan
-                </button>
-              )}
+        {/* Clean artwork limit reached */}
+        {isCleanLimitReached && !isAtLimit && (
+          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-rvMd">
+            <p className="font-semibold text-amber-700 mb-1">You reached your Free clean artwork limit.</p>
+            <p className="text-sm text-amber-600 mb-3">
+              You can still upload {FREE_BRANDED_LIMIT - brandedCount} more artwork{FREE_BRANDED_LIMIT - brandedCount !== 1 ? 's' : ''} with RoomVibe watermark. Upgrade to Artist to remove the watermark.
+            </p>
+            <a
+              href="#/pricing"
+              className="inline-block px-4 py-2 bg-rv-primary text-white rounded-rvMd text-sm font-semibold hover:bg-rv-primaryHover transition-colors"
+            >
+              Upgrade to Artist
+            </a>
+          </div>
+        )}
+
+        {/* Full limit reached */}
+        {isAtLimit && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-rvMd flex items-center justify-between gap-4">
+            <div>
+              <p className="font-semibold text-red-700">Free plan limit reached (10 artworks).</p>
+              <p className="text-sm text-red-600 mt-0.5">Upgrade to Artist to upload more and remove watermarks.</p>
             </div>
-            {isAtLimit ? (
-              <p className="mt-2 text-sm text-amber-600">
-                Free plan limit reached (10 artworks). Upgrade to Artist to upload more and remove branding.
-              </p>
-            ) : artworks.length >= 3 && (
-              <p className="mt-2 text-sm text-blue-600">
-                You've used your 3 clean uploads. You can add up to {7 - Math.max(artworks.length - 3, 0)} more artworks with RoomVibe branding.
-              </p>
-            )}
+            <a
+              href="#/pricing"
+              className="flex-shrink-0 px-4 py-2 bg-rv-primary text-white rounded-rvMd text-sm font-semibold hover:bg-rv-primaryHover transition-colors"
+            >
+              Upgrade to Artist
+            </a>
           </div>
         )}
 
@@ -586,19 +602,38 @@ export function UserDashboard() {
           </form>
         </div>
 
-        {/* Usage Meter for Free Users */}
-        <div className="mb-6 p-4 bg-rv-surface rounded-rvLg border border-rv-neutral">
-          <div className="flex flex-wrap items-center gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-semibold">Clean</span>
-              <span className="text-rv-text font-medium">{Math.min(artworks.length, 3)} / 3</span>
+        {/* Stat Cards */}
+        <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className={`p-4 rounded-rvLg border shadow-rvSoft ${cleanCount >= FREE_CLEAN_LIMIT ? 'bg-amber-50 border-amber-200' : 'bg-white border-rv-neutral'}`}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-semibold text-rv-text">Clean Artworks</span>
+              <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full">No watermark</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 bg-rv-primary/10 text-rv-primary rounded text-xs font-semibold">RoomVibe Powered</span>
-              <span className="text-rv-text font-medium">{Math.max(artworks.length - 3, 0)} / 7</span>
+            <div className="text-2xl font-bold text-rv-primary">{cleanCount} / {FREE_CLEAN_LIMIT} <span className="text-sm font-normal text-rv-textMuted">used</span></div>
+            <div className="mt-2 h-1.5 bg-rv-neutral rounded-full overflow-hidden">
+              <div className="h-full bg-green-500 rounded-full transition-all" style={{ width: `${Math.min((cleanCount / FREE_CLEAN_LIMIT) * 100, 100)}%` }} />
             </div>
-            <div className="text-rv-textMuted">
-              Total: <span className="font-semibold text-rv-text">{artworks.length} / 10</span>
+          </div>
+
+          <div className="p-4 rounded-rvLg border bg-white border-rv-neutral shadow-rvSoft">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-semibold text-rv-text">RoomVibe Artworks</span>
+              <span className="px-2 py-0.5 bg-rv-primary/10 text-rv-primary text-xs font-semibold rounded-full">Branded</span>
+            </div>
+            <div className="text-2xl font-bold text-rv-primary">{brandedCount} / {FREE_BRANDED_LIMIT} <span className="text-sm font-normal text-rv-textMuted">used</span></div>
+            <div className="mt-2 h-1.5 bg-rv-neutral rounded-full overflow-hidden">
+              <div className="h-full bg-rv-primary rounded-full transition-all" style={{ width: `${Math.min((brandedCount / FREE_BRANDED_LIMIT) * 100, 100)}%` }} />
+            </div>
+          </div>
+
+          <div className="p-4 rounded-rvLg border bg-white border-rv-neutral shadow-rvSoft">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-semibold text-rv-text">Exhibitions</span>
+              <span className="px-2 py-0.5 bg-rv-primary/10 text-rv-primary text-xs font-semibold rounded-full">Free</span>
+            </div>
+            <div className="text-2xl font-bold text-rv-primary">{exhibitionCount} / {FREE_EXHIBITION_LIMIT} <span className="text-sm font-normal text-rv-textMuted">used</span></div>
+            <div className="mt-2 h-1.5 bg-rv-neutral rounded-full overflow-hidden">
+              <div className="h-full bg-rv-primary rounded-full transition-all" style={{ width: `${Math.min((exhibitionCount / FREE_EXHIBITION_LIMIT) * 100, 100)}%` }} />
             </div>
           </div>
         </div>
@@ -620,10 +655,12 @@ export function UserDashboard() {
                 return (
                 <div key={artwork.id} className="bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral overflow-hidden">
                   <div className="aspect-square bg-rv-surface relative">
-                    {/* Clean/Branded label */}
-                    <div className={`absolute top-2 left-2 z-10 px-2 py-0.5 rounded text-xs font-semibold ${isClean ? 'bg-green-100 text-green-700' : 'bg-rv-primary/10 text-rv-primary'}`}>
-                      {isClean ? 'Clean' : 'RoomVibe Powered'}
-                    </div>
+                    {/* Branded label — clean artworks show no badge */}
+                    {!isClean && (
+                      <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded text-xs font-semibold bg-rv-primary/10 text-rv-primary">
+                        RoomVibe Branded
+                      </div>
+                    )}
                     <img
                       src={`${API_URL}/api/artwork-image/${artwork.id}`}
                       alt={artwork.title}
@@ -711,6 +748,55 @@ export function UserDashboard() {
               );})}
             </div>
           )}
+        </div>
+
+        {/* Exhibition Section */}
+        <div className="mb-10 p-6 bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-2xl font-bold text-rv-primary">Virtual Exhibition</h2>
+              <p className="text-rv-textMuted text-sm mt-1">
+                Create an immersive 3D gallery to showcase your artworks.
+              </p>
+            </div>
+            <button
+              disabled
+              className="flex items-center gap-2 px-4 py-2.5 bg-rv-neutral text-rv-textMuted text-sm font-semibold rounded-rvMd cursor-not-allowed"
+              title="Upgrade to create exhibitions"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              New Exhibition
+            </button>
+          </div>
+
+          <div className="flex items-center gap-3 p-4 bg-rv-surface rounded-rvMd border border-rv-neutral mb-4">
+            <div className="w-10 h-10 rounded-full bg-rv-primary/10 flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-rv-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
+            <div>
+              <p className="font-semibold text-rv-text">
+                {exhibitionCount} / {FREE_EXHIBITION_LIMIT} exhibition used
+              </p>
+              <p className="text-sm text-rv-textMuted">Free plan includes 1 virtual exhibition.</p>
+            </div>
+          </div>
+
+          <div className="p-4 bg-rv-primary/5 border border-rv-primary/20 rounded-rvMd">
+            <p className="text-sm font-semibold text-rv-primary mb-1">Upgrade to Artist Pro for multiple exhibitions</p>
+            <p className="text-sm text-rv-textMuted mb-3">
+              Artist Pro gives you unlimited exhibitions, premium rooms, and more.
+            </p>
+            <a
+              href="#/pricing"
+              className="inline-block px-4 py-2 bg-rv-primary text-white rounded-rvMd text-sm font-semibold hover:bg-rv-primaryHover transition-colors"
+            >
+              See Plans
+            </a>
+          </div>
         </div>
 
         {/* Widget Embed Section */}
