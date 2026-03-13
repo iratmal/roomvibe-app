@@ -168,6 +168,7 @@ export function ArtistProfileForm() {
   const [success, setSuccess] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingHeaderImage, setUploadingHeaderImage] = useState(false);
+  const [showSharePanel, setShowSharePanel] = useState(false);
   
   const [profile, setProfile] = useState<ArtistProfile>({
     displayName: '',
@@ -506,39 +507,93 @@ export function ArtistProfileForm() {
               <p className="text-xs text-rv-textMuted mb-3">
                 This is your main RoomVibe artist link.
               </p>
-              <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex flex-col gap-3">
                 <input
                   type="text"
                   readOnly
                   value={`${window.location.origin}/#/artist/${profile.slug}`}
-                  className="flex-1 px-3 py-2 bg-white border border-rv-neutral rounded-rvMd text-sm text-rv-text font-mono"
+                  className="w-full px-3 py-2 bg-white border border-rv-neutral rounded-rvMd text-sm text-rv-text font-mono"
                 />
-                <button
-                  type="button"
-                  onClick={() => {
-                    navigator.clipboard.writeText(`${window.location.origin}/#/artist/${profile.slug}`);
-                    setSuccess('Link copied to clipboard!');
-                    setTimeout(() => setSuccess(''), 3000);
-                  }}
-                  className="px-4 py-2 bg-[#C9A24A] text-white rounded-rvMd hover:bg-[#B8913A] transition-colors font-semibold text-sm whitespace-nowrap flex items-center gap-2"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
-                  Copy Link
-                </button>
+                <div className="flex flex-wrap gap-2">
+                  <a
+                    href={`${window.location.origin}/#/artist/${profile.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 px-4 py-2 bg-[#C9A24A] text-white rounded-rvMd hover:bg-[#B8913A] transition-colors font-semibold text-sm whitespace-nowrap"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                    Preview Public Profile
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}/#/artist/${profile.slug}`);
+                      setSuccess('Link copied to clipboard!');
+                      setTimeout(() => setSuccess(''), 3000);
+                    }}
+                    className="flex items-center gap-1.5 px-4 py-2 bg-white border border-[#C9A24A] text-[#C9A24A] rounded-rvMd hover:bg-[#C9A24A]/10 transition-colors font-semibold text-sm whitespace-nowrap"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    Copy Link
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowSharePanel(prev => !prev)}
+                    className="flex items-center gap-1.5 px-4 py-2 bg-white border border-rv-neutral text-rv-text rounded-rvMd hover:border-[#C9A24A] hover:text-[#C9A24A] transition-colors font-semibold text-sm whitespace-nowrap"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                    </svg>
+                    Share
+                  </button>
+                </div>
+                {showSharePanel && (
+                  <div className="mt-1 p-4 bg-white border border-rv-neutral rounded-rvMd shadow-sm space-y-2">
+                    <p className="text-xs font-semibold text-rv-textMuted uppercase tracking-wide mb-3">Share your artist page</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/#/artist/${profile.slug}`);
+                        setSuccess('Link copied to clipboard!');
+                        setTimeout(() => setSuccess(''), 3000);
+                        setShowSharePanel(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-rvMd hover:bg-rv-surface transition-colors text-sm text-rv-text"
+                    >
+                      <svg className="w-4 h-4 text-[#C9A24A] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      Copy link
+                    </button>
+                    <a
+                      href={`${window.location.origin}/#/artist/${profile.slug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setShowSharePanel(false)}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-rvMd hover:bg-rv-surface transition-colors text-sm text-rv-text"
+                    >
+                      <svg className="w-4 h-4 text-[#C9A24A] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                      Open page in new tab
+                    </a>
+                    <a
+                      href={`mailto:?subject=Check out my artist page&body=Hi%2C%0A%0AI'd like to share my artist page with you%3A%0A${encodeURIComponent(`${window.location.origin}/#/artist/${profile.slug}`)}`}
+                      onClick={() => setShowSharePanel(false)}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-rvMd hover:bg-rv-surface transition-colors text-sm text-rv-text"
+                    >
+                      <svg className="w-4 h-4 text-[#C9A24A] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      Share via email
+                    </a>
+                  </div>
+                )}
               </div>
-              <a 
-                href={`#/artist/${profile.slug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 mt-3 text-sm text-[#C9A24A] hover:underline font-medium"
-              >
-                View your page
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                </svg>
-              </a>
             </div>
           </div>
         </div>
