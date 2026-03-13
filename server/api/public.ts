@@ -31,7 +31,7 @@ router.get('/artist/:slug', async (req, res) => {
         linkedin_url, pinterest_url, etsy_url, languages,
         visible_to_designers, visible_to_galleries, updated_at
       FROM users 
-      WHERE artist_access = TRUE`,
+      WHERE artist_access = TRUE OR role = 'user'`,
       []
     );
 

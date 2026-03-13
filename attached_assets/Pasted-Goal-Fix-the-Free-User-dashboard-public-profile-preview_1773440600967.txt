@@ -1,0 +1,83 @@
+Goal:
+Fix the Free/User dashboard public profile preview so it opens a working public profile page instead of showing “Profile Not Available”.
+
+Context:
+On the Free/User dashboard, under:
+Your Public Artist Page
+
+there is:
+- a public profile link
+- Preview Public Profile button
+- Copy Link
+- Share
+
+However, when Preview Public Profile is clicked, it opens a broken page with:
+“Profile Not Available”
+“Artist not found or profile is private”
+
+This is incorrect.
+
+If the Free/User dashboard exposes a public profile link, then that public profile page must work.
+
+Important rules:
+- Apply this fix ONLY to the Free/User public profile flow
+- Do NOT break Artist public profile pages
+- Do NOT break Artist Pro public profile pages
+- Reuse the same public profile page architecture already used for Artist / Artist Pro
+- Do NOT build a separate new public profile system for Free
+- Do NOT redesign the public profile page
+- This is a routing/data-binding fix
+
+Required behavior:
+
+1. The Free/User public profile link must resolve correctly.
+
+Example current link:
+#/artist/user
+or equivalent route
+
+When opened, it must load the public profile page instead of:
+Profile Not Available
+
+2. The Free/User account should use the same public profile page system as Artist and Artist Pro.
+
+That means:
+- same route structure if possible
+- same public profile rendering system
+- same profile page template
+
+Do NOT leave Free/User linked to a broken or unsupported route.
+
+3. The Preview Public Profile button in the Free/User dashboard must open the correct working public page.
+
+4. The Copy Link and Share actions must also use the corrected working public profile URL.
+
+5. If the Free/User profile is intentionally public in product logic, then route/data lookup must support it.
+
+6. If the current lookup logic filters only “artist” roles, update it so the Free/User profile can also resolve correctly when public profile is enabled.
+
+Implementation guidance:
+- Inspect how Artist and Artist Pro public profiles are resolved
+- Reuse that same resolution logic for Free/User
+- Fix any role-based filtering that incorrectly excludes User accounts from public profile lookup
+- Ensure the route loads the public profile data for User accounts too
+
+Do NOT do:
+- do not create a duplicate profile page
+- do not redesign the profile page
+- do not remove Preview Public Profile from Free
+- do not remove Copy Link / Share
+- do not change pricing or dashboard architecture
+
+Expected result:
+- Free/User Preview Public Profile opens a real public profile page
+- Copy Link points to a valid public profile page
+- Share uses the same valid URL
+- Artist and Artist Pro public profile pages still work unchanged
+
+Stop condition:
+- Free/User preview button opens a working public profile
+- Free/User copied link opens a working public profile
+- No “Profile Not Available” error for valid Free/User public profiles
+- Artist and Artist Pro public profile flows still work
+- List all changed files
