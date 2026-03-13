@@ -1160,7 +1160,7 @@ export function ArtistDashboard() {
       dimensionUnit: artwork.dimension_unit || 'cm',
       priceAmount: priceAmountStr,
       priceCurrency: artwork.price_currency || 'EUR',
-      buyUrl: artwork.buy_url || '',
+      buyUrl: (artwork.buy_url && artwork.buy_url !== 'null') ? artwork.buy_url : '',
       image: null,
       medium: artwork.medium || '',
       styleTags: artwork.style_tags || [],
