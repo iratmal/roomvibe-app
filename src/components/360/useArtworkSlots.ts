@@ -13,6 +13,8 @@ export interface SlotAssignment {
   priceCurrency?: string;
   buyUrl?: string | null;
   description?: string | null;
+  story?: string | null;
+  sourceArtworkId?: string | null;
 }
 
 export interface UseArtworkSlotsResult {

@@ -12,6 +12,7 @@ const HybridPanoramaGalleryRenderer = lazy(() => import('./HybridPanoramaGallery
 interface Artwork {
   id: number;
   artwork_id?: number;
+  source_artwork_id?: number;
   title: string;
   artist_name?: string;
   image_url: string;
@@ -24,6 +25,13 @@ interface Artwork {
   width_cm?: number;
   height_cm?: number;
   orientation?: 'horizontal' | 'vertical' | 'square';
+  story?: string | null;
+  price_amount?: number | null;
+  priceAmount?: number | null;
+  price_currency?: string | null;
+  priceCurrency?: string | null;
+  buy_url?: string | null;
+  buyUrl?: string | null;
 }
 
 interface Gallery360EditorProps {
@@ -149,7 +157,12 @@ export function Gallery360Editor({
             artworkTitle: artwork.title || assignment.artworkTitle,
             artistName: artwork.artist_name || assignment.artistName,
             width: widthCm,
-            height: heightCm
+            height: heightCm,
+            story: artwork.story || assignment.story || null,
+            priceAmount: artwork.price_amount || artwork.priceAmount || assignment.priceAmount || null,
+            priceCurrency: artwork.price_currency || artwork.priceCurrency || assignment.priceCurrency || 'EUR',
+            buyUrl: artwork.buy_url || artwork.buyUrl || assignment.buyUrl || null,
+            sourceArtworkId: String(artwork.source_artwork_id || artwork.artwork_id || artwork.id)
           };
         } else {
           console.warn('[HydrateAssignment] No match found for artworkId:', assignment.artworkId, 
@@ -203,7 +216,6 @@ export function Gallery360Editor({
         resolved: { widthCm, heightCm }
       });
       
-      // Use clean_image_url for exhibitions (no mockups), fall back to image_url
       const exhibitionImageUrl = artwork.clean_image_url || artwork.image_url;
       
       assignArtwork(slotId, String(artwork.id), {
@@ -211,7 +223,12 @@ export function Gallery360Editor({
         artworkTitle: artwork.title,
         artistName: artwork.artist_name,
         width: widthCm,
-        height: heightCm
+        height: heightCm,
+        story: artwork.story || null,
+        priceAmount: artwork.price_amount || artwork.priceAmount || null,
+        priceCurrency: artwork.price_currency || artwork.priceCurrency || 'EUR',
+        buyUrl: artwork.buy_url || artwork.buyUrl || null,
+        sourceArtworkId: String(artwork.source_artwork_id || artwork.artwork_id || artwork.id)
       });
     } else {
       clearSlot(slotId);
@@ -220,7 +237,7 @@ export function Gallery360Editor({
 
   const handleArtworkClick = useCallback((slotId: string, assignment: SlotAssignment, slot: Slot) => {
     const priceLabel = assignment.priceAmount 
-      ? `${assignment.priceAmount.toLocaleString('hr-HR')} ${assignment.priceCurrency || 'EUR'}`
+      ? `${assignment.priceCurrency || 'EUR'} ${Number(assignment.priceAmount).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
       : undefined;
     
     const artworkData: ArtworkPanelData = {
@@ -232,8 +249,10 @@ export function Gallery360Editor({
       width: assignment.width,
       height: assignment.height,
       description: assignment.description || undefined,
+      story: assignment.story || undefined,
       price: priceLabel,
-      externalUrl: assignment.buyUrl || undefined
+      externalUrl: assignment.buyUrl || undefined,
+      sourceArtworkId: assignment.sourceArtworkId || undefined
     };
     
     setActiveArtwork(artworkData);

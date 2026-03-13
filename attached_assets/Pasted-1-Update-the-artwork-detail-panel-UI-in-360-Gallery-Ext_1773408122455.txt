@@ -1,0 +1,267 @@
+1. Update the artwork detail panel UI in 360 Gallery
+
+Extend the panel component used when an artwork is selected.
+
+Add these fields:
+
+Required content
+
+Title
+
+Dimensions
+
+Price
+
+Story Behind
+
+View & Buy
+
+View in Studio
+
+2. Data mapping requirements
+Title
+
+Use artwork title field.
+
+Dimensions
+
+Format cleanly, e.g.:
+
+150 × 100 cm
+Price
+
+Show formatted EUR value, e.g.:
+
+EUR 550
+
+If price is missing, hide the row gracefully.
+
+Story Behind
+
+Display short artwork story/description text if available.
+
+Rules:
+
+show a readable excerpt if the text is long
+
+preserve line breaks if possible
+
+avoid huge overflowing blocks
+
+If story is missing, hide this section.
+
+View & Buy
+
+Use the artwork’s buy URL / external purchase URL.
+
+Behavior:
+
+opens artist’s web page in a new tab
+
+label should be:
+
+View & Buy
+
+If no buy URL exists, hide button.
+
+View in Studio
+
+Add a button that opens this artwork in RoomVibe Studio.
+
+Behavior:
+
+route user directly into Studio with this artwork preloaded
+
+should use the same artwork source image currently assigned for Studio / Exhibition
+
+label:
+
+View in Studio
+
+If a dedicated route/helper already exists, reuse it.
+
+UX REQUIREMENTS
+Layout
+
+Keep the panel visually clean and premium.
+
+Suggested order:
+
+image thumbnail (if already present)
+
+title
+
+dimensions
+
+price
+
+story behind
+
+action buttons
+
+Buttons should be clearly separated:
+
+primary: View in Studio
+
+secondary: View & Buy
+
+If design system suggests the reverse, keep consistency with existing RoomVibe CTA styling.
+
+Story Behind presentation
+
+Do not overload the panel.
+
+If the story is long:
+
+show max 3–5 lines initially
+
+optionally allow “Read more” expansion if simple to implement
+
+If not simple, just truncate elegantly.
+
+Responsive behavior
+
+Make sure the detail panel remains usable on:
+
+desktop
+
+tablet
+
+smaller laptop widths
+
+Do not let long story text break layout.
+
+IMPORTANT CONSTRAINTS
+
+Do NOT change:
+
+street-view navigation
+
+zoom/focus interaction
+
+slot placement logic
+
+gallery presets
+
+artwork rendering logic
+
+existing editor assignment flow
+
+This is only a detail panel enrichment task.
+
+VIEW IN STUDIO REQUIREMENT
+
+The new View in Studio CTA must open the clicked artwork in the correct RoomVibe Studio flow.
+
+This should:
+
+use the selected artwork ID
+
+open the Studio page
+
+load the correct artwork
+
+preserve current role-based image behavior
+
+Do not create a fake placeholder button.
+It must be functional.
+
+FILES TO CHECK
+
+Likely areas:
+
+360 artwork detail panel component
+Exhibition viewer selected artwork modal/panel
+Public exhibition viewer
+Artwork metadata mapping utilities
+Studio deep-link helper / route builder
+
+Potential components may include:
+
+Viewer360.tsx
+
+Gallery360Scene.tsx
+
+selected artwork panel component
+
+exhibition viewer page
+
+artwork resolver / DTO transformer
+
+VALIDATION CASE
+
+Test with an artwork that has:
+
+title
+
+dimensions
+
+price
+
+story behind
+
+buy URL
+
+valid studio route
+
+Expected result after click:
+
+The panel shows:
+
+The Boat
+
+150 × 100 cm
+
+EUR 550
+
+Story Behind
+
+View & Buy
+
+View in Studio
+
+And both buttons work correctly.
+
+NON-SCOPE
+
+Do NOT:
+
+redesign the whole gallery viewer
+
+change artwork cards on dashboard
+
+edit artist dashboard layout
+
+change database schema unless absolutely necessary
+
+refactor unrelated exhibition code
+
+alter mockup/studio image selection logic
+
+STOP CONDITION
+
+Task is complete when:
+
+Clicking an artwork in 360 Gallery opens an enriched detail panel
+
+Panel shows title, dimensions, price, story behind, View & Buy, and View in Studio
+
+Missing fields are hidden gracefully
+
+Buttons work correctly
+
+Layout remains clean and usable
+
+Agent lists modified files and explains implementation briefly
+
+EXTRA INSTRUCTION
+
+This is a focused UI + data wiring task.
+
+Use Fast Mode if available
+
+Reuse existing artwork metadata fields
+
+Reuse existing Studio link logic if already present
+
+Do not do unnecessary refactors

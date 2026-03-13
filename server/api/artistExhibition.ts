@@ -293,14 +293,15 @@ router.get('/exhibition/:id/artworks', authenticateToken, async (req: any, res) 
       return res.status(404).json({ error: 'Exhibition not found' });
     }
 
-    // JOIN with artworks table to get fresh clean_image_id and current dimensions
+    // JOIN with artworks table to get fresh clean_image_id, story, and current dimensions
     const result = await query(
       `SELECT 
          aea.id, aea.exhibition_id, aea.source_artwork_id, aea.title, aea.artist_name,
          aea.width_value, aea.height_value, aea.dimension_unit, aea.slot_id, aea.created_at,
          a.clean_image_id, a.updated_at as artwork_updated_at,
          a.image_url as artwork_image_url, a.storage_key,
-         a.width as artwork_width, a.height as artwork_height
+         a.width as artwork_width, a.height as artwork_height,
+         a.story, a.price_amount, a.price_currency, a.buy_url
        FROM artist_exhibition_artworks aea
        LEFT JOIN artworks a ON a.id = aea.source_artwork_id
        WHERE aea.exhibition_id = $1 
@@ -334,21 +335,23 @@ router.get('/exhibition/:id/artworks', authenticateToken, async (req: any, res) 
         return {
           // Slot matching fields (snake_case to match Gallery360Editor expectations)
           id: row.id,
-          artwork_id: sourceId,           // alias for backward-compat matching in Gallery360Editor
+          artwork_id: sourceId,
           source_artwork_id: sourceId,
           title: row.title,
           artist_name: row.artist_name,
-          // Image URLs — always fresh, never stale
           image_url: imageUrl,
           clean_image_url: cleanImageUrl,
-          // Dimensions in snake_case matching Gallery360Editor field lookup
           width_cm: width,
           height_cm: height,
           width_value: width,
           height_value: height,
           dimension_unit: row.dimension_unit,
           slot_id: row.slot_id,
-          // Legacy camelCase fields for any other consumer
+          story: row.story || null,
+          price_amount: row.price_amount ? parseFloat(row.price_amount) : null,
+          price_currency: row.price_currency || 'EUR',
+          buy_url: row.buy_url || null,
+          // Legacy camelCase
           exhibitionId: row.exhibition_id,
           sourceArtworkId: sourceId,
           imageUrl: imageUrl,
@@ -356,6 +359,9 @@ router.get('/exhibition/:id/artworks', authenticateToken, async (req: any, res) 
           widthValue: width,
           heightValue: height,
           dimensionUnit: row.dimension_unit,
+          priceAmount: row.price_amount ? parseFloat(row.price_amount) : null,
+          priceCurrency: row.price_currency || 'EUR',
+          buyUrl: row.buy_url || null,
           createdAt: row.created_at
         };
       })
@@ -884,11 +890,12 @@ router.get('/exhibition/:id/360-public', async (req, res) => {
       return res.status(403).json({ error: 'Exhibition is not published' });
     }
 
-    // JOIN with artworks to get clean_image_id (designated exhibition image)
+    // JOIN with artworks to get clean_image_id, story, and pricing
     const artworksResult = await query(
       `SELECT aea.id, aea.source_artwork_id, aea.title, aea.width_value, aea.height_value, aea.dimension_unit,
               a.clean_image_id, a.updated_at as artwork_updated_at,
-              a.width as artwork_width, a.height as artwork_height
+              a.width as artwork_width, a.height as artwork_height,
+              a.story, a.price_amount, a.price_currency, a.buy_url
        FROM artist_exhibition_artworks aea
        LEFT JOIN artworks a ON a.id = aea.source_artwork_id
        WHERE aea.exhibition_id = $1`,
@@ -997,7 +1004,12 @@ router.get('/exhibition/:id/360-public', async (req, res) => {
         artistName: exhibition.artist_name || slot.artistName,
         width: parseFloat(artwork.artwork_width) || parseFloat(artwork.width_value) || slot.width || 100,
         height: parseFloat(artwork.artwork_height) || parseFloat(artwork.height_value) || slot.height || 70,
-        dimensionUnit: artwork.dimension_unit || 'cm'
+        dimensionUnit: artwork.dimension_unit || 'cm',
+        story: artwork.story || null,
+        priceAmount: artwork.price_amount ? parseFloat(artwork.price_amount) : null,
+        priceCurrency: artwork.price_currency || 'EUR',
+        buyUrl: artwork.buy_url || null,
+        sourceArtworkId: String(artwork.source_artwork_id)
       };
     });
 
