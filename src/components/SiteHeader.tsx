@@ -19,7 +19,7 @@ function getPlanDisplayName(effectivePlan: string | undefined): string {
     case 'free':
     case 'user':
     default:
-      return 'Free';
+      return 'User';
   }
 }
 

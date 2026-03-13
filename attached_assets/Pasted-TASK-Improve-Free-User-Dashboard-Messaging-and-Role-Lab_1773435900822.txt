@@ -1,0 +1,131 @@
+TASK — Improve Free (User) Dashboard Messaging and Role Labels
+
+We need to improve the Free (User) plan dashboard messaging and fix incorrect role labels.
+
+The goal is to clearly explain which features are available only on Artist or Artist Pro plans and avoid confusing the user.
+
+1️⃣ Exhibition Section — Improve Free Plan Messaging
+
+Current section:
+
+My Exhibition
+How it works:
+First upload your artworks in the Artworks section. Then use "Add to Exhibition"...
+
+This text is misleading for Free users because virtual exhibitions are not available on the Free plan.
+
+Replace this explanation with:
+
+Example:
+
+Virtual Exhibitions
+
+Create immersive 3D galleries and curate your artworks into a virtual exhibition.
+
+This feature is available on the Artist and Artist Pro plans.
+
+Add upgrade call-to-action:
+
+Button:
+
+Upgrade to Artist
+Update the card that currently shows:
+Virtual Exhibitions
+Create an immersive 3D gallery and share your artworks as a curated exhibition.
+
+Replace with:
+
+Virtual Exhibitions
+
+Create immersive 3D galleries and present your artworks in a curated exhibition.
+
+Available on Artist and Artist Pro plans.
+
+Keep the Upgrade to Artist button.
+
+2️⃣ Inbox Page — Clarify Messaging System
+
+Current message:
+
+No messages yet
+When designers or galleries reach out to you about your artwork, their messages will appear here.
+
+This is partially incorrect for Free users.
+
+Free users can receive messages from people who visit their public profile, but they cannot receive messages from designers or galleries through the RoomVibe network.
+
+Replace with:
+No messages yet
+
+Messages sent through your public artist profile will appear here.
+
+Direct messages from designers and galleries on RoomVibe are available on Artist and Artist Pro plans.
+
+Add upgrade prompt below the message:
+
+Button:
+
+Upgrade to Artist
+3️⃣ Settings Page — Fix Role Label
+
+On the Settings page we currently show:
+
+Role: Artist
+
+This is incorrect for Free users.
+
+Replace with:
+
+Role: User
+
+Free accounts are called User accounts, not Artist accounts.
+
+4️⃣ Top Navigation Plan Badge
+
+In the top navigation bar we currently show:
+
+Free
+
+Update the plan label to show:
+
+User
+
+This keeps naming consistent with the account type.
+
+Example:
+
+User
+Artist
+Artist Pro
+5️⃣ Settings Card — Update Account Information
+
+In the account info card update labels:
+
+Current:
+
+Artist Account
+Role: Artist
+
+Replace with:
+
+User Account
+Role: User
+
+Other fields remain the same:
+
+Email
+Status
+Artworks
+Expected Result
+
+Free users will now clearly understand:
+
+exhibitions require Artist plan
+
+designer/gallery messaging requires Artist plan
+
+their account type is User
+
+upgrade options are visible in relevant sections
+
+This improves clarity and upgrade conversion.

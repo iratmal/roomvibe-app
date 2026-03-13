@@ -20,9 +20,10 @@ interface Message {
 
 interface ArtistInboxProps {
   onUnreadCountChange?: (count: number) => void;
+  isFreePlan?: boolean;
 }
 
-export function ArtistInbox({ onUnreadCountChange }: ArtistInboxProps) {
+export function ArtistInbox({ onUnreadCountChange, isFreePlan }: ArtistInboxProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -179,12 +180,34 @@ export function ArtistInbox({ onUnreadCountChange }: ArtistInboxProps) {
           </svg>
         </div>
         <h3 className="text-lg font-bold text-rv-text mb-2">No messages yet</h3>
-        <p className="text-rv-textMuted max-w-md mx-auto mb-4">
-          When designers or galleries reach out to you about your artwork, their messages will appear here.
-        </p>
-        <p className="text-sm text-rv-textMuted">
-          Tip: Enable visibility to designers and galleries in your profile to receive inquiries.
-        </p>
+        {isFreePlan ? (
+          <>
+            <p className="text-rv-textMuted max-w-md mx-auto mb-2">
+              Messages sent through your public artist profile will appear here.
+            </p>
+            <p className="text-sm text-rv-textMuted max-w-md mx-auto mb-5">
+              Direct messages from designers and galleries on RoomVibe are available on Artist and Artist Pro plans.
+            </p>
+            <a
+              href="#/pricing"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-colors text-sm font-semibold"
+            >
+              Upgrade to Artist
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </a>
+          </>
+        ) : (
+          <>
+            <p className="text-rv-textMuted max-w-md mx-auto mb-4">
+              When designers or galleries reach out to you about your artwork, their messages will appear here.
+            </p>
+            <p className="text-sm text-rv-textMuted">
+              Tip: Enable visibility to designers and galleries in your profile to receive inquiries.
+            </p>
+          </>
+        )}
       </div>
     );
   }

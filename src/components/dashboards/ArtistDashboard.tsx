@@ -2886,6 +2886,14 @@ export function ArtistDashboard() {
                   Each artwork can be added to any exhibition you choose, and you can update your exhibitions at any time.
                 </p>
               </>
+            ) : isFreePlan ? (
+              <>
+                <p className="text-sm font-semibold text-rv-text mb-1">Virtual Exhibitions</p>
+                <p className="text-sm text-rv-textMuted">
+                  Create immersive 3D galleries and curate your artworks into a virtual exhibition.
+                  This feature is available on the Artist and Artist Pro plans.
+                </p>
+              </>
             ) : (
               <>
                 <p className="text-sm text-rv-textMuted">
@@ -3025,7 +3033,8 @@ export function ArtistDashboard() {
                   </div>
                   <h3 className="text-lg font-bold text-rv-text mb-2">Virtual Exhibitions</h3>
                   <p className="text-rv-textMuted text-sm mb-4">
-                    Create an immersive 3D gallery and share your artworks as a curated exhibition. Available on the Artist plan.
+                    Create immersive 3D galleries and present your artworks in a curated exhibition.
+                    Available on Artist and Artist Pro plans.
                   </p>
                   <a
                     href="#/pricing"
@@ -3540,7 +3549,7 @@ export function ArtistDashboard() {
         )}
 
         {activeTab === 'inbox' && (
-          <ArtistInbox onUnreadCountChange={setUnreadCount} />
+          <ArtistInbox onUnreadCountChange={setUnreadCount} isFreePlan={isFreePlan} />
         )}
 
         {activeTab === 'settings' && (
@@ -3551,10 +3560,10 @@ export function ArtistDashboard() {
 
             <div className="grid gap-6 md:grid-cols-2">
               <div className="p-6 bg-rv-primary/5 rounded-rvLg border border-rv-primary/20">
-                <h3 className="text-lg font-bold mb-3 text-rv-primary">Artist Account</h3>
+                <h3 className="text-lg font-bold mb-3 text-rv-primary">{isFreePlan ? 'User Account' : isArtistPro ? 'Artist Pro Account' : 'Artist Account'}</h3>
                 <div className="space-y-2 text-sm">
                   <p><span className="font-semibold text-rv-text">Email:</span> <span className="text-rv-textMuted">{user?.email}</span></p>
-                  <p><span className="font-semibold text-rv-text">Role:</span> <span className="text-rv-textMuted">{isArtistPro ? 'Artist Pro' : 'Artist'}</span></p>
+                  <p><span className="font-semibold text-rv-text">Role:</span> <span className="text-rv-textMuted">{isFreePlan ? 'User' : isArtistPro ? 'Artist Pro' : 'Artist'}</span></p>
                   <p><span className="font-semibold text-rv-text">Status:</span> {user?.emailConfirmed ? <span className="text-[#C9A24A] font-semibold">✓ Verified</span> : <span className="text-amber-600 font-semibold">⚠ Pending</span>}</p>
                   <p><span className="font-semibold text-rv-text">Artworks:</span> <span className="text-rv-textMuted">{artworks.length}</span></p>
                 </div>
