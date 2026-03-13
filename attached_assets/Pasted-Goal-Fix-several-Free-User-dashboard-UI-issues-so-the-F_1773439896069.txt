@@ -1,0 +1,127 @@
+Goal:
+Fix several Free/User dashboard UI issues so the Free plan clearly communicates what is and is not available.
+
+Context:
+The Free/User dashboard is mostly implemented, but some elements still incorrectly behave as if the user had access to exhibitions and Artist Connect visibility.
+
+This task applies ONLY to the Free/User dashboard.
+
+Important rules:
+- Do NOT modify Artist dashboard
+- Do NOT modify Artist Pro dashboard
+- Do NOT change plan logic or billing logic
+- Do NOT redesign the full dashboard
+- Keep existing layout and styling, only fix incorrect Free-plan UI behavior
+- Use RoomVibe brand yellow instead of green where specified below
+
+Scope:
+
+1. Fix exhibition counter in top stats
+Current problem:
+The Free/User dashboard shows:
+0 / 1 Exhibitions
+
+This is incorrect because Free/User does not have access to exhibitions.
+
+Required fix:
+Change this stat so it no longer implies the user has 1 available exhibition.
+
+Preferred solution:
+Show:
+0 / 0 Exhibitions
+
+If the component supports a better locked-state wording while keeping the same layout, that is also acceptable, but it must clearly communicate:
+Free plan does not include exhibitions.
+
+Do NOT leave:
+0 / 1 Exhibitions
+
+2. Change Free progress color from green to RoomVibe yellow
+Current problem:
+The progress bar under Clean Artworks uses green.
+
+Required fix:
+Change the Clean Artworks progress bar color to the RoomVibe yellow/gold accent color.
+
+This applies to the usage/progress line for Free uploads.
+
+Do NOT leave it green.
+
+3. Change “Available” badge color from green to RoomVibe yellow
+Current problem:
+Artwork card availability badge (“Available”) is green.
+
+Required fix:
+Change the “Available” badge color on Free/User artwork cards to the RoomVibe yellow/gold accent color.
+
+Keep:
+- same size
+- same placement
+- same typography
+
+Only change the color styling.
+
+4. Remove Artist Connect visibility block from Free artwork cards
+Current problem:
+On Free/User artwork cards we currently show:
+Visibility in Artist Connect
+Visible to Designers / Visible to Galleries
+Turn on profile visibility first...
+
+This does not belong on the Free plan because Free users do not have Artist Connect visibility.
+
+Required fix:
+Remove the Artist Connect visibility block from Free/User artwork cards entirely.
+
+This includes removing:
+- Visibility in Artist Connect title
+- designer/gallery visibility checkboxes or labels
+- helper/warning text such as:
+  Turn on profile visibility first to enable artwork visibility.
+
+Free users should not see partial Artist Connect artwork visibility controls on the card.
+
+5. Keep “Add to Exhibition” button visible, but make it clearly locked
+Current problem:
+The Add to Exhibition button appears active, but Free users do not have exhibition access.
+
+Required fix:
+Keep the Add to Exhibition button on Free/User artwork cards for upgrade visibility, but make it visually disabled/locked.
+
+Requirements:
+- use grey/disabled styling
+- it must clearly look unavailable on Free plan
+- it should not behave like a normal active action
+
+Add a short helper text near the button or below the action row.
+
+Suggested wording:
+To add artworks to exhibitions, upgrade to Artist or Artist Pro.
+
+Alternative wording is fine if concise and clear.
+
+6. Keep other artwork card actions working
+Do NOT break:
+- Edit
+- Delete
+- View in Studio
+- Get Widget Code
+
+Only fix Free-plan-specific incorrect elements.
+
+7. Keep Free plan logic consistent
+The final Free artwork card should communicate:
+- artwork exists
+- can be edited/deleted/viewed in studio
+- exhibitions are locked
+- Artist Connect artwork visibility is not available on Free
+
+Stop condition:
+- Top stat no longer shows 0 / 1 Exhibitions for Free
+- Clean Artworks progress bar is RoomVibe yellow
+- Available badge is RoomVibe yellow
+- Artist Connect visibility block is removed from Free artwork cards
+- Add to Exhibition remains visible but clearly disabled/locked
+- A short upgrade explanation is shown for exhibitions
+- No Artist or Artist Pro dashboard was changed
+- List all changed files

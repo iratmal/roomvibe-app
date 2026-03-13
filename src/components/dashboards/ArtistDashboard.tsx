@@ -91,7 +91,7 @@ function availabilityBadge(availability: string | undefined) {
   const val = availability || 'available';
   if (val === 'sold') return { label: 'Sold', cls: 'bg-red-100 text-red-600' };
   if (val === 'on_request') return { label: 'Reserved', cls: 'bg-amber-100 text-amber-700' };
-  return { label: 'Available', cls: 'bg-green-100 text-green-700' };
+  return { label: 'Available', cls: 'bg-[#C9A24A]/10 text-[#C9A24A]' };
 }
 
 function formatPrice(priceAmount: number | string | null | undefined, currency: string): string | null {
@@ -1569,7 +1569,7 @@ export function ArtistDashboard() {
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-[#C9A24A]">
-                      {isArtistPro ? exhibitions.length : (exhibition ? 1 : 0)}{isArtistPro ? '' : ' / 1'}
+                      {isArtistPro ? exhibitions.length : (exhibition ? 1 : 0)}{isArtistPro ? '' : isFreePlan ? ' / 0' : ' / 1'}
                     </p>
                     <p className="text-xs text-rv-textMuted">{isArtistPro ? 'Exhibitions (Unlimited)' : 'Exhibitions'}</p>
                   </div>
@@ -1632,7 +1632,7 @@ export function ArtistDashboard() {
                     </span>
                   </p>
                   <div className="mt-2 h-1 bg-rv-neutral rounded-full overflow-hidden">
-                    <div className="h-full bg-green-500 rounded-full" style={{ width: cleanLimit === -1 ? '100%' : `${Math.min((cleanArtworkIds.size / cleanLimit) * 100, 100)}%` }} />
+                    <div className="h-full bg-[#C9A24A] rounded-full" style={{ width: cleanLimit === -1 ? '100%' : `${Math.min((cleanArtworkIds.size / cleanLimit) * 100, 100)}%` }} />
                   </div>
                 </div>
                 <div className="p-4 rounded-rvLg border bg-white border-rv-neutral shadow-rvSoft">
@@ -2598,6 +2598,7 @@ export function ArtistDashboard() {
                     )}
                     
                     {/* Visibility in Artist Connect */}
+                    {!isFreePlan && (
                     <div className="mb-4 p-3 bg-rv-surface rounded-rvMd border border-rv-neutral">
                       <p className="text-xs font-semibold text-rv-textMuted mb-2">Visibility in Artist Connect</p>
                       <div className="flex flex-col gap-2">
@@ -2640,6 +2641,7 @@ export function ArtistDashboard() {
                         </p>
                       )}
                     </div>
+                    )}
                     
                     {/* Row 1: Admin actions (compact) */}
                     <div className="flex gap-2.5 mt-4">
@@ -2806,6 +2808,16 @@ export function ArtistDashboard() {
                           </svg>
                           In Exhibition
                         </button>
+                      ) : isFreePlan ? (
+                        <button
+                          disabled
+                          className="flex-1 h-11 px-3 text-sm bg-gray-100 text-gray-400 rounded-rvMd font-semibold flex items-center justify-center gap-1.5 cursor-not-allowed"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                          Add to Exhibition
+                        </button>
                       ) : (
                         <button
                           onClick={() => handleAddToExhibition(artwork.id)}
@@ -2818,6 +2830,11 @@ export function ArtistDashboard() {
                         </button>
                       )}
                     </div>
+                    {isFreePlan && (
+                      <p className="text-xs text-rv-textMuted mt-1.5 text-center">
+                        To add artworks to exhibitions, upgrade to Artist or Artist Pro.
+                      </p>
+                    )}
 
                     {/* Row 3: Secondary (advanced) */}
                     <button
