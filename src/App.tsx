@@ -4377,17 +4377,11 @@ function ArtistPublicProfilePage() {
   const slug = hash.replace('#/artist/', '').split('?')[0];
 
   const handleViewInRoom = (artwork: any) => {
-    let imageUrl = artwork.cleanImageUrl || artwork.clean_image_url || artwork.imageUrl || artwork.image_url;
-
-    if (imageUrl && imageUrl.startsWith('/api/')) {
-      const apiUrl = import.meta.env.DEV ? 'http://localhost:3001' : '';
-      imageUrl = `${apiUrl}${imageUrl}`;
-    }
-
-    if (!imageUrl) return;
+    if (!artwork.id) return;
 
     const params = new URLSearchParams({
-      externalImage: imageUrl,
+      artworkId: String(artwork.id),
+      title: artwork.title || '',
       width: String(artwork.width || 50),
       height: String(artwork.height || 50),
       unit: artwork.dimensionUnit || 'cm',

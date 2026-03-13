@@ -1,0 +1,117 @@
+Goal:
+Fix the User/Free public profile page so artwork cards always reflect the latest saved artwork data and the “View in Room” button opens the correct artwork.
+
+Context:
+On the User/Free public profile page, there are currently two bugs:
+
+1. Artwork card data is stale:
+   If artwork details are edited in the dashboard (for example dimensions), the public profile card does not update correctly and still shows old values.
+
+2. “View in Room” on the public profile page opens the wrong artwork/image:
+   It should open the room viewer for the exact artwork shown on that public card, using the correct image and artwork data.
+
+This task applies to the User/Free public profile flow.
+
+Important rules:
+- Do NOT redesign the public profile page
+- Do NOT redesign the dashboard
+- Do NOT change pricing or plan logic
+- Do NOT change Artist or Artist Pro public profile behavior unless shared code requires a safe fix
+- Reuse the existing public profile architecture
+- This is a data-sync and routing/data-binding fix
+
+Scope:
+
+1. Fix artwork card data sync on User public profile
+Current problem:
+After editing artwork data in the User dashboard (example: dimensions changed from 70x70 to 50x70), the public profile card still shows old values.
+
+Required fix:
+The public profile artwork cards must always display the latest saved artwork data from the dashboard.
+
+This includes at minimum:
+- artwork title
+- dimensions
+- price
+- description if shown
+- availability if shown
+- current card image
+
+The public profile must not use stale cached artwork values.
+
+2. Make public profile artwork cards resolve from current saved artwork data
+Inspect how public profile cards fetch artwork data.
+Ensure they are reading from the current saved artwork record, not:
+- stale client state
+- outdated cached object
+- old route payload
+- temporary edit state
+
+Use the artwork ID as the source of truth.
+
+3. Fix “View in Room” on User public profile
+Current problem:
+On the public profile page, clicking “View in Room” opens the wrong image/artwork.
+
+Required fix:
+“View in Room” must open the room viewer for the exact artwork shown on that card.
+
+It must use:
+- the correct artwork ID
+- the correct dimensions
+- the correct selected Studio / Exhibition image for that artwork
+- the correct title
+
+It must NOT:
+- open a different artwork
+- open a previous artwork
+- use stale viewer state
+- use the card image if the Studio image is different
+
+4. Correct image source rules for public profile “View in Room”
+Use the same artwork-specific image rules already intended for Studio:
+
+Preferred source:
+- artwork’s designated Exhibition & Studio Image
+
+Fallback only if needed:
+- another valid image from the same artwork
+
+Never use:
+- image from another artwork
+- stale cached image
+- default unrelated artwork image
+
+5. Ensure edits propagate correctly
+After saving edits in the User dashboard, the public profile must reflect the updated artwork card data without continuing to show old values.
+
+If caching is used, ensure it invalidates/refetches correctly after artwork updates.
+
+6. Keep public profile actions intact
+Do NOT break:
+- View & Buy
+- artwork card rendering
+- artist profile header
+- contact button
+- public profile shareability
+
+Do not do:
+- do not redesign the public page
+- do not add new UI features
+- do not change Artist / Artist Pro public profile logic unless necessary for a shared safe fix
+- do not modify pricing
+- do not change studio UI itself
+
+Expected result:
+- User/Free public profile artwork cards always show the latest saved artwork data
+- Dimensions and other metadata match what was last saved in dashboard
+- “View in Room” opens the correct artwork shown on the clicked card
+- Public profile behaves consistently with dashboard edits
+
+Stop condition:
+- Editing artwork in User dashboard updates the same artwork on public profile
+- Public profile card dimensions/title/image are correct
+- “View in Room” opens the correct artwork for that card
+- No unrelated artwork appears in Studio
+- No regression to the rest of the User public profile page
+- List all changed files
