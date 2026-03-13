@@ -1,0 +1,110 @@
+1️⃣ Improve “Your Plan” section copy
+
+In the Free/User dashboard Settings tab, update the copy inside the Your Plan card.
+
+Current helper text is too generic.
+
+Replace the short intro text:
+
+From something like:
+
+For people trying RoomVibe for the first time.
+
+To:
+
+Perfect for getting started with RoomVibe.
+Upload a few artworks and see how they look in real interior spaces.
+2️⃣ Add clear “Free plan includes” explanation
+
+Inside the same Your Plan card, improve the feature explanation so the user clearly understands what the Free plan includes.
+
+Use wording like this:
+
+Free plan includes:
+
+• Upload up to 3 artworks without watermark
+• Add up to 7 additional artworks with RoomVibe watermark
+• Preview artworks in mockup rooms
+• Share your public artist profile
+• Embed RoomVibe Studio on your website
+
+Keep styling consistent with the existing card.
+
+3️⃣ Improve upgrade CTA wording
+
+Currently there is a button like:
+
+View all plans
+
+Replace this CTA text with:
+
+Compare plans
+
+Above the button, add or improve the supporting text so it clearly motivates upgrade.
+
+Use wording like:
+
+Want more uploads, mockup rooms and exhibitions?
+
+Keep the button style visually consistent with RoomVibe.
+
+4️⃣ Fix incorrect account naming on Free plan
+
+On the Free/User Settings page, the account information card currently incorrectly uses Artist naming.
+
+Fix the following:
+
+Replace:
+Artist Account
+Role: Artist
+With:
+User Account
+Role: User
+
+Do not change:
+
+email
+
+status
+
+artwork count
+
+password section
+
+This fix applies only to the Free/User dashboard.
+
+5️⃣ Fix top-right plan badge naming
+
+In the top navigation / account badge area, the Free plan should use consistent naming.
+
+If the dashboard/account type is called User, make sure naming is consistent.
+
+Update the plan/account naming so it does not conflict between:
+
+Free
+
+User
+
+Artist
+
+Use the naming convention that matches the current product structure:
+
+User
+
+or, if plan badge must stay plan-based while role stays User, keep it logically consistent.
+
+Required consistency:
+
+account role = User
+
+settings card = User Account
+
+dashboard plan messaging = Free plan
+
+Do not leave confusing contradictions like:
+
+Free plan + Artist account
+
+Free plan + Role Artist
+
+Make this naming consistent across the Free dashboard.

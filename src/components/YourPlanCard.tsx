@@ -19,15 +19,15 @@ interface PlanDisplay {
 
 const PLAN_DISPLAYS: Record<string, PlanDisplay> = {
   user: {
-    badge: 'Free',
+    badge: 'User',
     badgeColor: 'bg-gray-100 text-gray-700',
-    description: 'For people trying RoomVibe for the first time.',
+    description: 'Perfect for getting started with RoomVibe.\nUpload a few artworks and see how they look in real interior spaces.',
     bullets: [
-      'Upload up to 3 artworks',
+      'Upload up to 3 artworks without watermark',
+      'Add up to 7 additional artworks with RoomVibe watermark',
       'Preview artworks in mockup rooms',
-      'Embed Studio widget on your website',
-      'Buy button integration',
-      'Add up to 7 additional artworks with RoomVibe branding',
+      'Share your public artist profile',
+      'Embed RoomVibe Studio on your website',
     ],
   },
   artist: {
@@ -187,7 +187,7 @@ export function YourPlanCard() {
           <p className="text-sm text-rv-textMuted mb-2">
             Status: <span className={`font-semibold ${statusDisplay.color}`}>{statusDisplay.text}</span>
           </p>
-          <p className="text-sm text-rv-text">
+          <p className="text-sm text-rv-text whitespace-pre-line">
             {isCanceledOrExpired
               ? 'Your subscription is canceled. You still have free access to the basic RoomVibe studio.'
               : planDisplay.description}
@@ -209,7 +209,7 @@ export function YourPlanCard() {
 
         {isFree && (
           <p className="text-sm text-rv-textMuted mb-6">
-            Want more mockup rooms and uploads?
+            Want more uploads, mockup rooms and exhibitions?
           </p>
         )}
 
@@ -232,7 +232,7 @@ export function YourPlanCard() {
               onClick={() => window.scrollTo(0, 0)}
               className="flex-1 text-center py-2.5 px-4 rounded-rvMd font-semibold text-sm bg-rv-primary text-white hover:bg-rv-primaryHover transition-colors"
             >
-              View all plans
+              Compare plans
             </a>
           ) : isCanceledOrExpired ? (
             <a
