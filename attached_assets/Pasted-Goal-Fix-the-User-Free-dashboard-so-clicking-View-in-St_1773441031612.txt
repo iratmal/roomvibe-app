@@ -1,0 +1,64 @@
+Goal:
+Fix the User/Free dashboard so clicking “View in Studio” from an artwork card always opens the correct artwork in RoomVibe Studio.
+
+Context:
+On the User/Free dashboard, when clicking “View in Studio” on an artwork card, Studio sometimes opens a different artwork image instead of the artwork shown on that card.
+
+This is incorrect and breaks trust in the product.
+
+The Studio must always open the exact artwork from the selected card.
+
+Important rules:
+- Apply this fix ONLY to the User/Free dashboard flow for now
+- Do NOT modify Artist dashboard in this task
+- Do NOT modify Artist Pro dashboard in this task
+- Do NOT redesign Studio UI
+- Do NOT redesign artwork cards
+- Do NOT change pricing or plan logic
+- This is a data-binding / routing fix only
+
+Expected correct behavior:
+1. User sees an artwork card on the dashboard
+2. User clicks “View in Studio”
+3. Studio opens with the same artwork as on that card
+4. The artwork title, image, and dimensions must correspond to that selected artwork
+
+Scope:
+1. Inspect the current “View in Studio” action on User artwork cards.
+2. Ensure the button passes the correct selected artwork data to Studio.
+3. Ensure Studio loads the artwork linked to that specific card, not:
+   - a previous artwork
+   - a default artwork
+   - a fallback artwork
+   - a cached last-opened artwork
+4. Verify that the correct image role is used for Studio:
+   - use the designated Exhibition & Studio Image if configured
+   - otherwise use the correct fallback image for that same artwork only
+5. Verify that the following match the selected artwork:
+   - artwork title
+   - artwork image
+   - artwork dimensions
+   - artwork ID / route params / query params
+6. If query params are used in Studio route, make sure they are generated from the clicked artwork card and not stale values.
+7. If cached Studio state exists, ensure it is replaced/reset when opening a different artwork from dashboard.
+
+Implementation guidance:
+- Trace the clicked artwork card data through the View in Studio button handler
+- Confirm that artworkId, imageUrl, title, width, and height belong to the clicked card
+- Remove any stale fallback behavior that can load an unrelated artwork
+- Prefer a single source of truth: clicked artwork ID
+- Then load all Studio data from that ID
+
+Do NOT do:
+- do not change Studio features
+- do not change room presets
+- do not change export logic
+- do not touch Artist / Artist Pro flows in this task
+- do not add new UI elements
+
+Stop condition:
+- Clicking View in Studio on a User artwork card always opens the same artwork shown on that card
+- No unrelated artwork appears in Studio
+- Artwork title/image/dimensions match the clicked card
+- No regression in existing Studio behavior for the User flow
+- List all changed files

@@ -1095,8 +1095,8 @@ function Studio() {
   // Set artworks based on authentication state and plan
   useEffect(() => {
     if (hasLoadedUserArtworks) {
-      if (!user || isFreePlan) {
-        // Unauthenticated or free users: show demo artworks for marketing
+      if (!user || (isFreePlan && !artIdFromUrl)) {
+        // Unauthenticated or free users without a specific artwork link: show demo artworks
         setArtworksState(localArtworks as any[]);
       } else {
         // Authenticated paid users: show ONLY their artworks (no demo fallback)
@@ -1170,9 +1170,9 @@ function Studio() {
   
   useEffect(() => {
     const loadArtworkFromUrl = async () => {
-      // Free users are restricted to placeholder artwork only
-      // Skip URL-based artwork loading for free users
-      if (isFreePlan) {
+      // Free users without a specific artwork link are restricted to placeholder only
+      // But if they arrived from "View in Studio" (artIdFromUrl is set), allow their own artwork
+      if (isFreePlan && !artIdFromUrl) {
         return;
       }
       
@@ -1252,15 +1252,15 @@ function Studio() {
     loadArtworkFromUrl();
   }, [isFreePlan, artIdFromUrl]);
   
-  // Enforce placeholder artwork for free users
+  // Enforce placeholder artwork for free users — but not when they arrived via "View in Studio"
   useEffect(() => {
-    if (isFreePlan && artId !== placeholderArtId) {
+    if (isFreePlan && !artIdFromUrl && artId !== placeholderArtId) {
       setArtId(placeholderArtId);
     }
-  }, [isFreePlan, artId, placeholderArtId]);
+  }, [isFreePlan, artIdFromUrl, artId, placeholderArtId]);
   
-  // For free users, always use placeholder artwork regardless of state
-  const effectiveArtId = isFreePlan ? placeholderArtId : artId;
+  // For free users, use placeholder unless they arrived from "View in Studio" with a specific artwork
+  const effectiveArtId = (isFreePlan && !artIdFromUrl) ? placeholderArtId : artId;
   const art = artworksState.find((a) => a.id === effectiveArtId);
   
   // Determine if the current artwork should show the RoomVibe watermark.
