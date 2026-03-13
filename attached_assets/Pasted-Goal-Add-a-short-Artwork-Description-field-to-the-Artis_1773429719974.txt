@@ -1,0 +1,66 @@
+Goal:
+Add a short Artwork Description field to the Artist dashboard artwork flow.
+
+Context:
+RoomVibe Artist dashboard currently supports title, dimensions, price, medium, style tags, and Story Behind, but it is missing a short artwork description.
+We need a concise description field for better presentation of artworks.
+
+Important rules:
+
+The Artist dashboard is the reference dashboard for this polish phase.
+
+Implement this task ONLY on the Artist dashboard.
+
+Do NOT modify Artist Pro dashboard in this task.
+Do NOT modify Free plan dashboard in this task.
+
+Do NOT change subscription logic, plan limits, or billing logic.
+Do NOT change Pro-only features such as multiple exhibitions or exhibition selection dropdowns.
+
+Focus only on the Artist dashboard implementation.
+Reuse existing shared components only if necessary, but do not apply UI changes to other plans yet.
+
+Use Fast Mode if available for small focused UI changes.
+
+If the task cannot be completed after 2–3 attempts, stop and explain the blocker.
+
+Scope:
+1. Add a new optional artwork field:
+   - name: description
+   - type: text
+   - max length: 500 characters
+
+2. Add this field to the Artist artwork create/edit form.
+
+3. Use label:
+   - Artwork Description
+
+4. Add helper text:
+   - Short description of the artwork (technique, mood, inspiration).
+
+5. Show character counter if the form already supports counters consistently.
+
+6. Display the description in Artist artwork detail/info view where full artwork info is shown.
+
+7. Display order should be:
+   - Title
+   - Dimensions
+   - Price
+   - Description
+   - Story Behind
+
+8. Make sure existing artworks without description do not break UI.
+
+Do not do:
+- do not redesign the whole artwork form
+- do not add new tags
+- do not change exhibitions logic
+- do not touch Artist Pro or Free
+
+Stop condition:
+- Artist can add description
+- Artist can edit description
+- Description saves correctly
+- Description displays correctly where full artwork info is shown
+- Existing artworks without description still work
+- List all changed files

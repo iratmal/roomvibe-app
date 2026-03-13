@@ -1,0 +1,56 @@
+Goal:
+Improve clarity and onboarding in the Artist dashboard with small helper texts and micro UX improvements.
+
+Context:
+Some Artist dashboard features are already strong, but new users may not fully understand what certain fields or controls do.
+We want small high-value clarity improvements without redesigning the dashboard.
+
+Important rules:
+
+The Artist dashboard is the reference dashboard for this polish phase.
+
+Implement this task ONLY on the Artist dashboard.
+
+Do NOT modify Artist Pro dashboard in this task.
+Do NOT modify Free plan dashboard in this task.
+
+Do NOT change subscription logic, plan limits, or billing logic.
+Do NOT change Pro-only features such as multiple exhibitions or exhibition selection dropdowns.
+
+Focus only on the Artist dashboard implementation.
+Reuse existing shared components only if necessary, but do not apply UI changes to other plans yet.
+
+Use Fast Mode if available for small focused UI changes.
+
+If the task cannot be completed after 2–3 attempts, stop and explain the blocker.
+
+Scope:
+1. Add or improve helper text for Profile Photo:
+   - Recommended size: square image (400x400).
+
+2. Add or improve helper text for Header Image:
+   - Recommended size: 1920x600px or wider.
+
+3. Add helper text for Bio:
+   - Tip: describe your artistic style, themes and medium.
+
+4. Improve Artist Connect Visibility explanatory text:
+   - Visible to Designers: Interior designers can discover and contact you.
+   - Visible to Galleries: Galleries can discover your work and contact you.
+
+5. Improve empty Inbox text slightly if needed so it encourages usage, but keep it minimal.
+
+6. Review obvious small copy inconsistencies in the Artist dashboard and fix only clearly local Artist copy issues.
+
+Do not do:
+- do not redesign sections
+- do not add tooltips everywhere
+- do not rewrite the whole dashboard copy
+- do not touch Artist Pro or Free
+- do not change settings/billing logic
+
+Stop condition:
+- The Artist dashboard has clearer helper text in the main profile areas
+- Microcopy feels more professional and easier for new users
+- No unrelated UI changes were made
+- List all changed files

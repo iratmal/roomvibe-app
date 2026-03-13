@@ -61,7 +61,7 @@ router.get('/artworks', authenticateToken, async (req: any, res) => {
     let queryParams;
 
     if (effectivePlan === 'admin') {
-      queryText = `SELECT a.id, a.artist_id, a.title, a.image_url, a.storage_key, a.width, a.height, a.dimension_unit, a.price_amount, a.price_currency, a.buy_url, a.tags, a.orientation, a.style_tags, a.dominant_colors, a.medium, a.availability, a.visible_to_designers, a.visible_to_galleries, a.variants, a.card_image_id, a.clean_image_id, a.story, a.created_at, a.updated_at, u.email as artist_email
+      queryText = `SELECT a.id, a.artist_id, a.title, a.image_url, a.storage_key, a.width, a.height, a.dimension_unit, a.price_amount, a.price_currency, a.buy_url, a.tags, a.orientation, a.style_tags, a.dominant_colors, a.medium, a.availability, a.visible_to_designers, a.visible_to_galleries, a.variants, a.card_image_id, a.clean_image_id, a.story, a.description, a.created_at, a.updated_at, u.email as artist_email
                    FROM artworks a
                    LEFT JOIN users u ON a.artist_id = u.id
                    ORDER BY a.created_at DESC`;
