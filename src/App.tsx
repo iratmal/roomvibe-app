@@ -24,6 +24,8 @@ import ArtworkEdit from "./components/dashboards/ArtworkEdit";
 import PrivacyPolicy from "./components/legal/PrivacyPolicy";
 import TermsOfService from "./components/legal/TermsOfService";
 import UploadConsent from "./components/legal/UploadConsent";
+import ContactPage from "./pages/ContactPage";
+import SupportPage from "./pages/SupportPage";
 import { PricingPage } from "./components/PricingPage";
 import { BillingPage } from "./components/BillingPage";
 import { Exhibition } from "./pages/Exhibition";
@@ -107,7 +109,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-white text-rv-text">
-      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/privacy" && normalizedHash !== "#/terms" && normalizedHash !== "#/upload-consent" && normalizedHash !== "#/pricing" && normalizedHash !== "#/billing" && normalizedHash !== "#/onboarding" && !normalizedHash.startsWith("#/exhibition") && !normalizedHash.startsWith("#/gallery/exhibitions/") && !normalizedHash.startsWith("#/exhibitions/") && !normalizedHash.startsWith("#/app/exhibitions/") && !normalizedHash.startsWith("#/embed/exhibitions/") && !normalizedHash.startsWith("#/artist/") && <TopNav />}
+      {normalizedHash !== "#/studio" && normalizedHash !== "#/simple" && !isDashboardRoute && normalizedHash !== "#/privacy" && normalizedHash !== "#/terms" && normalizedHash !== "#/upload-consent" && normalizedHash !== "#/pricing" && normalizedHash !== "#/billing" && normalizedHash !== "#/onboarding" && normalizedHash !== "#/contact" && normalizedHash !== "#/support" && !normalizedHash.startsWith("#/exhibition") && !normalizedHash.startsWith("#/gallery/exhibitions/") && !normalizedHash.startsWith("#/exhibitions/") && !normalizedHash.startsWith("#/app/exhibitions/") && !normalizedHash.startsWith("#/embed/exhibitions/") && !normalizedHash.startsWith("#/artist/") && <TopNav />}
       {normalizedHash === "#/onboarding" ? (
         <OnboardingRouter />
       ) : normalizedHash === "#/pricing" ? (
@@ -138,6 +140,10 @@ function AppContent() {
         <Exhibition360EditorPage />
       ) : normalizedHash.startsWith("#/gallery/exhibitions/") ? (
         <VirtualExhibitionRoom />
+      ) : normalizedHash === "#/contact" ? (
+        <ContactPage />
+      ) : normalizedHash === "#/support" ? (
+        <SupportPage />
       ) : normalizedHash === "#/docs" ? (
         <DocsPage />
       ) : normalizedHash.startsWith("#/artist/") ? (

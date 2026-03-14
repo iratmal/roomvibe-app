@@ -290,7 +290,7 @@ export function PricingPage() {
             </p>
             <p className="text-sm text-gray-500 mt-2">
               Need help choosing?{' '}
-              <a href="mailto:hello@roomvibe.app" className="text-[#0B1F2A] hover:underline">
+              <a href="#/contact" className="text-[#0B1F2A] hover:underline">
                 Contact us
               </a>
             </p>

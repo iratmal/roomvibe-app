@@ -1,0 +1,78 @@
+Goal:
+Create dedicated Contact and Support pages for RoomVibe and connect all existing site links to the correct destinations.
+
+Context:
+Project: RoomVibe
+This is part of pre-launch trust infrastructure.
+We already have existing links in the UI that should lead somewhere real:
+1. Footer link: "Contact"
+2. Pricing page link: "Contact us"
+
+We want to add:
+- /contact page
+- /support page
+
+Email addresses to display on the pages:
+- contact@roomvibe.app
+- support@roomvibe.app
+
+Important:
+This task is ONLY about frontend pages, routing, and wiring existing links.
+Do NOT implement backend email sending yet.
+Do NOT redesign the whole footer or navbar.
+Do NOT change pricing logic, dashboard logic, billing, Stripe, or auth.
+
+Scope — do only this:
+1. Create a new public Contact page at /contact
+2. Create a new public Support page at /support
+3. Connect the existing footer "Contact" link so it opens /contact
+4. Connect the existing "Contact us" link on the pricing page so it opens /contact
+5. If there is already any Support link placeholder in footer or elsewhere, connect it to /support
+6. Keep styling fully consistent with the current RoomVibe visual identity and existing landing page style
+7. Make sure both pages work on desktop and mobile
+
+Contact page content:
+- Title: Contact RoomVibe
+- Intro text: Have a question, partnership idea, or want to learn more about RoomVibe? We’d love to hear from you.
+- Section: General inquiries
+  contact@roomvibe.app
+- Section: Support
+  support@roomvibe.app
+- Short note:
+  We usually respond as soon as possible during business days.
+- Optional simple CTA button or text link back to homepage or pricing if it fits the current design
+
+Support page content:
+- Title: RoomVibe Support
+- Intro text: Need help with your account, artwork uploads, studio tools, or exhibitions? We’re here to help.
+- Display:
+  support@roomvibe.app
+- Add a short help list such as:
+  - Account access
+  - Artwork upload issues
+  - Studio and visualization questions
+  - Exhibition and sharing issues
+- Short note:
+  For general business or partnership inquiries, please use contact@roomvibe.app
+
+Design rules:
+- Use the existing RoomVibe design system, typography, spacing, colors, and button style
+- Keep pages elegant, minimal, premium, and trustworthy
+- Do not introduce new visual patterns unless necessary
+- Follow current public-site layout conventions
+
+Technical rules:
+- Public routes only
+- No auth required
+- No backend API needed in this task
+- No contact form in this task
+- Use Fast Mode if available
+
+Stop condition:
+- /contact exists and renders correctly
+- /support exists and renders correctly
+- Footer Contact link opens /contact
+- Pricing page "Contact us" link opens /contact
+- Pages look consistent with current RoomVibe site
+- Agent lists all modified files
+- Then stop
