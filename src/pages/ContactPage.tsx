@@ -1,6 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 export default function ContactPage() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <main className="min-h-screen bg-white">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
@@ -8,7 +12,7 @@ export default function ContactPage() {
           Contact RoomVibe
         </h1>
         <p className="text-lg text-gray-600 leading-relaxed mb-12 max-w-xl">
-          Have a question, partnership idea, or want to learn more about RoomVibe? We'd love to hear from you.
+          If you have a question about RoomVibe, your account, or how the platform works, feel free to reach out. We're happy to help.
         </p>
 
         <div className="space-y-8">
@@ -34,6 +38,9 @@ export default function ContactPage() {
             >
               support@roomvibe.app
             </a>
+            <p className="mt-4 text-sm text-gray-500 leading-relaxed">
+              Need help with your account, artwork uploads, studio tools, or exhibitions? Email our support team and we'll assist you as soon as possible.
+            </p>
           </div>
         </div>
 
