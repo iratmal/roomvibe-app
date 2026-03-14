@@ -72,7 +72,7 @@ const PLANS: PlanConfig[] = [
       'Unlimited artworks',
       'Unlimited virtual exhibitions',
       'Unlimited PDF exports',
-      'All premium mockup rooms (100+)',
+      'Access to 100+ premium mockup rooms',
       'Your own public artist page',
       'Be visible to designers and galleries using RoomVibe',
       'Priority support',
@@ -91,7 +91,7 @@ const PLANS: PlanConfig[] = [
     entitlement: 'designer_access',
     features: [
       'Create unlimited client projects',
-      'Upload up to 100 client room photos',
+      'Upload up to 100 client room photos per project',
       'Access to 100+ premium mockup rooms',
       'Browse and use artworks from the Art Library',
       'PDF presentations for clients',
@@ -109,7 +109,7 @@ const PLANS: PlanConfig[] = [
     whoItsFor: 'Galleries, exhibition spaces, and artists hosting their own exhibitions.',
     entitlement: 'gallery_access',
     features: [
-      'Upload unlimited artworks',
+      'Manage unlimited artworks',
       '100+ premium mockup rooms',
       'Upload real gallery or studio walls',
       'Unlimited virtual exhibitions',
