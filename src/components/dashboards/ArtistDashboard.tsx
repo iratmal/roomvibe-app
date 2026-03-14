@@ -1183,8 +1183,7 @@ export function ArtistDashboard() {
       if (response.ok) {
         const data = await response.json();
         // Filter out cover image (is_cover: true) - cover is handled separately via primaryImage
-        // Cap at 4: maxImages(5) total minus 1 cover slot = 4 gallery slots
-        const galleryOnly = (data.images || []).filter((img: any) => !img.is_cover).slice(0, 4);
+        const galleryOnly = (data.images || []).filter((img: any) => !img.is_cover);
         setGalleryImages(galleryOnly);
         // Resolve null image role IDs to explicit values immediately after loading gallery images.
         // Cover image is always id=0 for existing artworks. This prevents the dropdown fallback
@@ -1786,7 +1785,7 @@ export function ArtistDashboard() {
                       setFormData(prev => ({ ...prev, image: fileOrInfo }));
                     }
                   }}
-                  onGalleryImagesChange={(imgs) => setGalleryImages(imgs.slice(0, 4))}
+                  onGalleryImagesChange={setGalleryImages}
                   isEditing={!!editingArtwork}
                   cleanImageId={formData.cleanImageId}
                 />
@@ -1799,6 +1798,9 @@ export function ArtistDashboard() {
                 const primaryImgUrl = editingArtwork?.image_url || (formData.image instanceof File ? URL.createObjectURL(formData.image) : (typeof formData.image === 'string' ? formData.image : null));
                 const hasPrimaryImage = !!primaryImgUrl;
                 
+                // allImagesForDropdown must match exactly what the grid renders (allImages in child).
+                // The child computes: [cover?, ...galleryImages].slice(0, maxImages=5).
+                // Mirror that here so gallery labels are always 1-to-1 with what the user sees.
                 const allImagesForDropdown: GalleryImage[] = [
                   ...(hasPrimaryImage ? [{
                     id: editingArtwork?.id ? 0 : -1, // 0 for existing artwork primary, -1 for new
@@ -1808,7 +1810,7 @@ export function ArtistDashboard() {
                     isNew: !editingArtwork
                   }] : []),
                   ...galleryImages
-                ];
+                ].slice(0, 5); // hard cap = maxImages (5), keeps dropdown in sync with grid
                 
                 return (
                 <div className="md:col-span-2 bg-gray-50 rounded-lg p-4 border border-gray-200">

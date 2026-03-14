@@ -157,7 +157,9 @@ export function ArtworkImageGallery({
           
           if (processed === filesToProcess.length) {
             const orderedImages = newImages.filter((img): img is GalleryImage => img !== null);
-            onGalleryImagesChange([...galleryImages, ...orderedImages].slice(0, maxImages - 1));
+            // Cap correctly: if a cover exists, gallery slots = maxImages-1; if no cover, gallery slots = maxImages
+            const gallerySlots = hasPrimary ? maxImages - 1 : maxImages;
+            onGalleryImagesChange([...galleryImages, ...orderedImages].slice(0, gallerySlots));
           }
         };
         reader.readAsDataURL(file);
