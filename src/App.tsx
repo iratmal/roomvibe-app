@@ -3647,6 +3647,7 @@ function Exhibition360EditorPage() {
   const [presetId, setPresetId] = useState('white-cube-v1');
   const [exhibitionTitle, setExhibitionTitle] = useState('');
   const [exhibitionType, setExhibitionType] = useState<'artist' | 'gallery'>('gallery');
+  const [userPlan, setUserPlan] = useState<string>('artist_pro');
   
   const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
 
@@ -3659,6 +3660,13 @@ function Exhibition360EditorPage() {
     
     const fetchData = async () => {
       try {
+        // Fetch user plan for preset restriction
+        const meRes = await fetch(`${API_URL}/api/auth/me`, { credentials: 'include' });
+        if (meRes.ok) {
+          const meData = await meRes.json();
+          setUserPlan(meData.user?.effectivePlan || 'artist_pro');
+        }
+
         // Try artist exhibition first
         const artistSceneRes = await fetch(`${API_URL}/api/artist/exhibition/${exhibitionId}/360-scene`, { credentials: 'include' });
         
@@ -3726,6 +3734,10 @@ function Exhibition360EditorPage() {
     });
     
     if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      if (errData.code === 'PRESET_NOT_ALLOWED') {
+        throw new Error(errData.error || 'This gallery space requires Artist Pro.');
+      }
       throw new Error('Failed to save scene');
     }
   };
@@ -3765,6 +3777,7 @@ function Exhibition360EditorPage() {
         initialAssignments={initialAssignments}
         onSave={handleSave}
         onBack={handleBack}
+        userPlan={userPlan}
       />
     </div>
   );

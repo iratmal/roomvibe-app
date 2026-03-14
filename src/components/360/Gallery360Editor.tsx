@@ -34,6 +34,9 @@ interface Artwork {
   buyUrl?: string | null;
 }
 
+// Presets available on the base Artist plan (indexes 0-2 in gallery360Presets)
+const ARTIST_ALLOWED_PRESET_IDS = ['white-cube-v1', 'modern-gallery-v2', 'industrial-loft'];
+
 interface Gallery360EditorProps {
   exhibitionId: string;
   presetId?: string;
@@ -44,6 +47,7 @@ interface Gallery360EditorProps {
   className?: string;
   viewerMode?: boolean;
   embedMode?: boolean;
+  userPlan?: string;
 }
 
 export function Gallery360Editor({
@@ -55,10 +59,21 @@ export function Gallery360Editor({
   onBack,
   className = '',
   viewerMode = false,
-  embedMode = false
+  embedMode = false,
+  userPlan = 'artist_pro'
 }: Gallery360EditorProps) {
+  // Determine which presets this user may access
+  const isArtistPlan = userPlan === 'artist';
+  const allowedPresets = isArtistPlan
+    ? gallery360Presets.filter(p => ARTIST_ALLOWED_PRESET_IDS.includes(p.id))
+    : gallery360Presets;
+
+  // Fallback: if the saved preset is Pro-only and user is on Artist plan, use Classic
+  const resolvedPresetId = isArtistPlan && !ARTIST_ALLOWED_PRESET_IDS.includes(presetId)
+    ? 'white-cube-v1'
+    : presetId;
   const containerRef = useRef<HTMLDivElement>(null);
-  const [selectedPresetId, setSelectedPresetId] = useState(presetId);
+  const [selectedPresetId, setSelectedPresetId] = useState(resolvedPresetId);
   const preset = getPresetById(selectedPresetId) || gallery360Presets[0];
   
   const { 
@@ -437,9 +452,20 @@ export function Gallery360Editor({
             onChange={(e) => setSelectedPresetId(e.target.value)}
             className="w-full p-2 border border-gray-300 rounded-lg text-sm"
           >
-            {gallery360Presets.map(p => (
+            {allowedPresets.map(p => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
+            {isArtistPlan && (
+              <optgroup label="Artist Pro only">
+                {gallery360Presets
+                  .filter(p => !ARTIST_ALLOWED_PRESET_IDS.includes(p.id))
+                  .map(p => (
+                    <option key={p.id} value={p.id} disabled>
+                      {p.name} (Pro)
+                    </option>
+                  ))}
+              </optgroup>
+            )}
           </select>
         </div>
 

@@ -2792,7 +2792,7 @@ export function ArtistDashboard() {
                                             </div>
                                             <span className={`truncate ${isChecked ? 'font-semibold text-rv-text' : 'text-rv-text'}`}>{exh.title}</span>
                                           </div>
-                                          <span className={`text-xs px-1.5 py-0.5 rounded flex-shrink-0 ${exh.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                                          <span className={`text-xs px-1.5 py-0.5 rounded flex-shrink-0 ${exh.status === 'published' ? 'bg-[#C9A24A]/20 text-[#C9A24A]' : 'bg-gray-100 text-gray-600'}`}>
                                             {exh.status === 'published' ? 'Live' : 'Draft'}
                                           </span>
                                         </button>
@@ -2968,7 +2968,7 @@ export function ArtistDashboard() {
                       {exh.subtitle && <p className="text-xs text-rv-textMuted truncate">{exh.subtitle}</p>}
                       <div className="flex items-center gap-2 mt-1">
                         <span className={`text-xs px-2 py-0.5 rounded-full ${
-                          exh.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                          exh.status === 'published' ? 'bg-[#C9A24A]/20 text-[#C9A24A]' : 'bg-gray-100 text-gray-600'
                         }`}>
                           {exh.status === 'published' ? 'Published' : 'Draft'}
                         </span>

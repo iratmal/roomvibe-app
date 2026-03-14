@@ -6,6 +6,11 @@ import { getEffectivePlan, requireMinimumPlan } from '../middleware/subscription
 import { PLAN_LIMITS } from '../config/planLimits.js';
 import { ObjectStorageService } from '../objectStorage.js';
 
+// Gallery preset IDs available on the base Artist plan
+const ARTIST_ALLOWED_PRESET_IDS = ['white-cube-v1', 'modern-gallery-v2', 'industrial-loft'];
+// These presets require Artist Pro
+const PRO_ONLY_PRESET_IDS = ['daylight-atrium', 'hybrid-studio'];
+
 const storageService = new ObjectStorageService();
 
 const router = express.Router();
@@ -851,6 +856,17 @@ router.put('/exhibition/:id/360-scene', authenticateToken, async (req: any, res)
 
     if (result.rows[0].artist_id !== userId && req.user?.role !== 'admin') {
       return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    // Validate gallery preset access based on plan
+    if (presetId && PRO_ONLY_PRESET_IDS.includes(presetId) && req.user?.role !== 'admin') {
+      const effectivePlan = getEffectivePlan(req.user);
+      if (effectivePlan !== 'artist_pro') {
+        return res.status(403).json({
+          error: 'This gallery space requires Artist Pro. Please upgrade your plan.',
+          code: 'PRESET_NOT_ALLOWED'
+        });
+      }
     }
 
     const scene360Data = {
