@@ -62,7 +62,7 @@ export function ArtworkImageGallery({
       previewUrl: primaryPreview || undefined
     }] : []),
     ...galleryImages
-  ];
+  ].slice(0, maxImages); // hard cap — never render or count more than maxImages
 
   const handleMultiFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>, fromCoverSlot: boolean = false) => {
     const files = e.target.files;
@@ -123,7 +123,7 @@ export function ArtworkImageGallery({
             
             if (processed === filesToAdd.length) {
               const orderedImages = newImages.filter((img): img is GalleryImage => img !== null);
-              onGalleryImagesChange([...updatedGallery, ...orderedImages]);
+              onGalleryImagesChange([...updatedGallery, ...orderedImages].slice(0, maxImages - 1));
             }
           };
           reader.readAsDataURL(file);
@@ -157,7 +157,7 @@ export function ArtworkImageGallery({
           
           if (processed === filesToProcess.length) {
             const orderedImages = newImages.filter((img): img is GalleryImage => img !== null);
-            onGalleryImagesChange([...galleryImages, ...orderedImages]);
+            onGalleryImagesChange([...galleryImages, ...orderedImages].slice(0, maxImages - 1));
           }
         };
         reader.readAsDataURL(file);
@@ -431,11 +431,22 @@ export function ArtworkImageGallery({
                 </span>
               )}
               
-              <div className="absolute top-2 right-2 flex gap-1">
+              {/* Change overlay — rendered BEFORE buttons so buttons sit on top in z-order */}
+              <div 
+                onClick={() => handleReplaceClick(slotIndex)}
+                className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
+              >
+                <span className="px-3 py-1.5 bg-white text-rv-text text-sm font-semibold rounded-rvMd shadow-lg">
+                  Change
+                </span>
+              </div>
+
+              {/* Buttons are rendered AFTER the overlay so they are on top in z-order */}
+              <div className="absolute top-2 right-2 flex gap-1 z-10">
                 {slotIndex > 0 && (
                   <button
                     type="button"
-                    onClick={() => handleToggleMockup(slotIndex)}
+                    onClick={(e) => { e.stopPropagation(); handleToggleMockup(slotIndex); }}
                     title={img.is_mockup ? "Unmark as mockup" : "Mark as room mockup"}
                     className={`w-6 h-6 rounded-full flex items-center justify-center transition-colors shadow-lg ${
                       img.is_mockup 
@@ -450,23 +461,14 @@ export function ArtworkImageGallery({
                 )}
                 <button
                   type="button"
-                  onClick={() => handleRemoveImage(slotIndex)}
+                  onClick={(e) => { e.stopPropagation(); handleRemoveImage(slotIndex); }}
+                  title="Remove image"
                   className="w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow-lg"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
-              </div>
-              
-              {/* Change overlay on ALL images */}
-              <div 
-                onClick={() => handleReplaceClick(slotIndex)}
-                className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
-              >
-                <span className="px-3 py-1.5 bg-white text-rv-text text-sm font-semibold rounded-rvMd shadow-lg">
-                  Change
-                </span>
               </div>
             </div>
           );
