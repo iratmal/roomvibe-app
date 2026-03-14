@@ -1,0 +1,110 @@
+Task za agenta — Artist dashboard bugfix i correction (samo Artist plan, ne Artist Pro)
+
+Goal:
+Ispraviti dva problema u Artist dashboardu za obični Artist plan:
+
+gore u dashboard summary kartici broj izložbi mora prikazivati 0 / 3 umjesto 0 / 1
+
+u artwork formi treba popraviti bug s Image Roles tako da se Card Image i Exhibition & Studio Image ponašaju potpuno neovisno i da promjena jedne ne mijenja drugu automatski
+
+Context:
+Ovo se odnosi isključivo na Artist dashboard (obični Artist korisnik), ne na Artist Pro.
+Trenutno je Artist plan dobio pravo na do 3 izložbe, ali UI još uvijek prikazuje stari limit 1.
+Drugi problem je u artwork edit/upload formi: kod Image Roles odabir za:
+
+Card Image
+
+Exhibition & Studio Image
+
+ne radi stabilno. Nekad promjena jedne role automatski promijeni i drugu, a nekad se promjena ne uhvati odmah. To treba srediti tako da svaka rola ima svoj zasebni state i zapis.
+
+Scope — napravi samo ovo:
+
+1) Ispravi exhibition limit prikaz u Artist dashboardu
+
+U Artist dashboard summary kartici gore, gdje sada piše nešto poput:
+
+0 / 1 Exhibitions
+
+promijeni da za obični Artist plan prikazuje:
+
+0 / 3 Exhibitions
+
+provjeri da je ovo vezano uz stvarnu plan logiku za Artist, a ne hardcoded samo vizualno ako već postoji centralna plan konfiguracija
+
+ako postoji shared plan config / subscription config, ažuriraj tamo ispravno za Artist plan
+
+ne dirati Artist Pro logiku
+
+ne dirati Gallery, Designer ni Free plan
+
+2) Popravi bug u Image Roles sekciji u artwork formi
+
+U artwork formi, u sekciji:
+
+Card Image
+
+Exhibition & Studio Image
+
+treba osigurati sljedeće:
+
+svako polje mora imati potpuno odvojen state
+
+promjena vrijednosti u Card Image dropdownu ne smije automatski promijeniti Exhibition & Studio Image
+
+promjena vrijednosti u Exhibition & Studio Image dropdownu ne smije automatski promijeniti Card Image
+
+kad korisnik promijeni jednu rolu, UI mora to odmah ispravno prikazati
+
+kod save/submita artworka obje role se moraju pravilno spremiti i ponovno učitati bez miješanja
+
+ako obje role namjerno mogu biti postavljene na istu sliku, to je OK — ali samo ako je to korisnik svjesno odabrao
+
+ukloniti bilo kakvu neželjenu sinkronizaciju / fallback koji jednu vrijednost prepisuje drugom
+
+3) Provjeri edit + reload scenarij
+
+Testiraj ovaj flow:
+
+otvori postojeći artwork
+
+postavi jedan image kao Card Image
+
+postavi drugi image kao Exhibition & Studio Image
+
+save
+
+refresh stranice / ponovno otvori artwork
+
+provjeri da su obje role ostale točno spremljene
+
+zatim promijeni samo jednu od njih
+
+potvrdi da druga ostaje netaknuta
+
+Important rules:
+
+Ovo je task samo za Artist dashboard
+
+Ne dirati Artist Pro dashboard
+
+Ne raditi redizajn forme
+
+Ne mijenjati layout
+
+Ne uvoditi nove featuree
+
+Ne dirati billing / Stripe / plan upgrade flow
+
+Fokus samo na ovaj correction + bugfix
+
+Stop condition:
+Stani kada:
+
+Artist dashboard gore ispravno prikazuje 0 / 3 Exhibitions za obični Artist plan
+
+Card Image i Exhibition & Studio Image rade potpuno neovisno bez auto-promjene druge vrijednosti
+
+edit + save + reload scenarij radi ispravno
+
+navedeš koje si fileove mijenjao i što je bio uzrok buga

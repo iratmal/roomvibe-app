@@ -1,0 +1,226 @@
+Task za agenta — Artist dashboard image grid bugfix (red X + max images bug)
+
+Goal:
+Popraviti bugove u Artist dashboardu (samo obični Artist plan, ne Artist Pro) vezane uz upravljanje slikama u artwork edit/upload dijelu.
+
+Trenutno postoje 2 povezana problema:
+
+klik na crveni X na slici pogrešno otvara upload/file picker umjesto da obriše sliku
+
+moguće je doći do nelogične situacije gdje UI prikazuje npr. 5/5 images, ali se u gridu pojavi 6. slika, što znači da limit i rendering nisu usklađeni
+
+Context
+
+Ovo se odnosi isključivo na Artist dashboard za obični Artist account.
+
+U sekciji Artwork Images korisnik može:
+
+dodavati slike
+
+brisati slike
+
+mijenjati slike
+
+Ali trenutno se događa sljedeće:
+
+klik na crveni X ne ponaša se kao delete action, nego triggera upload/change flow
+
+nakon određenih akcija dodavanja / zamjene / brisanja može se pojaviti više slika nego što je dozvoljeno
+
+UI brojač i stvarni broj renderiranih slika nisu usklađeni
+
+Scope — riješi samo ovo
+1) Popravi crveni X delete bug
+
+Klik na crveni X mora:
+
+obrisati samo ciljanu sliku
+
+ne smije otvoriti file picker
+
+ne smije otvoriti upload dialog
+
+ne smije triggerati change/replace image flow
+
+ne smije aktivirati parent click handler thumbnail kartice
+
+Provjeri i popravi po potrebi:
+
+event bubbling
+
+click propagation
+
+overlay klik zone
+
+label/input file binding
+
+parent onClick handler
+
+replace/change trigger zone
+
+Po potrebi koristi:
+
+stopPropagation()
+
+preventDefault()
+
+Delete akcija i upload/change akcija moraju biti potpuno odvojene.
+
+2) Popravi max images bug
+
+Trenutno je moguće doći do situacije da UI piše npr. 5/5 images, ali se ipak prikaže 6 slika u gridu.
+
+Treba osigurati da:
+
+maksimalan broj slika za taj artwork bude strogo ograničen na stvarni dozvoljeni limit
+
+ako je limit 5, ne smije biti moguće renderirati, spremiti ni lokalno držati 6. sliku
+
+brojač tipa 5/5 images mora uvijek odgovarati stvarnom broju slika prikazanih u gridu
+
+nakon add / replace / delete akcije stanje mora ostati konzistentno
+
+ne smije postojati “ghost item”, dupli element, privremeni preview koji ostane u stateu ili dvostruki render iste slike
+
+Provjeri:
+
+local component state
+
+optimistic UI update
+
+preview array
+
+backend payload / frontend mapping
+
+key props u list renderu
+
+replace vs add logiku
+
+duplicate append bug
+
+async race condition nakon uploada ili brisanja
+
+3) Jasno odvoji add / replace / delete ponašanje
+
+Potrebno je da sustav razlikuje tri akcije:
+
+Add image
+
+dodaje novu sliku samo ako ima slobodnog mjesta do limita
+
+Replace image
+
+zamjenjuje postojeću sliku na istom slotu
+
+ne povećava ukupan broj slika
+
+Delete image
+
+uklanja postojeću sliku
+
+smanjuje ukupan broj slika
+
+ne otvara upload
+
+Trenutno izgleda da se neke od tih akcija miješaju. To treba razdvojiti i stabilizirati.
+
+4) Ispravno ponašanje UI-ja nakon svake akcije
+
+Nakon bilo koje akcije:
+
+grid mora odmah prikazivati točan broj slika
+
+brojač mora biti točan
+
+ne smiju ostati duple slike
+
+ne smiju ostati prazni ili phantom slotovi
+
+ne smije se otvoriti pogrešan dijalog
+
+ne smije se slučajno dodati još jedna slika preko limita
+
+Test scenariji koje treba obavezno proći
+Scenario A — delete
+
+artwork ima 5 slika
+
+klik na crveni X na jednoj slici
+
+potvrdi da se briše baš ta slika
+
+potvrdi da se ne otvara file picker
+
+potvrdi da grid sada prikazuje 4 slike
+
+potvrdi da brojač pokazuje 4/5
+
+Scenario B — add after delete
+
+nakon brisanja jedne slike dodaj novu sliku
+
+potvrdi da grid opet ima točno 5 slika
+
+potvrdi da nema duplih rendera
+
+potvrdi da brojač pokazuje 5/5
+
+Scenario C — no overflow
+
+kad artwork već ima 5/5 slika
+
+pokušaj dodati još jednu
+
+sustav ne smije dopustiti 6. sliku
+
+ne smije renderirati 6 itema
+
+ne smije spremiti 6 itema u state ili backend
+
+Scenario D — replace
+
+zamijeni jednu postojeću sliku drugom
+
+ukupan broj slika mora ostati isti
+
+replace ne smije postati add
+
+ne smije nastati duplikat
+
+Scenario E — refresh / persistence
+
+nakon brisanja, dodavanja ili zamjene refresha se stranica
+
+ponovno učitaj artwork
+
+broj slika i grid moraju ostati točni i konzistentni
+
+Important rules
+
+Ovo je task samo za Artist dashboard
+
+Ne dirati Artist Pro dashboard
+
+Ne raditi redizajn
+
+Ne mijenjati layout osim ako je minimalno nužno za bugfix
+
+Ne uvoditi nove featuree
+
+Fokus je samo na stabilnom ponašanju image grida i image akcija
+
+Stop condition
+
+Stani kada je ispunjeno sve od ovoga:
+
+klik na crveni X više ne otvara upload/file picker
+
+klik na crveni X briše ispravno samo ciljanu sliku
+
+nije više moguće doći do situacije da UI kaže 5/5, a grid prikaže 6 slika
+
+add / replace / delete imaju jasno odvojeno ponašanje
+
+nakon refresh-a stanje ostaje ispravno
+
+navedi koji je bio uzrok bugova i koje si fileove mijenjao

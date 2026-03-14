@@ -1185,6 +1185,22 @@ export function ArtistDashboard() {
         // Filter out cover image (is_cover: true) - cover is handled separately via primaryImage
         const galleryOnly = (data.images || []).filter((img: any) => !img.is_cover);
         setGalleryImages(galleryOnly);
+        // Resolve null image role IDs to explicit values immediately after loading gallery images.
+        // Cover image is always id=0 for existing artworks. This prevents the dropdown fallback
+        // `??` from producing different values at display time vs save time, which was the
+        // root cause of the "one role changing the other" visual confusion.
+        const resolvedCardId = artwork.card_image_id != null
+          ? artwork.card_image_id
+          : 0; // default to cover image (id=0)
+        const nonMockupGallery = galleryOnly.filter((g: any) => !g.is_mockup);
+        const resolvedCleanId = artwork.clean_image_id != null
+          ? artwork.clean_image_id
+          : 0; // default to cover image (id=0, always non-mockup)
+        setFormData(prev => ({
+          ...prev,
+          cardImageId: resolvedCardId,
+          cleanImageId: resolvedCleanId
+        }));
       } else {
         setGalleryImages([]);
       }
@@ -1569,7 +1585,7 @@ export function ArtistDashboard() {
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-[#C9A24A]">
-                      {isArtistPro ? exhibitions.length : (exhibition ? 1 : 0)}{isArtistPro ? '' : isFreePlan ? ' / 0' : ' / 1'}
+                      {isArtistPro ? exhibitions.length : (exhibition ? 1 : 0)}{isArtistPro ? '' : ` / ${planLimits.exhibitions}`}
                     </p>
                     <p className="text-xs text-rv-textMuted">{isArtistPro ? 'Exhibitions (Unlimited)' : 'Exhibitions'}</p>
                   </div>
