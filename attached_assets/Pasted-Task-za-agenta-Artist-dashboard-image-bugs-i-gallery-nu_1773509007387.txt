@@ -1,0 +1,127 @@
+Task za agenta — Artist dashboard image bugs i gallery numbering fix (samo Artist plan)
+
+Goal:
+Dovršiti i ispraviti bugove u Artist dashboardu za obični Artist plan. Prethodni pokušaj očito nije do kraja odrađen. Sada treba srediti sve dolje navedeno u jednom prolazu.
+
+Ovo se odnosi samo na Artist dashboard, ne na Artist Pro.
+
+Što treba popraviti
+1) X gumb mora stvarno obrisati sliku
+
+Trenutno klik na crveni X na slici ne radi ispravno.
+
+Potrebno je da:
+
+klik na crveni X obriše baš tu ciljanu sliku
+
+klik na X ne smije otvoriti upload screen
+
+klik na X ne smije otvoriti file picker
+
+klik na X ne smije triggerati replace/change flow
+
+klik na X ne smije aktivirati parent click handler thumbnail kartice
+
+Provjeri i popravi:
+
+event bubbling
+
+click propagation
+
+overlay klik zonu
+
+parent onClick
+
+label/input file binding
+
+Po potrebi koristi:
+
+stopPropagation()
+
+preventDefault()
+
+Delete i upload/change moraju biti potpuno odvojene akcije.
+
+2) Mora stvarno biti maksimalno 5 slika, ne 6
+
+Trenutno se događa nelogična situacija:
+
+UI piše 5/5 images
+
+ali se ipak pojavi 6. slika u gridu
+
+To treba potpuno popraviti.
+
+Potrebno je osigurati da:
+
+maksimalan broj slika bude stvarno 5
+
+nije moguće prikazati 6. sliku
+
+nije moguće spremiti 6. sliku
+
+nije moguće držati 6. sliku u local stateu, preview stateu ili backend payloadu
+
+brojač mora uvijek odgovarati stvarnom broju prikazanih slika
+
+Provjeri:
+
+add logiku
+
+replace logiku
+
+delete logiku
+
+local state
+
+preview array
+
+optimistic update
+
+backend/frontend mapping
+
+list keys
+
+duplicate append bug
+
+async race condition
+
+Važno:
+
+replace image ne smije povećati broj slika
+
+add image smije raditi samo ako ima slobodnog mjesta
+
+delete image mora smanjiti broj slika
+
+3) Popraviti brojeve galerija na karticama
+
+Brojevi galerija / oznake tipa Gallery 1, Gallery 2, Gallery 3... na ovim image karticama idu smušeno i nisu konzistentni.
+
+To treba srediti tako da:
+
+numbering bude jasan, stabilan i točan
+
+svaka slika ima ispravnu oznaku
+
+nakon brisanja slike numbering se pravilno presloži ako je to očekivana logika
+
+nakon dodavanja nove slike numbering ostane ispravan
+
+ne smije biti duplih oznaka, preskakanja ili nelogičnog redoslijeda
+
+dropdownovi i prikaz rola moraju pokazivati ispravne gallery oznake koje odgovaraju stvarnim slikama
+
+Provjeri da numbering:
+
+odgovara stvarnom redoslijedu slika
+
+ostaje konzistentan nakon add
+
+ostaje konzistentan nakon delete
+
+ostaje konzistentan nakon replace
+
+ostaje konzistentan nakon refresh/reload stranice
+
+Ako postoji odvojena interna identifikacija i user-facing labela, user-facing label mora uvijek biti točna i razumljiva.

@@ -1183,7 +1183,8 @@ export function ArtistDashboard() {
       if (response.ok) {
         const data = await response.json();
         // Filter out cover image (is_cover: true) - cover is handled separately via primaryImage
-        const galleryOnly = (data.images || []).filter((img: any) => !img.is_cover);
+        // Cap at 4: maxImages(5) total minus 1 cover slot = 4 gallery slots
+        const galleryOnly = (data.images || []).filter((img: any) => !img.is_cover).slice(0, 4);
         setGalleryImages(galleryOnly);
         // Resolve null image role IDs to explicit values immediately after loading gallery images.
         // Cover image is always id=0 for existing artworks. This prevents the dropdown fallback
@@ -1273,11 +1274,10 @@ export function ArtistDashboard() {
         });
       }
       
-      // Determine actual cardImageId - use first gallery image if null
-      const actualCardImageId = formData.cardImageId ?? (galleryImages.length > 0 ? galleryImages[0].id : null);
-      // Determine actual cleanImageId - use first non-mockup if null
-      const nonMockupImages = galleryImages.filter(g => !g.is_mockup);
-      const actualCleanImageId = formData.cleanImageId ?? (nonMockupImages.length > 0 ? nonMockupImages[0].id : null);
+      // Determine actual cardImageId - default to cover image (id=0) if not explicitly set
+      const actualCardImageId = formData.cardImageId ?? 0;
+      // Determine actual cleanImageId - default to cover image (id=0) if not explicitly set
+      const actualCleanImageId = formData.cleanImageId ?? 0;
       
       // 2. Save image role settings (cardImageId, cleanImageId)
       const formDataObj = new FormData();
@@ -1786,7 +1786,7 @@ export function ArtistDashboard() {
                       setFormData(prev => ({ ...prev, image: fileOrInfo }));
                     }
                   }}
-                  onGalleryImagesChange={setGalleryImages}
+                  onGalleryImagesChange={(imgs) => setGalleryImages(imgs.slice(0, 4))}
                   isEditing={!!editingArtwork}
                   cleanImageId={formData.cleanImageId}
                 />
