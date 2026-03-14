@@ -441,15 +441,16 @@ interface FeatureRow {
 
 const FEATURE_ROWS: FeatureRow[] = [
   { feature: 'Artwork uploads', free: '3 + 7 branded', artist: '50', designer: '100', gallery: 'Unlimited', artistPro: 'Unlimited' },
+  { feature: 'RoomVibe watermark', free: true, artist: '—', designer: '—', gallery: '—', artistPro: '—' },
   { feature: 'Client room photos', free: '—', artist: '—', designer: 'Unlimited', gallery: '—', artistPro: '—' },
   { feature: 'Mockup rooms', free: '10 basic', artist: '40 standard', designer: '100+ premium', gallery: '100+ premium', artistPro: '100+ premium' },
   { feature: 'Upload own wall photos', free: true, artist: true, designer: true, gallery: true, artistPro: true },
   { feature: 'Frame styling controls', free: true, artist: true, designer: true, gallery: true, artistPro: true },
   { feature: 'Image downloads', free: true, artist: true, designer: true, gallery: true, artistPro: true },
-  { feature: 'PDF exports', free: false, artist: '10/month', designer: true, gallery: true, artistPro: 'Unlimited' },
+  { feature: 'PDF exports', free: '5/month', artist: '50/month', designer: 'Unlimited', gallery: 'Unlimited', artistPro: 'Unlimited' },
   { feature: 'Widget embed', free: true, artist: true, designer: true, gallery: true, artistPro: true },
   { feature: 'Buy button integration', free: true, artist: true, designer: true, gallery: true, artistPro: true },
-  { feature: 'Virtual exhibitions', free: false, artist: 'Up to 3', designer: false, gallery: 'Unlimited', artistPro: 'Unlimited' },
+  { feature: 'Virtual exhibitions', free: '—', artist: '3', designer: '—', gallery: 'Unlimited', artistPro: 'Unlimited' },
   { feature: 'Public exhibition links', free: false, artist: true, designer: false, gallery: true, artistPro: true },
   { feature: 'Designer Studio tools', free: false, artist: false, designer: true, gallery: false, artistPro: false },
   { feature: 'Gallery Hub', free: false, artist: false, designer: false, gallery: true, artistPro: false },
