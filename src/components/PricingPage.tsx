@@ -339,7 +339,7 @@ function HorizontalPlanCard({ plan, isActive, isLoading, onSelect }: HorizontalP
             className="inline-block px-4 py-1.5 text-xs font-semibold rounded-bl-lg"
             style={{ backgroundColor: '#C9A24D', color: 'white' }}
           >
-            RECOMMENDED
+            MOST POPULAR
           </span>
         </div>
       )}
