@@ -489,8 +489,14 @@ function Hero() {
               See Art in Your<br /> Space. Instantly.
             </h1>
 
-            <p className="mb-2 md:mb-5 text-[15px] md:text-lg leading-[1.45] md:leading-[1.5] lg:leading-[1.4] text-[#1A2B3C]/80 max-w-[320px] md:max-w-sm">
-              Preview any artwork on any wall in seconds, with one simple upload.
+            <p className="mb-2 md:mb-4 text-[15px] md:text-lg leading-[1.45] md:leading-[1.5] lg:leading-[1.4] text-[#1A2B3C]/80 max-w-[320px] md:max-w-sm">
+              Sell and showcase your art online without needing your own website.
+              <br className="hidden sm:block" />
+              {' '}Create a portfolio, launch virtual exhibitions, and preview artworks on real walls in seconds.
+            </p>
+
+            <p className="mb-4 md:mb-6 text-[13px] md:text-sm text-[#1A2B3C]/60 tracking-wide">
+              For Artists · Designers · Galleries
             </p>
 
             {/* Desktop buttons - hidden on mobile */}
