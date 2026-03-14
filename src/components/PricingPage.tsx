@@ -47,7 +47,7 @@ const PLANS: PlanConfig[] = [
     features: [
       'Your own public artist page. Share your art, exhibition and contact info in one link, no website needed.',
       'Upload up to 50 artworks',
-      'Up to 40 standard mockup rooms',
+      'Up to 50 standard mockup rooms',
       'Upload your own walls or use realistic interiors',
       'Embed RoomVibe on your website to show artworks in real spaces (optional)',
       'Create up to 3 virtual exhibitions',
