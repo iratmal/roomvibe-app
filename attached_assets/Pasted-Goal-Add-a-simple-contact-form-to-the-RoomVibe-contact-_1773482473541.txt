@@ -1,0 +1,81 @@
+Goal:
+Add a simple contact form to the RoomVibe /contact page and wire it to a backend endpoint for sending messages.
+
+Context:
+Project: RoomVibe
+The /contact page already exists and already displays:
+- contact@roomvibe.app
+- support@roomvibe.app
+
+We now want to add a minimal and safe contact form below the existing contact information.
+
+Important:
+Keep this feature simple.
+Do NOT redesign the page.
+Do NOT rewrite or replace the existing contact cards.
+Do NOT add CRM, dashboard inbox, ticketing system, database storage, newsletter logic, or partnership flows.
+Do NOT modify auth, billing, Stripe, analytics, or unrelated pages.
+If blocked after 2–3 attempts, stop and explain the blocker clearly.
+
+Scope — do only this:
+1. Add a simple contact form to /contact below the existing contact information
+2. Fields:
+   - Name
+   - Email
+   - Message
+3. Add a submit button:
+   Send message
+4. Create backend endpoint:
+   POST /api/contact
+5. Validate required fields on frontend and backend
+6. On successful submit, show a clean success message
+7. On error, show a simple user-friendly error message
+8. Keep styling aligned with the current RoomVibe design system
+9. Make sure the form works on desktop and mobile
+10. Keep support@roomvibe.app visibly shown on the page
+
+Form destination:
+The contact form should send messages intended for:
+- contact@roomvibe.app
+
+Implementation preference:
+- Use the simplest reliable email sending approach already compatible with the current project stack
+- If there is already an existing email utility or transactional email setup in the codebase, reuse it
+- If there is no email sending infrastructure yet, create the endpoint structure cleanly and stop with a clear blocker note instead of inventing a fragile workaround
+
+Non-scope:
+- No CAPTCHA unless already easy to reuse
+- No spam prevention system beyond basic validation
+- No admin inbox
+- No saving messages in database unless already necessary for existing architecture
+- No support ticket workflow
+- No changes to footer, pricing page, or other routes
+
+UX copy:
+Form heading:
+Send us a message
+
+Form description:
+If you have a question about RoomVibe, your account, or how the platform works, send us a message and we’ll get back to you as soon as possible.
+
+Success message:
+Thanks — your message has been sent successfully.
+
+Error message:
+Something went wrong while sending your message. Please try again or email us directly at contact@roomvibe.app.
+
+Technical rules:
+- Keep code minimal and clean
+- Reuse existing components if available
+- Do not touch unrelated pages
+- Use Fast Mode if available
+
+Stop condition:
+- Contact form appears on /contact
+- Frontend validation works
+- POST /api/contact exists
+- Successful submit shows success state
+- Failure shows friendly error state
+- Existing contact/support info remains visible
+- Agent lists all modified files
+- Then stop

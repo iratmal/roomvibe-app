@@ -109,8 +109,8 @@ export function sitePasswordMiddleware(req: Request, res: Response, next: NextFu
 
   const expectedToken = makeToken(sitePassword);
 
-  // Always allow: Stripe webhooks and the auth POST handler itself
-  if (req.path === '/__site_auth' || req.path.startsWith('/api/stripe')) {
+  // Always allow: Stripe webhooks, the auth POST handler, and the public contact form
+  if (req.path === '/__site_auth' || req.path.startsWith('/api/stripe') || req.path.startsWith('/api/contact')) {
     return next();
   }
 
