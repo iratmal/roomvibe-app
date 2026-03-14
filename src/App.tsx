@@ -1095,9 +1095,12 @@ function Studio() {
   // Set artworks based on authentication state and plan
   useEffect(() => {
     if (hasLoadedUserArtworks) {
-      if (!user || (isFreePlan && !artIdFromUrl)) {
-        // Unauthenticated or free users without a specific artwork link: show demo artworks
+      if (!user) {
+        // Unauthenticated visitors: show demo artworks for the marketing experience
         setArtworksState(localArtworks as any[]);
+      } else if (isFreePlan && !artIdFromUrl) {
+        // Logged-in free/User plan: show their own artworks; canvas starts empty (no auto-select)
+        setArtworksState(userArtworks);
       } else {
         // Authenticated paid users: show ONLY their artworks (no demo fallback)
         // If there's an imageIdFromUrl, override the overlayImageUrl for matching artwork
@@ -1252,15 +1255,16 @@ function Studio() {
     loadArtworkFromUrl();
   }, [isFreePlan, artIdFromUrl]);
   
-  // Enforce placeholder artwork for free users — but not when they arrived via "View in Studio"
+  // Enforce placeholder artwork only for unauthenticated visitors (marketing experience)
+  // Logged-in free/User plan users see their own artworks with an empty canvas
   useEffect(() => {
-    if (isFreePlan && !artIdFromUrl && artId !== placeholderArtId) {
+    if (isFreePlan && !user && !artIdFromUrl && artId !== placeholderArtId) {
       setArtId(placeholderArtId);
     }
-  }, [isFreePlan, artIdFromUrl, artId, placeholderArtId]);
+  }, [isFreePlan, user, artIdFromUrl, artId, placeholderArtId]);
   
-  // For free users, use placeholder unless they arrived from "View in Studio" with a specific artwork
-  const effectiveArtId = (isFreePlan && !artIdFromUrl) ? placeholderArtId : artId;
+  // Placeholder only for unauthenticated visitors; logged-in free users use their own artId
+  const effectiveArtId = (isFreePlan && !user && !artIdFromUrl) ? placeholderArtId : artId;
   const art = artworksState.find((a) => a.id === effectiveArtId);
   
   // Determine if the current artwork should show the RoomVibe watermark.
