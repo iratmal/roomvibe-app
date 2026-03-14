@@ -1,0 +1,224 @@
+Task za agenta — Exhibition button UX + fix New Exhibition button (Artist i Artist Pro)
+
+Goal:
+Popraviti i dovršiti exhibition ponašanje na dashboardu.
+
+Ovdje su 2 dijela zadatka:
+
+poboljšati UX stanja za artwork koji je dodan u jednu ili više izložbi
+
+popraviti New Exhibition gumb da stvarno radi na:
+
+Artist planu
+
+Artist Pro planu
+
+Part 1 — Exhibition button UX na artwork karticama
+Context
+
+Na artwork kartici trenutno postoji smeđi Exhibition gumb.
+Ispod “Story Behind” se vidi tekst tipa:
+
+Exhibition: My First Exhibition
+
+Ali to nije dovoljno jasno za slučaj kada isti artwork može biti u:
+
+0 izložbi
+
+1 izložbi
+
+2 izložbe
+
+3 izložbe
+
+ili kod Artist Pro u više njih
+
+Pošto artwork može biti u više izložbi, ne želimo UX koji sugerira samo jednu izložbu.
+
+Što treba napraviti
+
+Nemoj pretvarati gumb u “In Exhibition” kao finalno rješenje.
+
+Umjesto toga:
+
+zadrži osnovni gumb Exhibition
+
+ali neka gumb prikazuje broj koliko je izložbi povezano s tim artworkom, npr:
+
+Exhibition (0)
+
+Exhibition (1)
+
+Exhibition (2)
+
+Exhibition (3)
+
+za Pro isto po stvarnom broju
+
+taj broj mora biti stvaran count povezanih izložbi za taj artwork
+
+U picker/dropdown ponašanju
+
+Kad korisnik klikne Exhibition gumb:
+
+mora vidjeti popis svojih izložbi
+
+mora biti jasno koje su već odabrane za taj artwork
+
+mora moći dodati artwork u dodatnu izložbu
+
+mora moći maknuti artwork iz izložbe ako je to već podržano u postojećoj logici
+
+stanje mora ostati konzistentno nakon savea i refresh-a
+
+Prikaz ispod Story Behind
+
+Ako već prikazujemo exhibition info ispod Story Behind:
+
+ako je artwork u jednoj izložbi, može prikazati ime te izložbe
+
+ako je artwork u više izložbi, prikaz mora biti smislen, npr:
+
+prva izložba + +1 more
+
+ili In 2 exhibitions
+
+nemoj hardkodirati prikaz kao da artwork pripada samo jednoj izložbi
+
+Part 2 — Popraviti New Exhibition gumb
+Problem
+
+New Exhibition gumb trenutno ne radi ispravno.
+
+To treba popraviti na oba plana:
+
+Artist
+
+Artist Pro
+
+Očekivano ponašanje
+
+Klik na New Exhibition mora:
+
+stvarno kreirati / otvoriti flow za novu izložbu
+
+otvoriti novo područje / karticu / sekciju za novu izložbu
+
+ta nova izložba mora imati svoj vlastiti widget code
+
+nakon kreiranja, izložba mora biti vidljiva u dashboardu
+
+mora biti dostupna u Exhibition pickeru na artwork karticama
+
+Za Artist plan
+
+user može kreirati do 3 izložbe
+
+ako ih ima manje od 3, New Exhibition mora raditi
+
+ako već ima 3, ponašanje mora biti smisleno:
+
+disable state ili jasna poruka da je dosegnut limit
+
+ne smije se ponašati broken
+
+Za Artist Pro plan
+
+New Exhibition mora raditi bez ovog limita 3
+
+mora ostati u skladu s unlimited exhibition logikom
+
+Widget code ponašanje
+
+Za svaku novu izložbu:
+
+mora se generirati / prikazati pripadajući widget code kao i za ostale izložbe
+
+widget code mora pripadati baš toj konkretnoj novoj izložbi
+
+ne smije se dogoditi da sve nove izložbe pokazuju isti ili krivi widget code
+
+nakon refresh-a widget code mora ostati vezan uz ispravnu izložbu
+
+Obavezni test scenariji
+Scenario A — Artist, 0 izložbi
+
+klik na New Exhibition
+
+nova izložba se ispravno kreira
+
+pojavljuje se u dashboardu
+
+ima svoj widget code
+
+pojavljuje se u Exhibition pickeru
+
+Scenario B — Artist, 1 ili 2 izložbe
+
+klik na New Exhibition
+
+može dodati novu izložbu do limita 3
+
+svaka nova izložba ima svoj widget code
+
+picker na artwork kartici vidi sve postojeće izložbe
+
+Scenario C — Artist, već 3 izložbe
+
+klik na New Exhibition
+
+ne smije biti broken
+
+treba jasno pokazati da je dosegnut limit
+
+ne smije kreirati 4. izložbu
+
+Scenario D — Artist Pro
+
+klik na New Exhibition
+
+nova izložba se normalno kreira
+
+ima svoj widget code
+
+pojavljuje se u pickeru na artwork karticama
+
+Scenario E — Exhibition count na artwork kartici
+
+artwork nije ni u jednoj izložbi → gumb pokazuje Exhibition (0)
+
+artwork je u jednoj izložbi → gumb pokazuje Exhibition (1)
+
+artwork je u dvije izložbe → gumb pokazuje Exhibition (2)
+
+nakon refresh-a count ostaje točan
+
+Scenario F — Persistence
+
+nakon kreiranja novih izložbi i povezivanja artworka
+
+refreshaj stranicu
+
+provjeri da:
+
+izložbe ostanu vidljive
+
+widget code ostane ispravan
+
+artwork count po izložbama ostane ispravan
+
+Important rules
+
+Ne raditi veliki redizajn dashboarda
+
+Ne mijenjati nepotrebno layout
+
+Ne dirati billing ili plan upgrade flow
+
+Fokus je na:
+
+ispravnom radu New Exhibition gumba
+
+ispravnom exhibition status/count UX-u na artwork karticama
+
+ispravnom widget code ponašanju za svaku izložbu
