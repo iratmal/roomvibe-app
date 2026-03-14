@@ -443,7 +443,7 @@ const FEATURE_ROWS: FeatureRow[] = [
   { feature: 'Artwork uploads', free: '3 + 7 branded', artist: '50', designer: '100', gallery: 'Unlimited', artistPro: 'Unlimited' },
   { feature: 'RoomVibe watermark', free: true, artist: '—', designer: '—', gallery: '—', artistPro: '—' },
   { feature: 'Client room photos', free: '—', artist: '—', designer: 'Unlimited', gallery: '—', artistPro: '—' },
-  { feature: 'Mockup rooms', free: '10 basic', artist: '40 standard', designer: '100+ premium', gallery: '100+ premium', artistPro: '100+ premium' },
+  { feature: 'Mockup rooms', free: '10 basic', artist: '50 standard', designer: '100+ premium', gallery: '100+ premium', artistPro: '100+ premium' },
   { feature: 'Upload own wall photos', free: true, artist: true, designer: true, gallery: true, artistPro: true },
   { feature: 'Frame styling controls', free: true, artist: true, designer: true, gallery: true, artistPro: true },
   { feature: 'Image downloads', free: true, artist: true, designer: true, gallery: true, artistPro: true },
@@ -456,10 +456,10 @@ const FEATURE_ROWS: FeatureRow[] = [
   { feature: 'Gallery Hub', free: false, artist: false, designer: false, gallery: true, artistPro: false },
   { feature: 'Connect with designers', free: false, artist: 'Up to 20', designer: false, gallery: false, artistPro: 'Unlimited' },
   { feature: 'Connect with galleries', free: false, artist: 'Up to 20', designer: false, gallery: false, artistPro: 'Unlimited' },
-  { feature: 'Browse Art Library', free: false, artist: false, designer: true, gallery: false, artistPro: false },
-  { feature: 'Browse Artist Directory', free: false, artist: false, designer: false, gallery: true, artistPro: false },
-  { feature: 'Priority support', free: false, artist: false, designer: false, gallery: false, artistPro: true },
-  { feature: 'Early access to features', free: false, artist: false, designer: false, gallery: false, artistPro: true },
+  { feature: 'Browse Art Library', free: false, artist: false, designer: true, gallery: true, artistPro: false },
+  { feature: 'Browse Artist Directory', free: false, artist: false, designer: true, gallery: true, artistPro: true },
+  { feature: 'Priority support', free: false, artist: false, designer: true, gallery: true, artistPro: true },
+  { feature: 'Early access to features', free: false, artist: false, designer: true, gallery: true, artistPro: true },
 ];
 
 function FeatureComparisonTable() {
