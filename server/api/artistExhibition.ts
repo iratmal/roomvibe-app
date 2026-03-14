@@ -3,6 +3,7 @@ import multer from 'multer';
 import { query } from '../db/database.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { getEffectivePlan, requireMinimumPlan } from '../middleware/subscription.js';
+import { PLAN_LIMITS } from '../config/planLimits.js';
 import { ObjectStorageService } from '../objectStorage.js';
 
 const storageService = new ObjectStorageService();
@@ -144,8 +145,9 @@ router.post('/exhibition', authenticateToken, async (req: any, res) => {
     }
 
     // Get user's effective plan to check exhibition limits
-    const effectivePlan = await getEffectivePlan(userId);
-    const isUnlimitedPlan = effectivePlan === 'artist_pro' || effectivePlan === 'gallery' || effectivePlan === 'admin';
+    const effectivePlan = getEffectivePlan(req.user);
+    const exhibitionLimit = PLAN_LIMITS[effectivePlan]?.exhibitions ?? 0;
+    const isUnlimitedPlan = exhibitionLimit === -1;
     
     // Check existing exhibitions count
     const existingResult = await query(
@@ -154,12 +156,20 @@ router.post('/exhibition', authenticateToken, async (req: any, res) => {
     );
     const currentCount = parseInt(existingResult.rows[0].count) || 0;
 
-    // For plans without unlimited exhibitions, enforce the limit (1 for artist)
-    if (!isUnlimitedPlan && currentCount >= 1) {
+    // Enforce exhibition limit based on plan (0 = none allowed, -1 = unlimited, N = exact limit)
+    if (exhibitionLimit === 0) {
+      return res.status(403).json({
+        error: 'Exhibition limit reached',
+        message: 'Your plan does not include exhibition access. Upgrade to Artist or Artist Pro.',
+        limit: 0,
+        currentCount
+      });
+    }
+    if (!isUnlimitedPlan && currentCount >= exhibitionLimit) {
       return res.status(400).json({ 
         error: 'Exhibition limit reached',
-        message: 'You have reached your limit of 1 exhibition. Upgrade to Artist Pro for unlimited exhibitions.',
-        limit: 1,
+        message: `You have reached your limit of ${exhibitionLimit} exhibition${exhibitionLimit !== 1 ? 's' : ''}. Upgrade to Artist Pro for unlimited exhibitions.`,
+        limit: exhibitionLimit,
         currentCount
       });
     }

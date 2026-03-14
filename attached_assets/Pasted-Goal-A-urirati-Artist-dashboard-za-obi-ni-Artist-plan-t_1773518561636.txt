@@ -1,0 +1,161 @@
+Goal:
+Ažurirati Artist dashboard za obični Artist plan tako da artwork kartice podržavaju odabir jedne od do 3 izložbe, isto po logici kao na Artist Pro dashboardu.
+
+Trenutno je Artist plan proširen na 3 izložbe, ali UI na artwork karticama još nije prilagođen toj promjeni.
+Zato treba složiti isti princip kao na Artist Pro: korisnik mora moći kliknuti Exhibition gumb na artwork kartici i odabrati u koju od svojih izložbi želi dodati taj artwork.
+
+Ovo vrijedi samo za obični Artist, ne za Artist Pro.
+
+Context
+
+Na Artist Pro već postoji ispravan obrazac ponašanja:
+
+na artwork kartici postoji Exhibition gumb
+
+klik otvara dropdown / selection UI
+
+korisnik bira jednu od svojih izložbi
+
+zatim sprema odabir
+
+To isto sada treba omogućiti i na Artist planu, ali uz ograničenje da Artist može imati maksimalno 3 izložbe.
+
+Drugim riječima:
+
+Artist Pro ostaje kako jest, s unlimited exhibitions
+
+Artist treba dobiti isti UX obrazac biranja izložbe, ali samo za svoje dostupne izložbe unutar limita 3
+
+Što treba napraviti
+1) Artwork kartice na Artist dashboardu moraju imati exhibition selection logiku
+
+Na Artist dashboardu za obični Artist:
+
+Exhibition gumb na artwork kartici mora raditi po istom principu kao na Artist Pro
+
+klik na Exhibition mora otvoriti izbor izložbe
+
+korisnik mora moći odabrati u koju od svojih postojećih izložbi želi dodati taj artwork
+
+nakon odabira treba spremiti vezu artwork ↔ exhibition
+
+Ako korisnik ima:
+
+1 izložbu → vidi tu izložbu kao opciju
+
+2 izložbe → vidi obje
+
+3 izložbe → vidi sve tri
+
+2) Artist plan mora podržavati do 3 izložbe u tom selectoru
+
+Provjeri da selector / dropdown / modal:
+
+povlači stvarne Artist izložbe tog korisnika
+
+ne ponaša se kao da Artist ima samo 1 izložbu
+
+radi ispravno za 0, 1, 2 ili 3 izložbe
+
+ne prikazuje unlimited logiku iz Pro plana ako nije potrebna
+
+ali UX može biti isti ili vrlo sličan kao na Pro planu
+
+3) Ako korisnik nema nijednu izložbu, ponašanje mora biti smisleno
+
+Za obični Artist account, ako korisnik još nema nijednu izložbu:
+
+Exhibition gumb ne smije pucati ni raditi nelogično
+
+treba ili:
+
+prikazati jasno stanje da nema dostupnih izložbi
+
+ili ponuditi smislen CTA / poruku da prvo kreira izložbu
+
+bez bugova, bez praznog broken dropdowna
+
+Nemoj raditi veliki redizajn — samo smisleno i stabilno ponašanje.
+
+4) Dodavanje artworka u izložbu mora ostati konzistentno
+
+Nakon odabira izložbe:
+
+artwork mora biti dodan u točno odabranu izložbu
+
+ne smije završiti u krivoj izložbi
+
+ne smije se automatski zalijepiti na neku default izložbu ako korisnik bira drugu
+
+prikaz na kartici mora ostati konzistentan nakon savea i refresha
+
+Ako artwork već pripada nekoj izložbi, provjeri kako to trenutno radi na Pro i uskladi ponašanje za Artist plan na isti ili vrlo sličan način.
+
+5) Uskladi Artist dashboard UI s novim limitom od 3 izložbe
+
+Ako negdje u Artist dashboardu još postoji pretpostavka da Artist može imati samo 1 exhibition:
+
+ažuriraj to na logiku od 3 exhibitions
+
+posebno na mjestima gdje artwork kartica, exhibition gumb ili selection flow ovise o starom limitu
+
+Obavezni test scenariji
+Scenario A — Artist ima 0 izložbi
+
+klik na Exhibition gumb
+
+UI ne smije biti broken
+
+korisnik mora dobiti jasno i smisleno ponašanje
+
+Scenario B — Artist ima 1 izložbu
+
+klik na Exhibition gumb
+
+vidi tu jednu izložbu
+
+može dodati artwork u nju
+
+save radi ispravno
+
+Scenario C — Artist ima 2 izložbe
+
+klik na Exhibition gumb
+
+vidi obje izložbe
+
+može odabrati željenu
+
+artwork završi u točno toj odabranoj izložbi
+
+Scenario D — Artist ima 3 izložbe
+
+klik na Exhibition gumb
+
+vidi sve tri izložbe
+
+može odabrati bilo koju od njih
+
+save radi ispravno
+
+Scenario E — refresh / persistence
+
+nakon odabira izložbe refreshaj stranicu
+
+ponovno učitaj dashboard
+
+provjeri da je artwork i dalje povezan s ispravnom izložbom
+
+provjeri da UI prikazuje konzistentno stanje
+
+Important rules
+
+Ovo vrijedi samo za Artist dashboard
+
+Ne dirati Artist Pro dashboard
+
+Ne raditi redizajn cijelih kartica
+
+Ne uvoditi nove featuree izvan scopea
+
+Fokus je samo na tome da obični Artist sada može birati među svoje do 3 izložbe na artwork kartici, kao na Pro obrascu

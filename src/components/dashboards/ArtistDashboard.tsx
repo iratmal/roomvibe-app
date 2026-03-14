@@ -225,9 +225,9 @@ export function ArtistDashboard() {
     }
   }, [activeTab]);
   
-  // Preload exhibition assignments for Artist Pro
+  // Preload exhibition assignments for Artist and Artist Pro (both can have multiple exhibitions)
   useEffect(() => {
-    if (isArtistPro && artworks.length > 0) {
+    if (!isFreePlan && artworks.length > 0) {
       artworks.forEach(artwork => {
         if (!artworkExhibitionsMap[artwork.id]) {
           fetch(`${API_URL}/api/artist/artwork/${artwork.id}/exhibitions`, {
@@ -246,7 +246,7 @@ export function ArtistDashboard() {
         }
       });
     }
-  }, [isArtistPro, artworks]);
+  }, [isFreePlan, artworks]);
 
   // Click-outside handler for exhibition dropdown
   useEffect(() => {
@@ -330,35 +330,22 @@ export function ArtistDashboard() {
 
   const fetchExhibition = async () => {
     try {
-      // For Artist Pro, fetch all exhibitions
-      if (isArtistPro) {
-        const response = await fetch(`${API_URL}/api/artist/exhibitions`, {
-          credentials: 'include'
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setExhibitions(data.exhibitions || []);
-          // Set first exhibition as selected for backward compatibility
-          if (data.exhibitions && data.exhibitions.length > 0) {
-            setExhibition(data.exhibitions[0]);
-            setSelectedExhibition(data.exhibitions[0]);
-            fetchExhibitionArtworks(data.exhibitions[0].id);
-          } else {
-            setExhibition(null);
-            setSelectedExhibition(null);
-          }
-        }
-      } else {
-        // Legacy single exhibition for non-Pro users
-        const response = await fetch(`${API_URL}/api/artist/exhibition`, {
-          credentials: 'include'
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setExhibition(data.exhibition || null);
-          if (data.exhibition) {
-            fetchExhibitionArtworks(data.exhibition.id);
-          }
+      // Both Artist and Artist Pro use the plural exhibitions endpoint
+      // Regular Artist can now have up to 3 exhibitions, so we treat them the same way
+      const response = await fetch(`${API_URL}/api/artist/exhibitions`, {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setExhibitions(data.exhibitions || []);
+        // Set first exhibition as selected/active for the Exhibitions tab
+        if (data.exhibitions && data.exhibitions.length > 0) {
+          setExhibition(data.exhibitions[0]);
+          setSelectedExhibition(data.exhibitions[0]);
+          fetchExhibitionArtworks(data.exhibitions[0].id);
+        } else {
+          setExhibition(null);
+          setSelectedExhibition(null);
         }
       }
     } catch (err) {
@@ -619,10 +606,8 @@ export function ArtistDashboard() {
       setShowCreateExhibition(false);
       setExhibitionFormData({ title: '', subtitle: '' });
       
-      // For Artist Pro, refresh the exhibitions list
-      if (isArtistPro) {
-        setExhibitions(prev => [data.exhibition, ...prev]);
-      }
+      // Update exhibitions list for Artist and Artist Pro (both use the exhibitions array now)
+      setExhibitions(prev => [data.exhibition, ...prev]);
       
       if (pendingExhibitionArtwork && data.exhibition?.id) {
         try {
@@ -1584,7 +1569,7 @@ export function ArtistDashboard() {
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-[#C9A24A]">
-                      {isArtistPro ? exhibitions.length : (exhibition ? 1 : 0)}{isArtistPro ? '' : ` / ${planLimits.exhibitions}`}
+                      {exhibitions.length}{isArtistPro ? '' : ` / ${planLimits.exhibitions}`}
                     </p>
                     <p className="text-xs text-rv-textMuted">{isArtistPro ? 'Exhibitions (Unlimited)' : 'Exhibitions'}</p>
                   </div>
@@ -2589,8 +2574,8 @@ export function ArtistDashboard() {
                       </div>
                     )}
                     
-                    {/* Exhibition assignment badge (Artist Pro) */}
-                    {isArtistPro && (() => {
+                    {/* Exhibition assignment badge (Artist and Artist Pro) */}
+                    {!isFreePlan && (() => {
                       const exhibitionsForArtwork = artworkExhibitionsMap[artwork.id];
                       const assignedExhibition = exhibitionsForArtwork?.find(e => e.isMember);
                       if (assignedExhibition) {
@@ -2696,7 +2681,7 @@ export function ArtistDashboard() {
                         </svg>
                         View in Studio
                       </button>
-                      {isArtistPro ? (
+                      {!isFreePlan ? (
                         <div className="flex-1">
                           <button
                             ref={(el) => { exhibitionButtonRefs.current[artwork.id] = el; }}
@@ -2820,30 +2805,11 @@ export function ArtistDashboard() {
                             document.body
                           )}
                         </div>
-                      ) : isArtworkInExhibition(artwork.id) ? (
-                        <button
-                          onClick={() => handleRemoveFromExhibition(artwork.id)}
-                          className="flex-1 h-11 px-3 text-sm bg-[#C9A24A]/10 text-[#C9A24A] border border-[#C9A24A]/40 rounded-rvMd font-semibold flex items-center justify-center gap-1.5 hover:bg-[#C9A24A]/20 transition-colors"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                          In Exhibition
-                        </button>
-                      ) : isFreePlan ? (
+                      ) : (
+                        // Free plan: disabled Exhibition button
                         <button
                           disabled
                           className="flex-1 h-11 px-3 text-sm bg-gray-100 text-gray-400 rounded-rvMd font-semibold flex items-center justify-center gap-1.5 cursor-not-allowed"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                          </svg>
-                          Add to Exhibition
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleAddToExhibition(artwork.id)}
-                          className="flex-1 h-11 px-3 text-sm bg-[#C9A24A] text-white rounded-rvMd hover:bg-[#B8913A] transition-colors font-semibold flex items-center justify-center gap-1.5"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -2911,12 +2877,13 @@ export function ArtistDashboard() {
         <div className="mb-10" data-section="exhibition" ref={exhibitionSectionRef}>
           <div className="flex items-center justify-between mb-2">
             <div>
-              <h2 className="text-2xl font-bold text-rv-primary">{isArtistPro ? 'My Exhibitions' : 'My Exhibition'}</h2>
+              <h2 className="text-2xl font-bold text-rv-primary">My Exhibitions</h2>
               {isArtistPro && (
                 <p className="text-sm text-[#C9A24A] font-medium mt-1">Unlimited exhibitions (Artist Pro)</p>
               )}
             </div>
-            {isArtistPro && (
+            {/* Show "New Exhibition" button when under the plan's exhibition limit */}
+            {(isArtistPro || exhibitions.length < planLimits.exhibitions) && (
               <button
                 onClick={() => setShowCreateExhibition(true)}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-[#C9A24A] text-white rounded-rvMd text-sm font-semibold hover:bg-[#B8913A] transition-colors"
@@ -2948,16 +2915,15 @@ export function ArtistDashboard() {
             ) : (
               <>
                 <p className="text-sm text-rv-textMuted">
-                  First upload your artworks in the <span className="font-medium">Artworks</span> section.
-                  Then use <span className="font-medium">"Add to Exhibition"</span> on any artwork you want to include.
+                  Upload your artworks in the <span className="font-medium">Artworks</span> section, then click the <span className="font-medium">Exhibition</span> button on any artwork to select which of your exhibitions to add it to.
                 </p>
-                <p className="text-xs text-rv-textMuted mt-2">You can edit or remove artworks from your exhibition at any time.</p>
+                <p className="text-xs text-rv-textMuted mt-2">You can create up to {planLimits.exhibitions} exhibitions. Use <span className="font-medium">+ New Exhibition</span> to create one.</p>
               </>
             )}
           </div>
 
-          {/* Artist Pro: Show list of exhibitions when multiple exist */}
-          {isArtistPro && exhibitions.length > 1 && (
+          {/* Show list of exhibitions when multiple exist (Artist with 2-3, or Artist Pro) */}
+          {exhibitions.length > 1 && (
             <div className="mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {exhibitions.map((exh) => (
                 <div 
@@ -3050,8 +3016,8 @@ export function ArtistDashboard() {
             </div>
           )}
           
-          {/* Artist (basic) plan: Show upgrade message when they have 1 exhibition */}
-          {!isArtistPro && exhibitions.length >= 1 && exhibition && (
+          {/* Artist (basic) plan: Show upgrade message only when they've reached their 3-exhibition limit */}
+          {!isArtistPro && exhibitions.length >= planLimits.exhibitions && (
             <div className="mb-6 p-4 bg-[#C9A24A]/10 border border-[#C9A24A]/30 rounded-rvMd">
               <div className="flex items-start gap-3">
                 <svg className="w-5 h-5 text-[#C9A24A] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -3073,7 +3039,7 @@ export function ArtistDashboard() {
             </div>
           )}
           
-          {(!exhibition && (!isArtistPro || exhibitions.length === 0)) ? (
+          {!exhibition ? (
             <div className="text-center py-12 bg-white rounded-rvLg border border-rv-neutral shadow-rvSoft">
               {planLimits.exhibitions === 0 ? (
                 <div className="px-6 max-w-md mx-auto">
