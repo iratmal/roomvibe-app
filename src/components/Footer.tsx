@@ -86,6 +86,11 @@ export function Footer() {
                 </a>
               </li>
               <li>
+                <a href="#/support" className="text-white/80 hover:text-white transition-colors">
+                  Support
+                </a>
+              </li>
+              <li>
                 <a href="#/terms" className="text-white/80 hover:text-white transition-colors">
                   Terms of Service
                 </a>
