@@ -1,0 +1,198 @@
+Task — Restrict Artist plan to Classic Gallery only
+Goal
+
+Artist plan mora imati pristup samo jednoj virtualnoj galeriji: Classic Gallery.
+
+Sve ostale galerije moraju biti dostupne isključivo na Artist Pro planu.
+
+Ovo je dio plan diferencijacije između:
+
+Artist
+
+Artist Pro
+
+Context
+
+RoomVibe trenutno ima sljedeće gallery stilove:
+
+Classic Gallery
+
+Modern Gallery
+
+Industrial Loft Gallery
+
+Daylight Atrium Gallery
+
+Artist plan ima:
+
+do 3 exhibitions
+
+ali sada smije koristiti samo Classic Gallery
+
+Artist Pro ima:
+
+unlimited artworks
+
+unlimited mockup rooms
+
+unlimited exhibitions
+
+pristup svim gallery stilovima
+
+Što treba implementirati
+1️⃣ Artist plan — samo Classic Gallery
+
+Za korisnike na Artist planu:
+
+jedina dostupna galerija je:
+
+Classic Gallery
+
+To znači:
+
+svaka nova izložba mora automatski koristiti Classic Gallery
+
+korisnik ne može promijeniti gallery style
+
+2️⃣ Exhibition creation
+
+Kada Artist klikne:
+
+New Exhibition
+
+sustav mora:
+
+automatski postaviti gallery preset na Classic Gallery
+
+spremiti izložbu s tim presetom
+
+Ne treba dodavati dropdown za izbor galerije na Artist planu.
+
+3️⃣ 360° Editor dropdown
+
+U editoru dropdown može i dalje prikazivati galerije radi upsella.
+
+Treba izgledati ovako:
+
+Classic Gallery
+
+Artist Pro galleries
+Modern Gallery (Pro)
+Industrial Loft Gallery (Pro)
+Daylight Atrium Gallery (Pro)
+
+Pravila:
+
+Classic Gallery → selectable
+
+sve ostale → disabled
+
+označiti ih kao Pro
+
+Artist ih ne smije moći kliknuti.
+
+4️⃣ Backend validation
+
+Backend mora osigurati da Artist plan ne može koristiti druge galerije.
+
+Ako Artist pokuša poslati request sa:
+
+Modern Gallery
+
+Industrial Loft Gallery
+
+Daylight Atrium Gallery
+
+sustav mora:
+
+odbiti request ili
+
+automatski fallback na Classic Gallery
+
+5️⃣ Existing exhibitions
+
+Ako Artist već ima postojeće izložbe:
+
+one moraju koristiti Classic Gallery
+
+ne smije se dogoditi da Artist plan ima izložbu u Pro galeriji
+
+Artist Pro plan (ne dirati logiku)
+
+Artist Pro mora imati:
+
+pristup svim galerijama
+
+slobodan izbor u dropdownu
+
+unlimited exhibitions
+
+Test scenariji
+Scenario 1 — Artist
+
+Artist klikne New Exhibition
+
+nova izložba:
+
+automatski koristi Classic Gallery
+
+Scenario 2 — Editor dropdown
+
+Artist u editoru vidi:
+
+Classic Gallery
+Modern Gallery (Pro)
+Industrial Loft Gallery (Pro)
+Daylight Atrium Gallery (Pro)
+
+ali može kliknuti samo Classic Gallery.
+
+Scenario 3 — Artist Pro
+
+Artist Pro vidi:
+
+Classic Gallery
+Modern Gallery
+Industrial Loft Gallery
+Daylight Atrium Gallery
+
+sve su dostupne.
+
+Scenario 4 — Backend protection
+
+Ako Artist plan pokuša spremiti izložbu s:
+
+Modern Gallery
+
+sustav mora:
+
+blokirati ili
+
+automatski vratiti Classic Gallery
+
+Important rules
+
+Ne dirati:
+
+exhibitions layout
+
+360° editor scene logiku
+
+billing
+
+plan upgrade flow
+
+Raditi samo:
+
+gallery access restriction
+
+Done condition
+
+Task je gotov kada:
+
+1️⃣ Artist plan može koristiti samo Classic Gallery
+2️⃣ sve nove izložbe automatski koriste Classic Gallery
+3️⃣ ostale galerije su vidljive ali označene (Pro)
+4️⃣ Artist ih ne može odabrati
+5️⃣ Artist Pro može koristiti sve galerije
+6️⃣ backend blokira nedozvoljene galerije za Artist plan

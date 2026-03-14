@@ -34,8 +34,8 @@ interface Artwork {
   buyUrl?: string | null;
 }
 
-// Presets available on the base Artist plan (indexes 0-2 in gallery360Presets)
-const ARTIST_ALLOWED_PRESET_IDS = ['white-cube-v1', 'modern-gallery-v2', 'industrial-loft'];
+// Artist plan: Classic Gallery only. All other presets require Artist Pro.
+const ARTIST_ALLOWED_PRESET_IDS = ['white-cube-v1'];
 
 interface Gallery360EditorProps {
   exhibitionId: string;

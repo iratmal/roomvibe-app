@@ -6,10 +6,10 @@ import { getEffectivePlan, requireMinimumPlan } from '../middleware/subscription
 import { PLAN_LIMITS } from '../config/planLimits.js';
 import { ObjectStorageService } from '../objectStorage.js';
 
-// Gallery preset IDs available on the base Artist plan
-const ARTIST_ALLOWED_PRESET_IDS = ['white-cube-v1', 'modern-gallery-v2', 'industrial-loft'];
+// Gallery preset IDs available on the base Artist plan (Classic Gallery only)
+const ARTIST_ALLOWED_PRESET_IDS = ['white-cube-v1'];
 // These presets require Artist Pro
-const PRO_ONLY_PRESET_IDS = ['daylight-atrium', 'hybrid-studio'];
+const PRO_ONLY_PRESET_IDS = ['modern-gallery-v2', 'industrial-loft', 'daylight-atrium', 'hybrid-studio'];
 
 const storageService = new ObjectStorageService();
 
