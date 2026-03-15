@@ -1,0 +1,123 @@
+Task: Add Delete Account action to Settings account card and remove misleading Verified status if not implemented
+
+Goal
+Update the Settings page for User, Artist, and Artist Pro dashboards by adding a "Delete Account" button inside the account card, and clean up the current "Verified" status if real email verification is not actually implemented.
+
+Context
+On the Settings page, there is an account card on the left side.
+In the Artist dashboard it is currently titled:
+
+"Artist Account"
+
+Inside that card, the current fields shown are:
+- Email
+- Role
+- Status: Verified
+- Artworks
+
+We want to add a self-service account deletion action directly inside this card.
+
+This same pattern should apply to:
+- Free/User dashboard
+- Artist dashboard
+- Artist Pro dashboard
+
+Important UI reference
+Keep the current Settings layout exactly as it is:
+- left card = account card
+- right card = change password
+- notifications section below
+
+Do not redesign the page.
+Only extend the existing account card cleanly.
+
+Scope
+
+Part 1 — Add Delete Account button to account card
+1. Locate the Settings account card for:
+   - Free/User dashboard
+   - Artist dashboard
+   - Artist Pro dashboard
+
+2. Add a new destructive action button inside that card:
+   - Label: Delete Account
+
+3. Placement:
+   - Place it at the bottom of the account card
+   - Below the existing account info rows:
+     - Email
+     - Role
+     - Status
+     - Artwork count (or equivalent)
+   - Keep comfortable spacing above the button so it feels clearly separated from the account info
+
+4. Styling:
+   - Use existing RoomVibe button system if possible
+   - Style it as a destructive action
+   - It should be visually obvious that this is not a normal secondary action
+   - Do not make it oversized or redesign the whole card
+
+Part 2 — Confirmation flow
+5. Clicking Delete Account must not instantly delete the account
+
+6. Add a confirmation modal or confirmation dialog
+
+7. The confirmation should clearly state:
+   - this action permanently deletes the account
+   - this action cannot be undone
+   - associated user data may also be removed
+
+8. Add a strong confirmation action, for example:
+   - Cancel
+   - Delete Account
+
+Optional but preferred:
+- require typing DELETE before the destructive action is enabled
+
+Part 3 — Backend behavior
+9. Implement secure self-service deletion for the currently authenticated user only
+
+10. The delete flow must:
+   - delete the current user account safely
+   - remove or safely handle dependent data
+   - avoid orphaned records
+   - destroy active session / auth state
+
+11. After successful deletion:
+   - sign the user out
+   - redirect them away from dashboard
+   - preferred redirect: homepage or login page
+
+Part 4 — Verified status cleanup
+12. Check whether email verification is actually implemented end-to-end, including:
+   - verification email sending
+   - token/link verification
+   - backend field that changes after confirmation
+   - UI accurately reading real verification state
+
+13. If email verification is NOT fully implemented:
+   - remove the "Status: Verified" line from the account card for now
+
+14. If email verification IS fully implemented:
+   - keep the status row
+   - make sure it reflects real backend state
+   - show correct values such as:
+     - Verified
+     - Not verified
+
+15. Do not show a fake or hardcoded Verified status if there is no real verification system behind it
+
+Rules
+- Apply only to User, Artist, and Artist Pro dashboards
+- Do not modify billing logic
+- Do not redesign Settings layout
+- Do not touch Sign out
+- Do not allow users to delete any account except their own authenticated account
+- Keep implementation simple, safe, and production-appropriate
+
+Stop condition
+- Each of the three dashboards has a Delete Account button inside the account card in Settings
+- Clicking it opens a confirmation flow
+- Confirmed deletion safely deletes only the logged-in user account
+- User is signed out and redirected after deletion
+- Verified status is displayed only if real email verification truly exists; otherwise it is removed from the UI
