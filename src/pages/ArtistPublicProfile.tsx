@@ -640,27 +640,17 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
               <div className="md:col-span-8">
                 <h2 className="text-xs font-medium uppercase tracking-[0.2em] text-gray-400 mb-8">About the Artist</h2>
                 
-                {/* Pull-quote - First line emphasized, rest as formatted body */}
-                {(() => {
-                  const lines = profile.bio.split('\n');
-                  const firstLine = lines[0]?.trim() || '';
-                  const remainingText = lines.slice(1).join('\n').trim();
-                  
-                  return (
-                    <div className="space-y-8">
-                      {firstLine && (
-                        <p className="text-2xl lg:text-3xl font-light text-gray-800 leading-relaxed tracking-tight border-l-2 border-gray-200 pl-6">
-                          {firstLine}
-                        </p>
-                      )}
-                      {remainingText && (
-                        <p className="text-gray-600 leading-[1.9] text-base font-light whitespace-pre-wrap max-w-prose">
-                          {remainingText}
-                        </p>
-                      )}
-                    </div>
-                  );
-                })()}
+                <div className="space-y-4 max-w-prose">
+                  {profile.bio.split('\n').map((line, i) =>
+                    line.trim() ? (
+                      <p key={i} className="text-gray-700 leading-[1.85] text-base font-light">
+                        {line}
+                      </p>
+                    ) : (
+                      <div key={i} className="h-2" />
+                    )
+                  )}
+                </div>
               </div>
             )}
             
