@@ -1,0 +1,136 @@
+Task — Fix broken bio formatting on Public Artist Profile page
+Goal
+
+Popraviti prikaz bio teksta na Public Artist Profile stranici tako da se prvi red / naslov bio sekcije ne lomi ružno i nelogično.
+
+Trenutno bio u dashboardu izgleda ispravno u textarea polju, ali se na Preview Public Profile stranici formatira loše.
+
+Problem
+
+U Artist Dashboard > Artist Profile bio je upisan ovako, smisleno i uredno:
+
+About Irena R. Malbasa – Contemporary Abstract Artist
+
+zatim ide sljedeći red:
+
+Original Large-Scale Abstract Art for Modern Interiors
+
+Međutim, na public profile page to se prikazuje ružno, ovako razlomljeno:
+
+About Irena R.
+
+pa u novom redu:
+
+Malbasa – Contemporary Abstract Artist
+
+To izgleda kao da frontend:
+
+prelama tekst na krivom mjestu
+
+ili pokušava prvi red tretirati kao poseban heading bez dobre logike
+
+ili pogrešno parsira prvi dio bio teksta
+
+Što treba popraviti
+1) Nemoj lomiti prvi red bio teksta na ružan način
+
+Ako korisnik u bio polju upiše prvi red kao jednu cjelinu, npr:
+
+About Irena R. Malbasa – Contemporary Abstract Artist
+
+onda se to na public profilu mora prikazati kao jedna smislena cjelina, a ne razlomljeno na:
+
+About Irena R.
+
+Malbasa – Contemporary Abstract Artist
+
+To treba popraviti.
+
+2) Sačuvati prirodne prijelome redova iz bio polja
+
+Ako korisnik u textarea bio polju radi:
+
+novi red
+
+prazni red
+
+odlomke
+
+onda public profile treba to prikazivati prirodno i uredno.
+
+Frontend treba poštivati:
+
+line breaks
+
+paragraph breaks
+
+Ne smije:
+
+nasumično rezati rečenicu
+
+raditi automatski heading iz prvih nekoliko riječi ako to ispadne ružno
+
+lomiti ime/prezime na neprirodan način
+
+3) Ako postoji posebna logika za “headline” iz prvog reda bio teksta, treba je popraviti
+
+Vrlo je moguće da public profile trenutno:
+
+uzima prvi red bio polja
+
+pokušava ga prikazati kao neki poseban naslov / intro heading
+
+ali ga CSS/layout lomi na pogrešnom mjestu
+
+Ako ta logika postoji, treba je srediti tako da:
+
+ili prikaže cijeli prvi red uredno
+
+ili potpuno ukloni taj poseban tretman i prikaže bio kao normalan formatirani tekst
+
+Bitno je da rezultat izgleda profesionalno.
+
+4) Prikaz mora biti vizualno uredan i premium
+
+Public Artist Page treba izgledati čisto i elegantno.
+
+Zato:
+
+ime ne smije izgledati “odrezano”
+
+prezime ne smije pasti nelogično u drugi red
+
+prvi dio bio teksta mora djelovati uredno, čitljivo i namjerno složeno
+
+Test scenarij
+Scenario A
+
+U bio polju je upisano:
+
+About Irena R. Malbasa – Contemporary Abstract Artist
+
+u prvom redu.
+
+Na public profile page to se mora prikazati kao smislena cjelina, bez ružnog loma nakon Irena R.
+
+Scenario B
+
+Drugi red:
+
+Original Large-Scale Abstract Art for Modern Interiors
+
+mora ostati uredno odvojen, a ne zalijepljen ili čudno formatiran.
+
+Scenario C
+
+Dulji odlomci ispod toga moraju ostati čitljivi i pravilno formatirani.
+
+Important rules
+
+Ne mijenjati sadržaj bio teksta automatski
+
+Ne kratiti bio
+
+Ne mijenjati dashboard formu
+
+Fokus je samo na prikazu bio teksta na Public Artist Profile stranici
