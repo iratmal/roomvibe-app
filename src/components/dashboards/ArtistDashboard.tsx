@@ -1460,7 +1460,7 @@ export function ArtistDashboard() {
               {isFreePlan ? 'My Dashboard' : isArtistPro ? 'Artist Pro Dashboard' : 'Artist Dashboard'}
             </h1>
             <p className="text-rv-textMuted">
-              {isFreePlan ? 'Upload and visualize your artworks — Free plan' : isArtistPro ? 'Unlimited artworks, exhibitions, and premium features' : 'Upload and manage your artworks'}
+              {isFreePlan ? 'Upload and visualize your artworks with the Free plan' : isArtistPro ? 'Unlimited artworks, exhibitions, and premium features' : 'Upload and manage your artworks'}
             </p>
           </div>
           <div className="flex items-center gap-3">
