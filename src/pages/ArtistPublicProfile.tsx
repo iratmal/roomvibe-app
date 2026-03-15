@@ -1332,7 +1332,7 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                   </svg>
                 </div>
                 <h4 className="text-lg font-bold text-rv-text mb-2">Message Sent!</h4>
-                <p className="text-rv-textMuted">The artist will receive your message via email.</p>
+                <p className="text-rv-textMuted">The artist will receive your message and it has been delivered to the artist's RoomVibe inbox.</p>
               </div>
             ) : (
               <>
