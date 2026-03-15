@@ -1,0 +1,279 @@
+TASK — Unify and improve public profile artwork cards (User, Artist, Artist Pro)
+Goal
+
+Popraviti i ujednačiti artwork kartice na public profile stranicama tako da izgledaju lijepo, premium, uredno i konzistentno na svim planovima:
+
+User
+
+Artist
+
+Artist Pro
+
+Ove kartice su dio javnog profila koji ide van prema posjetiteljima, kolekcionarima, dizajnerima i galerijama, zato moraju izgledati top sređeno i povlačiti ispravne podatke iz dashboarda.
+
+Problem
+
+Trenutne artwork kartice na public profile stranicama nisu dovoljno dobre:
+
+izgled nije dovoljno premium
+
+kartice nisu dovoljno uređene za public-facing stranicu
+
+prikaz nije ujednačen
+
+podaci se ne povlače uvijek kako treba
+
+postoji gumb Inquire koji nije dobar za ovu logiku
+
+treba koristiti Contact Artist
+
+kartice moraju biti iste logike bez obzira na plan
+
+Drugim riječima:
+public profile artwork cards moraju imati jedinstven prikaz na svim profilima, bez obzira radi li se o:
+
+User profilu
+
+Artist profilu
+
+Artist Pro profilu
+
+Required change
+1) Napraviti jedinstven artwork card prikaz za sva tri plana
+
+Artwork kartica na public profile stranici mora biti ista komponenta / isti vizualni obrazac za:
+
+User
+
+Artist
+
+Artist Pro
+
+Ne želimo tri različite verzije kartice.
+
+Kartica mora biti:
+
+čista
+
+elegantna
+
+premium
+
+čitljiva
+
+vizualno usklađena s ostatkom RoomVibe public profila
+
+2) Ukloniti / zamijeniti Inquire logiku
+
+Na public profile artwork kartici ne želimo gumb:
+
+Inquire
+
+Umjesto toga treba koristiti logiku i tekst:
+
+Contact Artist
+
+To mora biti konzistentno na svim profilima.
+
+Ako je kontakt akcija vezana uz artwork karticu ili public profil contact modal:
+
+naziv mora biti Contact Artist
+
+ne koristiti Inquire
+
+3) Kartica mora povlačiti ispravne podatke sa dashboarda
+
+Artwork kartica na public profilu mora prikazivati stvarne podatke iz dashboarda / artwork zapisa.
+
+Treba ispravno povlačiti npr:
+
+artwork image
+
+artwork title
+
+dimensions
+
+medium ako je dio kartice
+
+availability / status ako se prikazuje
+
+buy / contact relevantne podatke
+
+sve druge podatke koji su predviđeni za public prikaz
+
+Ne smije:
+
+prikazivati placeholder podatke
+
+prikazivati krive podatke
+
+prikazivati nedosljedne podatke između dashboarda i public profila
+
+4) Vizualno poboljšati artwork karticu za public profile
+
+Kartica mora izgledati bolje nego sada.
+
+Treba djelovati:
+
+profesionalno
+
+uredno
+
+premium
+
+kao stvarna prodajna kartica na javnoj prezentaciji umjetnika
+
+Obrati pažnju na:
+
+razmake
+
+veličinu slike
+
+tipografiju
+
+hijerarhiju informacija
+
+gumbe
+
+padding
+
+alignment
+
+hover / focus state ako postoji
+
+opći dojam
+
+Ne treba raditi ogroman redizajn cijele stranice, ali kartica mora biti vidljivo bolja.
+
+5) Kartica mora biti konzistentna na svim javnim profilima
+
+Bez obzira na plan:
+
+User
+
+Artist
+
+Artist Pro
+
+public profile artwork kartice moraju imati isti osnovni stil i strukturu.
+
+Razlika plana ne smije razbijati prikaz kartice.
+
+Ako neka funkcionalnost nije dostupna na nekom planu, to se ne smije vidjeti kao “polomljena” kartica.
+
+6) User plan ne treba imati nikakav “izložbe” vizual na public kartici
+
+Kako si i rekla:
+
+user nema onu logiku izložbi kao artist dashboard
+
+ali to se na public kartici ionako ne treba vidjeti
+
+Dakle:
+
+ne prikazivati nikakve čudne razlike po planovima
+
+public artwork card mora izgledati čisto i jednako
+
+Expected public card behavior
+
+Na public profile page artwork kartica treba izgledati kao kvalitetna RoomVibe public showcase kartica.
+
+Minimum očekivanog:
+
+artwork image
+
+title
+
+dimensions
+
+jasno i uredno složen prikaz
+
+gumb View in Room ako je predviđen
+
+gumb / akcija Contact Artist umjesto Inquire
+
+premium izgled
+
+Test scenarios
+Scenario 1 — User public profile
+
+Otvori User public profile.
+
+Očekivano:
+
+artwork kartice izgledaju lijepo i profesionalno
+
+ne postoji Inquire
+
+koristi se Contact Artist
+
+podaci se pravilno povlače
+
+Scenario 2 — Artist public profile
+
+Otvori Artist public profile.
+
+Očekivano:
+
+artwork kartice koriste isti vizualni sustav
+
+izgledaju jednako kvalitetno
+
+podaci su točni
+
+nema nelogičnih razlika u prikazu
+
+Scenario 3 — Artist Pro public profile
+
+Otvori Artist Pro public profile.
+
+Očekivano:
+
+artwork kartice su istog standarda
+
+izgled premium i konzistentan
+
+podaci su točni
+
+Scenario 4 — Data consistency
+
+Promijeni podatke artworka u dashboardu.
+
+Očekivano:
+
+public profile kartica povuče te iste podatke ispravno
+
+Important rules
+
+Ovaj task vrijedi za:
+
+User
+
+Artist
+
+Artist Pro
+
+Ne raditi tri odvojene verzije kartice
+
+Ne koristiti Inquire
+
+Koristiti Contact Artist
+
+Ne raditi veliki redizajn cijelog public profila
+
+Fokus je samo na public artwork card komponenti
+
+Stop condition
+
+Task je gotov kada:
+
+artwork kartice na public profilima izgledaju bolje i premium
+
+prikaz je ujednačen na User / Artist / Artist Pro
+
+kartice povlače ispravne podatke sa dashboarda
+
+Inquire je uklonjen i zamijenjen s Contact Artist gdje treba
+
+public artwork card više ne izgleda kao nedovršena interna kartica
