@@ -1,0 +1,228 @@
+Task — Fix Public Profile link not loading for User dashboard
+Goal
+
+Popraviti problem na User dashboardu (Free plan) gdje je profil ispunjen, ali Public Profile link / Preview Public Profile ne otvara ispravan javni profil, nego prikazuje:
+
+Profile Not Available
+
+Artist not found or profile is private
+
+iako je profil popunjen.
+
+Context
+
+Na User dashboardu u tabu Artist Profile postoji blok:
+
+Your Public Artist Page
+
+s opcijama:
+
+Preview Public Profile
+
+Copy Link
+
+Share
+
+Link izgleda ispravno, npr:
+
+https://app.roomvibe.app/#/artist/irenartstudio
+
+Ali kada se klikne:
+
+Preview Public Profile
+
+ili otvori kopirani link
+
+otvara se stranica:
+
+Profile Not Available
+
+Artist not found or profile is private
+
+iako je profil na User accountu ispunjen 100%.
+
+To znači da public profile routing / fetching trenutno radi za Artist account, ali ne radi ispravno za User dashboard / Free plan.
+
+Što treba popraviti
+1) Public profile mora raditi i za User dashboard
+
+Sustav mora omogućiti da i User (Free plan) ima ispravno dostupan public profile ako je profil popunjen i javni link postoji.
+
+Trenutno izgleda da public page traži samo:
+
+Artist profile record
+ili
+
+artist-only account type
+
+To treba proširiti tako da radi i za:
+
+User / Free plan
+
+2) Provjeriti public profile lookup logiku
+
+Vrlo vjerojatno je problem u tome što public profile route / API lookup:
+
+ne pronalazi User account profil
+
+ili filtrira samo artist planove
+
+ili očekuje krivi account type
+
+ili public slug nije pravilno povezan s User profilom
+
+Treba provjeriti:
+
+slug lookup
+
+profile lookup by slug
+
+account type filter
+
+visibility filter
+
+public route logic
+
+3) Preview, Copy Link i Share moraju otvarati isti ispravan profil
+
+Na User dashboardu sve tri opcije moraju raditi konzistentno:
+
+Preview Public Profile
+
+Copy Link
+
+Share
+
+Sve moraju voditi na isti ispravan javni profil tog korisnika.
+
+Ne smije se dogoditi da:
+
+link postoji u dashboardu
+
+ali public page ne može pronaći profil
+
+4) Ako User profil ima ispunjene podatke, public page ih mora prikazati
+
+Kad public page radi za User account, mora povući iste profile podatke koje korisnik ispunjava u dashboardu, npr:
+
+display name
+
+city
+
+country
+
+bio
+
+primary medium
+
+style tags
+
+website/social link
+
+header image
+
+profile image
+
+Ne smije prikazivati:
+
+Profile Not Available
+ako profil stvarno postoji i javni je
+
+5) Ne raditi poseban drugi public page sustav
+
+Važno:
+
+ne stvarati poseban odvojeni public profile sustav za User
+
+treba koristiti isti public profile sustav kao i za Artist / Artist Pro
+
+samo osigurati da lookup i rendering rade i za User plan
+
+Test scenariji
+Scenario A — User dashboard profile filled
+
+Na User dashboardu profil je 100% popunjen.
+
+Klik:
+
+Preview Public Profile
+
+Očekivano:
+
+otvara se ispravan javni profil
+
+ne prikazuje Profile Not Available
+
+Scenario B — Copy link
+
+Klik:
+
+Copy Link
+
+Otvori link u novom tabu.
+
+Očekivano:
+
+otvara se isti ispravan public profile
+
+Scenario C — Share
+
+Klik:
+
+Share
+
+Otvoreni shared link mora voditi na isti ispravan profil.
+
+Scenario D — Data rendering
+
+Public page za User mora prikazivati profile podatke iz dashboarda, a ne error screen.
+
+Scenario E — Ne razbiti Artist / Artist Pro
+
+Provjeri da fix za User plan ne razbije:
+
+Artist public profile
+
+Artist Pro public profile
+
+Sve mora i dalje raditi.
+
+Important rules
+
+Ne raditi redizajn public profile pagea
+
+Ne mijenjati dashboard layout
+
+Ne uvoditi poseban user-only public page
+
+Fokus je samo na tome da User dashboard public profile link stvarno radi
+
+Stop condition
+
+Task je gotov kada:
+
+User dashboard Preview Public Profile radi ispravno
+
+Copy Link i Share vode na ispravan public profile
+
+public page više ne prikazuje Profile Not Available za ispunjen User profil
+
+public profile povlači stvarne podatke iz User profila
+
+Artist i Artist Pro public profile i dalje rade normalno
+
+napiši koje si fileove mijenjao i gdje je bio problem
+
+Technical note
+
+Vrlo je moguće da je problem u jednom od ovoga:
+
+public profile lookup filtrira samo artist account type
+
+slug postoji, ali nije vezan na User profile record
+
+public route ne podržava User plan
+
+API vraća not found za User profile iako profil postoji
+
+Popravi to na najjednostavniji i najsigurniji način, bez širenja scopea.
