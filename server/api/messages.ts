@@ -4,6 +4,8 @@ import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
+// ── EXACT / SPECIFIC routes must come BEFORE wildcard /:messageId routes ──
+
 router.get('/inbox', authenticateToken, async (req: any, res) => {
   try {
     const result = await query(
@@ -54,6 +56,83 @@ router.get('/inbox/unread-count', authenticateToken, async (req: any, res) => {
   }
 });
 
+// Public contact messages — MUST be before /inbox/:messageId
+router.get('/inbox/public-contacts', authenticateToken, async (req: any, res) => {
+  try {
+    const result = await query(
+      `SELECT id, sender_name, sender_email, message, is_read, created_at
+       FROM public_contact_messages
+       WHERE artist_id = $1
+       ORDER BY created_at DESC`,
+      [req.user.id]
+    );
+
+    const contacts = result.rows.map((row: any) => ({
+      id: `pc-${row.id}`,
+      senderName: row.sender_name,
+      senderEmail: row.sender_email,
+      senderRole: 'visitor',
+      subject: 'Public Inquiry',
+      body: row.message,
+      isRead: row.is_read,
+      createdAt: row.created_at,
+      isPublicContact: true
+    }));
+
+    res.json({ contacts });
+  } catch (error: any) {
+    console.error('Error fetching public contacts:', error);
+    res.status(500).json({ error: 'Failed to fetch public contact messages' });
+  }
+});
+
+router.put('/inbox/mark-all-read', authenticateToken, async (req: any, res) => {
+  try {
+    await query(
+      `UPDATE messages SET is_read = TRUE WHERE recipient_id = $1 AND is_read = FALSE`,
+      [req.user.id]
+    );
+
+    res.json({ message: 'All messages marked as read' });
+  } catch (error: any) {
+    console.error('Error marking all messages as read:', error);
+    res.status(500).json({ error: 'Failed to mark messages as read' });
+  }
+});
+
+router.put('/inbox/public-contacts/:id/read', authenticateToken, async (req: any, res) => {
+  try {
+    const contactId = parseInt(req.params.id);
+    await query(
+      `UPDATE public_contact_messages SET is_read = TRUE WHERE id = $1 AND artist_id = $2`,
+      [contactId, req.user.id]
+    );
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('Error marking public contact as read:', error);
+    res.status(500).json({ error: 'Failed to mark as read' });
+  }
+});
+
+router.delete('/inbox/public-contacts/:id', authenticateToken, async (req: any, res) => {
+  try {
+    const contactId = parseInt(req.params.id);
+    const result = await query(
+      `DELETE FROM public_contact_messages WHERE id = $1 AND artist_id = $2 RETURNING id`,
+      [contactId, req.user.id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Message not found' });
+    }
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('Error deleting public contact:', error);
+    res.status(500).json({ error: 'Failed to delete message' });
+  }
+});
+
+// ── WILDCARD routes — must come AFTER all specific routes above ──
+
 router.get('/inbox/:messageId', authenticateToken, async (req: any, res) => {
   try {
     const messageId = parseInt(req.params.messageId);
@@ -77,7 +156,7 @@ router.get('/inbox/:messageId', authenticateToken, async (req: any, res) => {
     }
 
     const row = result.rows[0];
-    
+
     await query(
       `UPDATE messages SET is_read = TRUE WHERE id = $1`,
       [messageId]
@@ -128,20 +207,6 @@ router.put('/inbox/:messageId/read', authenticateToken, async (req: any, res) =>
   }
 });
 
-router.put('/inbox/mark-all-read', authenticateToken, async (req: any, res) => {
-  try {
-    await query(
-      `UPDATE messages SET is_read = TRUE WHERE recipient_id = $1 AND is_read = FALSE`,
-      [req.user.id]
-    );
-
-    res.json({ message: 'All messages marked as read' });
-  } catch (error: any) {
-    console.error('Error marking all messages as read:', error);
-    res.status(500).json({ error: 'Failed to mark messages as read' });
-  }
-});
-
 router.delete('/inbox/:messageId', authenticateToken, async (req: any, res) => {
   try {
     const messageId = parseInt(req.params.messageId);
@@ -158,66 +223,6 @@ router.delete('/inbox/:messageId', authenticateToken, async (req: any, res) => {
     res.json({ message: 'Message deleted successfully' });
   } catch (error: any) {
     console.error('Error deleting message:', error);
-    res.status(500).json({ error: 'Failed to delete message' });
-  }
-});
-
-router.get('/inbox/public-contacts', authenticateToken, async (req: any, res) => {
-  try {
-    const result = await query(
-      `SELECT id, sender_name, sender_email, message, is_read, created_at
-       FROM public_contact_messages
-       WHERE artist_id = $1
-       ORDER BY created_at DESC`,
-      [req.user.id]
-    );
-
-    const contacts = result.rows.map((row: any) => ({
-      id: `pc-${row.id}`,
-      senderName: row.sender_name,
-      senderEmail: row.sender_email,
-      senderRole: 'visitor',
-      subject: 'Public Inquiry',
-      body: row.message,
-      isRead: row.is_read,
-      createdAt: row.created_at,
-      isPublicContact: true
-    }));
-
-    res.json({ contacts });
-  } catch (error: any) {
-    console.error('Error fetching public contacts:', error);
-    res.status(500).json({ error: 'Failed to fetch public contact messages' });
-  }
-});
-
-router.put('/inbox/public-contacts/:id/read', authenticateToken, async (req: any, res) => {
-  try {
-    const contactId = parseInt(req.params.id);
-    await query(
-      `UPDATE public_contact_messages SET is_read = TRUE WHERE id = $1 AND artist_id = $2`,
-      [contactId, req.user.id]
-    );
-    res.json({ success: true });
-  } catch (error: any) {
-    console.error('Error marking public contact as read:', error);
-    res.status(500).json({ error: 'Failed to mark as read' });
-  }
-});
-
-router.delete('/inbox/public-contacts/:id', authenticateToken, async (req: any, res) => {
-  try {
-    const contactId = parseInt(req.params.id);
-    const result = await query(
-      `DELETE FROM public_contact_messages WHERE id = $1 AND artist_id = $2 RETURNING id`,
-      [contactId, req.user.id]
-    );
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Message not found' });
-    }
-    res.json({ success: true });
-  } catch (error: any) {
-    console.error('Error deleting public contact:', error);
     res.status(500).json({ error: 'Failed to delete message' });
   }
 });
@@ -249,7 +254,7 @@ router.post('/send', authenticateToken, async (req: any, res) => {
     }
 
     const recipient = recipientResult.rows[0];
-    
+
     if (senderRole === 'designer' && !recipient.visible_to_designers) {
       return res.status(403).json({ 
         error: 'Artist not discoverable',

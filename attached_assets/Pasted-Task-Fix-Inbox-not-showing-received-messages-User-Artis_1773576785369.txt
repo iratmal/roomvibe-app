@@ -1,0 +1,177 @@
+Task — Fix Inbox not showing received messages (User / Artist / Artist Pro)
+Problem
+
+Contact Artist forma sada uspješno šalje poruku, ali ona se ne prikazuje u Inboxu korisnika.
+
+Na dashboardu se vidi:
+
+1 message
+
+1 unread message
+
+ali kada korisnik otvori Inbox tab, Inbox je prazan.
+
+To znači da je poruka najvjerojatnije:
+
+spremljena u bazi
+
+ali Inbox komponenta ne dohvaća ispravne poruke
+
+Goal
+
+Popraviti Inbox tako da sve poruke koje su poslane preko Contact Artist forme budu vidljive u:
+
+Dashboard → Inbox
+
+za sve planove:
+
+User (Free)
+
+Artist
+
+Artist Pro
+
+Mogući uzrok (najvjerojatniji)
+
+Jedna od sljedećih stvari je pogrešna:
+
+1️⃣ poruka nema ispravan recipient_user_id
+
+2️⃣ Inbox query filtrira pogrešno polje, npr:
+
+WHERE sender_id = current_user
+
+umjesto
+
+WHERE recipient_id = current_user
+
+3️⃣ poruka ima status koji Inbox ne prikazuje
+
+npr:
+
+status = pending
+
+a Inbox prikazuje samo
+
+status = delivered
+
+4️⃣ Inbox dohvaća samo conversation threads, ali se message sprema kao single message
+
+5️⃣ Dashboard counter koristi drugačiji query nego Inbox lista
+
+Što treba popraviti
+1 — provjeriti gdje se message sprema
+
+Provjeriti database zapis nakon slanja poruke:
+
+message mora imati:
+
+sender_name
+sender_email
+message_text
+recipient_user_id
+created_at
+status
+
+recipient_user_id mora biti:
+
+artist_user_id
+2 — popraviti Inbox query
+
+Inbox mora dohvatiti sve poruke gdje je:
+
+recipient_user_id = current_user_id
+
+ili ekvivalent toga u postojećem modelu.
+
+Inbox ne smije filtrirati pogrešno po:
+
+sender_id
+
+ili nepostojećem conversationu.
+
+3 — Inbox UI mora prikazati poruke
+
+Inbox tab mora prikazivati:
+
+sender name
+
+sender email
+
+message preview
+
+timestamp
+
+ako poruke postoje.
+
+Ako postoji barem jedna poruka:
+
+"No messages yet" ne smije biti prikazano.
+
+4 — Dashboard counter mora koristiti isti izvor
+
+Na dashboardu se vidi:
+
+1 Messages
+1 Unread Messages
+
+To znači da dashboard query radi ispravno.
+
+Inbox mora koristiti isti data source.
+
+5 — mora raditi za sve planove
+
+Inbox mora prikazivati poruke za:
+
+User plan
+
+Artist plan
+
+Artist Pro plan
+
+Plan ne smije utjecati na prikaz poruka.
+
+Test scenarios
+
+Agent mora testirati:
+
+Scenario 1
+
+pošalji poruku s public profile
+
+→ message count = 1
+→ Inbox mora prikazati tu poruku
+
+Scenario 2
+
+refresh dashboard
+
+→ poruka mora ostati u Inboxu
+
+Scenario 3
+
+pošalji još jednu poruku
+
+→ Inbox mora prikazati 2 poruke
+
+Scenario 4
+
+testirati za:
+
+User profil
+
+Artist profil
+
+Artist Pro profil
+
+Stop condition
+
+Task je gotov kada:
+
+Contact Artist poruke se spremaju
+
+Inbox ih prikazuje
+
+Dashboard counter i Inbox prikazuju isti broj poruka
+
+Inbox više nije prazan ako poruke postoje
