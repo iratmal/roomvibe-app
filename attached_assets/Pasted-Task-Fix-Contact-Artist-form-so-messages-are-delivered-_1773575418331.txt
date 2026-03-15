@@ -1,0 +1,223 @@
+Task — Fix Contact Artist form so messages are delivered to Artist Inbox
+Goal
+
+Popraviti Contact Artist formu na Public Artist Profile stranici tako da poruka nakon slanja stvarno završi u Artist Inboxu unutar RoomVibe dashboarda.
+
+Trenutno forma prima unos, ali poruka ne prolazi i ne završava u inboxu umjetnika, iako bi to trebala biti osnovna funkcionalnost.
+
+Problem
+
+Na public artist page:
+
+otvori se modal Contact IrenArtStudio
+
+korisnik upiše:
+
+ime
+
+email
+
+poruku
+
+klikne Send Message
+
+Ali poruka:
+
+ne bude poslana ispravno
+
+ne završi u inboxu umjetnika
+
+forma javlja grešku iako su polja popunjena
+
+Na screenshotu se vidi poruka:
+
+All fields are required
+
+iako su:
+
+ime uneseno
+
+email unesen
+
+message unesen
+
+To znači da postoje vjerojatno 2 problema:
+
+frontend validation ne prepoznaje ispravno unesena polja
+
+backend / submit flow ne sprema poruku u Artist Inbox
+
+Što treba popraviti
+1) Ispraviti frontend validation
+
+Provjeri zašto forma javlja:
+
+All fields are required
+
+iako su sva polja ispunjena.
+
+Treba provjeriti:
+
+controlled inputs
+
+state binding za name / email / message
+
+trim logiku
+
+submit handler
+
+validation schema
+
+field names koje frontend šalje backendu
+
+Vrlo je moguće da:
+
+jedno polje nije pravilno boundano
+
+ili se šalje pod krivim keyjem
+
+ili validation očekuje drugi naziv polja
+
+Potrebno je da:
+
+ako su ime, email i message upisani, forma prođe validation
+
+greška se ne smije prikazivati lažno
+
+2) Slanje poruke mora stvarno spremiti inbox message
+
+Kad korisnik klikne Send Message, poruka mora završiti u Artist Inboxu tog konkretnog umjetnika.
+
+To znači da submit flow mora:
+
+prepoznati kojem artist profilu se šalje poruka
+
+uzeti ispravan recipient artist/user ID
+
+spremiti poruku u bazu
+
+prikazati je u inboxu unutar dashboarda tog umjetnika
+
+3) Ispravno povezati public profile s artist inbox recipientom
+
+Poruka se šalje s public profila, pa treba osigurati da sustav zna:
+
+koji je artist vlasnik tog public pagea
+
+kome poruka ide
+
+da ne ide u krivi inbox
+
+da ne završi kao orphan message bez recipienta
+
+Provjeri:
+
+route slug
+
+public profile artist lookup
+
+recipient artist ID mapping
+
+inbox conversation/message model
+
+4) Nakon uspješnog slanja prikazati jasan success state
+
+Kad poruka bude uspješno poslana:
+
+zatvori modal ili
+
+prikaži success poruku
+
+Primjer smislenog ponašanja:
+
+Message sent successfully
+
+ili Your message has been sent to the artist
+
+Važno:
+
+ne ostaviti korisnika bez feedbacka
+
+ne prikazivati lažnu validation grešku ako je slanje uspjelo
+
+5) Poruka mora biti vidljiva u Artist Dashboard > Inbox
+
+U artist dashboardu, u tabu Inbox:
+
+poruka mora biti vidljiva
+
+mora imati pošiljatelja
+
+mora imati email pošiljatelja
+
+mora imati sadržaj poruke
+
+mora biti vezana uz ispravnog umjetnika
+
+Ako inbox već ima status:
+
+unread / read
+onda neka nova poruka dođe kao unread
+
+Obavezni test scenariji
+Scenario A — valid form submit
+
+Na public artist page:
+
+upiši name
+
+upiši email
+
+upiši message
+
+klikni Send Message
+
+Očekivano:
+
+nema lažne All fields are required greške
+
+poruka se pošalje uspješno
+
+Scenario B — inbox delivery
+
+Nakon slanja:
+
+ulogiraj se kao taj artist
+
+otvori Dashboard > Inbox
+
+poruka mora biti tamo vidljiva
+
+Scenario C — correct recipient
+
+Ako se poruka šalje s public pagea jednog konkretnog artista:
+
+mora završiti baš u inboxu tog artista
+
+ne smije otići u krivi account
+
+ne smije nestati
+
+Scenario D — empty fields validation
+
+Ako neko polje stvarno nije popunjeno:
+
+validation treba ispravno reagirati
+
+ali samo tada
+
+Scenario E — refresh persistence
+
+Nakon slanja i refreshanja dashboarda:
+
+poruka i dalje mora biti u inboxu
+
+Important rules
+
+Ne raditi redizajn modala
+
+Ne mijenjati public profile layout više nego što je nužno
+
+Ne uvoditi email sending kao zamjenu za inbox
+
+Fokus je da poruka ide u RoomVibe inbox sustav

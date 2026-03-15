@@ -232,7 +232,11 @@ router.get('/artist/:slug', async (req, res) => {
 
 router.post('/contact-artist', async (req, res) => {
   try {
-    const { artistId, name, email, message } = req.body;
+    // Accept both "senderName/senderEmail" (frontend) and "name/email" (legacy)
+    const artistId = req.body.artistId;
+    const name = req.body.senderName || req.body.name;
+    const email = req.body.senderEmail || req.body.email;
+    const message = req.body.message;
 
     if (!artistId || !name || !email || !message) {
       return res.status(400).json({ error: 'All fields are required' });
@@ -241,7 +245,7 @@ router.post('/contact-artist', async (req, res) => {
     await query(
       `INSERT INTO public_contact_messages (artist_id, sender_name, sender_email, message)
        VALUES ($1, $2, $3, $4)`,
-      [artistId, name, email, message]
+      [artistId, name.trim(), email.trim(), message.trim()]
     );
 
     res.json({ success: true });

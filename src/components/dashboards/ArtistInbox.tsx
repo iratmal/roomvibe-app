@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
 
 interface Message {
-  id: number;
-  senderId: number;
+  id: string | number;
+  senderId?: number;
   senderEmail: string;
   senderName: string;
   senderRole: string;
@@ -16,6 +16,7 @@ interface Message {
   body: string;
   isRead: boolean;
   createdAt: string;
+  isPublicContact?: boolean;
 }
 
 interface ArtistInboxProps {
@@ -28,7 +29,7 @@ export function ArtistInbox({ onUnreadCountChange, isFreePlan }: ArtistInboxProp
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | number | null>(null);
 
   useEffect(() => {
     fetchMessages();
@@ -36,24 +37,31 @@ export function ArtistInbox({ onUnreadCountChange, isFreePlan }: ArtistInboxProp
 
   const fetchMessages = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/messages/inbox`, {
-        credentials: 'include'
-      });
-      
-      if (!response.ok) {
-        if (response.status === 403) {
-          console.log('Messages access issue - showing empty state');
-          setMessages([]);
-          onUnreadCountChange?.(0);
-          return;
-        }
-        throw new Error('Failed to fetch messages');
+      const [inboxRes, contactsRes] = await Promise.all([
+        fetch(`${API_URL}/api/messages/inbox`, { credentials: 'include' }),
+        fetch(`${API_URL}/api/messages/inbox/public-contacts`, { credentials: 'include' })
+      ]);
+
+      let regularMessages: Message[] = [];
+      if (inboxRes.ok) {
+        const data = await inboxRes.json();
+        regularMessages = (data.messages || []).map((m: any) => ({ ...m, isPublicContact: false }));
+      } else if (inboxRes.status !== 403) {
+        console.error('Failed to fetch inbox messages');
       }
 
-      const data = await response.json();
-      setMessages(data.messages || []);
-      
-      const unreadCount = (data.messages || []).filter((m: Message) => !m.isRead).length;
+      let publicContacts: Message[] = [];
+      if (contactsRes.ok) {
+        const data = await contactsRes.json();
+        publicContacts = data.contacts || [];
+      }
+
+      const allMessages = [...regularMessages, ...publicContacts].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+
+      setMessages(allMessages);
+      const unreadCount = allMessages.filter(m => !m.isRead).length;
       onUnreadCountChange?.(unreadCount);
     } catch (err: any) {
       console.error('Error fetching messages:', err);
@@ -66,18 +74,26 @@ export function ArtistInbox({ onUnreadCountChange, isFreePlan }: ArtistInboxProp
 
   const handleSelectMessage = async (message: Message) => {
     setSelectedMessage(message);
-    
+
     if (!message.isRead) {
       try {
-        await fetch(`${API_URL}/api/messages/inbox/${message.id}/read`, {
-          method: 'PUT',
-          credentials: 'include'
-        });
-        
-        setMessages(prev => 
+        if (message.isPublicContact) {
+          const numericId = String(message.id).replace('pc-', '');
+          await fetch(`${API_URL}/api/messages/inbox/public-contacts/${numericId}/read`, {
+            method: 'PUT',
+            credentials: 'include'
+          });
+        } else {
+          await fetch(`${API_URL}/api/messages/inbox/${message.id}/read`, {
+            method: 'PUT',
+            credentials: 'include'
+          });
+        }
+
+        setMessages(prev =>
           prev.map(m => m.id === message.id ? { ...m, isRead: true } : m)
         );
-        
+
         const newUnreadCount = messages.filter(m => !m.isRead && m.id !== message.id).length;
         onUnreadCountChange?.(newUnreadCount);
       } catch (err) {
@@ -86,12 +102,19 @@ export function ArtistInbox({ onUnreadCountChange, isFreePlan }: ArtistInboxProp
     }
   };
 
-  const handleDelete = async (messageId: number) => {
+  const handleDelete = async (messageId: string | number) => {
     try {
-      const response = await fetch(`${API_URL}/api/messages/inbox/${messageId}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
+      const message = messages.find(m => m.id === messageId);
+      let url: string;
+
+      if (message?.isPublicContact) {
+        const numericId = String(messageId).replace('pc-', '');
+        url = `${API_URL}/api/messages/inbox/public-contacts/${numericId}`;
+      } else {
+        url = `${API_URL}/api/messages/inbox/${messageId}`;
+      }
+
+      const response = await fetch(url, { method: 'DELETE', credentials: 'include' });
 
       if (!response.ok) {
         throw new Error('Failed to delete message');
@@ -102,7 +125,7 @@ export function ArtistInbox({ onUnreadCountChange, isFreePlan }: ArtistInboxProp
         setSelectedMessage(null);
       }
       setShowDeleteConfirm(null);
-      
+
       const newUnreadCount = messages.filter(m => !m.isRead && m.id !== messageId).length;
       onUnreadCountChange?.(newUnreadCount);
     } catch (err: any) {
@@ -113,11 +136,23 @@ export function ArtistInbox({ onUnreadCountChange, isFreePlan }: ArtistInboxProp
 
   const handleMarkAllRead = async () => {
     try {
-      await fetch(`${API_URL}/api/messages/inbox/mark-all-read`, {
-        method: 'PUT',
-        credentials: 'include'
-      });
-      
+      const publicContactIds = messages
+        .filter(m => m.isPublicContact && !m.isRead)
+        .map(m => String(m.id).replace('pc-', ''));
+
+      await Promise.all([
+        fetch(`${API_URL}/api/messages/inbox/mark-all-read`, {
+          method: 'PUT',
+          credentials: 'include'
+        }),
+        ...publicContactIds.map(id =>
+          fetch(`${API_URL}/api/messages/inbox/public-contacts/${id}/read`, {
+            method: 'PUT',
+            credentials: 'include'
+          })
+        )
+      ]);
+
       setMessages(prev => prev.map(m => ({ ...m, isRead: true })));
       onUnreadCountChange?.(0);
     } catch (err) {
@@ -129,7 +164,7 @@ export function ArtistInbox({ onUnreadCountChange, isFreePlan }: ArtistInboxProp
     const date = new Date(dateString);
     const now = new Date();
     const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 0) {
       return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     } else if (diffDays === 1) {
@@ -141,13 +176,20 @@ export function ArtistInbox({ onUnreadCountChange, isFreePlan }: ArtistInboxProp
     }
   };
 
-  const getRoleBadge = (role: string) => {
+  const getRoleBadge = (role: string, isPublicContact?: boolean) => {
+    if (isPublicContact) {
+      return (
+        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+          Public
+        </span>
+      );
+    }
     const styles: Record<string, string> = {
       designer: 'bg-blue-100 text-blue-700',
       gallery: 'bg-rv-primary/10 text-rv-primary',
       user: 'bg-gray-100 text-gray-700'
     };
-    
+
     return (
       <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${styles[role] || styles.user}`}>
         {role.charAt(0).toUpperCase() + role.slice(1)}
@@ -201,7 +243,7 @@ export function ArtistInbox({ onUnreadCountChange, isFreePlan }: ArtistInboxProp
         ) : (
           <>
             <p className="text-rv-textMuted max-w-md mx-auto mb-4">
-              When designers or galleries reach out to you about your artwork, their messages will appear here.
+              Messages from visitors via your public profile, and from designers or galleries, will appear here.
             </p>
             <p className="text-sm text-rv-textMuted">
               Tip: Enable visibility to designers and galleries in your profile to receive inquiries.
@@ -234,7 +276,7 @@ export function ArtistInbox({ onUnreadCountChange, isFreePlan }: ArtistInboxProp
               </button>
             )}
           </div>
-          
+
           <div className="divide-y divide-rv-neutral max-h-[600px] overflow-y-auto">
             {messages.map(message => (
               <button
@@ -255,7 +297,7 @@ export function ArtistInbox({ onUnreadCountChange, isFreePlan }: ArtistInboxProp
                       }`}>
                         {message.senderName}
                       </span>
-                      {getRoleBadge(message.senderRole)}
+                      {getRoleBadge(message.senderRole, message.isPublicContact)}
                     </div>
                     <p className={`text-sm truncate ${
                       message.isRead ? 'text-rv-textMuted' : 'text-rv-text font-medium'
@@ -263,7 +305,7 @@ export function ArtistInbox({ onUnreadCountChange, isFreePlan }: ArtistInboxProp
                       {message.subject}
                     </p>
                     <p className="text-xs text-rv-textMuted mt-1 truncate">
-                      {message.body.substring(0, 60)}...
+                      {message.body.substring(0, 60)}{message.body.length > 60 ? '...' : ''}
                     </p>
                   </div>
                   <span className="text-xs text-rv-textMuted flex-shrink-0">
@@ -278,7 +320,7 @@ export function ArtistInbox({ onUnreadCountChange, isFreePlan }: ArtistInboxProp
 
       <div className="lg:col-span-2">
         {selectedMessage ? (
-          <div className="bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral overflow-hidden">
+          <div className="bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral overflow-hidden relative">
             <div className="p-4 border-b border-rv-neutral">
               <div className="flex items-start justify-between">
                 <div>
@@ -286,9 +328,12 @@ export function ArtistInbox({ onUnreadCountChange, isFreePlan }: ArtistInboxProp
                   <div className="flex items-center gap-2 text-sm">
                     <span className="text-rv-textMuted">From:</span>
                     <span className="font-semibold text-rv-text">{selectedMessage.senderName}</span>
-                    {getRoleBadge(selectedMessage.senderRole)}
+                    {getRoleBadge(selectedMessage.senderRole, selectedMessage.isPublicContact)}
                   </div>
                   <p className="text-xs text-rv-textMuted mt-1">
+                    {selectedMessage.senderEmail}
+                  </p>
+                  <p className="text-xs text-rv-textMuted">
                     {new Date(selectedMessage.createdAt).toLocaleString()}
                   </p>
                 </div>
