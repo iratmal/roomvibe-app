@@ -1,5 +1,46 @@
 import { query } from './database.js';
 
+function generateBaseSlug(displayName: string, email: string): string {
+  const name = displayName || email.split('@')[0];
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .trim() || 'artist';
+}
+
+async function populateExistingSlugs(): Promise<void> {
+  const usersResult = await query(
+    `SELECT id, email, display_name FROM users WHERE slug IS NULL ORDER BY id ASC`
+  );
+
+  for (const user of usersResult.rows as any[]) {
+    const baseSlug = generateBaseSlug(user.display_name, user.email);
+    let candidateSlug = baseSlug;
+    let suffix = 2;
+
+    while (true) {
+      const conflict = await query(
+        `SELECT id FROM users WHERE slug = $1 AND id != $2`,
+        [candidateSlug, user.id]
+      );
+      if (conflict.rows.length === 0) break;
+      candidateSlug = `${baseSlug}-${suffix}`;
+      suffix++;
+    }
+
+    await query(`UPDATE users SET slug = $1 WHERE id = $2`, [candidateSlug, user.id]);
+  }
+
+  if (usersResult.rows.length > 0) {
+    console.log(`✅ Populated slugs for ${usersResult.rows.length} existing user(s)`);
+  }
+}
+
 export async function initializeDatabase() {
   try {
     console.log('📊 Initializing database schema...');
@@ -1041,6 +1082,29 @@ export async function initializeDatabase() {
     await query(`
       CREATE INDEX IF NOT EXISTS idx_public_contact_messages_artist ON public_contact_messages(artist_id);
     `);
+
+    // =====================================================
+    // Slug column — globally unique public profile identifier
+    // =====================================================
+    await query(`
+      DO $$ BEGIN
+        IF NOT EXISTS (
+          SELECT FROM information_schema.columns
+          WHERE table_name = 'users' AND column_name = 'slug'
+        ) THEN
+          ALTER TABLE users ADD COLUMN slug VARCHAR(255);
+        END IF;
+      END $$;
+    `);
+
+    // Unique index allows multiple NULLs (users who haven't saved a profile yet)
+    await query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_users_slug_unique ON users (slug)
+      WHERE slug IS NOT NULL;
+    `);
+
+    // Populate slugs for existing users who don't have one yet
+    await populateExistingSlugs();
 
     console.log('✅ Database schema initialized successfully');
     return true;

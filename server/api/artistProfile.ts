@@ -21,7 +21,7 @@ const upload = multer({
   }
 });
 
-function generateSlug(displayName: string, email: string): string {
+function generateBaseSlug(displayName: string, email: string): string {
   const name = displayName || email.split('@')[0];
   return name
     .toLowerCase()
@@ -30,14 +30,33 @@ function generateSlug(displayName: string, email: string): string {
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
-    .trim();
+    .replace(/^-+|-+$/g, '')
+    .trim() || 'artist';
+}
+
+async function generateUniqueSlug(displayName: string, email: string, excludeUserId: number): Promise<string> {
+  const baseSlug = generateBaseSlug(displayName, email);
+  let candidateSlug = baseSlug;
+  let suffix = 2;
+
+  while (true) {
+    const conflict = await query(
+      `SELECT id FROM users WHERE slug = $1 AND id != $2`,
+      [candidateSlug, excludeUserId]
+    );
+    if (conflict.rows.length === 0) break;
+    candidateSlug = `${baseSlug}-${suffix}`;
+    suffix++;
+  }
+
+  return candidateSlug;
 }
 
 router.get('/profile', authenticateToken, async (req: any, res) => {
   try {
     const result = await query(
       `SELECT 
-        id, email, role,
+        id, email, role, slug,
         display_name, location_city, location_country, bio,
         primary_style_tags, primary_medium, profile_image_url, header_image_url,
         website_url, instagram_url, facebook_url, tiktok_url,
@@ -54,7 +73,7 @@ router.get('/profile', authenticateToken, async (req: any, res) => {
     }
 
     const user = result.rows[0];
-    const slug = generateSlug(user.display_name, user.email);
+    const slug = user.slug || generateBaseSlug(user.display_name, user.email);
     
     const profile = {
       id: user.id,
@@ -194,6 +213,13 @@ router.put('/profile', authenticateToken, async (req: any, res) => {
     const styleTagsJson = Array.isArray(primaryStyleTags) ? JSON.stringify(primaryStyleTags) : '[]';
     const languagesJson = Array.isArray(languages) ? JSON.stringify(languages) : '[]';
 
+    // Generate a globally unique slug for this user based on their display name
+    const uniqueSlug = await generateUniqueSlug(
+      displayName || '',
+      req.user.email,
+      req.user.id
+    );
+
     const result = await query(
       `UPDATE users SET
         display_name = $1,
@@ -210,11 +236,12 @@ router.put('/profile', authenticateToken, async (req: any, res) => {
         pinterest_url = $12,
         etsy_url = $13,
         languages = $14,
+        slug = $15,
         updated_at = CURRENT_TIMESTAMP
-       WHERE id = $15
+       WHERE id = $16
        RETURNING id, display_name, location_city, location_country, bio,
                  primary_style_tags, primary_medium, website_url, instagram_url,
-                 facebook_url, tiktok_url, linkedin_url, pinterest_url, etsy_url, languages`,
+                 facebook_url, tiktok_url, linkedin_url, pinterest_url, etsy_url, languages, slug`,
       [
         displayName || null,
         locationCity || null,
@@ -230,6 +257,7 @@ router.put('/profile', authenticateToken, async (req: any, res) => {
         pinterestUrlClean,
         etsyUrlClean,
         languagesJson,
+        uniqueSlug,
         req.user.id
       ]
     );

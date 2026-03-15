@@ -1,0 +1,162 @@
+TASK 2 — Prevent duplicate usernames / slugs across accounts
+Goal
+
+Spriječiti da dva različita korisnička računa koriste isti username / public slug, jer to uzrokuje konflikte u public profile linkovima i povlačenju pogrešnih profila.
+
+Ovo je ozbiljan sistemski problem.
+
+Problem
+
+Trenutno je moguće da:
+
+jedan User account ima isti username / slug
+
+i jedan Artist account ima isti username / slug
+
+Zbog toga se događa da public linkovi povlače krivi profil ili miješaju profile između accounta.
+
+To ne smije biti moguće.
+
+Public slug / username koji se koristi u linku mora biti jedinstven u cijelom sustavu, bez obzira na plan.
+
+Dakle ne:
+
+jedinstven samo unutar User planova
+
+jedinstven samo unutar Artist planova
+
+nego:
+
+globalno jedinstven
+
+Potrebno je napraviti
+1) Username / public slug mora biti globalno unique
+
+Sustav mora blokirati da dva različita računa imaju isti username / slug koji se koristi za public profile link.
+
+To vrijedi za sve:
+
+User
+
+Artist
+
+Artist Pro
+
+bilo koji drugi account type ako postoji
+
+2) Validacija pri spremanju / kreiranju profila
+
+Kad korisnik:
+
+kreira profil
+
+mijenja display handle / username / slug
+
+sprema public profile
+
+sustav mora provjeriti postoji li već taj username / slug u sustavu.
+
+Ako postoji:
+
+ne smije spremiti duplikat
+
+mora prikazati jasnu poruku korisniku da je to ime već zauzeto
+
+Primjer poruke:
+
+This public profile name is already taken. Please choose another one.
+
+3) Provjeriti i backend i frontend
+
+Ovo ne smije biti samo frontend blokada.
+
+Treba imati:
+
+frontend validation
+
+backend validation
+
+database uniqueness zaštitu ako već ne postoji
+
+Ako netko pokuša zaobići UI i poslati request ručno, backend ga mora odbiti.
+
+4) Postojeći konflikti
+
+Ako već postoje dupli slugovi / usernamei u sustavu, treba:
+
+identificirati što se trenutno događa
+
+riješiti lookup logiku da ne povlači krivi profil
+
+i predložiti siguran način za existing conflicted records ako ih ima
+
+Ako ne želiš sada raditi migraciju svih starih konflikata, barem:
+
+dokumentirati postojeći konflikt
+
+spriječiti stvaranje novih
+
+5) Public profile lookup mora uvijek biti jednoznačan
+
+Kad se otvori link tipa:
+
+/artist/nekislug
+
+sustav mora točno znati kojem računu taj slug pripada.
+
+Ne smije više biti situacija da se povuče:
+
+krivi account
+
+drugi plan
+
+drugi profil sa sličnim ili istim slugom
+
+Test scenariji
+Scenario A
+
+Jedan account već koristi određeni username / slug.
+
+Drugi account pokuša spremiti isti slug.
+
+Očekivano:
+
+sustav blokira spremanje
+
+prikaže jasnu poruku da je ime zauzeto
+
+Scenario B
+
+User account i Artist account pokušaju imati isti public slug.
+
+Očekivano:
+
+to nije dopušteno
+
+Scenario C
+
+Public link lookup otvara točno jedan ispravan profil.
+
+Očekivano:
+
+nema više miješanja profila
+
+Important rules
+
+Ovo je sistemski fix za sve planove
+
+Ne ograničavati uniqueness samo po account typeu
+
+Ne dopustiti iste slugove na različitim planovima
+
+Fokus je na public profile identitetu i linkovima
+
+Stop condition
+
+Task je gotov kada:
+
+username / public slug više ne može biti duplikat u sustavu
+
+validacija radi i na frontend i na backend strani
+
+public profile link više ne može povući krivi profil zbog duplog sluga

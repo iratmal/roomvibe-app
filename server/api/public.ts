@@ -3,18 +3,6 @@ import { query } from '../db/database.js';
 
 const router = express.Router();
 
-function generateSlug(displayName: string, email: string): string {
-  const name = displayName || email.split('@')[0];
-  return name
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .trim();
-}
-
 router.get('/artist/:slug', async (req, res) => {
   try {
     const { slug } = req.params;
@@ -23,7 +11,10 @@ router.get('/artist/:slug', async (req, res) => {
       return res.status(400).json({ error: 'Artist slug is required' });
     }
 
-    const usersResult = await query(
+    const normalizedSlug = slug.toLowerCase().trim();
+
+    // Primary lookup: stored slug column (globally unique, exact match)
+    const artistResult = await query(
       `SELECT 
         id, email, display_name, location_city, location_country, bio,
         primary_style_tags, primary_medium, profile_image_url, header_image_url,
@@ -31,22 +22,11 @@ router.get('/artist/:slug', async (req, res) => {
         linkedin_url, pinterest_url, etsy_url, languages,
         visible_to_designers, visible_to_galleries, updated_at
       FROM users 
-      WHERE artist_access = TRUE OR role IN ('artist', 'user')
-      ORDER BY
-        CASE WHEN display_name IS NOT NULL AND display_name != '' THEN 0 ELSE 1 END ASC,
-        artist_access DESC NULLS LAST,
-        id ASC`,
-      []
+      WHERE slug = $1`,
+      [normalizedSlug]
     );
 
-    let artist: any = null;
-    for (const user of usersResult.rows as any[]) {
-      const userSlug = generateSlug(user.display_name, user.email);
-      if (userSlug === slug.toLowerCase()) {
-        artist = user;
-        break;
-      }
-    }
+    const artist = artistResult.rows[0] || null;
 
     if (!artist) {
       return res.status(404).json({ error: 'Artist not found' });
