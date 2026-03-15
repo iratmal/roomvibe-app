@@ -403,4 +403,35 @@ router.post('/change-password', authenticateToken, async (req: AuthRequest, res:
   }
 });
 
+// DELETE /delete-account — permanently deletes the currently authenticated user
+router.delete('/delete-account', authenticateToken, async (req: any, res: Response) => {
+  try {
+    const userId = req.user.id;
+
+    // Delete the user — CASCADE handles artworks, messages, exhibitions, etc.
+    const result = await query(
+      `DELETE FROM users WHERE id = $1 RETURNING id, email`,
+      [userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Account not found' });
+    }
+
+    console.log(`🗑️  Account deleted: ${result.rows[0].email} (id: ${userId})`);
+
+    // Clear the auth cookie
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production' || !!process.env.REPLIT_DOMAINS,
+      sameSite: (process.env.NODE_ENV === 'production' || !!process.env.REPLIT_DOMAINS) ? 'none' : 'lax'
+    });
+
+    res.json({ success: true, message: 'Account deleted successfully' });
+  } catch (error) {
+    console.error('Delete account error:', error);
+    res.status(500).json({ success: false, message: 'Failed to delete account. Please try again.' });
+  }
+});
+
 export default router;

@@ -130,6 +130,9 @@ export function ArtistDashboard() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [inboxEmailNotifications, setInboxEmailNotifications] = useState<boolean>(true);
   const [savingNotificationSetting, setSavingNotificationSetting] = useState(false);
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const [dashboardStats, setDashboardStats] = useState<DashboardStats>({ unreadMessages: 0, visibleToDesigners: false, visibleToGalleries: false });
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [loading, setLoading] = useState(false);
@@ -337,6 +340,30 @@ export function ArtistDashboard() {
       console.error('Error updating notification setting:', err);
     } finally {
       setSavingNotificationSetting(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE') return;
+    setDeletingAccount(true);
+    try {
+      const response = await fetch(`${API_URL}/api/auth/delete-account`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      if (response.ok) {
+        logout();
+        window.location.hash = '#/';
+      } else {
+        const data = await response.json().catch(() => ({}));
+        setError(data.message || 'Failed to delete account. Please try again.');
+        setShowDeleteAccountModal(false);
+      }
+    } catch (err) {
+      setError('Failed to delete account. Please try again.');
+      setShowDeleteAccountModal(false);
+    } finally {
+      setDeletingAccount(false);
     }
   };
 
@@ -3692,13 +3719,20 @@ export function ArtistDashboard() {
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 mb-6">
-              <div className="p-6 bg-rv-primary/5 rounded-rvLg border border-rv-primary/20">
+              <div className="p-6 bg-rv-primary/5 rounded-rvLg border border-rv-primary/20 flex flex-col">
                 <h3 className="text-lg font-bold mb-3 text-rv-primary">{isFreePlan ? 'User Account' : isArtistPro ? 'Artist Pro Account' : 'Artist Account'}</h3>
-                <div className="space-y-2 text-sm">
+                <div className="space-y-2 text-sm flex-1">
                   <p><span className="font-semibold text-rv-text">Email:</span> <span className="text-rv-textMuted">{user?.email}</span></p>
                   <p><span className="font-semibold text-rv-text">Role:</span> <span className="text-rv-textMuted">{isFreePlan ? 'User' : isArtistPro ? 'Artist Pro' : 'Artist'}</span></p>
-                  <p><span className="font-semibold text-rv-text">Status:</span> {user?.emailConfirmed ? <span className="text-[#C9A24A] font-semibold">✓ Verified</span> : <span className="text-amber-600 font-semibold">⚠ Pending</span>}</p>
                   <p><span className="font-semibold text-rv-text">Artworks:</span> <span className="text-rv-textMuted">{artworks.length}</span></p>
+                </div>
+                <div className="mt-6 pt-4 border-t border-rv-primary/20">
+                  <button
+                    onClick={() => { setDeleteConfirmText(''); setShowDeleteAccountModal(true); }}
+                    className="w-full px-4 py-2 text-sm font-medium text-red-600 border border-red-200 rounded-rvMd hover:bg-red-50 hover:border-red-300 transition-colors"
+                  >
+                    Delete Account
+                  </button>
                 </div>
               </div>
 
@@ -3735,6 +3769,61 @@ export function ArtistDashboard() {
               </div>
             </div>
           </>
+        )}
+
+        {showDeleteAccountModal && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-rvLg shadow-rvElevated max-w-md w-full p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-rv-text">Delete Account</h3>
+                  <p className="text-sm text-rv-textMuted">This action is permanent and cannot be undone</p>
+                </div>
+              </div>
+
+              <div className="bg-red-50 border border-red-200 rounded-rvMd p-4 mb-5 text-sm text-red-700 space-y-1">
+                <p>• Your account will be permanently deleted</p>
+                <p>• All artworks, profile data, and messages will be removed</p>
+                <p>• You will be immediately signed out</p>
+                <p>• This cannot be undone</p>
+              </div>
+
+              <div className="mb-5">
+                <label className="block text-sm font-semibold text-rv-text mb-1.5">
+                  Type <span className="font-mono bg-gray-100 px-1 rounded">DELETE</span> to confirm
+                </label>
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  placeholder="DELETE"
+                  className="w-full px-3 py-2 border border-rv-neutral rounded-rvMd text-sm focus:outline-none focus:ring-2 focus:ring-red-300 focus:border-red-400"
+                  autoFocus
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDeleteAccountModal(false)}
+                  className="flex-1 px-4 py-2 text-sm font-medium border border-rv-neutral text-rv-text rounded-rvMd hover:bg-rv-surface transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={deleteConfirmText !== 'DELETE' || deletingAccount}
+                  className="flex-1 px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-rvMd hover:bg-red-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {deletingAccount ? 'Deleting…' : 'Delete Account'}
+                </button>
+              </div>
+            </div>
+          </div>
         )}
 
         {showWidgetModal && (
