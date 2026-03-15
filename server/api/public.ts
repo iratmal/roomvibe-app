@@ -31,7 +31,11 @@ router.get('/artist/:slug', async (req, res) => {
         linkedin_url, pinterest_url, etsy_url, languages,
         visible_to_designers, visible_to_galleries, updated_at
       FROM users 
-      WHERE artist_access = TRUE OR role = 'user'`,
+      WHERE artist_access = TRUE OR role IN ('artist', 'user')
+      ORDER BY
+        CASE WHEN display_name IS NOT NULL AND display_name != '' THEN 0 ELSE 1 END ASC,
+        artist_access DESC NULLS LAST,
+        id ASC`,
       []
     );
 
