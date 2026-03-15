@@ -1103,6 +1103,18 @@ export async function initializeDatabase() {
       WHERE slug IS NOT NULL;
     `);
 
+    // Inbox email notifications preference
+    await query(`
+      DO $$ BEGIN
+        IF NOT EXISTS (
+          SELECT FROM information_schema.columns
+          WHERE table_name = 'users' AND column_name = 'inbox_email_notifications'
+        ) THEN
+          ALTER TABLE users ADD COLUMN inbox_email_notifications BOOLEAN DEFAULT TRUE;
+        END IF;
+      END $$;
+    `);
+
     // Populate slugs for existing users who don't have one yet
     await populateExistingSlugs();
 

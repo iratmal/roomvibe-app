@@ -128,6 +128,8 @@ export function ArtistDashboard() {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<DashboardTab>('artworks');
   const [unreadCount, setUnreadCount] = useState(0);
+  const [inboxEmailNotifications, setInboxEmailNotifications] = useState<boolean>(true);
+  const [savingNotificationSetting, setSavingNotificationSetting] = useState(false);
   const [dashboardStats, setDashboardStats] = useState<DashboardStats>({ unreadMessages: 0, visibleToDesigners: false, visibleToGalleries: false });
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [loading, setLoading] = useState(false);
@@ -217,6 +219,7 @@ export function ArtistDashboard() {
     fetchArtworks();
     fetchUnreadCount();
     fetchExhibition();
+    fetchNotificationSettings();
   }, []);
 
   useEffect(() => {
@@ -301,6 +304,39 @@ export function ArtistDashboard() {
       }
     } catch (err) {
       console.error('Error fetching unread count:', err);
+    }
+  };
+
+  const fetchNotificationSettings = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/user/settings`, {
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setInboxEmailNotifications(data.inboxEmailNotifications !== false);
+      }
+    } catch (err) {
+      console.error('Error fetching notification settings:', err);
+    }
+  };
+
+  const updateNotificationSetting = async (value: boolean) => {
+    setSavingNotificationSetting(true);
+    try {
+      const response = await fetch(`${API_URL}/api/user/settings`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ inboxEmailNotifications: value })
+      });
+      if (response.ok) {
+        setInboxEmailNotifications(value);
+      }
+    } catch (err) {
+      console.error('Error updating notification setting:', err);
+    } finally {
+      setSavingNotificationSetting(false);
     }
   };
 
@@ -3655,7 +3691,7 @@ export function ArtistDashboard() {
               <YourPlanCard />
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 md:grid-cols-2 mb-6">
               <div className="p-6 bg-rv-primary/5 rounded-rvLg border border-rv-primary/20">
                 <h3 className="text-lg font-bold mb-3 text-rv-primary">{isFreePlan ? 'User Account' : isArtistPro ? 'Artist Pro Account' : 'Artist Account'}</h3>
                 <div className="space-y-2 text-sm">
@@ -3667,6 +3703,36 @@ export function ArtistDashboard() {
               </div>
 
               <ChangePassword />
+            </div>
+
+            {/* Notifications */}
+            <div className="p-6 bg-white rounded-rvLg border border-rv-neutral">
+              <h3 className="text-base font-bold text-rv-text mb-1">Notifications</h3>
+              <p className="text-sm text-rv-textMuted mb-5">Control how RoomVibe notifies you about activity on your account.</p>
+
+              <div className="flex items-center justify-between gap-4 py-4 border-t border-rv-neutral">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-rv-text">Inbox Email Notifications</p>
+                  <p className="text-xs text-rv-textMuted mt-0.5 leading-relaxed">
+                    Receive an email when someone sends you a new message on RoomVibe.
+                  </p>
+                </div>
+                <button
+                  onClick={() => !savingNotificationSetting && updateNotificationSetting(!inboxEmailNotifications)}
+                  disabled={savingNotificationSetting}
+                  className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-rv-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    inboxEmailNotifications ? 'bg-rv-primary' : 'bg-gray-200'
+                  }`}
+                  role="switch"
+                  aria-checked={inboxEmailNotifications}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                      inboxEmailNotifications ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
           </>
         )}

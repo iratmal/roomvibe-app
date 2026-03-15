@@ -21,6 +21,7 @@ import galleryConnectRoutes from './api/galleryConnect.js';
 import artistExhibitionRoutes from './api/artistExhibition.js';
 import publicRoutes from './api/public.js';
 import contactRoutes from './api/contact.js';
+import settingsRoutes from './api/settings.js';
 import { initializeDatabase } from './db/init.js';
 import { query, getDbIdentity } from './db/database.js';
 import { ObjectStorageService, ObjectNotFoundError, getStorageConfig, getStorageBackend, isStorageConfigured } from './objectStorage.js';
@@ -111,6 +112,7 @@ app.use('/api/gallery', galleryConnectRoutes);
 app.use('/api/gallery', exhibition360Routes);
 app.use('/api/public', publicRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/user', settingsRoutes);
 app.get('/api/billing/subscription', authenticateToken, async (req: any, res) => {
   try {
     const userId = req.user.id;

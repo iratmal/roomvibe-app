@@ -1,5 +1,6 @@
 import express from 'express';
 import { query } from '../db/database.js';
+import { sendInboxNotificationEmail } from '../utils/emailService.js';
 
 const router = express.Router();
 
@@ -227,6 +228,27 @@ router.post('/contact-artist', async (req, res) => {
        VALUES ($1, $2, $3, $4)`,
       [artistId, name.trim(), email.trim(), message.trim()]
     );
+
+    // Send inbox email notification if the artist has it enabled
+    try {
+      const artistResult = await query(
+        `SELECT email, inbox_email_notifications FROM users WHERE id = $1`,
+        [artistId]
+      );
+
+      if (artistResult.rows.length > 0) {
+        const artist = artistResult.rows[0];
+        // Default to true if column value is null (before migration ran for that row)
+        const notificationsEnabled = artist.inbox_email_notifications !== false;
+
+        if (notificationsEnabled && artist.email) {
+          await sendInboxNotificationEmail(artist.email, name.trim());
+        }
+      }
+    } catch (emailError) {
+      // Email failure must not fail the API response — message is already saved
+      console.error('[public contact] Email notification failed:', emailError);
+    }
 
     res.json({ success: true });
   } catch (error: any) {

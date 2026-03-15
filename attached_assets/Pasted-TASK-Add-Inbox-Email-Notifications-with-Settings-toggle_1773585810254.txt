@@ -1,0 +1,281 @@
+TASK — Add Inbox Email Notifications with Settings toggle (User, Artist, Artist Pro)
+Goal
+
+Napraviti kompletan MVP inbox email notification system tako da korisnik dobije email obavijest kad primi novu poruku u svoj RoomVibe inbox, uz mogućnost da to uključi/isključi u Settings.
+
+Ovo mora raditi za sva tri account tipa:
+
+User
+
+Artist
+
+Artist Pro
+
+Core behavior
+
+Kad visitor pošalje poruku preko public profile / Contact Artist forme:
+
+poruka se spremi u RoomVibe inbox primatelja
+
+sustav prepozna primatelja i njegov email
+
+provjeri je li uključena opcija za inbox email notifications
+
+ako je uključena, pošalje se email obavijest
+
+email vodi korisnika direktno u njegov RoomVibe Inbox
+
+Part 1 — Add setting in Settings page
+Potrebno je dodati novu opciju u Settings
+
+U Settings / Account Settings dodati novu sekciju ili toggle, npr:
+
+Inbox Email Notifications
+Receive an email when someone sends you a new message on RoomVibe.
+
+To mora postojati za:
+
+User
+
+Artist
+
+Artist Pro
+
+MVP default behavior
+
+Za MVP postaviti:
+
+default = ON
+
+jer se radi o account / inbox obavijesti, a ne marketing emailu.
+
+Ali korisnik mora moći:
+
+isključiti
+
+ponovno uključiti
+
+Part 2 — Save setting to database
+
+Treba dodati i spremati preference u bazu, npr boolean polje tipa:
+
+inbox_email_notifications
+
+Pravila:
+
+default vrijednost = true
+
+mora se pravilno učitati u settingsima
+
+mora se moći promijeniti
+
+mora ostati spremljeno nakon refresh-a i novog logina
+
+Part 3 — Trigger email after new inbox message
+
+Kad nova poruka uspješno stigne u RoomVibe inbox:
+
+dohvatiti recipient user ID
+
+dohvatiti recipient email
+
+provjeriti inbox_email_notifications
+
+samo ako je true, poslati email
+
+Važno
+
+Email se ne smije poslati:
+
+ako poruka nije uspješno spremljena u inbox
+
+ako je toggle isključen
+
+ako email adresa ne postoji ili nije valjana
+
+Part 4 — No duplicate emails
+
+Treba paziti da se za jednu novu poruku pošalje samo:
+
+jedan email
+
+Izbjeći:
+
+duplicate sends
+
+više puta triggeran handler
+
+race condition
+
+Jedna nova inbox poruka = jedan email notification.
+
+Part 5 — Email content
+
+Za MVP email neka bude jednostavan, kratak i jasan.
+
+Subject
+
+New message on RoomVibe
+
+Body
+
+You’ve received a new message on RoomVibe.
+Open your inbox to read and reply.
+
+CTA button / link
+
+Open Inbox
+
+Link treba voditi direktno na korisnikov:
+
+Dashboard → Inbox
+
+Part 6 — This is not a marketing email
+
+Ovo mora biti tretirano kao:
+
+transactional / account notification email
+
+Ne kao:
+
+newsletter
+
+promo email
+
+marketing automation
+
+Dakle:
+
+ne vezati uz marketing consent
+
+ne gurati u newsletter logiku
+
+ovo je funkcionalna inbox obavijest
+
+Must work for all 3 account types
+User
+
+Ako User primi poruku:
+
+poruka ide u RoomVibe inbox
+
+stiže email notification ako je toggle ON
+
+Artist
+
+Ako Artist primi poruku:
+
+poruka ide u RoomVibe inbox
+
+stiže email notification ako je toggle ON
+
+Artist Pro
+
+Ako Artist Pro primi poruku:
+
+poruka ide u RoomVibe inbox
+
+stiže email notification ako je toggle ON
+
+Plan ne smije utjecati na ovu funkcionalnost.
+
+Test scenarios
+Scenario A — User
+
+pošalji poruku User public profilu
+
+poruka mora doći u RoomVibe inbox
+
+mora stići email notification ako je toggle ON
+
+Scenario B — Artist
+
+pošalji poruku Artist public profilu
+
+poruka mora doći u inbox
+
+mora stići email notification ako je toggle ON
+
+Scenario C — Artist Pro
+
+pošalji poruku Artist Pro public profilu
+
+poruka mora doći u inbox
+
+mora stići email notification ako je toggle ON
+
+Scenario D — Toggle OFF
+
+isključi inbox email notifications u Settings
+
+pošalji novu poruku
+
+poruka mora doći u RoomVibe inbox
+
+email se ne smije poslati
+
+Scenario E — Toggle persistence
+
+uključi ili isključi setting
+
+refreshaj stranicu
+
+ponovno se ulogiraj
+
+setting mora ostati spremljen
+
+Scenario F — No duplicate emails
+
+pošalji jednu poruku
+
+mora stići samo jedan email notification
+
+Scenario G — Inbox link
+
+klik na Open Inbox iz emaila
+
+mora voditi korisnika na ispravan RoomVibe inbox
+
+Important rules
+
+Ovo vrijedi za:
+
+User
+
+Artist
+
+Artist Pro
+
+Setting mora biti u Settings
+
+Ne uvoditi push notifications u ovom tasku
+
+Ne raditi mobile app logiku
+
+Ne miješati s marketing emailovima
+
+Fokus je samo na:
+
+settings toggle
+
+spremanje preference
+
+email notification kad nova poruka stigne u inbox
+
+Stop condition
+
+Task je gotov kada:
+
+u Settings postoji opcija Inbox Email Notifications
+
+opcija radi za User, Artist i Artist Pro
+
+default je postavljen smisleno za MVP
+
+nova inbox poruka šalje email notification ako je toggle ON
+
+ne šalje email ako je toggle OFF
+
+ne šalju se dupli emailovi za istu poruku
+
+email vodi korisnika u njegov RoomVibe inbox
