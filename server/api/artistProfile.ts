@@ -482,7 +482,11 @@ router.get('/profile/connect-stats', authenticateToken, async (req: any, res) =>
     );
 
     const messageCount = await query(
-      `SELECT COUNT(*) as count FROM messages WHERE recipient_id = $1 AND is_read = FALSE`,
+      `SELECT (
+        SELECT COUNT(*) FROM messages WHERE recipient_id = $1 AND is_read = FALSE
+      ) + (
+        SELECT COUNT(*) FROM public_contact_messages WHERE artist_id = $1 AND is_read = FALSE
+      ) as count`,
       [req.user.id]
     );
 
