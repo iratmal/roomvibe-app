@@ -759,10 +759,10 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                   : getDisplayUrl(currentImage.image_url);
 
                 return (
-                <div key={artwork.id} className="bg-white overflow-hidden group rounded-lg">
+                <div key={artwork.id} className="bg-white overflow-hidden group rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300">
                   {/* Wall container - matches Dashboard ArtworkCardCarousel exactly */}
                   <div 
-                    className="w-full bg-neutral-200 relative overflow-hidden cursor-pointer"
+                    className="w-full bg-neutral-100 relative overflow-hidden cursor-pointer"
                     style={{ aspectRatio: '4 / 3' }}
                     onClick={() => openArtworkDetail(artwork)}
                   >
@@ -857,17 +857,17 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                       </div>
                     )}
                   </div>
-                  <div className="pt-5 pb-2">
+                  <div className="px-1 pt-5 pb-4">
                     <h3 
-                      className="text-base font-medium text-gray-900 mb-1.5 truncate cursor-pointer hover:text-gray-600 transition-colors"
+                      className="text-base font-semibold text-gray-900 mb-1 truncate cursor-pointer hover:text-gray-600 transition-colors"
                       onClick={() => openArtworkDetail(artwork)}
                     >
                       {artwork.title}
                     </h3>
-                    <p className="text-sm text-gray-500 font-light mb-3">
+                    <p className="text-sm text-gray-400 font-light mb-3">
                       {artwork.medium && <span>{artwork.medium}</span>}
-                      {artwork.medium && <span className="mx-2 text-gray-300">|</span>}
-                      <span>{artwork.width} x {artwork.height} {artwork.dimensionUnit}</span>
+                      {artwork.medium && <span className="mx-2 text-gray-200">|</span>}
+                      <span>{artwork.width} × {artwork.height} {artwork.dimensionUnit}</span>
                     </p>
                     {Array.isArray(artwork.variants) && artwork.variants.length > 0 ? (
                       <div className="mb-4">
@@ -969,7 +969,7 @@ export function ArtistPublicProfile({ slug, onContactClick, onViewInRoom }: Arti
                             onClick={() => setShowContactModal(true)}
                             className="flex-1 px-4 py-2.5 text-sm font-medium text-center border border-[#1E2A3B] text-[#1E2A3B] rounded-lg hover:bg-gray-50 transition-colors"
                           >
-                            Inquire
+                            Contact Artist
                           </button>
                         )
                       )}
