@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 
+const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
+
 export function ChangePassword() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -24,7 +26,7 @@ export function ChangePassword() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/auth/change-password', {
+      const response = await fetch(`${API_URL}/api/auth/change-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
