@@ -1,0 +1,147 @@
+Task — Fix Gallery Selection Bug (Artist Pro Artwork Upload)
+Goal
+
+Fix a bug in the Artist Pro dashboard where image role gallery selections do not persist correctly when uploading or editing an artwork.
+
+Currently, when the user selects a gallery in the dropdown (Gallery 2, Gallery 3, etc.), the selection sometimes reverts back to Gallery 1 or does not apply immediately.
+
+The selected gallery must always be saved correctly.
+
+Context
+
+Location:
+
+Artist Pro Dashboard
+Artwork Upload / Edit form
+
+Section:
+
+Image Roles
+
+Fields affected:
+
+Card Image
+
+Exhibition & Studio Image
+
+Each field has a dropdown with options:
+
+Gallery 1
+
+Gallery 2
+
+Gallery 3
+
+Gallery 4
+
+Gallery 5
+
+Expected behaviour:
+
+When a gallery is selected, the UI must immediately reflect the selection.
+
+The selection must remain selected.
+
+The correct value must be saved when submitting the artwork.
+
+Current Problem
+
+Observed behaviour:
+
+Selecting Gallery 2 / 3 / 4 / 5 sometimes:
+
+does nothing
+
+reverts to Gallery 1
+
+requires multiple attempts
+
+This indicates that the state is either not updating properly or is being overwritten by default values.
+
+Required Fix
+1. Fix Dropdown State Handling
+
+Ensure that:
+
+the selected gallery updates React state immediately
+
+the state is not overwritten by default values
+
+the dropdown value reflects the actual stored state
+
+Example issue to check:
+
+defaultValue being used instead of value
+
+state reset on re-render
+
+missing onChange binding
+
+2. Persist Correct Values
+
+Verify that the selected gallery values are correctly included in the form submission.
+
+Expected payload example:
+
+card_image_gallery: "gallery2"
+studio_image_gallery: "gallery4"
+
+The values must match the user's selection.
+
+3. Prevent Silent Reset
+
+If the component re-renders:
+
+it must keep the selected value
+
+it must NOT revert to Gallery 1
+
+4. Add Console Debug (temporary)
+
+Add temporary console logs to confirm correct state flow:
+
+console.log("Card gallery selected:", value)
+console.log("Studio gallery selected:", value)
+
+This helps confirm correct behaviour during testing.
+
+5. QA Test After Fix
+
+Agent must verify:
+
+1️⃣ Select Gallery 2 → stays selected
+2️⃣ Select Gallery 4 → stays selected
+3️⃣ Save artwork → reload → selection persists
+4️⃣ Works on both fields:
+
+Card Image
+
+Exhibition & Studio Image
+
+Scope
+
+Fix ONLY:
+
+Artist Pro dashboard → artwork upload/edit form.
+
+Do NOT modify:
+
+database structure
+
+gallery engine
+
+studio viewer
+
+plan logic
+
+other dashboards
+
+Stop Condition
+
+Bug is fixed when:
+
+gallery dropdown selection works 100% consistently
+
+no reversion to Gallery 1
+
+saved values persist after refresh.

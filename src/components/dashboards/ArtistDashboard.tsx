@@ -290,6 +290,50 @@ export function ArtistDashboard() {
     prevDimensionUnit.current = formData.dimensionUnit;
   }, [formData.dimensionUnit]);
 
+  // Stabilise image role selections whenever the gallery image list changes.
+  // If the currently selected cardImageId or cleanImageId no longer exists in the
+  // image list (e.g. the image was replaced and got a new id), reset to the first
+  // valid image so the controlled <select> never has a value that matches no option.
+  useEffect(() => {
+    if (galleryImages.length === 0) return;
+
+    const primaryId: number = editingArtwork?.id != null ? 0 : -1;
+    const hasPrimary = !!(
+      editingArtwork?.image_url ||
+      (formData.image instanceof File) ||
+      (typeof formData.image === 'string' && formData.image)
+    );
+
+    const allIds: number[] = [
+      ...(hasPrimary ? [primaryId] : []),
+      ...galleryImages.map(g => g.id).filter((id): id is number => id != null)
+    ].slice(0, 5);
+
+    const nonMockupIds: number[] = [
+      ...(hasPrimary ? [primaryId] : []),
+      ...galleryImages.filter(g => !g.is_mockup).map(g => g.id).filter((id): id is number => id != null)
+    ].slice(0, 5);
+
+    if (allIds.length === 0) return;
+
+    setFormData(prev => {
+      const updates: { cardImageId?: number; cleanImageId?: number } = {};
+
+      if (prev.cardImageId === null || !allIds.includes(prev.cardImageId)) {
+        updates.cardImageId = allIds[0];
+        console.log('[ImageRoles] Card gallery reset to:', updates.cardImageId);
+      }
+
+      const cleanTarget = nonMockupIds.length > 0 ? nonMockupIds[0] : allIds[0];
+      if (prev.cleanImageId === null || !nonMockupIds.includes(prev.cleanImageId)) {
+        updates.cleanImageId = cleanTarget;
+        console.log('[ImageRoles] Studio gallery reset to:', updates.cleanImageId);
+      }
+
+      return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
+    });
+  }, [galleryImages]);
+
   const fetchUnreadCount = async () => {
     try {
       const response = await fetch(`${API_URL}/api/artist/profile/connect-stats`, {
@@ -1892,18 +1936,20 @@ export function ArtistDashboard() {
                           })()}
                         </div>
                         <select
-                          value={formData.cardImageId ?? (allImagesForDropdown.length > 0 ? allImagesForDropdown[0].id : '')}
+                          value={formData.cardImageId != null ? String(formData.cardImageId) : String(allImagesForDropdown[0]?.id ?? '')}
                           onChange={(e) => {
                             const val = e.target.value;
+                            const parsed = val === '' ? null : parseInt(val, 10);
+                            console.log('Card gallery selected:', parsed);
                             setFormData(prev => ({
                               ...prev,
-                              cardImageId: val === '' ? null : parseInt(val)
+                              cardImageId: parsed
                             }));
                           }}
                           className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-rv-primary"
                         >
                           {allImagesForDropdown.map((img, idx) => (
-                            <option key={img.id ?? idx} value={img.id}>
+                            <option key={img.id != null ? img.id : `idx-${idx}`} value={img.id != null ? String(img.id) : ''}>
                               Gallery {idx + 1}{img.is_mockup ? ' (mockup)' : ''}
                             </option>
                           ))}
@@ -1940,13 +1986,17 @@ export function ArtistDashboard() {
                           })()}
                         </div>
                         <select
-                          value={formData.cleanImageId ?? (() => {
+                          value={(() => {
                             const nonMockup = allImagesForDropdown.filter(g => !g.is_mockup);
-                            return nonMockup.length > 0 ? nonMockup[0].id : '';
+                            const effectiveId = formData.cleanImageId != null
+                              ? formData.cleanImageId
+                              : (nonMockup.length > 0 ? nonMockup[0].id : (allImagesForDropdown[0]?.id ?? null));
+                            return effectiveId != null ? String(effectiveId) : '';
                           })()}
                           onChange={(e) => {
                             const val = e.target.value;
-                            const selectedId = val === '' ? null : parseInt(val);
+                            const selectedId = val === '' ? null : parseInt(val, 10);
+                            console.log('Studio gallery selected:', selectedId);
                             // Block mockup selection for clean image
                             if (selectedId !== null) {
                               const selectedImg = allImagesForDropdown.find(g => g.id === selectedId);
@@ -1963,7 +2013,7 @@ export function ArtistDashboard() {
                           className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-rv-primary"
                         >
                           {allImagesForDropdown.filter(img => !img.is_mockup).map((img, idx) => (
-                            <option key={img.id ?? idx} value={img.id}>
+                            <option key={img.id != null ? img.id : `clean-idx-${idx}`} value={img.id != null ? String(img.id) : ''}>
                               Gallery {allImagesForDropdown.indexOf(img) + 1}
                             </option>
                           ))}
