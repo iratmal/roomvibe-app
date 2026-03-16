@@ -61,7 +61,7 @@ export function ChangePassword() {
     <div className="p-6 bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral">
       <h2 className="text-xl font-bold mb-5 text-rv-primary">Change Password</h2>
       
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
         <div>
           <label htmlFor="currentPassword" className="block text-sm font-semibold text-rv-text mb-2">
             Current Password
@@ -72,9 +72,12 @@ export function ChangePassword() {
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
             required
+            autoComplete="current-password"
+            placeholder="Type your current password"
             className="w-full px-4 py-3 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary focus:border-transparent transition-all"
             disabled={isLoading}
           />
+          <p className="text-xs text-rv-textMuted mt-1.5">If your browser autofilled this field, clear it and type your password manually.</p>
         </div>
 
         <div>
@@ -88,10 +91,12 @@ export function ChangePassword() {
             onChange={(e) => setNewPassword(e.target.value)}
             required
             minLength={6}
+            autoComplete="new-password"
+            placeholder="At least 6 characters"
             className="w-full px-4 py-3 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary focus:border-transparent transition-all"
             disabled={isLoading}
           />
-          <p className="text-xs text-rv-textMuted mt-2 font-medium">Must be at least 6 characters</p>
+          <p className="text-xs text-rv-textMuted mt-1.5">Must be at least 6 characters</p>
         </div>
 
         <div>
@@ -105,6 +110,8 @@ export function ChangePassword() {
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
             minLength={6}
+            autoComplete="new-password"
+            placeholder="Repeat new password"
             className="w-full px-4 py-3 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary focus:border-transparent transition-all"
             disabled={isLoading}
           />
