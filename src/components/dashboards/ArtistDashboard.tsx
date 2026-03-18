@@ -1829,6 +1829,7 @@ export function ArtistDashboard() {
                     }
                   }}
                   onGalleryImagesChange={setGalleryImages}
+                  onReorder={() => setFormData(prev => ({ ...prev, cardImageId: null, cleanImageId: null }))}
                   isEditing={!!editingArtwork}
                   cleanImageId={formData.cleanImageId}
                 />
