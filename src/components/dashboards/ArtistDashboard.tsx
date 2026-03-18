@@ -1829,7 +1829,6 @@ export function ArtistDashboard() {
                     }
                   }}
                   onGalleryImagesChange={setGalleryImages}
-                  onReorder={() => setFormData(prev => ({ ...prev, cardImageId: null, cleanImageId: null }))}
                   isEditing={!!editingArtwork}
                   cleanImageId={formData.cleanImageId}
                 />
@@ -1884,15 +1883,6 @@ export function ArtistDashboard() {
                   return first?.id ?? allImagesForDropdown.find(g => g.id != null)?.id ?? null;
                 })();
 
-                console.log('[ImageRoles render]', {
-                  cleanImageId: formData.cleanImageId,
-                  cardImageId: formData.cardImageId,
-                  effectiveCleanId,
-                  effectiveCardId,
-                  _nonMockupOptionValues,
-                  allIds: allImagesForDropdown.map(g => g.id)
-                });
-
                 return (
                 <div className="md:col-span-2 bg-gray-50 rounded-lg p-4 border border-gray-200">
                   <h4 className="text-sm font-semibold text-rv-text mb-3 flex items-center gap-2">
@@ -1928,7 +1918,6 @@ export function ArtistDashboard() {
                           onChange={(e) => {
                             const val = e.target.value;
                             const parsed = val === '' ? null : parseInt(val, 10);
-                            console.log('Card gallery selected:', parsed);
                             setFormData(prev => ({
                               ...prev,
                               cardImageId: parsed
@@ -1971,11 +1960,6 @@ export function ArtistDashboard() {
                           onChange={(e) => {
                             const val = e.target.value;
                             const selectedId = val === '' ? null : parseInt(val, 10);
-                            console.log('[ExhibitionSelect onChange]', {
-                              rawVal: val,
-                              selectedId,
-                              allDropdownIds: allImagesForDropdown.map(g => ({ id: g.id, typeofId: typeof g.id, is_mockup: g.is_mockup }))
-                            });
                             // Block mockup selection for clean image
                             if (selectedId !== null) {
                               const selectedImg = allImagesForDropdown.find(g => g.id === selectedId);

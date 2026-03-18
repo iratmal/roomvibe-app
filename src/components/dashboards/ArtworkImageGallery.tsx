@@ -18,7 +18,6 @@ interface ArtworkImageGalleryProps {
   galleryImages: GalleryImage[];
   onPrimaryImageChange: (file: File | string | null) => void;
   onGalleryImagesChange: (images: GalleryImage[]) => void;
-  onReorder?: () => void;
   isEditing: boolean;
   maxImages?: number;
   cleanImageId?: number | null;
@@ -30,7 +29,6 @@ export function ArtworkImageGallery({
   galleryImages,
   onPrimaryImageChange,
   onGalleryImagesChange,
-  onReorder,
   isEditing,
   maxImages = 5,
   cleanImageId
@@ -261,7 +259,6 @@ export function ArtworkImageGallery({
     });
     
     onGalleryImagesChange(newGalleryImages);
-    onReorder?.();
     setDraggedIndex(null);
   };
 
