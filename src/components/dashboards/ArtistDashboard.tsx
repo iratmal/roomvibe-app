@@ -2012,11 +2012,13 @@ export function ArtistDashboard() {
                           }}
                           className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-rv-primary"
                         >
-                          {allImagesForDropdown.filter(img => !img.is_mockup).map((img, idx) => (
-                            <option key={img.id != null ? img.id : `clean-idx-${idx}`} value={img.id != null ? String(img.id) : ''}>
-                              Gallery {allImagesForDropdown.indexOf(img) + 1}
-                            </option>
-                          ))}
+                          {allImagesForDropdown.map((img, fullIdx) =>
+                            img.is_mockup ? null : (
+                              <option key={img.id != null ? img.id : `clean-idx-${fullIdx}`} value={img.id != null ? String(img.id) : ''}>
+                                Gallery {fullIdx + 1}
+                              </option>
+                            )
+                          )}
                         </select>
                       </div>
                       {allImagesForDropdown.length > 0 && allImagesForDropdown.every(img => img.is_mockup) && (
