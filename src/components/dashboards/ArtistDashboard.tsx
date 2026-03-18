@@ -290,50 +290,6 @@ export function ArtistDashboard() {
     prevDimensionUnit.current = formData.dimensionUnit;
   }, [formData.dimensionUnit]);
 
-  // Stabilise image role selections whenever the gallery image list changes.
-  // If the currently selected cardImageId or cleanImageId no longer exists in the
-  // image list (e.g. the image was replaced and got a new id), reset to the first
-  // valid image so the controlled <select> never has a value that matches no option.
-  useEffect(() => {
-    if (galleryImages.length === 0) return;
-
-    const primaryId: number = editingArtwork?.id != null ? 0 : -1;
-    const hasPrimary = !!(
-      editingArtwork?.image_url ||
-      (formData.image instanceof File) ||
-      (typeof formData.image === 'string' && formData.image)
-    );
-
-    const allIds: number[] = [
-      ...(hasPrimary ? [primaryId] : []),
-      ...galleryImages.map(g => g.id).filter((id): id is number => id != null)
-    ].slice(0, 5);
-
-    const nonMockupIds: number[] = [
-      ...(hasPrimary ? [primaryId] : []),
-      ...galleryImages.filter(g => !g.is_mockup).map(g => g.id).filter((id): id is number => id != null)
-    ].slice(0, 5);
-
-    if (allIds.length === 0) return;
-
-    setFormData(prev => {
-      const updates: { cardImageId?: number; cleanImageId?: number } = {};
-
-      if (prev.cardImageId === null || !allIds.includes(prev.cardImageId)) {
-        updates.cardImageId = allIds[0];
-        console.log('[ImageRoles] Card gallery reset to:', updates.cardImageId);
-      }
-
-      const cleanTarget = nonMockupIds.length > 0 ? nonMockupIds[0] : allIds[0];
-      if (prev.cleanImageId === null || !nonMockupIds.includes(prev.cleanImageId)) {
-        updates.cleanImageId = cleanTarget;
-        console.log('[ImageRoles] Studio gallery reset to:', updates.cleanImageId);
-      }
-
-      return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
-    });
-  }, [galleryImages]);
-
   const fetchUnreadCount = async () => {
     try {
       const response = await fetch(`${API_URL}/api/artist/profile/connect-stats`, {
@@ -1898,7 +1854,23 @@ export function ArtistDashboard() {
                   }] : []),
                   ...galleryImages
                 ].slice(0, 5); // hard cap = maxImages (5), keeps dropdown in sync with grid
-                
+
+                // Derive effective selections at render time — no effects, no stale closures.
+                // If the stored ID is null or was removed (image replaced), fall back to first valid image.
+                const _allIds = allImagesForDropdown.map(g => g.id).filter((id): id is number => id != null);
+                const _nonMockupImages = allImagesForDropdown.filter(g => !g.is_mockup);
+                const _nonMockupIds = _nonMockupImages.map(g => g.id).filter((id): id is number => id != null);
+                const effectiveCardId: number | null = (
+                  formData.cardImageId != null && _allIds.includes(formData.cardImageId)
+                    ? formData.cardImageId
+                    : (_allIds[0] ?? null)
+                );
+                const effectiveCleanId: number | null = (
+                  formData.cleanImageId != null && _nonMockupIds.includes(formData.cleanImageId)
+                    ? formData.cleanImageId
+                    : (_nonMockupIds[0] ?? _allIds[0] ?? null)
+                );
+
                 return (
                 <div className="md:col-span-2 bg-gray-50 rounded-lg p-4 border border-gray-200">
                   <h4 className="text-sm font-semibold text-rv-text mb-3 flex items-center gap-2">
@@ -1917,18 +1889,12 @@ export function ArtistDashboard() {
                       <div className="flex items-center gap-3">
                         <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
                           {(() => {
-                            const selectedId = formData.cardImageId;
-                            let imgUrl = allImagesForDropdown.length > 0 ? allImagesForDropdown[0].image_url : '';
-                            if (selectedId !== null) {
-                              const foundImg = allImagesForDropdown.find(g => g.id === selectedId);
-                              if (foundImg) {
-                                imgUrl = foundImg.image_url;
-                              }
-                            }
+                            const foundImg = allImagesForDropdown.find(g => g.id === effectiveCardId);
+                            const imgUrl = foundImg?.image_url || '';
                             if (!imgUrl) return <div className="w-full h-full bg-gray-200" />;
                             return (
                               <img
-                                src={imgUrl?.startsWith('http') || imgUrl?.startsWith('data:') || imgUrl?.startsWith('blob:') ? imgUrl : `${API_URL}${imgUrl}`}
+                                src={imgUrl.startsWith('http') || imgUrl.startsWith('data:') || imgUrl.startsWith('blob:') ? imgUrl : `${API_URL}${imgUrl}`}
                                 alt="Card preview"
                                 className="w-full h-full object-cover"
                               />
@@ -1936,7 +1902,7 @@ export function ArtistDashboard() {
                           })()}
                         </div>
                         <select
-                          value={formData.cardImageId != null ? String(formData.cardImageId) : String(allImagesForDropdown[0]?.id ?? '')}
+                          value={effectiveCardId != null ? String(effectiveCardId) : ''}
                           onChange={(e) => {
                             const val = e.target.value;
                             const parsed = val === '' ? null : parseInt(val, 10);
@@ -1966,19 +1932,12 @@ export function ArtistDashboard() {
                       <div className="flex items-center gap-3">
                         <div className="w-16 h-16 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
                           {(() => {
-                            const selectedId = formData.cleanImageId;
-                            const nonMockupImages = allImagesForDropdown.filter(g => !g.is_mockup);
-                            let imgUrl = nonMockupImages.length > 0 ? nonMockupImages[0].image_url : (allImagesForDropdown.length > 0 ? allImagesForDropdown[0].image_url : '');
-                            if (selectedId !== null) {
-                              const foundImg = allImagesForDropdown.find(g => g.id === selectedId);
-                              if (foundImg) {
-                                imgUrl = foundImg.image_url;
-                              }
-                            }
+                            const foundImg = allImagesForDropdown.find(g => g.id === effectiveCleanId);
+                            const imgUrl = foundImg?.image_url || '';
                             if (!imgUrl) return <div className="w-full h-full bg-gray-200" />;
                             return (
                               <img
-                                src={imgUrl?.startsWith('http') || imgUrl?.startsWith('data:') || imgUrl?.startsWith('blob:') ? imgUrl : `${API_URL}${imgUrl}`}
+                                src={imgUrl.startsWith('http') || imgUrl.startsWith('data:') || imgUrl.startsWith('blob:') ? imgUrl : `${API_URL}${imgUrl}`}
                                 alt="Exhibition preview"
                                 className="w-full h-full object-cover"
                               />
@@ -1986,13 +1945,7 @@ export function ArtistDashboard() {
                           })()}
                         </div>
                         <select
-                          value={(() => {
-                            const nonMockup = allImagesForDropdown.filter(g => !g.is_mockup);
-                            const effectiveId = formData.cleanImageId != null
-                              ? formData.cleanImageId
-                              : (nonMockup.length > 0 ? nonMockup[0].id : (allImagesForDropdown[0]?.id ?? null));
-                            return effectiveId != null ? String(effectiveId) : '';
-                          })()}
+                          value={effectiveCleanId != null ? String(effectiveCleanId) : ''}
                           onChange={(e) => {
                             const val = e.target.value;
                             const selectedId = val === '' ? null : parseInt(val, 10);
