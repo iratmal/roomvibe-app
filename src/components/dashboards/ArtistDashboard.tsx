@@ -1856,20 +1856,41 @@ export function ArtistDashboard() {
                 ].slice(0, 5); // hard cap = maxImages (5), keeps dropdown in sync with grid
 
                 // Derive effective selections at render time — no effects, no stale closures.
-                // If the stored ID is null or was removed (image replaced), fall back to first valid image.
-                const _allIds = allImagesForDropdown.map(g => g.id).filter((id): id is number => id != null);
-                const _nonMockupImages = allImagesForDropdown.filter(g => !g.is_mockup);
-                const _nonMockupIds = _nonMockupImages.map(g => g.id).filter((id): id is number => id != null);
-                const effectiveCardId: number | null = (
-                  formData.cardImageId != null && _allIds.includes(formData.cardImageId)
-                    ? formData.cardImageId
-                    : (_allIds[0] ?? null)
-                );
-                const effectiveCleanId: number | null = (
-                  formData.cleanImageId != null && _nonMockupIds.includes(formData.cleanImageId)
-                    ? formData.cleanImageId
-                    : (_nonMockupIds[0] ?? _allIds[0] ?? null)
-                );
+                // Use string comparison to match exactly how HTML <select> matches <option value>.
+                const _allOptionValues = allImagesForDropdown
+                  .map(g => g.id != null ? String(g.id) : null)
+                  .filter((v): v is string => v !== null);
+                const _nonMockupOptionValues = allImagesForDropdown
+                  .filter(g => !g.is_mockup)
+                  .map(g => g.id != null ? String(g.id) : null)
+                  .filter((v): v is string => v !== null);
+
+                const effectiveCardId: number | null = (() => {
+                  if (formData.cardImageId != null) {
+                    const asStr = String(formData.cardImageId);
+                    if (_allOptionValues.includes(asStr)) return formData.cardImageId;
+                  }
+                  const first = allImagesForDropdown.find(g => g.id != null);
+                  return first?.id ?? null;
+                })();
+
+                const effectiveCleanId: number | null = (() => {
+                  if (formData.cleanImageId != null) {
+                    const asStr = String(formData.cleanImageId);
+                    if (_nonMockupOptionValues.includes(asStr)) return formData.cleanImageId;
+                  }
+                  const first = allImagesForDropdown.find(g => !g.is_mockup && g.id != null);
+                  return first?.id ?? allImagesForDropdown.find(g => g.id != null)?.id ?? null;
+                })();
+
+                console.log('[ImageRoles render]', {
+                  cleanImageId: formData.cleanImageId,
+                  cardImageId: formData.cardImageId,
+                  effectiveCleanId,
+                  effectiveCardId,
+                  _nonMockupOptionValues,
+                  allIds: allImagesForDropdown.map(g => g.id)
+                });
 
                 return (
                 <div className="md:col-span-2 bg-gray-50 rounded-lg p-4 border border-gray-200">
@@ -1949,7 +1970,11 @@ export function ArtistDashboard() {
                           onChange={(e) => {
                             const val = e.target.value;
                             const selectedId = val === '' ? null : parseInt(val, 10);
-                            console.log('Studio gallery selected:', selectedId);
+                            console.log('[ExhibitionSelect onChange]', {
+                              rawVal: val,
+                              selectedId,
+                              allDropdownIds: allImagesForDropdown.map(g => ({ id: g.id, typeofId: typeof g.id, is_mockup: g.is_mockup }))
+                            });
                             // Block mockup selection for clean image
                             if (selectedId !== null) {
                               const selectedImg = allImagesForDropdown.find(g => g.id === selectedId);
