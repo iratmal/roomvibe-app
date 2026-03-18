@@ -245,12 +245,15 @@ export function ArtworkImageGallery({
       }
     }
     
-    // Update gallery images (all except the first which is the cover)
+    // Update gallery images (all except the first which is the cover).
+    // The child always stores the primary slot as id=-1. If that slot gets demoted into
+    // gallery position (drag-drop), it would collide with the parent's own id=-1 primary,
+    // making two options with the same value. Assign a fresh unique ID to any demoted primary.
     const newGalleryImages = imagesCopy.slice(1).map((img, i) => {
-      // Remove the tracking property
       const { _originalIndex, ...cleanImg } = img;
       return {
         ...cleanImg,
+        id: cleanImg.id === -1 ? -(Date.now() + i + 1) : cleanImg.id,
         display_order: i
       };
     });
