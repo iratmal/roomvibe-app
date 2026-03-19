@@ -1814,12 +1814,6 @@ export function ArtistDashboard() {
                   primaryImage={editingArtwork?.image_url || null}
                   galleryImages={galleryImages}
                   onPrimaryImageChange={(fileOrInfo) => {
-                    console.log('[ArtistDashboard] onPrimaryImageChange called:', {
-                      fileOrInfo,
-                      type: typeof fileOrInfo,
-                      isFile: fileOrInfo instanceof File,
-                      name: fileOrInfo instanceof File ? fileOrInfo.name : 'N/A'
-                    });
                     if (fileOrInfo && typeof fileOrInfo === 'object' && 'type' in fileOrInfo && fileOrInfo.type === 'gallery') {
                       setPromotedGalleryImageId((fileOrInfo as any).id);
                       setFormData(prev => ({ ...prev, image: (fileOrInfo as any).url }));

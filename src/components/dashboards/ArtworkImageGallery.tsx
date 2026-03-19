@@ -223,10 +223,13 @@ export function ArtworkImageGallery({
     
     // Determine the new cover (first image after reorder)
     const newCover = imagesCopy[0];
-    const oldCoverWasPrimary = draggedIndex !== 0 && targetIndex === 0 || (draggedIndex === 0 && targetIndex !== 0);
-    
-    // Update the primary image
-    if (newCover) {
+    // Only update primary when the cover slot actually changed.
+    // Calling onPrimaryImageChange on every drag (even pure gallery reorders) unnecessarily
+    // mutates formData.image and resets promotedGalleryImageId in the parent, which breaks
+    // the image-role dropdown ID tracking.
+    const coverChanged = imagesCopy[0]._originalIndex !== 0;
+
+    if (coverChanged && newCover) {
       if (newCover.file) {
         // New file being promoted to cover
         setNewPrimaryFile(newCover.file);
