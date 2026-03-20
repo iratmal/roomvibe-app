@@ -1537,9 +1537,11 @@ export function ArtistDashboard() {
           <button
             onClick={() => setActiveTab('exhibitions')}
             className={`px-4 py-3 text-sm font-semibold transition-colors whitespace-nowrap ${
-              activeTab === 'exhibitions'
-                ? 'text-rv-primary border-b-2 border-rv-primary'
-                : 'text-rv-textMuted hover:text-rv-text'
+              isFreePlan
+                ? 'text-rv-textMuted opacity-60'
+                : activeTab === 'exhibitions'
+                  ? 'text-rv-primary border-b-2 border-rv-primary'
+                  : 'text-rv-textMuted hover:text-rv-text'
             }`}
           >
             <span className="flex items-center gap-2">
@@ -1547,6 +1549,11 @@ export function ArtistDashboard() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg>
               My Exhibitions
+              {isFreePlan && (
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rv-neutral text-rv-textMuted leading-none">
+                  Pro
+                </span>
+              )}
             </span>
           </button>
           <button
@@ -3203,8 +3210,8 @@ export function ArtistDashboard() {
               </div>
             )}
             
-            {/* Artist (basic) plan: Show upgrade message only when they've reached their 3-exhibition limit */}
-            {!isArtistPro && exhibitions.length >= planLimits.exhibitions && (
+            {/* Artist (basic) plan: Show upgrade message only when they've reached their 3-exhibition limit (not for Free plan - has its own empty state) */}
+            {!isArtistPro && !isFreePlan && exhibitions.length >= planLimits.exhibitions && (
               <div className="mb-6 p-4 bg-[#C9A24A]/10 border border-[#C9A24A]/30 rounded-rvMd">
                 <div className="flex items-start gap-3">
                   <svg className="w-5 h-5 text-[#C9A24A] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
