@@ -1,0 +1,120 @@
+Task: Fix Image Roles sync with drag & drop (User Dashboard — Free plan)
+
+Goal:
+Osigurati da Image Roles (Card Image + Exhibition & Studio Image) automatski prate redoslijed slika nakon drag & drop promjene u User dashboardu (Free account).
+
+Context:
+
+Radi se o:
+
+User dashboard (Free plan)
+
+sekcija: Artwork Images + Image Roles
+
+Trenutni bug:
+
+Nakon što korisnik promijeni redoslijed slika (drag & drop),
+
+Image Roles dropdowni ostaju na starim vrijednostima (npr. uvijek “Gallery 1”)
+
+i ne reflektiraju novi redoslijed slika
+
+Expected behavior:
+
+Kada korisnik:
+
+promijeni redoslijed slika (npr. slika 3 → pozicija 1)
+
+Sustav mora:
+
+automatski ažurirati:
+
+Card Image
+
+Exhibition & Studio Image
+
+Pravilo:
+
+Image roles trebaju biti vezane za konkretnu sliku (ID / reference)
+
+NE za statički naziv tipa “Gallery 1”
+
+Nakon reordera:
+
+ako je neka slika bila odabrana kao:
+
+Card Image → ona i dalje ostaje Card Image (bez obzira na novu poziciju)
+
+Exhibition Image → isto pravilo
+
+Problem koji treba riješiti:
+
+Trenutno:
+
+dropdown pokazuje “Gallery 1” bez obzira na reorder
+
+mapping je očito vezan uz index (poziciju), a ne uz stvarnu sliku
+
+Treba:
+
+prebaciti logiku na image-based mapping (npr. image ID / src / uuid)
+
+Scope:
+
+Implementirati:
+
+Stable image reference
+
+svaka slika mora imati:
+
+unique ID (ili koristiti postojeći)
+
+Image Roles moraju referencirati taj ID
+
+On drag & drop reorder:
+
+NE resetirati Image Roles
+
+samo ažurirati UI redoslijed
+
+zadržati povezanost role ↔ image
+
+Dropdown display fix:
+
+dropdown mora prikazivati točnu sliku koja je trenutno assigned
+
+ne generički “Gallery 1”
+
+Reactivity:
+
+nakon reordera UI se mora odmah refreshati (bez reloada)
+
+Test cases (must pass):
+
+✅ Promijeni redoslijed slika → role ostaju na istoj slici
+
+✅ Postavi sliku 3 kao Card Image → pomakni je na poziciju 1 → i dalje je Card Image
+
+✅ Dropdown uvijek prikazuje ispravnu sliku (thumbnail + label)
+
+✅ Nema resetiranja na “Gallery 1”
+
+✅ Radi bez refresh-a stranice
+
+Do NOT:
+
+ne dirati Artist dashboard (ovo je već tamo riješeno)
+
+ne mijenjati backend strukturu ako nije nužno
+
+ne uvoditi nove UI komponente — samo fix logike
+
+Stop condition:
+
+Task je gotov kada:
+
+drag & drop redoslijed i Image Roles ostaju sinkronizirani
+
+roles su vezane za stvarnu sliku (ne index)
+
+dropdown više nikad ne “zapne” na Gallery 1
