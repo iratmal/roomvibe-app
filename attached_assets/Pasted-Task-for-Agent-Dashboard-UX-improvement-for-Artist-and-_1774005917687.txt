@@ -1,0 +1,176 @@
+Task for Agent — Dashboard UX improvement for Artist and Artist Pro
+Goal
+
+Improve dashboard usability for both Artist and Artist Pro accounts by:
+
+moving My Exhibitions out of the main artworks page into its own dedicated dashboard page/tab
+
+adding pagination for artworks so the dashboard does not become excessively long when many artworks are uploaded
+
+This applies to:
+
+Artist dashboard
+
+Artist Pro dashboard
+
+Part 1 — Move “My Exhibitions” to a separate page/tab
+Problem
+
+Right now, My Exhibitions appears below the artworks grid on the same dashboard page. This makes the page too long, especially once the artist uploads more artworks. With 50+ artworks, scrolling down to exhibitions becomes impractical.
+
+Required change
+
+Create a dedicated dashboard tab/page for exhibitions.
+
+New dashboard top navigation order
+
+In both Artist and Artist Pro dashboards, the top tab row should be:
+
+Artworks
+
+My Exhibitions
+
+Artist Profile
+
+Inbox
+
+Settings
+
+Functional requirements
+
+My Exhibitions must no longer appear below the artworks list on the Artworks page
+
+clicking My Exhibitions opens a dedicated exhibitions page inside the dashboard
+
+all current exhibition functionality must remain available there:
+
+exhibition list/cards
+
+create new exhibition
+
+edit exhibition
+
+publish/unpublish
+
+delete exhibition
+
+link / embed options
+
+routing/navigation should behave consistently with the other dashboard tabs
+
+active tab highlight should work correctly
+
+this must be implemented for both:
+
+Artist
+
+Artist Pro
+
+UX requirement
+
+The Artworks page should stay focused only on artworks and artwork actions, without the exhibitions section appended at the bottom.
+
+Part 2 — Add pagination to artworks list
+Problem
+
+If many artworks are uploaded, the artworks page becomes too long and requires too much scrolling.
+
+Required change
+
+Add pagination to the artworks grid for both Artist and Artist Pro dashboards.
+
+Pagination rules
+
+show maximum 12 artworks per page
+
+layout remains:
+
+3 cards per row
+
+4 rows per page
+
+once there are more than 12 artworks:
+
+show page 1, page 2, page 3, etc.
+
+pagination should appear at the bottom of the artworks section/page
+
+Functional requirements
+
+page navigation must work correctly
+
+artwork cards must preserve existing design and actions
+
+artworks order should remain consistent and predictable
+
+pagination must work for:
+
+Artist account
+
+Artist Pro account
+
+if total artworks are 12 or fewer, pagination should not appear
+
+if artworks are deleted and total drops back under threshold, pagination should update correctly
+
+if a new artwork is added, pagination should update correctly
+
+Suggested pagination UI
+
+Simple clean control at the bottom such as:
+
+Previous
+
+page numbers
+
+Next
+
+Example:
+Previous 1 2 3 4 Next
+
+Important
+
+Do not reduce card size to fit more items on the page.
+The cards are intentionally large and should stay visually strong.
+The solution is pagination, not shrinking the artwork cards.
+
+Acceptance criteria
+Part 1 — Exhibitions page
+
+My Exhibitions is removed from below the artworks list
+
+My Exhibitions exists as a separate dashboard tab/page
+
+tab is visible in both Artist and Artist Pro dashboards
+
+all exhibition features still work there
+
+no regression in dashboard navigation
+
+Part 2 — Artwork pagination
+
+artworks page shows max 12 artworks per page
+
+layout remains 3 columns x 4 rows
+
+pagination appears only when needed
+
+switching between pages works correctly
+
+edit/delete/view/exhibition actions still work normally from paginated artwork cards
+
+no UI breakage on desktop
+
+no broken state when artworks are added or removed
+
+Nice-to-have
+
+If easy to implement, keep the current page in the URL query string, for example:
+
+?page=2
+
+That way refresh/back navigation is cleaner.
+
+Priority
+
+High priority UX improvement, because this directly affects dashboard usability and future scalability once artists upload many artworks.

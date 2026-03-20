@@ -23,7 +23,9 @@ interface GalleryImage {
   previewUrl?: string;
 }
 
-type DashboardTab = 'artworks' | 'profile' | 'inbox' | 'settings';
+type DashboardTab = 'artworks' | 'exhibitions' | 'profile' | 'inbox' | 'settings';
+
+const ARTWORKS_PER_PAGE = 12;
 
 const API_URL = import.meta.env.DEV ? 'http://localhost:3001' : '';
 
@@ -127,6 +129,7 @@ interface Exhibition {
 export function ArtistDashboard() {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<DashboardTab>('artworks');
+  const [currentPage, setCurrentPage] = useState(1);
   const [unreadCount, setUnreadCount] = useState(0);
   const [inboxEmailNotifications, setInboxEmailNotifications] = useState<boolean>(true);
   const [savingNotificationSetting, setSavingNotificationSetting] = useState(false);
@@ -230,6 +233,11 @@ export function ArtistDashboard() {
       fetchUnreadCount();
     }
   }, [activeTab]);
+
+  useEffect(() => {
+    const maxPage = Math.max(1, Math.ceil(artworks.length / ARTWORKS_PER_PAGE));
+    if (currentPage > maxPage) setCurrentPage(maxPage);
+  }, [artworks.length]);
   
   // Preload exhibition assignments for Artist and Artist Pro (both can have multiple exhibitions)
   useEffect(() => {
@@ -1476,6 +1484,12 @@ export function ArtistDashboard() {
 </script>`;
   };
 
+  const totalArtworkPages = Math.ceil(artworks.length / ARTWORKS_PER_PAGE);
+  const paginatedArtworks = artworks.slice(
+    (currentPage - 1) * ARTWORKS_PER_PAGE,
+    currentPage * ARTWORKS_PER_PAGE
+  );
+
   return (
     <div className="min-h-screen bg-white">
       <SiteHeader showPlanBadge={true} />
@@ -1518,6 +1532,21 @@ export function ArtistDashboard() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               Artworks
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab('exhibitions')}
+            className={`px-4 py-3 text-sm font-semibold transition-colors whitespace-nowrap ${
+              activeTab === 'exhibitions'
+                ? 'text-rv-primary border-b-2 border-rv-primary'
+                : 'text-rv-textMuted hover:text-rv-text'
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+              My Exhibitions
             </span>
           </button>
           <button
@@ -2514,7 +2543,7 @@ export function ArtistDashboard() {
             </div>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {artworks.map((artwork) => (
+              {paginatedArtworks.map((artwork) => (
                 <div key={`${artwork.id}-${artwork.card_image_id || 'default'}-${artwork.updated_at || ''}`} className="bg-white rounded-rvLg shadow-rvSoft border border-rv-neutral overflow-hidden relative">
                   {isFreePlan && !cleanArtworkIds.has(artwork.id) && (
                     <div className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded text-xs font-semibold bg-rv-primary/90 text-white shadow-sm pointer-events-none">
@@ -2962,722 +2991,38 @@ export function ArtistDashboard() {
               ))}
             </div>
           )}
-        </div>
 
-        <div className="mb-10" data-section="exhibition" ref={exhibitionSectionRef}>
-          <div className="flex items-center justify-between mb-2">
-            <div>
-              <h2 className="text-2xl font-bold text-rv-primary">My Exhibitions</h2>
-              {isArtistPro && (
-                <p className="text-sm text-[#C9A24A] font-medium mt-1">Unlimited exhibitions (Artist Pro)</p>
-              )}
-            </div>
-            {/* Show "New Exhibition" button when under the plan's exhibition limit */}
-            {(isArtistPro || exhibitions.length < planLimits.exhibitions) && (
+          {totalArtworkPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-8 pt-6 border-t border-rv-neutral">
               <button
-                onClick={() => setShowCreateExhibition(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#C9A24A] text-white rounded-rvMd text-sm font-semibold hover:bg-[#B8913A] transition-colors"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 text-sm font-semibold rounded-rvMd border border-rv-neutral text-rv-text hover:bg-rv-surface transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                New Exhibition
+                Previous
               </button>
-            )}
-          </div>
-          <div className="mb-6 p-4 bg-rv-surface/50 border border-rv-neutral/50 rounded-rvMd">
-            <p className="text-sm text-rv-text font-medium mb-1">How it works:</p>
-            {isArtistPro ? (
-              <>
-                <p className="text-sm text-rv-textMuted">
-                  Upload your artworks once, then curate them into one or multiple exhibitions.
-                  Each artwork can be added to any exhibition you choose, and you can update your exhibitions at any time.
-                </p>
-              </>
-            ) : isFreePlan ? (
-              <>
-                <p className="text-sm font-semibold text-rv-text mb-1">Virtual Exhibitions</p>
-                <p className="text-sm text-rv-textMuted">
-                  Create immersive 3D galleries and curate your artworks into a virtual exhibition.
-                  This feature is available on the Artist and Artist Pro plans.
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="text-sm text-rv-textMuted">
-                  Upload your artworks in the <span className="font-medium">Artworks</span> section, then click the <span className="font-medium">Exhibition</span> button on any artwork to select which of your exhibitions to add it to.
-                </p>
-                <p className="text-xs text-rv-textMuted mt-2">You can create up to {planLimits.exhibitions} exhibitions. Use <span className="font-medium">+ New Exhibition</span> to create one.</p>
-              </>
-            )}
-          </div>
-
-          {/* Show list of exhibitions when multiple exist (Artist with 2-3, or Artist Pro) */}
-          {exhibitions.length > 1 && (
-            <div className="mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {exhibitions.map((exh) => (
-                <div 
-                  key={exh.id}
-                  className={`p-4 bg-white rounded-rvLg border-2 transition-all hover:shadow-md ${
-                    exhibition?.id === exh.id ? 'border-[#C9A24A] shadow-md' : 'border-rv-neutral'
+              {Array.from({ length: totalArtworkPages }, (_, i) => i + 1).map(page => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-9 h-9 text-sm font-semibold rounded-rvMd transition-colors ${
+                    page === currentPage
+                      ? 'bg-rv-primary text-white'
+                      : 'border border-rv-neutral text-rv-text hover:bg-rv-surface'
                   }`}
                 >
-                  <div 
-                    className="flex items-start gap-3 cursor-pointer"
-                    onClick={() => {
-                      setExhibition(exh);
-                      setSelectedExhibition(exh);
-                      fetchExhibitionArtworks(exh.id);
-                    }}
-                  >
-                    <div className="w-10 h-10 rounded-full bg-[#C9A24A]/10 flex items-center justify-center flex-shrink-0">
-                      <svg className="w-5 h-5 text-[#C9A24A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                      </svg>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-rv-text truncate">{exh.title}</h4>
-                      {exh.subtitle && <p className="text-xs text-rv-textMuted truncate">{exh.subtitle}</p>}
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${
-                          exh.status === 'published' ? 'bg-[#C9A24A]/20 text-[#C9A24A]' : 'bg-gray-100 text-gray-600'
-                        }`}>
-                          {exh.status === 'published' ? 'Published' : 'Draft'}
-                        </span>
-                        <span className="text-xs text-rv-textMuted">{exh.artworkCount} artworks</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-rv-neutral/50">
-                    {exh.status === 'published' && (
-                      <>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const publicUrl = `${window.location.origin}/#/embed/exhibitions/${exh.id}`;
-                            navigator.clipboard.writeText(publicUrl);
-                            setSuccess('Public link copied!');
-                            setTimeout(() => setSuccess(''), 3000);
-                          }}
-                          className="flex items-center gap-1 px-2 py-1 text-xs text-rv-textMuted hover:text-rv-primary hover:bg-rv-surface rounded transition-colors"
-                          title="Copy Public Link"
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                          </svg>
-                          Link
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const embedCode = `<iframe\n  src="${window.location.origin}/#/embed/exhibitions/${exh.id}"\n  width="100%"\n  height="720"\n  style="border:0; border-radius:12px;"\n  loading="lazy"\n  allowfullscreen>\n</iframe>`;
-                            navigator.clipboard.writeText(embedCode);
-                            setSuccess('Embed code copied!');
-                            setTimeout(() => setSuccess(''), 3000);
-                          }}
-                          className="flex items-center gap-1 px-2 py-1 text-xs text-rv-textMuted hover:text-rv-primary hover:bg-rv-surface rounded transition-colors"
-                          title="Copy Embed Code"
-                        >
-                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                          </svg>
-                          Embed
-                        </button>
-                      </>
-                    )}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setExhibition(exh);
-                        setSelectedExhibition(exh);
-                        setShowExhibitionDeleteConfirm(true);
-                      }}
-                      className="flex items-center gap-1 px-2 py-1 text-xs text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors ml-auto"
-                      title="Delete Exhibition"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                      Delete
-                    </button>
-                  </div>
-                </div>
+                  {page}
+                </button>
               ))}
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalArtworkPages, p + 1))}
+                disabled={currentPage === totalArtworkPages}
+                className="px-4 py-2 text-sm font-semibold rounded-rvMd border border-rv-neutral text-rv-text hover:bg-rv-surface transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
             </div>
           )}
-          
-          {/* Artist (basic) plan: Show upgrade message only when they've reached their 3-exhibition limit */}
-          {!isArtistPro && exhibitions.length >= planLimits.exhibitions && (
-            <div className="mb-6 p-4 bg-[#C9A24A]/10 border border-[#C9A24A]/30 rounded-rvMd">
-              <div className="flex items-start gap-3">
-                <svg className="w-5 h-5 text-[#C9A24A] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                <div>
-                  <p className="text-sm font-semibold text-[#C9A24A]">Want more exhibitions?</p>
-                  <p className="text-sm text-rv-textMuted mt-1">
-                    Upgrade to <span className="font-semibold">Artist Pro</span> for unlimited exhibitions, unlimited artworks, and all premium features.
-                  </p>
-                  <a 
-                    href="#/pricing" 
-                    className="inline-block mt-2 text-sm font-semibold text-[#C9A24A] hover:text-[#B8913A] underline"
-                  >
-                    View upgrade options
-                  </a>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {!exhibition ? (
-            <div className="text-center py-12 bg-white rounded-rvLg border border-rv-neutral shadow-rvSoft">
-              {planLimits.exhibitions === 0 ? (
-                <div className="px-6 max-w-md mx-auto">
-                  <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-rv-primary/10 flex items-center justify-center">
-                    <svg className="w-7 h-7 text-rv-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
-                  </div>
-                  <h3 className="text-lg font-bold text-rv-text mb-2">Virtual Exhibitions</h3>
-                  <p className="text-rv-textMuted text-sm mb-4">
-                    Create immersive 3D galleries and present your artworks in a curated exhibition.
-                    Available on Artist and Artist Pro plans.
-                  </p>
-                  <a
-                    href="#/pricing"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-colors text-sm font-semibold"
-                  >
-                    Upgrade
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </a>
-                </div>
-              ) : showCreateExhibition ? (
-                <form onSubmit={handleCreateExhibition} className="max-w-md mx-auto px-6">
-                  {pendingExhibitionArtwork && (
-                    <div className="mb-6 p-4 bg-[#C9A24A]/10 border border-[#C9A24A]/30 rounded-rvMd">
-                      <p className="text-sm font-semibold text-[#C9A24A] mb-2">Artwork to add:</p>
-                      <div className="flex items-center gap-3">
-                        <img 
-                          src={`${API_URL}/api/artwork-image/${pendingExhibitionArtwork.id}`}
-                          alt={pendingExhibitionArtwork.title}
-                          className="w-12 h-12 object-cover rounded-rvSm border border-rv-neutral"
-                        />
-                        <span className="text-rv-text font-medium">{pendingExhibitionArtwork.title}</span>
-                      </div>
-                    </div>
-                  )}
-                  <div className="mb-4 text-left">
-                    <label className="block text-sm font-semibold mb-2 text-rv-text">
-                      Exhibition Title <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={exhibitionFormData.title}
-                      onChange={(e) => setExhibitionFormData(prev => ({ ...prev, title: e.target.value }))}
-                      className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
-                      placeholder="My Virtual Exhibition"
-                      required
-                    />
-                  </div>
-                  <div className="mb-6 text-left">
-                    <label className="block text-sm font-semibold mb-2 text-rv-text">
-                      Subtitle (optional)
-                    </label>
-                    <input
-                      type="text"
-                      value={exhibitionFormData.subtitle}
-                      onChange={(e) => setExhibitionFormData(prev => ({ ...prev, subtitle: e.target.value }))}
-                      className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
-                      placeholder="A collection of my best works"
-                    />
-                  </div>
-                  <div className="flex gap-3 justify-center">
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="px-6 py-2.5 bg-rv-primary text-white rounded-rvMd font-semibold hover:bg-rv-primaryHover transition-colors disabled:opacity-50"
-                    >
-                      {loading ? 'Creating...' : 'Create Exhibition'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setShowCreateExhibition(false); setPendingExhibitionArtwork(null); }}
-                      className="px-6 py-2.5 border border-rv-neutral text-rv-text rounded-rvMd font-semibold hover:bg-rv-surface transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <>
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#C9A24A]/10 flex items-center justify-center">
-                    <svg className="w-8 h-8 text-[#C9A24A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                    </svg>
-                  </div>
-                  <h3 className="text-lg font-bold text-rv-text mb-2">Create your virtual exhibition</h3>
-                  <p className="text-rv-textMuted max-w-md mx-auto mb-6">
-                    Showcase your artworks in an immersive 360° virtual gallery that visitors can explore online.
-                  </p>
-                  <button
-                    onClick={() => setShowCreateExhibition(true)}
-                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#C9A24A] text-white rounded-rvMd font-semibold hover:bg-[#B8913A] transition-colors"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
-                    Create Exhibition
-                  </button>
-                </>
-              )}
-            </div>
-          ) : showCreateExhibition ? (
-            <div className="bg-white rounded-rvLg border border-rv-neutral shadow-rvSoft py-10 text-center">
-              <h3 className="text-lg font-bold text-rv-text mb-6">New Exhibition</h3>
-              {pendingExhibitionArtwork && (
-                <div className="max-w-md mx-auto px-6 mb-6">
-                  <div className="p-4 bg-[#C9A24A]/10 border border-[#C9A24A]/30 rounded-rvMd text-left">
-                    <p className="text-sm font-semibold text-[#C9A24A] mb-2">Artwork to add:</p>
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={`${API_URL}/api/artwork-image/${pendingExhibitionArtwork.id}`}
-                        alt={pendingExhibitionArtwork.title}
-                        className="w-12 h-12 object-cover rounded-rvSm border border-rv-neutral"
-                      />
-                      <span className="text-rv-text font-medium">{pendingExhibitionArtwork.title}</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-              <form onSubmit={handleCreateExhibition} className="max-w-md mx-auto px-6 text-left">
-                <div className="mb-4">
-                  <label className="block text-sm font-semibold mb-2 text-rv-text">
-                    Exhibition Title <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={exhibitionFormData.title}
-                    onChange={(e) => setExhibitionFormData(prev => ({ ...prev, title: e.target.value }))}
-                    className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
-                    placeholder="My Virtual Exhibition"
-                    required
-                  />
-                </div>
-                <div className="mb-6">
-                  <label className="block text-sm font-semibold mb-2 text-rv-text">
-                    Subtitle (optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={exhibitionFormData.subtitle}
-                    onChange={(e) => setExhibitionFormData(prev => ({ ...prev, subtitle: e.target.value }))}
-                    className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
-                    placeholder="A collection of my best works"
-                  />
-                </div>
-                <div className="flex gap-3 justify-center">
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="px-6 py-2.5 bg-rv-primary text-white rounded-rvMd font-semibold hover:bg-rv-primaryHover transition-colors disabled:opacity-50"
-                  >
-                    {loading ? 'Creating...' : 'Create Exhibition'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setShowCreateExhibition(false); setPendingExhibitionArtwork(null); }}
-                    className="px-6 py-2.5 border border-rv-neutral text-rv-text rounded-rvMd font-semibold hover:bg-rv-surface transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            </div>
-          ) : exhibition ? (
-            <div className="space-y-6">
-              <div className="bg-white border border-rv-neutral rounded-rvLg shadow-rvSoft overflow-hidden">
-                <div className="relative h-56 sm:h-80 bg-gradient-to-br from-rv-primary/10 to-[#C9A24A]/10 flex items-center justify-center overflow-hidden">
-                  {exhibition.coverImageUrl ? (
-                    <img 
-                      src={getCoverImageUrl(exhibition.coverImageUrl)} 
-                      alt={exhibition.title} 
-                      className="w-full h-full object-cover object-center"
-                    />
-                  ) : (
-                    <svg className="w-16 h-16 text-rv-primary/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg>
-                  )}
-                </div>
-                
-                <div className="p-6">
-                  {showEditExhibition ? (
-                    <form onSubmit={handleUpdateExhibition} className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-semibold mb-2 text-rv-text">
-                          Exhibition Title <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          value={exhibitionFormData.title}
-                          onChange={(e) => setExhibitionFormData(prev => ({ ...prev, title: e.target.value }))}
-                          className="w-full px-3 py-2 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
-                          placeholder="My Virtual Exhibition"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold mb-2 text-rv-text">
-                          Description (optional)
-                        </label>
-                        <textarea
-                          value={exhibitionFormData.subtitle}
-                          onChange={(e) => setExhibitionFormData(prev => ({ ...prev, subtitle: e.target.value }))}
-                          className="w-full px-3 py-2 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
-                          placeholder="A brief description of your exhibition..."
-                          rows={3}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold mb-2 text-rv-text">
-                          Cover Image
-                        </label>
-                        <div className="flex items-center gap-3">
-                          <div className="relative w-24 h-16 bg-rv-surface rounded-rvMd overflow-hidden border border-rv-neutral">
-                            {uploadingCoverImage ? (
-                              <div className="w-full h-full flex items-center justify-center bg-rv-surface">
-                                <svg className="w-5 h-5 text-[#C9A24A] animate-spin" fill="none" viewBox="0 0 24 24">
-                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                              </div>
-                            ) : coverImagePreview ? (
-                              <img src={coverImagePreview} alt="Cover preview" className="w-full h-full object-cover" />
-                            ) : exhibition.coverImageUrl ? (
-                              <img src={getCoverImageUrl(exhibition.coverImageUrl)} alt="Current cover" className="w-full h-full object-cover" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <svg className="w-6 h-6 text-rv-textMuted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                </svg>
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex-1 flex gap-2">
-                            <label className={`flex-1 ${uploadingCoverImage ? 'pointer-events-none opacity-50' : 'cursor-pointer'}`}>
-                              <span className="block px-3 py-2 text-sm text-center border border-rv-neutral text-rv-text rounded-rvMd hover:bg-rv-surface transition-colors font-medium">
-                                Choose Image
-                              </span>
-                              <input
-                                type="file"
-                                accept="image/jpeg,image/png,image/webp"
-                                onChange={handleCoverImageChange}
-                                disabled={uploadingCoverImage}
-                                className="hidden"
-                              />
-                            </label>
-                            {coverImageFile && (
-                              <button
-                                type="button"
-                                onClick={handleUploadCoverImage}
-                                disabled={uploadingCoverImage}
-                                className="px-3 py-2 text-sm bg-[#C9A24A] text-white rounded-rvMd hover:bg-[#B8913A] transition-colors font-medium disabled:opacity-50 flex items-center gap-2"
-                              >
-                                {uploadingCoverImage ? (
-                                  <>
-                                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Uploading...
-                                  </>
-                                ) : 'Upload'}
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                        <p className="text-xs text-rv-textMuted mt-1">Max 5 MB. Recommended: 2000-3000px wide, JPG/WebP for best quality.</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          type="submit"
-                          disabled={loading}
-                          className="flex-1 px-4 py-2 bg-rv-primary text-white rounded-rvMd font-semibold hover:bg-rv-primaryHover transition-colors disabled:opacity-50"
-                        >
-                          {loading ? 'Saving...' : 'Save Changes'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setShowEditExhibition(false);
-                            setExhibitionFormData({ title: '', subtitle: '' });
-                            setCoverImageFile(null);
-                            setCoverImagePreview(null);
-                          }}
-                          className="px-4 py-2 border border-rv-neutral text-rv-text rounded-rvMd font-semibold hover:bg-rv-surface transition-colors"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </form>
-                  ) : (
-                    <>
-                      <div className="flex items-start justify-between mb-3">
-                        <h3 className="text-xl font-semibold text-rv-primary line-clamp-1">
-                          {exhibition.title}
-                        </h3>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={startEditExhibition}
-                            className="p-1.5 text-rv-textMuted hover:text-rv-primary hover:bg-rv-surface rounded transition-colors"
-                            title="Edit exhibition"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                          </button>
-                          <span className={`flex-shrink-0 px-2.5 py-0.5 text-xs font-semibold rounded-full ${
-                            exhibition.status === 'published' 
-                              ? 'bg-[#C9A24A]/15 text-[#C9A24A]' 
-                              : 'bg-slate-100 text-slate-600'
-                          }`}>
-                            {exhibition.status === 'published' ? 'Published' : 'Draft'}
-                          </span>
-                        </div>
-                      </div>
-
-                      {exhibition.subtitle && (
-                        <p className="text-sm text-rv-textMuted mb-3 line-clamp-1">{exhibition.subtitle}</p>
-                      )}
-
-                      <div className="space-y-2 mb-4">
-                    <div className="flex items-center gap-2 text-sm text-rv-textMuted">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <span>{exhibition.artworkCount} {exhibition.artworkCount === 1 ? 'artwork' : 'artworks'}</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 text-sm text-rv-textMuted">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <span>Created {formatExhibitionDate(exhibition.createdAt)}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <a
-                      href={`#/gallery/exhibitions/${exhibition.id}/360-editor?preset=white-cube-v1`}
-                      className="flex-1 px-3 py-2 text-sm bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-all font-semibold text-center"
-                    >
-                      Edit Exhibition
-                    </a>
-                    {exhibition.status === 'published' ? (
-                      <button
-                        onClick={() => setShowUnpublishConfirmModal(true)}
-                        disabled={loading}
-                        className="px-3 py-2 text-sm text-[#C9A24A] border border-[#C9A24A]/30 rounded-rvMd hover:bg-[#C9A24A]/10 transition-all font-medium disabled:opacity-50"
-                        title="Unpublish exhibition"
-                      >
-                        Unpublish
-                      </button>
-                    ) : (
-                      <button
-                        onClick={handlePublishExhibition}
-                        disabled={loading}
-                        className="px-3 py-2 text-sm bg-[#C9A24A] text-white rounded-rvMd hover:bg-[#B8913A] transition-all font-semibold disabled:opacity-50"
-                        title="Publish exhibition to make embed active"
-                      >
-                        Publish
-                      </button>
-                    )}
-                    <button
-                      onClick={() => setShowExhibitionDeleteConfirm(true)}
-                      className="px-3 py-2 text-sm text-red-500 border border-red-200 rounded-rvMd hover:bg-red-50 transition-all font-medium"
-                    >
-                      Delete
-                    </button>
-                  </div>
-
-                      {showExhibitionDeleteConfirm && (
-                        <div className="mt-4 p-4 bg-red-50 border border-red-100 rounded-rvMd">
-                          <p className="text-sm text-red-700 mb-3 font-medium">
-                            Delete this exhibition and all its artworks?
-                          </p>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => {
-                                handleDeleteExhibition(exhibition.id);
-                                setShowExhibitionDeleteConfirm(false);
-                              }}
-                              disabled={loading}
-                              className="flex-1 px-3 py-2 text-sm bg-red-500 text-white rounded-rvMd hover:bg-red-600 transition-colors font-semibold disabled:opacity-50"
-                            >
-                              Yes, Delete
-                            </button>
-                            <button
-                              onClick={() => setShowExhibitionDeleteConfirm(false)}
-                              className="flex-1 px-3 py-2 text-sm border border-red-200 text-red-600 rounded-rvMd hover:bg-red-100 transition-colors font-semibold"
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Embed Exhibition Section */}
-                      <div className="mt-5 pt-5 border-t border-rv-neutral">
-                        <div className="flex items-center gap-2 mb-3">
-                          <svg className={`w-4 h-4 ${exhibition.status === 'published' ? 'text-rv-primary' : 'text-rv-textMuted'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                          </svg>
-                          <h4 className={`text-sm font-semibold ${exhibition.status === 'published' ? 'text-rv-text' : 'text-rv-textMuted'}`}>Embed this Exhibition</h4>
-                        </div>
-                        
-                        {exhibition.status === 'published' ? (
-                          <>
-                            <p className="text-xs text-rv-textMuted mb-3">
-                              Copy this code into your website to display your 360° exhibition.
-                            </p>
-                            <div className="bg-slate-50 rounded-rvMd p-3 mb-3 overflow-x-auto">
-                              <pre className="text-xs text-slate-700 whitespace-pre-wrap break-all font-mono">
-{`<iframe
-  src="${window.location.origin}/#/embed/exhibitions/${exhibition.id}"
-  width="100%"
-  height="720"
-  style="border:0; border-radius:12px;"
-  loading="lazy"
-  allowfullscreen
-></iframe>`}
-                              </pre>
-                            </div>
-                            <button
-                              onClick={async () => {
-                                const embedCode = `<iframe
-  src="${window.location.origin}/#/embed/exhibitions/${exhibition.id}"
-  width="100%"
-  height="720"
-  style="border:0; border-radius:12px;"
-  loading="lazy"
-  allowfullscreen
-></iframe>`;
-                                try {
-                                  await navigator.clipboard.writeText(embedCode);
-                                  setSuccess('Embed code copied to clipboard!');
-                                  setTimeout(() => setSuccess(''), 3000);
-                                } catch (err) {
-                                  setError('Failed to copy embed code');
-                                }
-                              }}
-                              className="w-full px-3 py-2 text-sm border border-rv-primary text-rv-primary rounded-rvMd hover:bg-rv-primary hover:text-white transition-all font-medium flex items-center justify-center gap-2"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                              </svg>
-                              Copy Code
-                            </button>
-                          </>
-                        ) : (
-                          <div className="bg-amber-50 border border-amber-200 rounded-rvMd p-4">
-                            <div className="flex items-start gap-3">
-                              <svg className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                              </svg>
-                              <div>
-                                <p className="text-sm font-medium text-amber-800 mb-1">Exhibition not published</p>
-                                <p className="text-xs text-amber-700 mb-3">
-                                  Publish your exhibition to get the embed code and share it on your website.
-                                </p>
-                                <button
-                                  onClick={handlePublishExhibition}
-                                  disabled={loading}
-                                  className="px-4 py-1.5 text-sm bg-[#C9A24A] text-white rounded-rvMd hover:bg-[#B8913A] transition-all font-semibold disabled:opacity-50"
-                                >
-                                  {loading ? 'Publishing...' : 'Publish Exhibition'}
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </>
-                  )}
-
-                  {/* Exhibition Artworks Section - inside same card */}
-                  <div className="mt-6 pt-6 border-t border-rv-neutral">
-                    <h3 className="text-lg font-bold text-rv-primary mb-4">Exhibition Artworks</h3>
-
-                {exhibitionArtworks.length === 0 ? (
-                  <div className="text-center py-8 text-rv-textMuted">
-                    <svg className="w-12 h-12 mx-auto mb-3 text-rv-neutral" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <p className="font-medium">No artworks in exhibition yet</p>
-                    <p className="text-sm mt-1">Go to your <span className="font-medium">Artworks</span> section and add artworks to this exhibition.</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {exhibitionArtworks.map((artwork) => (
-                      <div key={artwork.id} className="group relative bg-rv-surface rounded-rvMd overflow-hidden border border-rv-neutral">
-                        <div className="h-[160px] relative bg-neutral-200">
-                          <div className="absolute inset-3 flex items-center justify-center">
-                            <img
-                              src={artwork.imageUrl}
-                              alt={artwork.title}
-                              className="max-w-full max-h-full object-contain shadow-sm"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23f1f5f9" width="100" height="100"/><text x="50" y="55" text-anchor="middle" fill="%2394a3b8" font-size="12">No Image</text></svg>';
-                              }}
-                            />
-                          </div>
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors" />
-                          <button
-                            onClick={() => setDeleteExhibitionArtworkId(artwork.id)}
-                            className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        </div>
-                        <div className="p-3">
-                          <h4 className="font-semibold text-sm text-rv-text truncate">{artwork.title}</h4>
-                          <p className="text-xs text-rv-textMuted">
-                            {artwork.widthValue} × {artwork.heightValue} {artwork.dimensionUnit}
-                          </p>
-                        </div>
-
-                        {deleteExhibitionArtworkId === artwork.id && (
-                          <div className="absolute inset-0 bg-white/95 flex flex-col items-center justify-center p-4">
-                            <p className="text-sm text-red-700 font-medium mb-3 text-center">Remove this artwork?</p>
-                            <div className="flex gap-2">
-                              <button
-                                onClick={() => handleDeleteExhibitionArtwork(artwork.id)}
-                                className="px-3 py-1.5 text-sm bg-red-500 text-white rounded-rvMd hover:bg-red-600 font-semibold"
-                              >
-                                Remove
-                              </button>
-                              <button
-                                onClick={() => setDeleteExhibitionArtworkId(null)}
-                                className="px-3 py-1.5 text-sm border border-rv-neutral text-rv-text rounded-rvMd hover:bg-rv-surface font-semibold"
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : null}
         </div>
 
         <div className="mb-10 p-6 bg-rv-primary/5 rounded-rvLg border border-rv-primary/20">
@@ -3710,6 +3055,727 @@ export function ArtistDashboard() {
             </p>
           </div>
         </div>
+          </>
+        )}
+
+
+        {activeTab === 'exhibitions' && (
+          <>
+          <div className="mb-10" data-section="exhibition" ref={exhibitionSectionRef}>
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <h2 className="text-2xl font-bold text-rv-primary">My Exhibitions</h2>
+                {isArtistPro && (
+                  <p className="text-sm text-[#C9A24A] font-medium mt-1">Unlimited exhibitions (Artist Pro)</p>
+                )}
+              </div>
+              {/* Show "New Exhibition" button when under the plan's exhibition limit */}
+              {(isArtistPro || exhibitions.length < planLimits.exhibitions) && (
+                <button
+                  onClick={() => setShowCreateExhibition(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#C9A24A] text-white rounded-rvMd text-sm font-semibold hover:bg-[#B8913A] transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  New Exhibition
+                </button>
+              )}
+            </div>
+            <div className="mb-6 p-4 bg-rv-surface/50 border border-rv-neutral/50 rounded-rvMd">
+              <p className="text-sm text-rv-text font-medium mb-1">How it works:</p>
+              {isArtistPro ? (
+                <>
+                  <p className="text-sm text-rv-textMuted">
+                    Upload your artworks once, then curate them into one or multiple exhibitions.
+                    Each artwork can be added to any exhibition you choose, and you can update your exhibitions at any time.
+                  </p>
+                </>
+              ) : isFreePlan ? (
+                <>
+                  <p className="text-sm font-semibold text-rv-text mb-1">Virtual Exhibitions</p>
+                  <p className="text-sm text-rv-textMuted">
+                    Create immersive 3D galleries and curate your artworks into a virtual exhibition.
+                    This feature is available on the Artist and Artist Pro plans.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-rv-textMuted">
+                    Upload your artworks in the <span className="font-medium">Artworks</span> section, then click the <span className="font-medium">Exhibition</span> button on any artwork to select which of your exhibitions to add it to.
+                  </p>
+                  <p className="text-xs text-rv-textMuted mt-2">You can create up to {planLimits.exhibitions} exhibitions. Use <span className="font-medium">+ New Exhibition</span> to create one.</p>
+                </>
+              )}
+            </div>
+  
+            {/* Show list of exhibitions when multiple exist (Artist with 2-3, or Artist Pro) */}
+            {exhibitions.length > 1 && (
+              <div className="mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {exhibitions.map((exh) => (
+                  <div 
+                    key={exh.id}
+                    className={`p-4 bg-white rounded-rvLg border-2 transition-all hover:shadow-md ${
+                      exhibition?.id === exh.id ? 'border-[#C9A24A] shadow-md' : 'border-rv-neutral'
+                    }`}
+                  >
+                    <div 
+                      className="flex items-start gap-3 cursor-pointer"
+                      onClick={() => {
+                        setExhibition(exh);
+                        setSelectedExhibition(exh);
+                        fetchExhibitionArtworks(exh.id);
+                      }}
+                    >
+                      <div className="w-10 h-10 rounded-full bg-[#C9A24A]/10 flex items-center justify-center flex-shrink-0">
+                        <svg className="w-5 h-5 text-[#C9A24A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                        </svg>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-rv-text truncate">{exh.title}</h4>
+                        {exh.subtitle && <p className="text-xs text-rv-textMuted truncate">{exh.subtitle}</p>}
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${
+                            exh.status === 'published' ? 'bg-[#C9A24A]/20 text-[#C9A24A]' : 'bg-gray-100 text-gray-600'
+                          }`}>
+                            {exh.status === 'published' ? 'Published' : 'Draft'}
+                          </span>
+                          <span className="text-xs text-rv-textMuted">{exh.artworkCount} artworks</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-rv-neutral/50">
+                      {exh.status === 'published' && (
+                        <>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const publicUrl = `${window.location.origin}/#/embed/exhibitions/${exh.id}`;
+                              navigator.clipboard.writeText(publicUrl);
+                              setSuccess('Public link copied!');
+                              setTimeout(() => setSuccess(''), 3000);
+                            }}
+                            className="flex items-center gap-1 px-2 py-1 text-xs text-rv-textMuted hover:text-rv-primary hover:bg-rv-surface rounded transition-colors"
+                            title="Copy Public Link"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                            </svg>
+                            Link
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const embedCode = `<iframe\n  src="${window.location.origin}/#/embed/exhibitions/${exh.id}"\n  width="100%"\n  height="720"\n  style="border:0; border-radius:12px;"\n  loading="lazy"\n  allowfullscreen>\n</iframe>`;
+                              navigator.clipboard.writeText(embedCode);
+                              setSuccess('Embed code copied!');
+                              setTimeout(() => setSuccess(''), 3000);
+                            }}
+                            className="flex items-center gap-1 px-2 py-1 text-xs text-rv-textMuted hover:text-rv-primary hover:bg-rv-surface rounded transition-colors"
+                            title="Copy Embed Code"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                            </svg>
+                            Embed
+                          </button>
+                        </>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setExhibition(exh);
+                          setSelectedExhibition(exh);
+                          setShowExhibitionDeleteConfirm(true);
+                        }}
+                        className="flex items-center gap-1 px-2 py-1 text-xs text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors ml-auto"
+                        title="Delete Exhibition"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {/* Artist (basic) plan: Show upgrade message only when they've reached their 3-exhibition limit */}
+            {!isArtistPro && exhibitions.length >= planLimits.exhibitions && (
+              <div className="mb-6 p-4 bg-[#C9A24A]/10 border border-[#C9A24A]/30 rounded-rvMd">
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-[#C9A24A] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  <div>
+                    <p className="text-sm font-semibold text-[#C9A24A]">Want more exhibitions?</p>
+                    <p className="text-sm text-rv-textMuted mt-1">
+                      Upgrade to <span className="font-semibold">Artist Pro</span> for unlimited exhibitions, unlimited artworks, and all premium features.
+                    </p>
+                    <a 
+                      href="#/pricing" 
+                      className="inline-block mt-2 text-sm font-semibold text-[#C9A24A] hover:text-[#B8913A] underline"
+                    >
+                      View upgrade options
+                    </a>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {!exhibition ? (
+              <div className="text-center py-12 bg-white rounded-rvLg border border-rv-neutral shadow-rvSoft">
+                {planLimits.exhibitions === 0 ? (
+                  <div className="px-6 max-w-md mx-auto">
+                    <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-rv-primary/10 flex items-center justify-center">
+                      <svg className="w-7 h-7 text-rv-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-bold text-rv-text mb-2">Virtual Exhibitions</h3>
+                    <p className="text-rv-textMuted text-sm mb-4">
+                      Create immersive 3D galleries and present your artworks in a curated exhibition.
+                      Available on Artist and Artist Pro plans.
+                    </p>
+                    <a
+                      href="#/pricing"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-colors text-sm font-semibold"
+                    >
+                      Upgrade
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </a>
+                  </div>
+                ) : showCreateExhibition ? (
+                  <form onSubmit={handleCreateExhibition} className="max-w-md mx-auto px-6">
+                    {pendingExhibitionArtwork && (
+                      <div className="mb-6 p-4 bg-[#C9A24A]/10 border border-[#C9A24A]/30 rounded-rvMd">
+                        <p className="text-sm font-semibold text-[#C9A24A] mb-2">Artwork to add:</p>
+                        <div className="flex items-center gap-3">
+                          <img 
+                            src={`${API_URL}/api/artwork-image/${pendingExhibitionArtwork.id}`}
+                            alt={pendingExhibitionArtwork.title}
+                            className="w-12 h-12 object-cover rounded-rvSm border border-rv-neutral"
+                          />
+                          <span className="text-rv-text font-medium">{pendingExhibitionArtwork.title}</span>
+                        </div>
+                      </div>
+                    )}
+                    <div className="mb-4 text-left">
+                      <label className="block text-sm font-semibold mb-2 text-rv-text">
+                        Exhibition Title <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={exhibitionFormData.title}
+                        onChange={(e) => setExhibitionFormData(prev => ({ ...prev, title: e.target.value }))}
+                        className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                        placeholder="My Virtual Exhibition"
+                        required
+                      />
+                    </div>
+                    <div className="mb-6 text-left">
+                      <label className="block text-sm font-semibold mb-2 text-rv-text">
+                        Subtitle (optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={exhibitionFormData.subtitle}
+                        onChange={(e) => setExhibitionFormData(prev => ({ ...prev, subtitle: e.target.value }))}
+                        className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                        placeholder="A collection of my best works"
+                      />
+                    </div>
+                    <div className="flex gap-3 justify-center">
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="px-6 py-2.5 bg-rv-primary text-white rounded-rvMd font-semibold hover:bg-rv-primaryHover transition-colors disabled:opacity-50"
+                      >
+                        {loading ? 'Creating...' : 'Create Exhibition'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setShowCreateExhibition(false); setPendingExhibitionArtwork(null); }}
+                        className="px-6 py-2.5 border border-rv-neutral text-rv-text rounded-rvMd font-semibold hover:bg-rv-surface transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <>
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#C9A24A]/10 flex items-center justify-center">
+                      <svg className="w-8 h-8 text-[#C9A24A]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-bold text-rv-text mb-2">Create your virtual exhibition</h3>
+                    <p className="text-rv-textMuted max-w-md mx-auto mb-6">
+                      Showcase your artworks in an immersive 360° virtual gallery that visitors can explore online.
+                    </p>
+                    <button
+                      onClick={() => setShowCreateExhibition(true)}
+                      className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#C9A24A] text-white rounded-rvMd font-semibold hover:bg-[#B8913A] transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      Create Exhibition
+                    </button>
+                  </>
+                )}
+              </div>
+            ) : showCreateExhibition ? (
+              <div className="bg-white rounded-rvLg border border-rv-neutral shadow-rvSoft py-10 text-center">
+                <h3 className="text-lg font-bold text-rv-text mb-6">New Exhibition</h3>
+                {pendingExhibitionArtwork && (
+                  <div className="max-w-md mx-auto px-6 mb-6">
+                    <div className="p-4 bg-[#C9A24A]/10 border border-[#C9A24A]/30 rounded-rvMd text-left">
+                      <p className="text-sm font-semibold text-[#C9A24A] mb-2">Artwork to add:</p>
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={`${API_URL}/api/artwork-image/${pendingExhibitionArtwork.id}`}
+                          alt={pendingExhibitionArtwork.title}
+                          className="w-12 h-12 object-cover rounded-rvSm border border-rv-neutral"
+                        />
+                        <span className="text-rv-text font-medium">{pendingExhibitionArtwork.title}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <form onSubmit={handleCreateExhibition} className="max-w-md mx-auto px-6 text-left">
+                  <div className="mb-4">
+                    <label className="block text-sm font-semibold mb-2 text-rv-text">
+                      Exhibition Title <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={exhibitionFormData.title}
+                      onChange={(e) => setExhibitionFormData(prev => ({ ...prev, title: e.target.value }))}
+                      className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                      placeholder="My Virtual Exhibition"
+                      required
+                    />
+                  </div>
+                  <div className="mb-6">
+                    <label className="block text-sm font-semibold mb-2 text-rv-text">
+                      Subtitle (optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={exhibitionFormData.subtitle}
+                      onChange={(e) => setExhibitionFormData(prev => ({ ...prev, subtitle: e.target.value }))}
+                      className="w-full px-4 py-2.5 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                      placeholder="A collection of my best works"
+                    />
+                  </div>
+                  <div className="flex gap-3 justify-center">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="px-6 py-2.5 bg-rv-primary text-white rounded-rvMd font-semibold hover:bg-rv-primaryHover transition-colors disabled:opacity-50"
+                    >
+                      {loading ? 'Creating...' : 'Create Exhibition'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setShowCreateExhibition(false); setPendingExhibitionArtwork(null); }}
+                      className="px-6 py-2.5 border border-rv-neutral text-rv-text rounded-rvMd font-semibold hover:bg-rv-surface transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            ) : exhibition ? (
+              <div className="space-y-6">
+                <div className="bg-white border border-rv-neutral rounded-rvLg shadow-rvSoft overflow-hidden">
+                  <div className="relative h-56 sm:h-80 bg-gradient-to-br from-rv-primary/10 to-[#C9A24A]/10 flex items-center justify-center overflow-hidden">
+                    {exhibition.coverImageUrl ? (
+                      <img 
+                        src={getCoverImageUrl(exhibition.coverImageUrl)} 
+                        alt={exhibition.title} 
+                        className="w-full h-full object-cover object-center"
+                      />
+                    ) : (
+                      <svg className="w-16 h-16 text-rv-primary/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                      </svg>
+                    )}
+                  </div>
+                  
+                  <div className="p-6">
+                    {showEditExhibition ? (
+                      <form onSubmit={handleUpdateExhibition} className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-semibold mb-2 text-rv-text">
+                            Exhibition Title <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={exhibitionFormData.title}
+                            onChange={(e) => setExhibitionFormData(prev => ({ ...prev, title: e.target.value }))}
+                            className="w-full px-3 py-2 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                            placeholder="My Virtual Exhibition"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold mb-2 text-rv-text">
+                            Description (optional)
+                          </label>
+                          <textarea
+                            value={exhibitionFormData.subtitle}
+                            onChange={(e) => setExhibitionFormData(prev => ({ ...prev, subtitle: e.target.value }))}
+                            className="w-full px-3 py-2 border border-rv-neutral rounded-rvMd focus:outline-none focus:ring-2 focus:ring-rv-primary"
+                            placeholder="A brief description of your exhibition..."
+                            rows={3}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-semibold mb-2 text-rv-text">
+                            Cover Image
+                          </label>
+                          <div className="flex items-center gap-3">
+                            <div className="relative w-24 h-16 bg-rv-surface rounded-rvMd overflow-hidden border border-rv-neutral">
+                              {uploadingCoverImage ? (
+                                <div className="w-full h-full flex items-center justify-center bg-rv-surface">
+                                  <svg className="w-5 h-5 text-[#C9A24A] animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                  </svg>
+                                </div>
+                              ) : coverImagePreview ? (
+                                <img src={coverImagePreview} alt="Cover preview" className="w-full h-full object-cover" />
+                              ) : exhibition.coverImageUrl ? (
+                                <img src={getCoverImageUrl(exhibition.coverImageUrl)} alt="Current cover" className="w-full h-full object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <svg className="w-6 h-6 text-rv-textMuted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                  </svg>
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1 flex gap-2">
+                              <label className={`flex-1 ${uploadingCoverImage ? 'pointer-events-none opacity-50' : 'cursor-pointer'}`}>
+                                <span className="block px-3 py-2 text-sm text-center border border-rv-neutral text-rv-text rounded-rvMd hover:bg-rv-surface transition-colors font-medium">
+                                  Choose Image
+                                </span>
+                                <input
+                                  type="file"
+                                  accept="image/jpeg,image/png,image/webp"
+                                  onChange={handleCoverImageChange}
+                                  disabled={uploadingCoverImage}
+                                  className="hidden"
+                                />
+                              </label>
+                              {coverImageFile && (
+                                <button
+                                  type="button"
+                                  onClick={handleUploadCoverImage}
+                                  disabled={uploadingCoverImage}
+                                  className="px-3 py-2 text-sm bg-[#C9A24A] text-white rounded-rvMd hover:bg-[#B8913A] transition-colors font-medium disabled:opacity-50 flex items-center gap-2"
+                                >
+                                  {uploadingCoverImage ? (
+                                    <>
+                                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                      </svg>
+                                      Uploading...
+                                    </>
+                                  ) : 'Upload'}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          <p className="text-xs text-rv-textMuted mt-1">Max 5 MB. Recommended: 2000-3000px wide, JPG/WebP for best quality.</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            type="submit"
+                            disabled={loading}
+                            className="flex-1 px-4 py-2 bg-rv-primary text-white rounded-rvMd font-semibold hover:bg-rv-primaryHover transition-colors disabled:opacity-50"
+                          >
+                            {loading ? 'Saving...' : 'Save Changes'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowEditExhibition(false);
+                              setExhibitionFormData({ title: '', subtitle: '' });
+                              setCoverImageFile(null);
+                              setCoverImagePreview(null);
+                            }}
+                            className="px-4 py-2 border border-rv-neutral text-rv-text rounded-rvMd font-semibold hover:bg-rv-surface transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <>
+                        <div className="flex items-start justify-between mb-3">
+                          <h3 className="text-xl font-semibold text-rv-primary line-clamp-1">
+                            {exhibition.title}
+                          </h3>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={startEditExhibition}
+                              className="p-1.5 text-rv-textMuted hover:text-rv-primary hover:bg-rv-surface rounded transition-colors"
+                              title="Edit exhibition"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                            </button>
+                            <span className={`flex-shrink-0 px-2.5 py-0.5 text-xs font-semibold rounded-full ${
+                              exhibition.status === 'published' 
+                                ? 'bg-[#C9A24A]/15 text-[#C9A24A]' 
+                                : 'bg-slate-100 text-slate-600'
+                            }`}>
+                              {exhibition.status === 'published' ? 'Published' : 'Draft'}
+                            </span>
+                          </div>
+                        </div>
+  
+                        {exhibition.subtitle && (
+                          <p className="text-sm text-rv-textMuted mb-3 line-clamp-1">{exhibition.subtitle}</p>
+                        )}
+  
+                        <div className="space-y-2 mb-4">
+                      <div className="flex items-center gap-2 text-sm text-rv-textMuted">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span>{exhibition.artworkCount} {exhibition.artworkCount === 1 ? 'artwork' : 'artworks'}</span>
+                      </div>
+                      
+                      <div className="flex items-center gap-2 text-sm text-rv-textMuted">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span>Created {formatExhibitionDate(exhibition.createdAt)}</span>
+                      </div>
+                    </div>
+  
+                    <div className="flex gap-2">
+                      <a
+                        href={`#/gallery/exhibitions/${exhibition.id}/360-editor?preset=white-cube-v1`}
+                        className="flex-1 px-3 py-2 text-sm bg-rv-primary text-white rounded-rvMd hover:bg-rv-primaryHover transition-all font-semibold text-center"
+                      >
+                        Edit Exhibition
+                      </a>
+                      {exhibition.status === 'published' ? (
+                        <button
+                          onClick={() => setShowUnpublishConfirmModal(true)}
+                          disabled={loading}
+                          className="px-3 py-2 text-sm text-[#C9A24A] border border-[#C9A24A]/30 rounded-rvMd hover:bg-[#C9A24A]/10 transition-all font-medium disabled:opacity-50"
+                          title="Unpublish exhibition"
+                        >
+                          Unpublish
+                        </button>
+                      ) : (
+                        <button
+                          onClick={handlePublishExhibition}
+                          disabled={loading}
+                          className="px-3 py-2 text-sm bg-[#C9A24A] text-white rounded-rvMd hover:bg-[#B8913A] transition-all font-semibold disabled:opacity-50"
+                          title="Publish exhibition to make embed active"
+                        >
+                          Publish
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setShowExhibitionDeleteConfirm(true)}
+                        className="px-3 py-2 text-sm text-red-500 border border-red-200 rounded-rvMd hover:bg-red-50 transition-all font-medium"
+                      >
+                        Delete
+                      </button>
+                    </div>
+  
+                        {showExhibitionDeleteConfirm && (
+                          <div className="mt-4 p-4 bg-red-50 border border-red-100 rounded-rvMd">
+                            <p className="text-sm text-red-700 mb-3 font-medium">
+                              Delete this exhibition and all its artworks?
+                            </p>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => {
+                                  handleDeleteExhibition(exhibition.id);
+                                  setShowExhibitionDeleteConfirm(false);
+                                }}
+                                disabled={loading}
+                                className="flex-1 px-3 py-2 text-sm bg-red-500 text-white rounded-rvMd hover:bg-red-600 transition-colors font-semibold disabled:opacity-50"
+                              >
+                                Yes, Delete
+                              </button>
+                              <button
+                                onClick={() => setShowExhibitionDeleteConfirm(false)}
+                                className="flex-1 px-3 py-2 text-sm border border-red-200 text-red-600 rounded-rvMd hover:bg-red-100 transition-colors font-semibold"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        )}
+  
+                        {/* Embed Exhibition Section */}
+                        <div className="mt-5 pt-5 border-t border-rv-neutral">
+                          <div className="flex items-center gap-2 mb-3">
+                            <svg className={`w-4 h-4 ${exhibition.status === 'published' ? 'text-rv-primary' : 'text-rv-textMuted'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                            </svg>
+                            <h4 className={`text-sm font-semibold ${exhibition.status === 'published' ? 'text-rv-text' : 'text-rv-textMuted'}`}>Embed this Exhibition</h4>
+                          </div>
+                          
+                          {exhibition.status === 'published' ? (
+                            <>
+                              <p className="text-xs text-rv-textMuted mb-3">
+                                Copy this code into your website to display your 360° exhibition.
+                              </p>
+                              <div className="bg-slate-50 rounded-rvMd p-3 mb-3 overflow-x-auto">
+                                <pre className="text-xs text-slate-700 whitespace-pre-wrap break-all font-mono">
+  {`<iframe
+    src="${window.location.origin}/#/embed/exhibitions/${exhibition.id}"
+    width="100%"
+    height="720"
+    style="border:0; border-radius:12px;"
+    loading="lazy"
+    allowfullscreen
+  ></iframe>`}
+                                </pre>
+                              </div>
+                              <button
+                                onClick={async () => {
+                                  const embedCode = `<iframe
+    src="${window.location.origin}/#/embed/exhibitions/${exhibition.id}"
+    width="100%"
+    height="720"
+    style="border:0; border-radius:12px;"
+    loading="lazy"
+    allowfullscreen
+  ></iframe>`;
+                                  try {
+                                    await navigator.clipboard.writeText(embedCode);
+                                    setSuccess('Embed code copied to clipboard!');
+                                    setTimeout(() => setSuccess(''), 3000);
+                                  } catch (err) {
+                                    setError('Failed to copy embed code');
+                                  }
+                                }}
+                                className="w-full px-3 py-2 text-sm border border-rv-primary text-rv-primary rounded-rvMd hover:bg-rv-primary hover:text-white transition-all font-medium flex items-center justify-center gap-2"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                                Copy Code
+                              </button>
+                            </>
+                          ) : (
+                            <div className="bg-amber-50 border border-amber-200 rounded-rvMd p-4">
+                              <div className="flex items-start gap-3">
+                                <svg className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                <div>
+                                  <p className="text-sm font-medium text-amber-800 mb-1">Exhibition not published</p>
+                                  <p className="text-xs text-amber-700 mb-3">
+                                    Publish your exhibition to get the embed code and share it on your website.
+                                  </p>
+                                  <button
+                                    onClick={handlePublishExhibition}
+                                    disabled={loading}
+                                    className="px-4 py-1.5 text-sm bg-[#C9A24A] text-white rounded-rvMd hover:bg-[#B8913A] transition-all font-semibold disabled:opacity-50"
+                                  >
+                                    {loading ? 'Publishing...' : 'Publish Exhibition'}
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    )}
+  
+                    {/* Exhibition Artworks Section - inside same card */}
+                    <div className="mt-6 pt-6 border-t border-rv-neutral">
+                      <h3 className="text-lg font-bold text-rv-primary mb-4">Exhibition Artworks</h3>
+  
+                  {exhibitionArtworks.length === 0 ? (
+                    <div className="text-center py-8 text-rv-textMuted">
+                      <svg className="w-12 h-12 mx-auto mb-3 text-rv-neutral" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <p className="font-medium">No artworks in exhibition yet</p>
+                      <p className="text-sm mt-1">Go to your <span className="font-medium">Artworks</span> section and add artworks to this exhibition.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {exhibitionArtworks.map((artwork) => (
+                        <div key={artwork.id} className="group relative bg-rv-surface rounded-rvMd overflow-hidden border border-rv-neutral">
+                          <div className="h-[160px] relative bg-neutral-200">
+                            <div className="absolute inset-3 flex items-center justify-center">
+                              <img
+                                src={artwork.imageUrl}
+                                alt={artwork.title}
+                                className="max-w-full max-h-full object-contain shadow-sm"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23f1f5f9" width="100" height="100"/><text x="50" y="55" text-anchor="middle" fill="%2394a3b8" font-size="12">No Image</text></svg>';
+                                }}
+                              />
+                            </div>
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors" />
+                            <button
+                              onClick={() => setDeleteExhibitionArtworkId(artwork.id)}
+                              className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                          <div className="p-3">
+                            <h4 className="font-semibold text-sm text-rv-text truncate">{artwork.title}</h4>
+                            <p className="text-xs text-rv-textMuted">
+                              {artwork.widthValue} × {artwork.heightValue} {artwork.dimensionUnit}
+                            </p>
+                          </div>
+  
+                          {deleteExhibitionArtworkId === artwork.id && (
+                            <div className="absolute inset-0 bg-white/95 flex flex-col items-center justify-center p-4">
+                              <p className="text-sm text-red-700 font-medium mb-3 text-center">Remove this artwork?</p>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleDeleteExhibitionArtwork(artwork.id)}
+                                  className="px-3 py-1.5 text-sm bg-red-500 text-white rounded-rvMd hover:bg-red-600 font-semibold"
+                                >
+                                  Remove
+                                </button>
+                                <button
+                                  onClick={() => setDeleteExhibitionArtworkId(null)}
+                                  className="px-3 py-1.5 text-sm border border-rv-neutral text-rv-text rounded-rvMd hover:bg-rv-surface font-semibold"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </div>
           </>
         )}
 
