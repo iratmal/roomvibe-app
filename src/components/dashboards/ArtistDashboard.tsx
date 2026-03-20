@@ -1851,8 +1851,16 @@ export function ArtistDashboard() {
                   galleryImages={galleryImages}
                   onPrimaryImageChange={(fileOrInfo) => {
                     if (fileOrInfo && typeof fileOrInfo === 'object' && 'type' in fileOrInfo && fileOrInfo.type === 'gallery') {
-                      setPromotedGalleryImageId((fileOrInfo as any).id);
-                      setFormData(prev => ({ ...prev, image: (fileOrInfo as any).url }));
+                      const promotedId = (fileOrInfo as any).id;
+                      setPromotedGalleryImageId(promotedId);
+                      setFormData(prev => ({
+                        ...prev,
+                        image: (fileOrInfo as any).url,
+                        // If a role pointed to the promoted gallery image, redirect it to the cover slot (id=0).
+                        // This keeps the role tied to the same physical image after it moves to the cover position.
+                        cardImageId: prev.cardImageId === promotedId ? 0 : prev.cardImageId,
+                        cleanImageId: prev.cleanImageId === promotedId ? 0 : prev.cleanImageId,
+                      }));
                     } else {
                       setPromotedGalleryImageId(null);
                       setFormData(prev => ({ ...prev, image: fileOrInfo }));
@@ -1868,7 +1876,9 @@ export function ArtistDashboard() {
               {galleryImages.length > 0 && (() => {
                 // Build allImagesForDropdown: combine primary image + gallery images
                 // This ensures dropdown shows Gallery 1..N for ALL images
-                const primaryImgUrl = editingArtwork?.image_url || (formData.image instanceof File ? URL.createObjectURL(formData.image) : (typeof formData.image === 'string' ? formData.image : null));
+                // Prefer formData.image (string) when it has been set (e.g. after a gallery→cover drag promotion),
+                // because editingArtwork.image_url is stale and still points to the original cover.
+                const primaryImgUrl = (formData.image instanceof File ? URL.createObjectURL(formData.image) : (typeof formData.image === 'string' ? formData.image : null)) || editingArtwork?.image_url;
                 const hasPrimaryImage = !!primaryImgUrl;
                 
                 // allImagesForDropdown must match exactly what the grid renders (allImages in child).
