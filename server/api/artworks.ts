@@ -7,21 +7,28 @@ import { checkArtworkLimit, getEffectivePlan, requireMinimumPlan } from '../midd
 import { PLAN_LIMITS } from '../config/planLimits.js';
 import { generateTagsFromImage } from '../services/imageTagging.js';
 import { ObjectStorageService } from '../objectStorage.js';
+import { uploadRateLimit } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
+
+const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const ALLOWED_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp']);
+
+const sanitizeFilename = (name: string): string =>
+  path.basename(name).replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 120);
 
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif|webp/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-    if (mimetype && extname) {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const mimeOk = ALLOWED_MIME_TYPES.has(file.mimetype);
+    const extOk = ALLOWED_EXTENSIONS.has(ext);
+    if (mimeOk && extOk) {
       return cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed!'));
     }
+    console.warn(`[Security] Upload rejected: filename="${file.originalname}" mimetype="${file.mimetype}" ext="${ext}" ip=${(req as any).ip}`);
+    cb(new Error('Only JPEG, PNG, and WebP image files are allowed (max 10 MB).'));
   }
 });
 
@@ -367,7 +374,7 @@ router.get('/artworks/debug/:id', authenticateToken, async (req: any, res) => {
   }
 });
 
-router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('image'), async (req: any, res) => {
+router.post('/artworks', authenticateToken, uploadRateLimit, checkArtworkLimit, upload.single('image'), async (req: any, res) => {
   console.log('[UPLOAD] ========== POST /api/artist/artworks ==========');
   console.log('[UPLOAD] Content-Type:', req.headers['content-type']);
   console.log('[UPLOAD] Body keys:', Object.keys(req.body || {}));
@@ -463,7 +470,7 @@ router.post('/artworks', authenticateToken, checkArtworkLimit, upload.single('im
     try {
       imageUrl = await objectStorage.uploadBuffer(
         req.file.buffer,
-        req.file.originalname,
+        sanitizeFilename(req.file.originalname),
         req.file.mimetype
       );
       // Extract storage_key from imageUrl (strip /objects/ prefix)
@@ -723,7 +730,7 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
       const objectStorage = new ObjectStorageService();
       imageUrl = await objectStorage.uploadBuffer(
         req.file.buffer,
-        req.file.originalname,
+        sanitizeFilename(req.file.originalname),
         req.file.mimetype
       );
       // Extract storage_key from imageUrl
@@ -934,7 +941,7 @@ router.get('/artworks/:id/images', authenticateToken, async (req: any, res) => {
 });
 
 // Upload a new gallery image for an artwork
-router.post('/artworks/:id/images', authenticateToken, upload.single('image'), async (req: any, res) => {
+router.post('/artworks/:id/images', authenticateToken, uploadRateLimit, upload.single('image'), async (req: any, res) => {
   try {
     const artworkId = parseInt(req.params.id);
     const userId = req.user.id;
@@ -980,7 +987,7 @@ router.post('/artworks/:id/images', authenticateToken, upload.single('image'), a
     const objectStorage = new ObjectStorageService();
     const storageKey = await objectStorage.uploadBuffer(
       req.file.buffer,
-      `gallery-${artworkId}-${Date.now()}.${req.file.originalname.split('.').pop()}`,
+      `gallery-${artworkId}-${Date.now()}${path.extname(sanitizeFilename(req.file.originalname)).toLowerCase()}`,
       req.file.mimetype
     );
 

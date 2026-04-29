@@ -1,9 +1,10 @@
 import express from 'express';
 import nodemailer from 'nodemailer';
+import { contactRateLimit } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
 
-router.post('/', async (req, res) => {
+router.post('/', contactRateLimit, async (req, res) => {
   const { name, email, message } = req.body;
 
   if (!name || typeof name !== 'string' || name.trim().length === 0) {
