@@ -1,0 +1,41 @@
+Goal:
+Fix artwork image role saving during NEW artwork upload/create flow.
+
+Context:
+RoomVibe app. In Artist Pro dashboard, when creating/uploading a new artwork with multiple images, the selected Image Roles are not correctly applied on first save:
+- Card Image should use the selected gallery image, e.g. Gallery 2
+- Exhibition & Studio Image should use the selected gallery image, e.g. Gallery 3
+
+Currently this only works after the artwork is already created, then opened via Edit, then Save Images, then Update Artwork.
+
+This same bug may exist in Artist and Free/User dashboards, so check all artwork create/upload flows that share this logic.
+
+Scope:
+1. Inspect the new artwork creation/upload flow and compare it with the edit/save-images flow.
+2. Ensure selected image roles are included in the initial POST / create artwork request.
+3. Ensure backend persists cardImage / exhibitionStudioImage role selections immediately on creation.
+4. Ensure My Artworks card uses the selected Card Image immediately after creation.
+5. Ensure Studio and Exhibition use the selected Exhibition & Studio Image immediately after creation.
+6. Apply the fix to all relevant dashboards/plans if the shared component is used.
+7. Do not change pricing, Stripe, dashboard layout, security, or unrelated upload limits.
+
+Important:
+- This is a small focused bugfix. Use Fast Mode if available.
+- Do not refactor unrelated artwork logic.
+- Do not change existing working edit flow unless needed to reuse the same role-saving logic.
+- If there are separate create and edit payload structures, align them safely.
+
+Test cases:
+1. Create new artwork with 3 images.
+2. Select Card Image = Gallery 2.
+3. Select Exhibition & Studio Image = Gallery 3.
+4. Save/create artwork.
+5. Confirm My Artworks card immediately shows Gallery 2.
+6. Click View in Studio and confirm Studio uses Gallery 3.
+7. Open Exhibition and confirm Exhibition uses Gallery 3.
+8. Refresh page and confirm selections persist.
+9. Repeat briefly for Artist/Free dashboard if applicable.
+
+Stop condition:
+When the initial artwork upload/create flow saves the selected image roles correctly on the first attempt, without requiring Edit → Save Images → Update Artwork.
+List changed files and explain exactly what was fixed.

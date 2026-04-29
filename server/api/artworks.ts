@@ -813,6 +813,33 @@ router.put('/artworks/:id', authenticateToken, upload.single('image'), async (re
   }
 });
 
+router.patch('/artworks/:id/image-roles', authenticateToken, async (req: any, res) => {
+  try {
+    const artworkId = parseInt(req.params.id);
+    if (isNaN(artworkId)) {
+      return res.status(400).json({ error: 'Invalid artwork ID' });
+    }
+    const existing = await query(
+      'SELECT id FROM artworks WHERE id = $1 AND artist_id = $2',
+      [artworkId, req.user.id]
+    );
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ error: 'Artwork not found' });
+    }
+    const { cardImageId, cleanImageId } = req.body;
+    const cardId = (cardImageId !== undefined && cardImageId !== null) ? parseInt(String(cardImageId), 10) : null;
+    const cleanId = (cleanImageId !== undefined && cleanImageId !== null) ? parseInt(String(cleanImageId), 10) : null;
+    await query(
+      'UPDATE artworks SET card_image_id = $1, clean_image_id = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3',
+      [Number.isFinite(cardId!) ? cardId : null, Number.isFinite(cleanId!) ? cleanId : null, artworkId]
+    );
+    res.json({ message: 'Image roles updated' });
+  } catch (error: any) {
+    console.error('Error updating image roles:', error);
+    res.status(500).json({ error: 'Failed to update image roles' });
+  }
+});
+
 router.patch('/artworks/:id/visibility', authenticateToken, async (req: any, res) => {
   try {
     const artworkId = parseInt(req.params.id);

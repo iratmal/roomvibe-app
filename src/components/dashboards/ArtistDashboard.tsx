@@ -1000,17 +1000,16 @@ export function ArtistDashboard() {
       formDataObj.append('availability', formData.availability);
       formDataObj.append('showOnPublicProfile', String(formData.showOnPublicProfile));
       
-      // Include image role IDs for both create and edit
-      // For new uploads, determine actual IDs (default to first gallery image)
-      const actualCardImageId = formData.cardImageId ?? (galleryImages.length > 0 ? galleryImages[0].id : null);
-      const nonMockupImages = galleryImages.filter(g => !g.is_mockup);
-      const actualCleanImageId = formData.cleanImageId ?? (nonMockupImages.length > 0 ? nonMockupImages[0].id : null);
-      
-      if (actualCardImageId !== null) {
-        formDataObj.append('cardImageId', String(actualCardImageId));
-      }
-      if (actualCleanImageId !== null) {
-        formDataObj.append('cleanImageId', String(actualCleanImageId));
+      // Image roles: send in the initial request only for edits.
+      // For new artworks, gallery images don't have real server IDs yet, so roles are
+      // resolved and patched via PATCH /image-roles after gallery uploads complete.
+      if (editingArtwork) {
+        if (formData.cardImageId !== null && formData.cardImageId !== undefined) {
+          formDataObj.append('cardImageId', String(formData.cardImageId));
+        }
+        if (formData.cleanImageId !== null && formData.cleanImageId !== undefined) {
+          formDataObj.append('cleanImageId', String(formData.cleanImageId));
+        }
       }
       
       if (editingArtwork) {
@@ -1080,9 +1079,11 @@ export function ArtistDashboard() {
       const data = await response.json();
       const savedArtworkId = data.artwork?.id || editingArtwork?.id;
       
+      // finalImageOrder is declared here so the image-roles reconciliation below can access it
+      const finalImageOrder: number[] = [];
+
       if (savedArtworkId && galleryImages.length > 0) {
         // Build final image order: existing images keep their IDs, new images get IDs after upload
-        const finalImageOrder: number[] = [];
         const newImageUploadMap = new Map<number, File>(); // position -> file
         
         // First pass: identify new vs existing images and their positions
@@ -1132,6 +1133,42 @@ export function ArtistDashboard() {
           } catch (reorderErr) {
             console.error('Error reordering gallery images:', reorderErr);
           }
+        }
+      }
+
+      // For NEW artworks only: resolve temp/negative image IDs to real server IDs,
+      // then persist the correct image roles via a targeted PATCH.
+      // (Edit flow sends roles in the initial PUT and does not need this step.)
+      if (!editingArtwork && savedArtworkId) {
+        const resolveRoleId = (selected: number | null | undefined): number => {
+          if (selected == null || selected === -1) return 0; // null or cover slot → 0
+          if (selected >= 0) return selected;               // already a real server ID
+          // Negative temp ID: look it up in the position→realId mapping
+          for (let i = 0; i < galleryImages.length; i++) {
+            if (galleryImages[i].id === selected && finalImageOrder[i] != null) {
+              return finalImageOrder[i];
+            }
+          }
+          return 0; // fallback to cover if mapping failed
+        };
+
+        // Re-derive the selections the user made (same logic as the initial POST had)
+        const nonMockupGallery = galleryImages.filter(g => !g.is_mockup);
+        const submittedCardId = formData.cardImageId ?? (galleryImages.length > 0 ? (galleryImages[0].id ?? null) : null);
+        const submittedCleanId = formData.cleanImageId ?? (nonMockupGallery.length > 0 ? (nonMockupGallery[0].id ?? null) : null);
+
+        const resolvedCard = resolveRoleId(submittedCardId);
+        const resolvedClean = resolveRoleId(submittedCleanId);
+
+        try {
+          await fetch(`${API_URL}/api/artist/artworks/${savedArtworkId}/image-roles`, {
+            method: 'PATCH',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cardImageId: resolvedCard, cleanImageId: resolvedClean })
+          });
+        } catch (rolesErr) {
+          console.error('[Create] Failed to patch image roles:', rolesErr);
         }
       }
       
